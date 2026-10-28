@@ -131,6 +131,8 @@ export function cfopDoItem(it, nfe) {
   return ok(it?.cfop_codigo) || ok(nfe?.cfop_codigo);
 }
 
+/** Telefone para o XML: só dígitos, 6 a 14 (schema da SEFAZ). Fora disso (ex.: dois números juntos no cadastro) é omitido para não dar "Falha no Schema XML". */
+export const fone = (v) => { const d = String(v ?? '').replace(/\D/g, '').replace(/^0+/, ''); return d.length >= 6 && d.length <= 14 ? d : undefined; };
 export function montaJsonNfe(nfe, itens, cfg, { numero, ibsCbs = true, agora = new Date(), referencias = [], orientacao = 'retrato' } = {}) {
   const regime = regimeDoCrt(cfg.nfe_crt);
   const simples = regime === 1 || regime === 2;
@@ -144,7 +146,7 @@ export function montaJsonNfe(nfe, itens, cfg, { numero, ibsCbs = true, agora = n
     inscricaoEstadual: ieLimpa(cfg.ie) || 'ISENTO', inscricaoMunicipal: txt(cfg.im) || undefined, cnaeFiscal: dig(cfg.cnae) || undefined,
     regimeTributario: regime, codigoPais: '1058', nomePais: 'BRASIL', logradouro: txt(cfg.endereco), numero: txt(cfg.endereco_numero) || 'S/N', complemento: txt(cfg.endereco_complemento) || undefined,
     bairro: txt(cfg.bairro), codigoMunicipio: codigoMunicipio(emitUf, cfg.cidade) ?? '', nomeMunicipio: txt(cfg.cidade), uf: emitUf, cep: dig(cfg.cep),
-    telefone: dig(`${cfg.ddd ?? ''}${cfg.fones ?? ''}`) || undefined,
+    telefone: fone(`${cfg.ddd ?? ''}${cfg.fones ?? ''}`),
   };
 
   const destinatario = {
@@ -154,7 +156,7 @@ export function montaJsonNfe(nfe, itens, cfg, { numero, ibsCbs = true, agora = n
     complemento: txt(nfe.entrega_complemento) || undefined, bairro: txt(nfe.entrega_bairro || nfe.cliente_bairro),
     codigoMunicipio: codigoMunicipio(nfe.entrega_uf || ufDest, nfe.entrega_cidade || nfe.cliente_cidade) ?? '',
     nomeMunicipio: txt(nfe.entrega_cidade || nfe.cliente_cidade), uf: txt(nfe.entrega_uf || ufDest).toUpperCase(), cep: dig(nfe.entrega_cep || nfe.cliente_cep),
-    telefone: dig(`${nfe.cliente_ddd ?? ''}${nfe.cliente_fone ?? ''}`) || undefined,
+    telefone: fone(`${nfe.cliente_ddd ?? ''}${nfe.cliente_fone ?? ''}`),
   };
 
   const cstIcmsNota = txt(nfe.csosn) || txt(cfg.csosn);

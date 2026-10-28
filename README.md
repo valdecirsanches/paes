@@ -567,3 +567,6 @@ Quando a API não devolve o XML/DANFE (ou a consulta/ajuste não consegue baixar
 
 ### Fase 84 — Logo do DANFE
 Removido o botão "Diagnóstico do logo" (a rota continua no servidor). Ao abrir Configuração › NF-e, o logo mostrado é o atual da API (GET do logo da empresa pelo CNPJ), com cópia local de reserva.
+
+### Fase 85 — Telefone no XML
+Rejeição 225 (Falha no Schema XML) causada por telefone do destinatário com 16 dígitos (dois números juntos no cadastro). O telefone do emitente/destinatário só vai ao XML se tiver 6 a 14 dígitos; senão é omitido.

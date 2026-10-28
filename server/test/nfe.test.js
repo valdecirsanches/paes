@@ -185,3 +185,10 @@ test('NCM: lê a tabela do Siscomex e confere código e vigência', async () => 
   const m = parseTabela({ Nomenclaturas: [{ Codigo: '0901.21.00', Descricao: '- - Não descafeinado', Data_Inicio: '01/01/2022', Data_Fim: '31/12/9999' }, { Codigo: '09.01', Descricao: 'Café' }] });
   assert.equal(m.size, 1); assert.equal(m.get('09012100').fim, '9999-12-31'); assert.equal(m.has('10112110'), false);
 });
+
+test('fone: telefone fora de 6–14 dígitos é omitido (evita Falha no Schema XML)', async () => {
+  const { fone } = await import('../src/services/nfeJson.js');
+  assert.equal(fone('2151530921415354'), undefined);
+  assert.equal(fone('(11) 3687-7622'), '1136877622');
+  assert.equal(fone(''), undefined);
+});
