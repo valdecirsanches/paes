@@ -450,7 +450,6 @@ export default function NFe({ onFechar }) {
     return () => clearInterval(t);
   }, [aba, cfgTab, carregarCert]);
   const [danfeCfg, setDanfeCfg] = useState(null);
-  const [diagLogo, setDiagLogo] = useState('');
   const [logoV, setLogoV] = useState(0); // força recarregar a miniatura do logo
   useEffect(() => { if (aba === 'cfg' && cfgTab === CFG_NFE) api.get('/nfe/danfe-config').then(setDanfeCfg).catch(() => setDanfeCfg({ orientacao: 'retrato', logoNome: '' })); }, [aba, cfgTab]);
   const orientacaoDanfe = (o) => acao(async () => { setDanfeCfg(await api.put('/nfe/danfe-config', { orientacao: o })); notificar('ok', `DANFE em ${o}.`); });
@@ -962,10 +961,6 @@ export default function NFe({ onFechar }) {
                       {danfeCfg?.logoNome ? <img key={logoV} src={`/api/nfe/danfe-logo?v=${logoV}`} alt="Logo da empresa" /> : <span className="dnf-sem">Sem logo</span>}
                       <label className="bt dnf-up">{danfeCfg?.logoNome ? 'Trocar logo' : 'Enviar logo'}<input type="file" accept=".png,.jpg,.jpeg,image/png,image/jpeg" hidden disabled={ocupado} onChange={escolheLogo} /></label>
                       {danfeCfg?.logoNome && <button type="button" className="bt" disabled={ocupado} onClick={tiraLogo}>Remover</button>}
-                    </div>
-                    <div className="dnf-diag">
-                      <button type="button" className="bt" disabled={ocupado} onClick={() => acao(async () => { const r = await api.get('/nfe/danfe-logo-diagnostico'); setDiagLogo(JSON.stringify(r, null, 2)); })}>🔎 Diagnóstico do logo</button>
-                      {diagLogo && <><button type="button" className="bt" onClick={() => copiaTexto(diagLogo).then(() => notificar('ok', 'Diagnóstico copiado.'))}>📋 Copiar</button><pre className="nfe-resp">{diagLogo}</pre></>}
                     </div>
                     <small>A orientação vale para as próximas notas e para os DANFEs baixados. O logo (PNG/JPG, até 1 MB) é enviado à API de NF-e e aparece no DANFE. {danfeCfg?.apiTemLogo === true ? '✔ A API confirma que a empresa tem logo.' : danfeCfg?.apiTemLogo === false ? '⚠ A API informa que a empresa NÃO tem logo — envie novamente.' : ''}</small>
                   </div>

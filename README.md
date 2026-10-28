@@ -564,3 +564,6 @@ Atualização automática: ao gerar NFe/faturar (Faturamento, Comandas) ou qualq
 
 ### Fase 83 — XML/DANFE também da pasta da API
 Quando a API não devolve o XML/DANFE (ou a consulta/ajuste não consegue baixar), o app procura o arquivo na pasta onde a própria API guarda: `NFE_ARQUIVOS_DIR/<cnpj>/NFe/<data da autorização>/<NFe ou Evento>/<chave>…` (padrão `/mnt/hdbackup/API/levpao/arquivos/nfe/EDSMonitorPLUS/Arqs`). Tenta os formatos comuns de pasta de data e, se não achar, varre a pasta do CNPJ pela chave (ignorando eventos). Diagnóstico: `GET /api/nfe/:id/arquivos-diagnostico`. A pasta precisa estar montada no servidor do app e legível pelo usuário do serviço.
+
+### Fase 84 — Logo do DANFE
+Removido o botão "Diagnóstico do logo" (a rota continua no servidor). Ao abrir Configuração › NF-e, o logo mostrado é o atual da API (GET do logo da empresa pelo CNPJ), com cópia local de reserva.

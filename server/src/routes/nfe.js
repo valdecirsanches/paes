@@ -414,7 +414,7 @@ router.get('/ncm', async (req, res) => res.json(await pesquisaNcm(req.query.q)))
 router.get('/ncm/:codigo', async (req, res) => res.json(await consultaNcm(req.params.codigo)));
 router.get('/danfe-config', async (_req, res) => {
   const c = await lerDanfeCfg();
-  try { const cfg = await getCfg(); const r = await api.empresaPorCnpjStatus(String(cfg.cnpj ?? '').replace(/\D/g, '')); if (r.status === 200) c.apiTemLogo = Boolean(r.body?.temLogo); } catch { /* sem API: só o estado local */ }
+  try { const cfg = await getCfg(); const r = await api.empresaPorCnpjStatus(String(cfg.cnpj ?? '').replace(/\D/g, '')); if (r.status === 200) { c.apiTemLogo = Boolean(r.body?.temLogo); if (c.apiTemLogo && !c.logoNome) c.logoNome = 'logo da API'; } } catch { /* sem API: só o estado local */ }
   res.json(c);
 });
 router.put('/danfe-config', async (req, res) => {
@@ -438,7 +438,18 @@ router.get('/danfe-logo-diagnostico', async (_req, res) => {
   } catch (er) { add('Falha', { erro: er.message }); }
   res.json(out);
 });
+/** Logo atual: pega da API (é o que sai no DANFE) e guarda uma cópia; sem API, usa a cópia local. */
 router.get('/danfe-logo', async (_req, res) => {
+  try {
+    const cfg = await getCfg();
+    const g = await api.chamar('GET', `/api/empresas/por-cnpj/${String(cfg.cnpj ?? '').replace(/\D/g, '')}/logo`, { binario: true });
+    if (g.status === 200 && g.buffer?.length > 100) {
+      const tipo = /jpe?g/i.test(g.tipo || '') ? 'image/jpeg' : 'image/png';
+      const atual = await lerLogo();
+      if (!atual || !atual.equals(g.buffer)) await gravarLogo(g.buffer, tipo === 'image/jpeg' ? 'logo.jpg' : 'logo.png', tipo);
+      return res.type(tipo).send(g.buffer);
+    }
+  } catch { /* sem API: cópia local */ }
   const b = await lerLogo(); const c = await lerDanfeCfg();
   if (!b) throw notFound('Logo');
   res.type(c.logoTipo || 'image/png').send(b);
