@@ -561,3 +561,6 @@ Atualização automática: ao gerar NFe/faturar (Faturamento, Comandas) ou qualq
 
 ## Fase 82
 - Consulta por número/chave: a nota do app é localizada também por chave com máscara e por número com série vazia/0, em qualquer status exceto inutilizada; nota já AUTORIZADA sem chave/protocolo (emitida em outro sistema) é completada; mensagem clara quando não há nota no app.
+
+### Fase 83 — XML/DANFE também da pasta da API
+Quando a API não devolve o XML/DANFE (ou a consulta/ajuste não consegue baixar), o app procura o arquivo na pasta onde a própria API guarda: `NFE_ARQUIVOS_DIR/<cnpj>/NFe/<data da autorização>/<NFe ou Evento>/<chave>…` (padrão `/mnt/hdbackup/API/levpao/arquivos/nfe/EDSMonitorPLUS/Arqs`). Tenta os formatos comuns de pasta de data e, se não achar, varre a pasta do CNPJ pela chave (ignorando eventos). Diagnóstico: `GET /api/nfe/:id/arquivos-diagnostico`. A pasta precisa estar montada no servidor do app e legível pelo usuário do serviço.

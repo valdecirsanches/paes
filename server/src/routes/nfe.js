@@ -12,6 +12,7 @@ import { lerA3, gravarA3, limparA3 } from '../services/a3Store.js';
 import { impostos, usuarioNfe } from '../services/geraFatura.js';
 import { destinatarios, assuntoPadrao, mensagemPadrao, enviaEmail, criaTransporte, listaEmails } from '../services/emailNfe.js';
 import { enriquece, arquivoDoEvento } from '../services/eventosNfe.js';
+import { acharArquivoNota, lerArquivoNota, baseArquivos } from '../services/arquivosApi.js';
 import { aplicaReducaoIbs, montaJsonNfe, validaParaAutorizar, dataHoraBr, regimeDoCrt, ehDevolucao } from '../services/nfeJson.js';
 
 const router = Router();
@@ -360,8 +361,12 @@ async function sincronizaArquivos(nfe, cfg, docId, orientacao) {
   const feito = {};
   for (const [campo, ext, tipo, baixa] of [['nfe_xml_file', '-procNFe.xml', 'xml', () => api.xmlAutorizado(docId)], ['nfe_pdf_file', '.pdf', 'pdf', () => api.danfePdf(docId, o)]]) {
     try {
-      const r = await baixa();
-      if (r.status !== 200 || !r.buffer?.length) { feito[tipo] = `HTTP ${r.status}`; continue; }
+      let r = await baixa().catch((e) => ({ status: 0, erro: e.message }));
+      if (r.status !== 200 || !r.buffer?.length) {
+        const l = await consultaPastaApi(nfe, cfg, tipo).catch(() => ({}));
+        if (!l.buffer?.length) { feito[tipo] = r.erro || `HTTP ${r.status}${l.motivo ? ` — ${l.motivo}` : ''}`; continue; }
+        r = { status: 200, buffer: l.buffer };
+      }
       const p = await gravaArquivo(cfg.cnpj, ambiente, `${nfe.nfe_chave}${ext}`, r.buffer);
       await pool.query(`update tb_nfe set ${campo} = ? where id = ?`, [p, nfe.id]);
       nfe[campo] = p; feito[tipo] = 'ok';
@@ -1013,25 +1018,30 @@ router.post('/inutilizar', async (req, res) => {
 
 // ------------------------------------------------------------------ DANFE, XML e status do serviço
 /** Arquivo da nota (XML/PDF): tenta a API primeiro (traz o atual e guarda no app); sem API, usa a cópia do disco. */
+/** Procura o arquivo na pasta onde a API guarda os XML/PDF (NFE_ARQUIVOS_DIR/<cnpj>/NFe/<data>/NFe). */
+const consultaPastaApi = (nfe, cfg, tipo) => lerArquivoNota({ chave: nfe.nfe_chave, cnpj: cfg.cnpj, tipo, datas: [nfe.nfe_protocolo_data_hora, nfe.data_emissao] });
 async function buscaArquivo(nfe, cfg, campo, nomeExt, baixa, orientacao) {
   const f = txt(nfe[campo]);
   const doDisco = f && existsSync(f);
+  const ambiente = Number(cfg.nfe_configuracoes_webservice_ambiente) === 1 ? 1 : 2;
+  const guarda = async (buf) => {
+    try {
+      const p = await gravaArquivo(cfg.cnpj, ambiente, `${nfe.nfe_chave}${nomeExt === 'xml' ? '-procNFe.xml' : '.pdf'}`, buf);
+      if (p !== f) await pool.query(`update tb_nfe set ${campo} = ? where id = ?`, [p, nfe.id]);
+    } catch { /* guardar é melhor esforço */ }
+  };
+  let erro = null;
   try {
     const { docId } = await docDaNota(nfe, cfg);
     const r = await baixa(docId, orientacao || (await lerDanfeCfg()).orientacao);
-    if (r.status === 200 && r.buffer?.length) {
-      try {
-        const ambiente = Number(cfg.nfe_configuracoes_webservice_ambiente) === 1 ? 1 : 2;
-        const p = await gravaArquivo(cfg.cnpj, ambiente, `${nfe.nfe_chave}${nomeExt === 'xml' ? '-procNFe.xml' : '.pdf'}`, r.buffer);
-        if (p !== f) await pool.query(`update tb_nfe set ${campo} = ? where id = ?`, [p, nfe.id]);
-      } catch { /* guardar é melhor esforço */ }
-      return r.buffer;
-    }
-    if (!doDisco) throw new AppError(r.status === 404 ? 404 : 502, `A API de NF-e não devolveu o arquivo (HTTP ${r.status}).`);
-  } catch (e) {
-    if (!doDisco) throw e;
-  }
-  return readFile(f);
+    if (r.status === 200 && r.buffer?.length) { await guarda(r.buffer); return r.buffer; }
+    erro = new AppError(r.status === 404 ? 404 : 502, `A API de NF-e não devolveu o arquivo (HTTP ${r.status}).`);
+  } catch (e) { erro = e; }
+  if (doDisco) return readFile(f);
+  // a API não entregou: usa a cópia que ela mesma guarda em disco
+  const l = await consultaPastaApi(nfe, cfg, nomeExt === 'xml' ? 'xml' : 'pdf');
+  if (l.buffer?.length) { await guarda(l.buffer); return l.buffer; }
+  throw new AppError(erro?.status === 404 ? 404 : 502, `${erro?.message ?? 'Arquivo indisponível.'} Também não achei na pasta da API: ${l.motivo ?? ''}`.trim());
 }
 async function arquivoOuApi(req, res, campo, tipo, nomeExt, baixa) {
   const id = idValido(req.params.id);
@@ -1059,6 +1069,12 @@ router.post('/danfe-lote', async (req, res) => {
   }
   if (!n) throw invalid(`Nenhuma DANFE disponível. ${ignoradas.join('; ')}`);
   res.type('application/pdf').set('X-Danfe-Ignoradas', encodeURIComponent(ignoradas.join('; '))).set('Content-Disposition', 'inline; filename="danfes.pdf"').send(Buffer.from(await saida.save()));
+});
+/** Diagnóstico: onde o app procura o XML/DANFE da nota na pasta da API e o que achou. */
+router.get('/:id/arquivos-diagnostico', async (req, res) => {
+  const nfe = await getNfe(idValido(req.params.id)); const cfg = await getCfg();
+  const q = { chave: nfe.nfe_chave, cnpj: cfg.cnpj, datas: [nfe.nfe_protocolo_data_hora, nfe.data_emissao] };
+  res.json({ base: baseArquivos(), chave: nfe.nfe_chave, datas: q.datas, xml: await acharArquivoNota({ ...q, tipo: 'xml' }), pdf: await acharArquivoNota({ ...q, tipo: 'pdf' }) });
 });
 router.get('/:id/danfe', (req, res) => arquivoOuApi(req, res, 'nfe_pdf_file', 'application/pdf', 'pdf', (d, o) => api.danfePdf(d, o)));
 router.get('/:id/xml', (req, res) => arquivoOuApi(req, res, 'nfe_xml_file', 'application/xml', 'xml', (d) => api.xmlAutorizado(d)));
