@@ -1,0 +1,18 @@
+[Unit]
+Description=Paes - App (front estatico + proxy /api)
+After=network-online.target paes-api.service
+Wants=paes-api.service
+
+[Service]
+Type=simple
+User=sanches
+WorkingDirectory=/home/sanches/apps/paes/client
+Environment=NODE_ENV=production
+Environment=PORT=5072
+Environment=API_URL=http://127.0.0.1:5071
+ExecStart=/usr/bin/node serve.mjs
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

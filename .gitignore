@@ -1,0 +1,13 @@
+node_modules
+dist
+.env
+.session-secret
+etiquetas-layout.json
+agente-ponte.json
+nfe-logo.bin
+nfe-danfe.json
+nfe-a3.json
+ncm-tabela.json
+server/xmls/
+client/public/_prev.html
+*.zip
