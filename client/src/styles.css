@@ -1717,3 +1717,4 @@ dialog.modal:has(.nfe-comandas){width:min(900px,96vw)}dialog .nfe-comandas{max-h
 .cd-pag{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}.cd-pag-ctl{display:inline-flex;align-items:center;gap:6px}.cd-pag-ctl b{font-size:12px;color:#6f5d42;white-space:nowrap}
 .cd-dono{display:flex;align-items:center;justify-content:space-between;gap:8px}.cd-dono b{font-size:13px;color:#3b2d18;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .em-dest{display:flex;flex-direction:column;gap:6px;margin:4px 0 8px}.em-dest-g{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center}.em-dest-g>b{min-width:130px;font-size:12px;color:#6f5d42}.em-dest-i{display:inline-flex;align-items:center;gap:6px;font-size:13px}
+.nf2-lim{margin-left:2px;color:#a89a80;font-weight:700;cursor:help}

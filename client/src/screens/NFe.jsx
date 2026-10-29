@@ -216,7 +216,6 @@ export default function NFe({ onFechar }) {
     try {
       const rows = await api.get(`/nfe?${q}`);
       if (minha !== seqFiltro.current) return; // resposta velha: o filtro já mudou
-      if (rows.length >= LIMITE_LISTA) notificar('erro', `Mostrando as ${LIMITE_LISTA} notas mais recentes do filtro. Refine o período para ver as demais.`);
       recarregaDetalhe.current?.(manter || fixa ? (fixa ?? focoRef.current) : null);
       setLinhas(rows); setMarcados(new Set()); setDraft({}); setSubNfe('nfe');
       setFoco((a) => (fixa && rows.some((r) => r.id === fixa) ? fixa : manter && rows.some((r) => r.id === a) ? a : rows.at(-1)?.id ?? null));
@@ -664,7 +663,7 @@ export default function NFe({ onFechar }) {
                         {linhas && linhas.length === 0 && <tr className="semlinha"><td colSpan={GRADE_COLS.length + 3} className="vazio">&lt;Não há notas para este filtro&gt;</td></tr>}
                       </tbody>
                       <tfoot><tr>
-                        <td className="ind" /><td /><td />{GRADE_COLS.map(([k, , t]) => <td key={k} className={t === 'm' ? 'n' : ''}>{k === 'status_e' ? <b>{linhas?.length ?? 0}</b> : k === 'nf_valor_total' ? <b>{fmtBr(totalNF, 2)}</b> : ''}</td>)}
+                        <td className="ind" /><td /><td />{GRADE_COLS.map(([k, , t]) => <td key={k} className={t === 'm' ? 'n' : ''}>{k === 'status_e' ? <><b>{linhas?.length ?? 0}</b>{(linhas?.length ?? 0) >= LIMITE_LISTA && <span className="nf2-lim" title={`Mostrando as ${LIMITE_LISTA} notas mais recentes do filtro. Refine o período para ver as demais.`}>+</span>}</> : k === 'nf_valor_total' ? <b>{fmtBr(totalNF, 2)}</b> : ''}</td>)}
                       </tr></tfoot>
                     </table>
                   </div>

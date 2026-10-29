@@ -588,3 +588,6 @@ Autorizar só fica habilitado se há nota PENDENTE (em foco ou entre as marcadas
 
 ### Fase 91 — Lista de destinatários completa
 Além de Para/Cc/Cco propostos, a lista do envio mostra a contabilidade (desmarcada) quando "enviar DANFE à contabilidade" está desligado; basta marcar para incluir.
+
+### Fase 92 — Aviso de limite da lista de NFe
+O aviso "Mostrando as 1500 notas mais recentes…" deixou de ser mensagem em destaque: agora é um "+" discreto ao lado do total no rodapé da grade, com a explicação ao passar o mouse.
