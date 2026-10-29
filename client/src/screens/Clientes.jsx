@@ -18,6 +18,7 @@ const COLS_PROD = [['codigo', 'Código'], ['descricao', 'Descrição do produto'
 const COLS_REFS = [['id', 'ID'], ['codigo_referencia', 'Referência'], ['descricao', 'Descrição'], ['produto_especial', 'ESP', 'chk'], ['produto_producao', 'PRÇ', 'chk']];
 const B_CLI = ['razao_social', 'nome_fantasia', 'codigo', 'cnpj', 'cidade', 'bairro', 'endereco', 'fone', 'contato', 'email'];
 const B_UNI = ['nome', 'codigo', 'cnpj', 'cidade', 'bairro', 'endereco', 'telefone', 'contato', 'nutricionista_nome', 'regiao'];
+const POR_PAG = 50;
 const B_PROD = ['descricao', 'descricao_expedicao', 'codigo', 'ncm', 'un'];
 // Cadastro de clientes (u_clientes): cliente no alto; abas Lista de Clientes / Unidades / Produtos.
 export default function Clientes({ onFechar }) {
@@ -61,6 +62,12 @@ export default function Clientes({ onFechar }) {
   }, [conectar, esconder, idCli, notificar]);
   useEffect(() => { recUni(); }, [recUni]);
   const bUni = useBusca(unidades, B_UNI);
+  const [pagUni, setPagUni] = useState(0); // grade de unidades paginada (desconectado: todas as unidades)
+  const totPagUni = Math.max(1, Math.ceil(bUni.visiveis.length / POR_PAG));
+  const pagUniOk = Math.min(pagUni, totPagUni - 1);
+  const uniPagina = useMemo(() => bUni.visiveis.slice(pagUniOk * POR_PAG, (pagUniOk + 1) * POR_PAG), [bUni.visiveis, pagUniOk]);
+  useEffect(() => { setPagUni(0); }, [bUni.termo, conectar, esconder, idCli]); // nova pesquisa/filtro volta à 1ª página
+  useEffect(() => { const i = bUni.visiveis.findIndex((x) => x.id === fUni); if (i >= 0) setPagUni(Math.floor(i / POR_PAG)); }, [fUni]); // eslint-disable-line react-hooks/exhaustive-deps -- navegador (◀ ▶) leva à página da unidade
   const uni = useEdicao({ lista: bUni.visiveis, foco: fUni, setFoco: setFUni, caminho: `${CAM}/unidades`, recarregar: recUni, aviso: notificar, confirmar: setConfirma, padrao: () => ({ id_cliente: idCli, ativo: 'True' }), texto: (r) => `a unidade ${r?.nome ?? ''}` });
 
   const recProd = useCallback(async (id) => {
@@ -176,7 +183,8 @@ export default function Clientes({ onFechar }) {
           <main className="cd-rola">
             <div className="cd-minibarra">
               <Navegador compacto ed={uni} onEditar={() => campoNomeUni.current?.focus()} />
-              <label className="cd-filtro"><input type="checkbox" checked={conectar} onChange={(e) => setConectar(e.target.checked)} />Só unidades deste cliente</label>
+              <Busca busca={bUni} total={unidades.length} placeholder="Pesquisar unidade (nome, código, endereço, bairro…)" />
+              <label className="cd-filtro"><input type="checkbox" checked={conectar} onChange={(e) => setConectar(e.target.checked)} />Só unidades deste cliente{conectar && !idCli ? ' (nenhum cliente)' : ''}</label>
               <label className="cd-filtro"><input type="checkbox" checked={esconder} onChange={(e) => setEsconder(e.target.checked)} />Esconder inativas</label>
             </div>
             <div className="cd-secoes">
@@ -226,8 +234,17 @@ export default function Clientes({ onFechar }) {
             </div>
           </main>
           <section className="cd-lado larga">
-            <GradeCad cols={COLS_UNI} rows={bUni.visiveis} foco={fUni} onSel={uni.selecionar} onDbl={(id) => { if (uni.selecionar(id)) setTimeout(() => campoNomeUni.current?.focus(), 0); }} vazio="Nenhuma unidade" />
-            <footer className="cd-rodape-lista">{bUni.visiveis.length} unidade(s)</footer>
+            <GradeCad cols={COLS_UNI} rows={uniPagina} foco={fUni} onSel={uni.selecionar} onDbl={(id) => { if (uni.selecionar(id)) setTimeout(() => campoNomeUni.current?.focus(), 0); }} vazio="Nenhuma unidade" />
+            <footer className="cd-rodape-lista cd-pag">
+              <span>{bUni.visiveis.length} unidade(s){conectar ? ' deste cliente' : ' — todas'}</span>
+              {totPagUni > 1 && <span className="cd-pag-ctl">
+                <button type="button" className="cd-btn" disabled={pagUniOk === 0} onClick={() => setPagUni(0)} title="Primeira página">⏮</button>
+                <button type="button" className="cd-btn" disabled={pagUniOk === 0} onClick={() => setPagUni(pagUniOk - 1)}>‹ Anterior</button>
+                <b>Página {pagUniOk + 1} de {totPagUni}</b>
+                <button type="button" className="cd-btn" disabled={pagUniOk >= totPagUni - 1} onClick={() => setPagUni(pagUniOk + 1)}>Próxima ›</button>
+                <button type="button" className="cd-btn" disabled={pagUniOk >= totPagUni - 1} onClick={() => setPagUni(totPagUni - 1)} title="Última página">⏭</button>
+              </span>}
+            </footer>
           </section>
         </div>
       )}

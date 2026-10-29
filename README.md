@@ -570,3 +570,6 @@ Removido o botão "Diagnóstico do logo" (a rota continua no servidor). Ao abrir
 
 ### Fase 85 — Telefone no XML
 Rejeição 225 (Falha no Schema XML) causada por telefone do destinatário com 16 dígitos (dois números juntos no cadastro). O telefone do emitente/destinatário só vai ao XML se tiver 6 a 14 dígitos; senão é omitido.
+
+### Fase 86 — Cadastro de clientes › Unidades: pesquisa e paginação
+Na aba Unidades há campo de pesquisa (nome, código, endereço, bairro, cidade, contato, nutricionista, região). Com "Só unidades deste cliente" marcado mostra as do cliente; desmarcado, todas as unidades. A grade é paginada (50 por página) e o navegador ◀ ▶ leva à página da unidade.
