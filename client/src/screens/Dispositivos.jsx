@@ -20,6 +20,13 @@ export default function Dispositivos({ onFechar }) {
   useEffect(() => { carrega(); const t = setInterval(carrega, 15000); return () => clearInterval(t); }, [carrega]);
   const salva = async (it, campos) => { try { await api.put(`/dispositivos/${it.id}`, campos); setDados((d) => ({ ...d, itens: d.itens.map((x) => (x.id === it.id ? { ...x, ...campos } : x)) })); } catch (e) { setAviso({ tipo: 'erro', m: e.message }); } };
   const exclui = async (it) => { if (!window.confirm(`Excluir o dispositivo ${it.codigo}${it.descricao ? ` (${it.descricao})` : ''}? Se ele acessar de novo, volta como pendente.`)) return; try { await api.del(`/dispositivos/${it.id}`); carrega(); } catch (e) { setAviso({ tipo: 'erro', m: e.message }); } };
+  // Dispositivo cujo número mudou (cookie apagado): passa a liberação do número antigo para o novo.
+  const assume = async (novo, origemId) => {
+    const o = dados.itens.find((x) => String(x.id) === String(origemId)); if (!o) return;
+    if (!window.confirm(`O número ${novo.codigo} passa a ter a liberação de ${o.descricao || o.codigo} (${o.codigo}), e o número antigo é excluído. Confirmar?`)) return;
+    try { await api.post(`/dispositivos/${novo.id}/assume`, { origem: o.id }); carrega(); } catch (e) { setAviso({ tipo: 'erro', m: e.message }); }
+  };
+  const provavel = (i) => (dados?.itens ?? []).find((x) => x.ativo && x.id !== i.id && x.ultimo_ip && x.ultimo_ip === i.ultimo_ip && x.navegador === i.navegador);
   const itens = (dados?.itens ?? []).filter((i) => (filtro === 'todos' ? true : filtro === 'pendentes' ? !i.ativo : i.ativo));
   const habilitados = (dados?.itens ?? []).filter((i) => i.ativo).length;
   return (
@@ -55,7 +62,13 @@ export default function Dispositivos({ onFechar }) {
               <td><code>{i.codigo}</code>{i.codigo === dados.meu && <small className="dspa-eu"> este aqui</small>}</td>
               <td><input className="dspa-desc" defaultValue={i.descricao} maxLength={80} placeholder="ex.: Faturamento — Ingrid" onBlur={(e) => { if (e.target.value.trim() !== i.descricao) salva(i, { descricao: e.target.value }); }} /></td>
               <td>{i.ultimo_usuario || '—'}</td><td>{dh(i.ultimo_acesso)}</td><td>{i.ultimo_ip || '—'}</td><td title={i.navegador}>{resumoUA(i.navegador)}</td>
-              <td className="dspa-ac"><button type="button" title="Copiar código" onClick={() => copiaTexto(i.codigo)}>📋</button><button type="button" className="lx" title="Excluir" onClick={() => exclui(i)}>🗑</button></td>
+              <td className="dspa-ac">
+                {!i.ativo && (
+                  <select className="dspa-assume" value="" title="Este computador mudou de número? Escolha o número antigo para passar a liberação para este" onChange={(e) => assume(i, e.target.value)}>
+                    <option value="">{provavel(i) ? `↪ Era ${provavel(i).descricao || provavel(i).codigo}? (mesmo IP e navegador)` : '↪ Assumir lugar de…'}</option>
+                    {dados.itens.filter((x) => x.id !== i.id).map((x) => <option key={x.id} value={x.id}>{x.descricao || '(sem descrição)'} — {x.codigo}{x.ativo ? '' : ' (pendente)'}</option>)}
+                  </select>)}
+                <button type="button" title="Copiar código" onClick={() => copiaTexto(i.codigo)}>📋</button><button type="button" className="lx" title="Excluir" onClick={() => exclui(i)}>🗑</button></td>
             </tr>))}
           {dados && !itens.length && <tr className="semlinha"><td colSpan={9} className="vazio">&lt;Nenhum dispositivo nesta visão&gt;</td></tr>}
         </tbody>

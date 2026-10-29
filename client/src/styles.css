@@ -1761,3 +1761,5 @@ dialog.modal:has(.nfe-comandas){width:min(900px,96vw)}dialog .nfe-comandas{max-h
 .fb-det textarea,.fb-form input{border:1px solid #d8cdbb;border-radius:8px;padding:6px 8px;background:#fff;color:#3b2d18;font:inherit}
 .fb-form{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 14px;padding:12px 14px;margin:0;flex:none}.fb-larga{grid-column:1/-1}.fb-acoes{grid-column:1/-1;display:flex;gap:8px}
 @media(max-width:900px){.fb-corpo{grid-template-columns:1fr}.fb-form{grid-template-columns:1fr}}
+
+.dspa-assume{max-width:230px;margin-right:6px;font-size:12px;border:1px solid #d8cdbb;border-radius:6px;background:#fff;color:#3b2d18;padding:3px}

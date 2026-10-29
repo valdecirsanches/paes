@@ -60,3 +60,15 @@ test('máquina da fábrica: só chama as rotas da fábrica', () => {
   for (const u of ['/api/nfe/1', '/api/faturamento', '/api/comandas', '/api/cadastros/clientes', '/api/dispositivos', '/api/auth/senha', '/api/tributos']) assert.equal(rotaDaFabrica(r('GET', u)), false, u);
   assert.equal(rotaDaFabrica(r('GET', '/api/produtos/codigo/1')), true); assert.equal(rotaDaFabrica(r('POST', '/api/produtos')), false);
 });
+
+test('cookie apagado: o número guardado no navegador (x-dispositivo) restaura o mesmo dispositivo e regrava o cookie', async () => {
+  limpaCache(); const db = bancoFalso(['AAAA-BBBB-CCCC']); const res = resFalsa();
+  const req = { ...reqFalsa(), headers: { 'x-dispositivo': 'aaaa-bbbb-cccc' } };
+  const d = await identifica(req, res, db);
+  assert.equal(d.codigo, 'AAAA-BBBB-CCCC'); assert.equal(d.habilitado, true);
+  assert.match(res.h['Set-Cookie'], /paes_disp=AAAA-BBBB-CCCC;/);
+});
+test('cookie e cabeçalho diferentes: vale o cookie', async () => {
+  limpaCache(); const d = await identifica({ ...reqFalsa('paes_disp=AAAA-BBBB-CCCC'), headers: { cookie: 'paes_disp=AAAA-BBBB-CCCC', 'x-dispositivo': '1111-2222-3333' } }, resFalsa(), bancoFalso(['AAAA-BBBB-CCCC']));
+  assert.equal(d.codigo, 'AAAA-BBBB-CCCC');
+});

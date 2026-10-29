@@ -318,6 +318,7 @@ window.fetch = async (url, opts = {}) => {
   else if (p === '/dispositivo') r = json(window.__BLOQ ? { codigo: '7F3A-91C2-0B4E', habilitado: false, exigido: true, message: 'Dispositivo não habilitado para uso do aplicativo.' } : { codigo: '7F3A-91C2-0B4E', habilitado: true, exigido: true, areas: window.__FAB ? ['fabrica'] : ['faturamento'], fabrica: Boolean(window.__FAB), message: '' });
   else if (m === 'GET' && p === '/dispositivos') r = json({ meu: '7F3A-91C2-0B4E', itens: [
     { id: 1, codigo: '7F3A-91C2-0B4E', descricao: 'Faturamento — Ingrid', ativo: true, areas: ['faturamento'], ultimo_usuario: 'sanches', ultimo_acesso: new Date().toISOString(), ultimo_ip: '192.168.15.31', navegador: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0 Safari/537.36' },
+    { id: 3, codigo: 'C0DE-1234-ABCD', descricao: '', areas: ['faturamento'], ativo: false, ultimo_usuario: 'sanches', ultimo_acesso: new Date().toISOString(), ultimo_ip: '192.168.15.31', navegador: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0 Safari/537.36' },
     { id: 2, codigo: 'B81D-44AA-92F0', descricao: 'Fábrica — forno', areas: ['fabrica'], ativo: true, ultimo_usuario: null, ultimo_acesso: new Date().toISOString(), ultimo_ip: '177.12.45.9', navegador: 'Mozilla/5.0 (Linux; Android 14) Chrome/130.0 Mobile Safari/537.36' }] });
   else if (/^\/(fabrica\/)?producao\/resumo/.test(p)) r = json([
     { producao_turno: 1, producao_data: ISO, id_referencia: 1, codigo_referencia: '101', descricao: 'PAO FRANCES', producao_qtde: 1200, chave: '11' },

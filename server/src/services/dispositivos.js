@@ -73,9 +73,15 @@ async function controleLigado(db) {
  * @returns {{codigo:string, habilitado:boolean, exigido:boolean}}
  */
 export async function identifica(req, res, db = pool) {
-  let codigo = leCookie(req, COOKIE);
-  if (!codigo || !FORMATO.test(codigo)) {
-    codigo = novoCodigo();
+  // O número é guardado em dois lugares no navegador (cookie e armazenamento do site, enviado no cabeçalho x-dispositivo):
+  // se um deles for apagado, o outro devolve o mesmo número e o cookie é regravado.
+  const doCookie = leCookie(req, COOKIE);
+  const doCabecalho = String(req.headers['x-dispositivo'] ?? '').toUpperCase();
+  let codigo = doCookie && FORMATO.test(doCookie) ? doCookie : null;
+  const recuperado = !codigo && FORMATO.test(doCabecalho);
+  if (recuperado) codigo = doCabecalho;
+  if (!codigo || recuperado) {
+    if (!codigo) codigo = novoCodigo();
     const seguro = req.secure || req.headers['x-forwarded-proto'] === 'https';
     const anterior = res.getHeader('Set-Cookie');
     const c = `${COOKIE}=${codigo}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${CINCO_ANOS_S}${seguro ? '; Secure' : ''}`;

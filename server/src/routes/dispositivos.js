@@ -39,6 +39,18 @@ admin.put('/:id', async (req, res) => {
   limpaCache();
   res.json({ ok: true });
 });
+// Passa a liberação de um dispositivo antigo (número perdido) para este (novo número): copia habilitado, áreas e descrição e apaga o antigo.
+admin.post('/:id/assume', async (req, res) => {
+  const id = Number(req.params.id); const origem = Number(req.body?.origem);
+  if (!Number.isInteger(id) || id <= 0 || !Number.isInteger(origem) || origem <= 0 || id === origem) throw invalid('Dispositivos inválidos.');
+  const [[velho]] = await pool.query('select descricao, ativo, areas from tb_dispositivos where id = ?', [origem]);
+  const [[novo]] = await pool.query('select id from tb_dispositivos where id = ?', [id]);
+  if (!velho || !novo) throw notFound('Dispositivo');
+  await pool.query('update tb_dispositivos set descricao = ?, ativo = ?, areas = ? where id = ?', [velho.descricao, velho.ativo, velho.areas, id]);
+  await pool.query('delete from tb_dispositivos where id = ?', [origem]);
+  limpaCache();
+  res.json({ ok: true });
+});
 admin.delete('/:id', async (req, res) => {
   const id = Number(req.params.id); if (!Number.isInteger(id) || id <= 0) throw invalid('Dispositivo inválido.');
   const [r] = await pool.query('delete from tb_dispositivos where id = ?', [id]);
