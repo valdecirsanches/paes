@@ -600,3 +600,6 @@ A rolagem virtual (`janela.js`) guardava a posição/altura do elemento antigo q
 
 ### Fase 95 — XML/DANFE visíveis ao sistema antigo
 Após autorizar, o XML e o DANFE ficam em `NFE_XML_DIR` e o caminho gravado em `nfe_xml_file`/`nfe_pdf_file` usa `NFE_XML_DB_PREFIXO` (como as outras máquinas veem essa pasta, ex.: `\\192.168.15.8\nfe`), para o sistema antigo imprimir o DANFE de qualquer PC. A leitura converte de volta. Se a resposta da autorização vier sem XML ou PDF, o app baixa da API na hora. Requer compartilhar a pasta `NFE_XML_DIR` na rede (Samba) com leitura para as máquinas.
+
+### Fase 96 — Saída/Entrada no topo da edição e no clone
+Novo cartão "Tipo de operação" (⬆ Saída / ⬇ Entrada, campo `movimento_es`) no topo da coluna de edição da NFe. O clone mantém o tipo da nota original (antes virava Entrada). Nota nova nasce como Saída.

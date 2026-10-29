@@ -604,6 +604,15 @@ export default function NFe({ onFechar }) {
       <div className="nfe-geral">
         {/* cxTabControl5: painel da esquerda */}
         <aside className="nf2-lat">
+          <div className="nf2-card nf2-es">
+            <div className="nf2-card-t">↔ Tipo de operação</div>
+            <div className="dnf-orient" role="radiogroup" aria-label="Saída ou entrada">
+              {[['1', '⬆ Saída'], ['0', '⬇ Entrada']].map(([k, r]) => {
+                const atual = String(v.movimento_es ?? '1') === '0' ? '0' : '1';
+                return <button key={k} type="button" role="radio" aria-checked={atual === k} className={`dnf-op${atual === k ? ' on' : ''}`} disabled={ro || !nota} onClick={() => ed('movimento_es', k)}>{r}</button>;
+              })}
+            </div>
+          </div>
           <div className="nf2-card">
             <div className="nf2-card-t">🚚 Transporte e saída
               <Nav botoes={[

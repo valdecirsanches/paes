@@ -218,11 +218,11 @@ router.get('/', async (req, res) => {
 
 // ------------------------------------------------------------------ criar / duplicar / apagar
 router.post('/', async (_req, res) => {
-  const [r] = await pool.query("insert into tb_nfe set status_e = 'PENDENTE', movimento_es = '0', data_emissao = curdate(), data_saida = curdate(), hora_saida = curtime(), cliente_pessoa = 'J'");
+  const [r] = await pool.query("insert into tb_nfe set status_e = 'PENDENTE', movimento_es = '1', data_emissao = curdate(), data_saida = curdate(), hora_saida = curtime(), cliente_pessoa = 'J'");
   res.status(201).json(await getNfe(r.insertId));
 });
 
-const LIMPAR_NA_COPIA = { status_e: 'PENDENTE', movimento_es: '0', nfe_numero: 0, nfe_protocolo_data_hora: null, nfe_chave: '', nfe_xml_file: '', nfe_pdf_file: '', nfe_protocolo: '', nfe_recibo: '', nfe_recibo_datahora: null, nfe_email_enviado: null, nfe_impresso: null, nfe_cancelamento_justificativa: null, nfe: '' };
+const LIMPAR_NA_COPIA = { status_e: 'PENDENTE', nfe_numero: 0, nfe_protocolo_data_hora: null, nfe_chave: '', nfe_xml_file: '', nfe_pdf_file: '', nfe_protocolo: '', nfe_recibo: '', nfe_recibo_datahora: null, nfe_email_enviado: null, nfe_impresso: null, nfe_cancelamento_justificativa: null, nfe: '' };
 router.post('/:id/duplicar', async (req, res) => {
   const id = idValido(req.params.id);
   const novo = await tx(async (c) => {
