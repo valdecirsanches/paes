@@ -603,3 +603,6 @@ Após autorizar, o XML e o DANFE ficam em `NFE_XML_DIR` e o caminho gravado em `
 
 ### Fase 96 — Saída/Entrada no topo da edição e no clone
 Novo cartão "Tipo de operação" (⬆ Saída / ⬇ Entrada, campo `movimento_es`) no topo da coluna de edição da NFe. O clone mantém o tipo da nota original (antes virava Entrada). Nota nova nasce como Saída.
+
+### Fase 97 — Programação diária: foco após pesquisar o produto
+Depois de escolher o produto na pesquisa (duplo clique no código), o foco vai para "Descrição da comanda / nota fiscal".

@@ -149,10 +149,11 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
   const resolverCodigo = async (codigo, alvo = 'prod') => {
     const c = String(codigo ?? '').trim();
     if (!c || c === '0') { setModal({ tipo: 'busca', alvo }); return; }
-    if (alvo === 'prod' && c === ultimoCodigo.current) return;
-    try { aplicarProduto(await api.get(`/produtos/codigo/${encodeURIComponent(c)}`), alvo); } catch {
+    if (alvo === 'prod' && c === ultimoCodigo.current) return true;
+    try { aplicarProduto(await api.get(`/produtos/codigo/${encodeURIComponent(c)}`), alvo); return true; } catch {
       notify.erro('Produto não encontrado!!!');
       foca(alvo === 'conv' ? 'conv' : 'codigo');
+      return false;
     }
   };
 
@@ -475,7 +476,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
       )}
       {modal?.tipo === 'busca' && (
         <BuscaProduto onFechar={() => setModal(null)}
-          onEscolher={(codigo) => { const alvo = modal.alvo; setModal(null); if (alvo === 'prod') editar({ produto_codigo: codigo }); else editar({ conversao_produto_codigo: codigo }); resolverCodigo(codigo, alvo); }} />
+          onEscolher={(codigo) => { const alvo = modal.alvo; setModal(null); if (alvo === 'prod') editar({ produto_codigo: codigo }); else editar({ conversao_produto_codigo: codigo }); Promise.resolve(resolverCodigo(codigo, alvo)).then((ok) => { if (ok && alvo === 'prod') { foca('nf'); setTimeout(() => foca('nf'), 120); } }); }} />
       )}
       {modal?.tipo === 'recados' && (
         <Modal titulo="Recados" onFechar={() => setModal(null)}>
