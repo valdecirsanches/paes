@@ -618,3 +618,6 @@ O campo "Informe p/ produção" é o último do fluxo da programação diária: 
 
 ### Fase 101 — Programação fixa: grava ao escolher o produto
 Ao selecionar o produto (pesquisa ou código), se hora e quantidade já estão preenchidas o item é gravado na hora; senão o cursor vai para o que falta.
+
+### Fase 102 — Item em edição destacado (diária e fixa)
+A linha do item que está sendo alterado (ou a linha "novo") fica laranja com ✎ no indicador, até gravar ou cancelar.

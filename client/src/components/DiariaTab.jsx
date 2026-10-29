@@ -396,7 +396,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
           </thead>
           <tbody>
             {status && (
-              <tr className={`l-novo${novo ? ' sel' : ''}`} onClick={() => !editando && status && incluir()} title="Clique para incluir um item (F2)">
+              <tr className={`l-novo${novo ? ' sel edit' : ''}`} onClick={() => !editando && status && incluir()} title="Clique para incluir um item (F2)">
                 <td className="ind">*</td><td className="c"><input type="checkbox" readOnly disabled /></td><td className="c"><input type="checkbox" readOnly disabled /></td>
                 <td className="num">{linhaNova.hora}</td>
                 <td className="qtd">{novo && <><span>{fmtQtde(linhaNova.qtde_original)}</span> + <span>{fmtQtde(linhaNova.qtde_alterada)}</span> = <span>{fmtQtde((Number(linhaNova.qtde_original) || 0) + (Number(linhaNova.qtde_alterada) || 0))}</span></>}</td>
@@ -406,10 +406,10 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
             {itens.map((i) => {
               const ed = draft && draft.id === i.id ? draft : i;
               return (
-                <tr key={i.id} className={`clicavel ${classeLinha(i)}${i.id === selId ? ' sel' : ''}`}
+                <tr key={i.id} className={`clicavel ${classeLinha(i)}${i.id === selId ? ' sel' : ''}${editando && draft.id === i.id ? ' edit' : ''}`}
                   onClick={() => escolher(i.id)} onDoubleClick={alterar}
                   onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); escolher(i.id); setMenu({ x: e.clientX, y: e.clientY }); }}>
-                  <td className="ind">{i.id === selId ? '▶' : ''}</td>
+                  <td className="ind">{editando && draft.id === i.id ? '✎' : i.id === selId ? '▶' : ''}</td>
                   <td className="c"><input type="checkbox" readOnly checked={!!Number(i.registro_alterado)} tabIndex={-1} /></td>
                   <td className="c"><input type="checkbox" readOnly checked={bool(i.programacao_fixa)} tabIndex={-1} /></td>
                   <td className="num">{hhmm(ed.hora)}</td>

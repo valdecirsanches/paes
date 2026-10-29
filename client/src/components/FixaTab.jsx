@@ -244,9 +244,9 @@ export default function FixaTab({ status, roteiros, onChanged, notify }) {
             {info.itens.map((i) => {
               const ed = draft && draft.id === i.id ? draft : i;
               return (
-                <tr key={i.id} className={`clicavel ${classeFixa(i)}${i.id === selId ? ' sel' : ''}`} onClick={() => escolher(i.id)} onDoubleClick={alterar}
+                <tr key={i.id} className={`clicavel ${classeFixa(i)}${i.id === selId ? ' sel' : ''}${editando && draft.id === i.id ? ' edit' : ''}`} onClick={() => escolher(i.id)} onDoubleClick={alterar}
                   onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); escolher(i.id); setMenu({ x: e.clientX, y: e.clientY }); }}>
-                  <td className="ind">{i.id === selId ? '▶' : ''}</td>
+                  <td className="ind">{editando && draft.id === i.id ? '✎' : i.id === selId ? '▶' : ''}</td>
                   <td className="num">{hhmm(ed.hora)}</td><td className="num">{fmtQtde(ed.produto_qtde)}</td>
                   <td>{ed.produto_descricao_expedicao}</td><td className="num">{i.xproduto_preco != null ? fmtMoeda(i.xproduto_preco) : ''}</td>
                   <td className="num">{i.producao_esquema}</td>
