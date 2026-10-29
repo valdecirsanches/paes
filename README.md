@@ -615,3 +615,6 @@ Nos campos de anotação (faturamento/produção) Enter segue o fluxo (próximo 
 
 ### Fase 100 — Enter em "Informe p/ produção" grava
 O campo "Informe p/ produção" é o último do fluxo da programação diária: Enter nele grava o item (antes seguia para os campos de baixo — produção, turno, embalagem — e parecia travado).
+
+### Fase 101 — Programação fixa: grava ao escolher o produto
+Ao selecionar o produto (pesquisa ou código), se hora e quantidade já estão preenchidas o item é gravado na hora; senão o cursor vai para o que falta.

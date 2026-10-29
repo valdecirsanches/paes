@@ -72,6 +72,12 @@ export default function FixaTab({ status, roteiros, onChanged, notify }) {
     if (Object.keys(mud).some((k) => k.startsWith('extra_'))) n = { ...n, produto_descricao_expedicao: descricaoExpedicao(n.referencia_descricao, n) };
     return n;
   });
+  const gravarRef = useRef(null); const draftRef = useRef(null);
+  // Produto escolhido = último dado do item (hora e qtde vêm antes): se está completo, grava; senão leva ao que falta.
+  const gravaSeCompleto = () => setTimeout(() => {
+    const r = draftRef.current; if (!r) return;
+    if (r.hora && r.produto_codigo && Number(r.produto_qtde) > 0) gravarRef.current?.(); else foca(r.hora ? 'qtde' : 'hora');
+  }, 120);
   const aplicarProduto = (p) => {
     const especial = bool(p.produto_especial);
     editar({
@@ -82,6 +88,7 @@ export default function FixaTab({ status, roteiros, onChanged, notify }) {
       acomodacao_carga: especial ? 'CAIXA AMARELINHA' : 'SACARIA',
       ...Object.fromEntries(EXTRAS.map(([k]) => [`extra_${k}`, p[`extra_${k}`] ?? 'False'])),
     });
+    gravaSeCompleto();
   };
   const resolverCodigo = async (codigo) => {
     const c = String(codigo ?? '').trim();
@@ -174,7 +181,7 @@ export default function FixaTab({ status, roteiros, onChanged, notify }) {
     const prox = campos[campos.indexOf(e.target) + 1]; e.target.blur();
     if (prox) setTimeout(() => prox.focus(), 0); else if (editando) setTimeout(() => gravarRef.current?.(), 60); // Enter no último campo grava o item
   };
-  const gravarRef = useRef(null); gravarRef.current = gravar;
+  gravarRef.current = gravar; draftRef.current = draft;
   const ref = (n) => (el) => { refs.current[n] = el; };
   const set = (k) => (e) => editar({ [k]: e.target.value });
 
