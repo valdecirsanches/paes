@@ -708,3 +708,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 127
 - Danfe silencioso agora faz o que se faz à mão: sem o PDF/XML no disco, na API (por id) ou na pasta da API, o servidor executa em segundo plano a **Consulta de protocolo pela chave** (a mesma do painel Eventos fiscais → Consultas), ajusta a nota local, grava o XML vindo na resposta e, se ainda faltar o PDF, gera o DANFE a partir desse XML. Cache de 60 s por chave; falhas vão para o log do servidor e para o Log da tela. Não testado contra a API real.
+
+## Fase 128
+- Cadastro de clientes: o campo **Pessoa** (Física/Jurídica) voltava em branco depois de gravar. A coluna `tb_clientes.pessoa` no banco real não aceita o texto longo (provavelmente `char(1)` com 'F'/'J'), então o valor gravado não casava com o que a tela esperava. Agora o servidor descobre o formato da coluna (enum, char(1) ou texto), grava nele e sempre devolve FISICA/JURIDICA à tela, lendo também valores antigos ('F', 'J', 'Jurídica', etc.). Não testado contra o MySQL real.

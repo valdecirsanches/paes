@@ -9,9 +9,33 @@ const TIPOS_FATUR = ['DIARIO', 'SEMANAL', 'QUINZENAL', 'MENSAL', 'SEGUNDAS E QUI
 
 const CLI = {
   codigo: 'txt', razao_social: 'txt', endereco: 'txt', endereco_numero: 'txt', bairro: 'txt', cidade: 'txt', cep: 'txt', uf: 'txt', cnpj: 'txt', ie: 'txt', fone: 'txt', contato: 'txt',
-  informacoes_nf1: 'txt', informacoes_nf2: 'txt', pessoa: 'enum:FISICA,JURIDICA', email_nfe: 'txt', dias_vencto: 'int', ativo: 'enum:ATIVO,INATIVO',
+  informacoes_nf1: 'txt', informacoes_nf2: 'txt', pessoa: 'enum:FISICA,JURIDICA,F,J', email_nfe: 'txt', dias_vencto: 'int', ativo: 'enum:ATIVO,INATIVO',
   programacao_ativo: 'bool', comanda_nf: 'enum:0,1',
 };
+
+// tb_clientes.pessoa pode ser char(1) ('F'/'J'), enum ou texto longo: lê-se sempre como FISICA/JURIDICA (pela 1ª letra) e grava-se no formato da coluna.
+let formatoPessoa;
+async function formaPessoa() {
+  if (formatoPessoa) return formatoPessoa;
+  let f = { F: 'FISICA', J: 'JURIDICA' };
+  try {
+    const [[c]] = await pool.query("show columns from tb_clientes like 'pessoa'");
+    const t = String(c?.Type ?? '');
+    const en = t.match(/^enum\((.*)\)$/i);
+    if (en) {
+      const ops = [...en[1].matchAll(/'((?:[^']|'')*)'/g)].map((m) => m[1].replaceAll("''", "'"));
+      const acha = (l) => ops.find((o) => o.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().startsWith(l));
+      f = { F: acha('F') ?? 'FISICA', J: acha('J') ?? 'JURIDICA' };
+    } else {
+      const n = Number(t.match(/\((\d+)\)/)?.[1] ?? 0);
+      if (n === 1) f = { F: 'F', J: 'J' };
+    }
+  } catch { /* mantém o padrão */ }
+  return (formatoPessoa = f);
+}
+const letraPessoa = (v) => String(v ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase().slice(0, 1);
+const lePessoa = (r) => { if (r) { const l = letraPessoa(r.pessoa); if (l === 'F' || l === 'J') r.pessoa = l === 'F' ? 'FISICA' : 'JURIDICA'; } return r; };
+async function gravaPessoa(b) { if (b.pessoa !== undefined) { const f = await formaPessoa(); b.pessoa = f[letraPessoa(b.pessoa)] ?? f.J; } return b; }
 const CLI_ROT = { razao_social: 'Nome do cliente', dias_vencto: 'Dias para vencimento', comanda_nf: 'Faturamento' };
 const UNI = {
   nome: 'txt', codigo: 'txt', endereco: 'txt', numero: 'txt', complemento: 'txt', bairro: 'txt', cidade: 'txt', uf: 'txt', cep: 'txt', telefone: 'txt', contato: 'txt', cnpj: 'txt', ie: 'txt',
@@ -20,7 +44,7 @@ const UNI = {
 };
 const UNI_ROT = { nome: 'Nome da unidade', tipo_faturamento: 'Tipo de faturamento' };
 
-router.get('/', async (_req, res) => { const [r] = await pool.query('select * from tb_clientes order by razao_social'); res.json(r); });
+router.get('/', async (_req, res) => { const [r] = await pool.query('select * from tb_clientes order by razao_social'); res.json(r.map(lePessoa)); });
 
 // chkConectar / chkEsconder: ?cliente=ID restringe ao cliente; ?esconder=1 só ativas (unidade ativa e cliente ATIVO)
 router.get('/unidades', async (req, res) => {
@@ -86,20 +110,22 @@ router.post('/', async (req, res) => {
   if (b.ativo === undefined) b.ativo = 'ATIVO';
   if (b.programacao_ativo === undefined) b.programacao_ativo = 'True';
   if (b.pessoa === undefined) b.pessoa = 'JURIDICA';
+  await gravaPessoa(b);
   if (b.comanda_nf === undefined) b.comanda_nf = '1'; // DefaultValue do DBRadioGroup
   const [r] = await pool.query('insert into tb_clientes set ?', [b]);
   const [[novo]] = await pool.query('select * from tb_clientes where id = ?', [r.insertId]);
-  res.status(201).json(novo);
+  res.status(201).json(lePessoa(novo));
 });
 router.put('/:id', async (req, res) => {
   const id = idValido(req.params.id, 'Cliente');
   const b = limpaCampos(req.body, CLI, { rotulos: CLI_ROT });
   if ('razao_social' in b && !b.razao_social) throw invalid('O nome do cliente não pode ficar vazio.');
   if (!Object.keys(b).length) throw invalid('Nada para gravar.');
+  await gravaPessoa(b);
   const [r] = await pool.query('update tb_clientes set ? where id = ?', [b, id]);
   if (!r.affectedRows) throw notFound('Cliente');
   const [[c]] = await pool.query('select * from tb_clientes where id = ?', [id]);
-  res.json(c);
+  res.json(lePessoa(c));
 });
 router.delete('/:id', async (req, res) => {
   const id = idValido(req.params.id, 'Cliente');
