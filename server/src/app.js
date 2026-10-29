@@ -26,6 +26,7 @@ import nfsConfirmadasRoutes from './routes/nfsConfirmadas.js';
 import { invalidaMercadorias } from './services/mercCache.js';
 import { exigeLogin } from './services/auth.js';
 import { exigeDispositivo } from './services/dispositivos.js';
+import extrasRoutes from './routes/extras.js';
 import dispositivosAdmin, { publica as dispositivoPublico } from './routes/dispositivos.js';
 
 export const app = express();
@@ -59,6 +60,7 @@ app.get('/api/health', async (_req, res) => {
 app.use('/api/status', statusRoutes);
 app.use('/api/mercadorias', mercadoriasRoutes);
 app.use('/api/producao', producaoRoutes);
+app.use('/api/extras', extrasRoutes);
 app.use('/api/faturamento', faturamentoRoutes);
 app.use('/api/nfe', nfeRoutes);
 app.use('/api/comandas', comandasRoutes);

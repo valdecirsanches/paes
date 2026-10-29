@@ -655,3 +655,9 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 - A API barra no servidor tudo que não é da fábrica (NFe, faturamento, comandas, cadastros, dispositivos…) com 403 `AREA_NEGADA`: lista em `PREFIXOS_FABRICA` (`services/dispositivos.js`).
 - Máquina só *Faturamento* funciona como antes. Com as duas marcadas, entra pelo login normal. O administrador não consegue tirar o Faturamento da própria máquina.
 - Sem dispositivo habilitado (controle desligado) ninguém ganha acesso sem login.
+
+## Fase 113 — Menu da fábrica conforme o sistema real da fábrica (fabrica.zip)
+- O sistema da fábrica (u_main) tem: Programação, Produção, Mercadorias, Cargas, **Reclamações**, **Pedidos extras** (+ Tema e Atualização). Máquina só *Fábrica* agora vê exatamente isso (+ Ferramentas › impressoras); Etinerário saiu do menu da fábrica (a fábrica real não o abre).
+- Nova tela **Reclamações** (período De/Até, todas as unidades; grava a justificativa) — `GET /api/reclamacoes?de=&ate=`.
+- Nova tela **Pedidos extras** (`tb_extras`: novo/alterar; só os ainda não digitados; não altera pedido já digitado) — `/api/extras`, `/api/extras/opcoes`. Ambas aparecem também no menu Programação do faturamento.
+- Não portados (dormentes no sistema real): Recados (`tb_mensagens_producao`, o timer não tem rotina), Funcionários e Calendário (botões ocultos). Tema/Atualização não se aplicam à web.

@@ -1746,3 +1746,11 @@ dialog.modal:has(.nfe-comandas){width:min(900px,96vw)}dialog .nfe-comandas{max-h
 .dspa-eu{color:#c8742b;font-weight:700}.dspa-ac{white-space:nowrap}.dspa-ac button{border:0;background:none;cursor:pointer;font-size:15px}
 
 .dspa-areas{white-space:nowrap}.dspa-areas label{display:block;font-size:12px;color:#3b2d18}.dspa-areas input{margin-right:4px}
+.fb-filtro{display:flex;gap:10px;align-items:center;padding:10px 14px;flex-wrap:wrap;flex:none}.fb-filtro label{display:flex;gap:6px;align-items:center;font-size:13px;color:#6f5d42}
+.fb-filtro input{border:1px solid #d8cdbb;border-radius:8px;padding:5px 8px;background:#fff;color:#3b2d18}
+.fb-corpo{flex:1;min-height:0;display:grid;grid-template-columns:1fr 380px;gap:12px}.fb-grade{min-height:0;overflow:auto}.fb-solo{flex:1}
+.fb-txt{max-width:320px;white-space:pre-wrap}.fb-det{display:flex;flex-direction:column;gap:10px;padding:12px;margin:0;min-height:0;overflow:auto}
+.fb-det label,.fb-form label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:#6f5d42}
+.fb-det textarea,.fb-form input{border:1px solid #d8cdbb;border-radius:8px;padding:6px 8px;background:#fff;color:#3b2d18;font:inherit}
+.fb-form{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 14px;padding:12px 14px;margin:0;flex:none}.fb-larga{grid-column:1/-1}.fb-acoes{grid-column:1/-1;display:flex;gap:8px}
+@media(max-width:900px){.fb-corpo{grid-template-columns:1fr}.fb-form{grid-template-columns:1fr}}

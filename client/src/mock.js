@@ -325,6 +325,12 @@ window.fetch = async (url, opts = {}) => {
   else if (/^\/(fabrica\/)?producao\/destinos/.test(p)) r = json([
     { data: ISO, hora: '06:00:00', producao_turno: 1, producao_data: ISO, id_unidade: 1, id_referencia: 1, codigo_referencia: '101', id_produto: 1, qtde_producao: 700, cliente_nome: 'MERCADO CENTRAL' },
     { data: ISO, hora: '07:30:00', producao_turno: 1, producao_data: ISO, id_unidade: 2, id_referencia: 1, codigo_referencia: '101', id_produto: 1, qtde_producao: 500, cliente_nome: 'PADARIA SOL' }]);
+  else if (m === 'GET' && p === '/reclamacoes') r = json([
+    { id: 1, data: ISO, hora: '07:10:00', nome: 'MERCADO CENTRAL', reclamante: 'Marta', telefone: '(11) 4000-1000', reclamacao: 'Pão de forma chegou amassado na entrega das 6h.', explicacao: '' },
+    { id: 2, data: ISO, hora: '09:40:00', nome: 'PADARIA SOL', reclamante: 'João', telefone: '', reclamacao: 'Elogio: entrega pontual e pães quentinhos.', explicacao: 'Repassado à equipe.' }]);
+  else if (m === 'PUT' && p.startsWith('/reclamacoes/')) r = json({ ok: true });
+  else if (m === 'GET' && p === '/extras') r = json([{ id: 1, data: ISO, hora: '10:30:00', empresa: 'MERCADO CENTRAL', contato: 'Marta', descricao: '200 PAO DE HAMBURGUER 50G', funcionario: 'ANA', fone: '', digitado: 'False' }]);
+  else if (m === 'GET' && p === '/extras/opcoes') r = json({ empresas: ['MERCADO CENTRAL', 'PADARIA SOL'], contatos: ['Marta', 'João'], descricoes: ['200 PAO DE HAMBURGUER 50G'], funcionarios: ['ANA', 'CARLOS'] });
   else if (p === '/auth/me') r = window.__FAB ? json({ id: 9, usuario: 'fabrica', nome: 'FABRICA', admin: false, fabrica: true }) : mockUser ? json(mockUser) : json({ message: 'Sem sessão.', login: true }, 401);
   else if (m === 'POST' && p === '/auth/login') {
     if (b.usuario?.toLowerCase() === 'sanches' && b.senha === '123') { mockUser = { id: 1, usuario: 'sanches', nome: 'VALDECIR SANCHES', admin: true }; r = json(mockUser); } else r = json({ message: 'Usuário ou senha inválido.' }, 401);

@@ -17,6 +17,16 @@ const texto = (b) => {
   return o;
 };
 
+// Tela "Reclamações" da fábrica (u_reclamações): todas as reclamações/elogios do período, de todos os clientes.
+router.get('/reclamacoes', async (req, res) => {
+  const de = String(req.query.de ?? ''), ate = String(req.query.ate ?? req.query.de ?? '');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(de) || !/^\d{4}-\d{2}-\d{2}$/.test(ate)) throw invalid('Informe o período (AAAA-MM-DD).');
+  const [rows] = await pool.query(
+    `select r.*, u.nome, u.telefone as telefone_unidade from tb_reclamacoes r left join tb_unidades u on u.id = r.id_unidade
+      where r.data between ? and ? order by r.data, r.hora, r.id limit 2000`, [de, ate]);
+  res.json(rows);
+});
+
 router.get('/status/:id/reclamacoes', async (req, res) => {
   const st = await statusDe(req.params.id);
   const [rows] = await pool.query(

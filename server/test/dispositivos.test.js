@@ -56,7 +56,7 @@ test('controle desligado: nunca dispensa login', async () => {
 
 test('máquina da fábrica: só chama as rotas da fábrica', () => {
   const r = (m, u) => ({ method: m, originalUrl: u });
-  for (const u of ['/api/status/1', '/api/diaria/5', '/api/fixa/5', '/api/producao/resumo?x=1', '/api/mercadorias', '/api/cargas/diaria', '/api/itinerario/roteiros', '/api/reclamacoes/3', '/api/layout-etiquetas/x', '/api/auth/me']) assert.equal(rotaDaFabrica(r('PUT', u)), true, u);
+  for (const u of ['/api/status/1', '/api/diaria/5', '/api/fixa/5', '/api/producao/resumo?x=1', '/api/mercadorias', '/api/cargas/diaria', '/api/itinerario/roteiros', '/api/reclamacoes/3', '/api/extras/opcoes', '/api/layout-etiquetas/x', '/api/auth/me']) assert.equal(rotaDaFabrica(r('PUT', u)), true, u);
   for (const u of ['/api/nfe/1', '/api/faturamento', '/api/comandas', '/api/cadastros/clientes', '/api/dispositivos', '/api/auth/senha', '/api/tributos']) assert.equal(rotaDaFabrica(r('GET', u)), false, u);
   assert.equal(rotaDaFabrica(r('GET', '/api/produtos/codigo/1')), true); assert.equal(rotaDaFabrica(r('POST', '/api/produtos')), false);
 });
