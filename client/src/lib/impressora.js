@@ -15,6 +15,7 @@ export const DOCS = {
   'etiqueta-mercadorias': { rotulo: 'Etiquetas de mercadorias', etiqueta: true, mm: [62, 41] },
   'etiqueta-carga': { rotulo: 'Etiquetas de carga (expedição)', etiqueta: true, mm: [62, 45] },
   'comanda': { rotulo: 'Comanda e demonstrativo (faturamento)', cupom: true },
+  'danfe': { rotulo: 'DANFE (NF-e) — impressão direta', pagina: true, mm: [210, 297] },
   'cupom-expedicao': { rotulo: 'Cupom da expedição (alterações)', cupom: true },
 };
 
@@ -160,4 +161,41 @@ export async function imprimirDocumento(tipo, doc0, aviso = () => {}) {
     navegador();
     return 'navegador';
   }
+}
+
+/** PDF → páginas PNG (pdf.js carregado só quando preciso). `dpi` 150 basta para o DANFE em A4. */
+export async function pdfParaPngs(buffer, dpi = 150) {
+  const pdfjs = await import('pdfjs-dist/build/pdf.min.mjs');
+  const worker = (await import('pdfjs-dist/build/pdf.worker.min.mjs?url')).default;
+  pdfjs.GlobalWorkerOptions.workerSrc = worker;
+  const pdf = await pdfjs.getDocument({ data: new Uint8Array(buffer) }).promise;
+  const out = [];
+  for (let n = 1; n <= pdf.numPages; n += 1) {
+    const pg = await pdf.getPage(n); const vp = pg.getViewport({ scale: dpi / 72 });
+    const c = document.createElement('canvas'); c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+    await pg.render({ canvasContext: g, viewport: vp }).promise;
+    out.push({ png: pngB64(c), larguraMm: (vp.width / dpi) * MM, alturaMm: (vp.height / dpi) * MM });
+  }
+  return out;
+}
+
+/**
+ * Impressão direta do DANFE (PDF) na impressora do agente, sem pré-visualização.
+ * Devolve 'agente' se imprimiu; lança Error se não há destino ou o agente falhou (o chamador mostra o preview).
+ */
+export async function imprimirPdfDireto(buffer) {
+  const cfg = lerMapa().danfe;
+  if (!cfg?.destino) throw new Error('nenhuma impressora definida para o DANFE (Ferramentas › Configurar impressoras)');
+  const destinos = await destinosAgente();
+  const d = destinos.find((x) => x.nome === cfg.destino);
+  if (!d) throw new Error(`o destino "${cfg.destino}" não existe mais no agente`);
+  if (d.linguagem !== 'imagem-driver') throw new Error(`o destino "${cfg.destino}" não imprime página inteira (use uma impressora do Windows com "imagem pelo driver")`);
+  const copias = Math.max(1, Number(cfg.copias ?? 1));
+  const pags = await pdfParaPngs(buffer);
+  let lote = []; let bytes = 0;
+  const manda = async () => { if (!lote.length) return; await enviar(cfg.destino, { tipo: 'png', paginas_b64: lote.map((x) => x.png), largura_mm: Math.min(220, Math.round(lote[0].larguraMm)), altura_mm: Math.round(lote[0].alturaMm), copias }); lote = []; bytes = 0; };
+  for (const p of pags) { if (bytes + p.png.length > 2.8 * 1024 * 1024) await manda(); lote.push(p); bytes += p.png.length; }
+  await manda();
+  return 'agente';
 }

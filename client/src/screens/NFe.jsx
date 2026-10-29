@@ -6,6 +6,7 @@ import NcmCampo from '../components/NcmCampo.jsx';
 import NfeFiscal, { EventosTabela, abrirArquivo } from '../components/NfeFiscal.jsx';
 import { brData, hoje } from '../lib/rules.js';
 import { useJanela } from '../components/janela.js';
+import { imprimirPdfDireto, temDestino } from '../lib/impressora.js';
 import { CORPO_LINHAS, GRADE_COLS, ITEM_COLS, REF_LINHAS, alternaPeriodo, corLinha, fmtBr, parseBr, temMarca } from '../lib/nfeCampos.js';
 import { Confirma, Toast, confirmar, copiaTexto, entrada } from '../components/toast.jsx';
 
@@ -350,14 +351,24 @@ export default function NFe({ onFechar }) {
   const danfe = async () => {
     const lote = marcados.size > 1 || (marcados.size === 1 && !marcados.has(foco));
     if (!nota && !lote) return;
-    const aba = window.open('', '_blank'); // abre já (clique do usuário) para o bloqueador de pop-up não barrar
+    const direto = impDireta && temDestino('danfe'); // impressão direta: vai para a impressora do agente, sem pré-visualização
+    if (impDireta && !direto) registraLog('Impressão direta ligada, mas não há impressora do DANFE definida (Ferramentas › Configurar impressoras): abrindo a pré-visualização.');
+    const aba = direto ? null : window.open('', '_blank'); // abre já (clique do usuário) para o bloqueador de pop-up não barrar
+    const entrega = async (blob, rotulo) => {
+      if (direto) {
+        try { await imprimirPdfDireto(await blob.arrayBuffer()); notificar('ok', `DANFE enviado à impressora (${rotulo}).`); return; }
+        catch (e) { registraLog(`Impressão direta do DANFE falhou (${e.message}): abrindo a pré-visualização.`); }
+      }
+      const url = URL.createObjectURL(blob);
+      const w = aba ?? window.open('', '_blank');
+      if (w) w.location.href = url; else window.open(url, '_blank');
+    };
     if (lote) { // notas marcadas: um único PDF com todas as DANFEs
       try {
         const r = await fetch('/api/nfe/danfe-lote', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: [...marcados] }) });
         if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.message || `HTTP ${r.status}`); }
         const ign = decodeURIComponent(r.headers.get('X-Danfe-Ignoradas') || '');
-        const url = URL.createObjectURL(await r.blob());
-        if (aba) aba.location.href = url; else window.open(url, '_blank');
+        await entrega(await r.blob(), `${marcados.size} notas`);
         if (ign) registraLog(`DANFE não incluída: ${ign}`);
         cacheDet.current.clear();
       } catch (e) { aba?.close(); registraLog(`Danfe: ${e.message}`); }
@@ -366,8 +377,7 @@ export default function NFe({ onFechar }) {
     try {
       const r = await fetch(`/api/nfe/${nota.id}/danfe`, { credentials: 'same-origin' });
       if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.message || `HTTP ${r.status}`); }
-      const url = URL.createObjectURL(await r.blob());
-      if (aba) aba.location.href = url; else window.open(url, '_blank');
+      await entrega(await r.blob(), `NF ${nota.nfe_numero}`);
       recarregaDetalhe.current?.(nota.id); // o servidor guardou XML/PDF vindos da API
     } catch (e) { aba?.close(); registraLog(`Danfe da NF ${nota.nfe_numero}/${nota.nfe_serie ?? ''}: ${e.message}`); } // silencioso: sem pop-up nem painel; o motivo vai para o Log
   };

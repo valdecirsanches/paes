@@ -714,3 +714,8 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 129
 - Grade de NF-e: a coluna **ID** deu lugar a **CFOP** (`cfop_codigo` da nota). O id continua sendo usado internamente (seleção, ordenação), só não aparece mais.
+
+## Fase 130
+- **Impressão direta do DANFE**: com "Impressão direta" ligada na NF-e, o DANFE (individual ou das notas marcadas) vai direto para a impressora do agente, sem pré-visualização. Com ela desligada, abre o PDF no navegador como antes.
+- Em Ferramentas › Configurar impressoras há um novo documento **DANFE (NF-e) — impressão direta** (escolha a impressora e as cópias). O PDF é convertido em imagens A4 no navegador (pdf.js, carregado só nessa hora) e enviado ao agente como "imagem pelo driver" — por isso o destino precisa ser uma impressora do Windows com linguagem "imagem-driver". Se não houver destino ou o agente falhar, o app abre a pré-visualização e registra o motivo no Log. **Rode `npm install` em `client/`** (nova dependência `pdfjs-dist`).
+- Testado: conversão de um PDF A4 em PNG no navegador. Não testado: o envio real ao agente/impressora.

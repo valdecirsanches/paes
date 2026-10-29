@@ -120,7 +120,7 @@ export default function Impressoras() {
             const dest = destinos.find((x) => x.nome === c.destino);
             return (
               <div className="imp-linha" key={tipo}>
-                <div className="imp-doc"><b>{d.rotulo}</b><small>{d.etiqueta ? `Etiqueta ${d.mm[0]} × ${d.mm[1]} mm` : 'Cupom de texto'}</small></div>
+                <div className="imp-doc"><b>{d.rotulo}</b><small>{d.etiqueta ? `Etiqueta ${d.mm[0]} × ${d.mm[1]} mm` : d.pagina ? 'Página A4 (impressora do Windows, imagem pelo driver)' : 'Cupom de texto'}</small></div>
                 <select value={c.destino ?? ''} disabled={agente === false && !c.destino} onChange={(e) => muda(tipo, 'destino', e.target.value)} aria-label={`Destino de ${d.rotulo}`}>
                   <option value="">Navegador (diálogo de impressão)</option>
                   {destinos.map((x) => <option key={x.nome} value={x.nome}>{x.nome} — {x.linguagem}</option>)}
