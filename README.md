@@ -591,3 +591,6 @@ Além de Para/Cc/Cco propostos, a lista do envio mostra a contabilidade (desmarc
 
 ### Fase 92 — Aviso de limite da lista de NFe
 O aviso "Mostrando as 1500 notas mais recentes…" deixou de ser mensagem em destaque: agora é um "+" discreto ao lado do total no rodapé da grade, com a explicação ao passar o mouse.
+
+### Fase 93 — Filtro de período
+O botão 📅 (hoje ↔ mês) e a troca das datas ligam automaticamente o checkbox "Período".

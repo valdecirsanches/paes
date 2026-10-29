@@ -569,10 +569,10 @@ export default function NFe({ onFechar }) {
         <div className="nf2-gr">
           <label className="nf2-rot"><input type="checkbox" checked={f.periodo} onChange={(e) => setF({ ...f, periodo: e.target.checked })} />Período</label>
           <div className="nf2-lin">
-            <input type="date" value={f.d1} onChange={(e) => e.target.value && setF({ ...f, d1: e.target.value })} aria-label="Período inicial" />
+            <input type="date" value={f.d1} onChange={(e) => e.target.value && setF({ ...f, d1: e.target.value, periodo: true })} aria-label="Período inicial" />
             <span>até</span>
-            <input type="date" value={f.d2} onChange={(e) => e.target.value && setF({ ...f, d2: e.target.value })} aria-label="Período final" />
-            <button type="button" className="nf2-b mini" title="Alterna entre hoje e o mês corrente" onClick={() => { const [a, b] = alternaPeriodo(f.d1, f.d2, hoje()); setF({ ...f, d1: a, d2: b }); }}>📅</button>
+            <input type="date" value={f.d2} onChange={(e) => e.target.value && setF({ ...f, d2: e.target.value, periodo: true })} aria-label="Período final" />
+            <button type="button" className="nf2-b mini" title="Alterna entre hoje e o mês corrente" onClick={() => { const [a, b] = alternaPeriodo(f.d1, f.d2, hoje()); setF({ ...f, d1: a, d2: b, periodo: true }); }}>📅</button>
           </div>
         </div>
         <div className="nf2-gr">
