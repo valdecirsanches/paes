@@ -177,7 +177,7 @@ const impressa = (v) => { const t = String(v ?? '').trim().toLowerCase(); return
 /** Linha da grade: memoizada — marcar/focar um item redesenha só as linhas que mudaram (antes eram todas). */
 const Linha = memo(function Linha({ r, i, marcado, foco, onClick, onDuplo }) {
   return (
-    <tr tabIndex={0} className={`clicavel${marcado ? ' marcado' : ''}${foco ? ' foco' : ''}`} onClick={(e) => onClick(e, r, i)} onDoubleClick={() => onDuplo(r.id)}>
+    <tr tabIndex={0} className={`clicavel${marcado ? ' marcado' : ''}${foco ? ' foco' : ''}`} onClick={(e) => onClick(e, r, i)} onDoubleClick={() => onDuplo?.(r.id)}>
       <td className="mc2-sel"><span className={`mc2-chk${marcado ? ' on' : ''}`} aria-hidden="true">{marcado ? '✔' : ''}</span></td>
       <td className="m-nome">{r.nome}</td>
       <td className="c">{impressa(r.etiqueta_adesiva) ? <span className="mc2-pill ok" title="Etiqueta já impressa">🏷 {String(r.etiqueta_adesiva).trim().length <= 3 ? r.etiqueta_adesiva : ''}</span> : <span className="mc2-pill">—</span>}</td>
@@ -289,7 +289,7 @@ export default function Mercadorias({ onFechar }) {
 
   const dtExt = diaExtenso(data);
   return (
-    <div className="tela merc mc2" onKeyDown={(e) => { if (e.key === 'Enter' && foco && !conv && e.target.closest('.merc-tab')) { e.preventDefault(); setConv(foco); } }}>
+    <div className={`tela merc mc2${ehFabrica() ? ' mc2-fab' : ''}`} onKeyDown={(e) => { if (e.key === 'Enter' && !ehFabrica() && foco && !conv && e.target.closest('.merc-tab')) { e.preventDefault(); setConv(foco); } }}>
       <Toast aviso={aviso} />
       {editorEtq && <EditorEtiqueta tipo="etiqueta-mercadorias" onFechar={fechaEditorEtq} />}
       <header className="mc2-topo">
@@ -303,6 +303,7 @@ export default function Mercadorias({ onFechar }) {
 
       <section className="mc2-painel">
         <div className="mc2-card mc2-cal"><Calendario data={data} onChange={setData} /></div>
+        {!ehFabrica() && (
         <div className="mc2-card mc2-acoes">
           <div className="mc2-chips">
             <span className="mc2-chip"><b>{itens.length}</b> itens</span>
@@ -319,6 +320,8 @@ export default function Mercadorias({ onFechar }) {
           </div>
           <p className="mc2-dica">Clique para marcar · Ctrl/Shift para vários · duplo clique converte a mercadoria</p>
         </div>
+        )}
+        {!ehFabrica() && (
         <div className="mc2-card mc2-log">
           <div className="mc2-log-t">Histórico de etiquetas{foco ? '' : ''}</div>
           <div className="rolagem">
@@ -326,6 +329,7 @@ export default function Mercadorias({ onFechar }) {
               : <p className="mc2-vazio">Nenhuma impressão registrada para o item em foco.</p>}
           </div>
         </div>
+        )}
       </section>
 
       <div className="mc2-filtro">
@@ -341,7 +345,7 @@ export default function Mercadorias({ onFechar }) {
           </thead>
           <tbody>
             {jn.acima > 0 && <tr className="cd-esp" style={{ height: jn.acima }}><td colSpan={7} /></tr>}
-            {visiveis.slice(jn.ini, jn.fim).map((r, k) => <Linha key={r.id} r={r} i={jn.ini + k} marcado={marcados.has(r.id)} foco={foco === r.id} onClick={clicar} onDuplo={abreConv} />)}
+            {visiveis.slice(jn.ini, jn.fim).map((r, k) => <Linha key={r.id} r={r} i={jn.ini + k} marcado={marcados.has(r.id)} foco={foco === r.id} onClick={clicar} onDuplo={ehFabrica() ? undefined : abreConv} />)}
             {jn.abaixo > 0 && <tr className="cd-esp" style={{ height: jn.abaixo }}><td colSpan={7} /></tr>}
             {visiveis.length === 0 && <tr className="semlinha"><td colSpan={7} className="vazio">{itens.length ? 'Nenhum item corresponde ao filtro.' : 'Não há mercadorias nesta data.'}</td></tr>}
           </tbody>

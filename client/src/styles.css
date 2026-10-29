@@ -1763,3 +1763,5 @@ dialog.modal:has(.nfe-comandas){width:min(900px,96vw)}dialog .nfe-comandas{max-h
 @media(max-width:900px){.fb-corpo{grid-template-columns:1fr}.fb-form{grid-template-columns:1fr}}
 
 .dspa-assume{max-width:230px;margin-right:6px;font-size:12px;border:1px solid #d8cdbb;border-radius:6px;background:#fff;color:#3b2d18;padding:3px}
+
+.mc2-fab .mc2-sel{display:none}
