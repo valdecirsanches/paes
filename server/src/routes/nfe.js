@@ -12,6 +12,7 @@ import { lerA3, gravarA3, limparA3 } from '../services/a3Store.js';
 import { impostos, usuarioNfe } from '../services/geraFatura.js';
 import { destinatarios, assuntoPadrao, mensagemPadrao, enviaEmail, criaTransporte, listaEmails } from '../services/emailNfe.js';
 import { enriquece, arquivoDoEvento } from '../services/eventosNfe.js';
+import { baseGravacao, paraBanco, paraLocal } from '../services/caminhosNfe.js';
 import { acharArquivoNota, lerArquivoNota, baseArquivos } from '../services/arquivosApi.js';
 import { aplicaReducaoIbs, montaJsonNfe, validaParaAutorizar, dataHoraBr, regimeDoCrt, ehDevolucao } from '../services/nfeJson.js';
 
@@ -25,13 +26,13 @@ const txt = (s) => String(s ?? '').trim();
 const STATUS = ['PENDENTE', 'AUTORIZADA', 'CANCELADA', 'INUTILIZADA', 'DEVOLVIDO', 'REJEITADA'];
 
 /** Pasta dos XML/PDF: NFE_XML_DIR ou server/xmls, uma subpasta por CNPJ e ambiente. */
-const pastaBase = () => process.env.NFE_XML_DIR || path.resolve(process.cwd(), 'xmls');
+const pastaBase = baseGravacao;
 async function gravaArquivo(cnpj, ambiente, nome, dados) {
   const dir = path.join(pastaBase(), String(cnpj).replace(/\D/g, ''), ambiente === 1 ? 'producao' : 'homologacao');
   await mkdir(dir, { recursive: true });
   const f = path.join(dir, nome);
   await writeFile(f, dados);
-  return f.replaceAll('\\', '/');
+  return paraBanco(f); // valor para tb_nfe: caminho que as outras máquinas (sistema antigo) enxergam
 }
 
 const getCfg = async (c = pool) => { const [[cfg]] = await c.query('select * from tb_nfe_config limit 1'); if (!cfg) throw new AppError(422, 'tb_nfe_config está vazia (dados do emitente).'); return cfg; };
@@ -562,7 +563,7 @@ async function anexosDaNota(nfe, cfg) {
     ['nfe_pdf_file', `${nfe.nfe_chave}.pdf`, 'application/pdf', () => api.danfePdf(docId)]];
   for (const [campo, nome, tipo, baixa] of alvo) {
     const f = txt(nfe[campo]);
-    if (f && existsSync(f)) { anexos.push({ filename: nome, content: await readFile(f), contentType: tipo }); continue; }
+    if (f && existsSync(paraLocal(f))) { anexos.push({ filename: nome, content: await readFile(paraLocal(f)), contentType: tipo }); continue; }
     docId ??= (await docDaNota(nfe, cfg)).docId;
     const r = await baixa();
     if (r.status !== 200) throw new AppError(502, `A API de NF-e não devolveu ${campo === 'nfe_xml_file' ? 'o XML' : 'o DANFE'} (HTTP ${r.status}).`);
@@ -868,6 +869,9 @@ async function gravaAutorizada(id, cfg, doc, { ambiente, numero, usuario, increm
     if (incrementa) await c.query('update tb_nfe_config set nfe_numero = ? where id = ?', [numero, cfg.id]); // incrementa o número da nota fiscal
     await evento(c, id, 'AUTORIZACAO', { resposta: txt(doc.motivoRetorno) || 'Autorizado o uso da NF-e', retorno: JSON.stringify({ ...doc, xmlBase64: undefined, danfePdfBase64: undefined }), obs: `NFe ${numero}`, xml: xmlFile });
   });
+  if ((!xmlFile || !pdfFile) && doc.id) { // a resposta veio sem XML ou DANFE: busca na API para o sistema antigo achar os dois arquivos nos campos da nota
+    try { const r = await sincronizaArquivos(await getNfe(id), cfg, doc.id); if (r.xml === 'ok') xmlFile ||= '(baixado da API)'; if (r.pdf !== 'ok' || r.xml !== 'ok') log.push(`Arquivos pós-autorização: XML ${r.xml ?? '-'}, DANFE ${r.pdf ?? '-'}.`); } catch (e) { log.push(`Não consegui baixar XML/DANFE da API: ${e.message}`); }
+  }
   log.push(`Número da NFE: ${numero}`, `Resultado: ${txt(doc.motivoRetorno) || 'Autorizado'}`, `Chave: ${doc.chaveAcesso}`, `Arquivo: ${xmlFile || '(não gravado)'}`, 'A U T O R I Z A D A !');
   return log;
 }
@@ -1040,7 +1044,7 @@ router.post('/inutilizar', async (req, res) => {
 const consultaPastaApi = (nfe, cfg, tipo) => lerArquivoNota({ chave: nfe.nfe_chave, cnpj: cfg.cnpj, tipo, datas: [nfe.nfe_protocolo_data_hora, nfe.data_emissao] });
 async function buscaArquivo(nfe, cfg, campo, nomeExt, baixa, orientacao) {
   const f = txt(nfe[campo]);
-  const doDisco = f && existsSync(f);
+  const doDisco = f && existsSync(paraLocal(f));
   const ambiente = Number(cfg.nfe_configuracoes_webservice_ambiente) === 1 ? 1 : 2;
   const guarda = async (buf) => {
     try {
@@ -1055,7 +1059,7 @@ async function buscaArquivo(nfe, cfg, campo, nomeExt, baixa, orientacao) {
     if (r.status === 200 && r.buffer?.length) { await guarda(r.buffer); return r.buffer; }
     erro = new AppError(r.status === 404 ? 404 : 502, `A API de NF-e não devolveu o arquivo (HTTP ${r.status}).`);
   } catch (e) { erro = e; }
-  if (doDisco) return readFile(f);
+  if (doDisco) return readFile(paraLocal(f));
   // a API não entregou: usa a cópia que ela mesma guarda em disco
   const l = await consultaPastaApi(nfe, cfg, nomeExt === 'xml' ? 'xml' : 'pdf');
   if (l.buffer?.length) { await guarda(l.buffer); return l.buffer; }

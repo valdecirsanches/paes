@@ -597,3 +597,6 @@ O botão 📅 (hoje ↔ mês) e a troca das datas ligam automaticamente o checkb
 
 ### Fase 94 — Grade some ao voltar da configuração
 A rolagem virtual (`janela.js`) guardava a posição/altura do elemento antigo quando a aba era trocada e a grade remontava vazia até um clique/rolagem. Agora ela mede de novo e refaz o observador sempre que o elemento muda; ao voltar para a aba NFe a nota em foco é trazida à vista. Vale para todas as grades com rolagem virtual.
+
+### Fase 95 — XML/DANFE visíveis ao sistema antigo
+Após autorizar, o XML e o DANFE ficam em `NFE_XML_DIR` e o caminho gravado em `nfe_xml_file`/`nfe_pdf_file` usa `NFE_XML_DB_PREFIXO` (como as outras máquinas veem essa pasta, ex.: `\\192.168.15.8\nfe`), para o sistema antigo imprimir o DANFE de qualquer PC. A leitura converte de volta. Se a resposta da autorização vier sem XML ou PDF, o app baixa da API na hora. Requer compartilhar a pasta `NFE_XML_DIR` na rede (Samba) com leitura para as máquinas.
