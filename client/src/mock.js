@@ -321,7 +321,9 @@ window.fetch = async (url, opts = {}) => {
     { id: 2, codigo: 'B81D-44AA-92F0', descricao: 'Fábrica — forno', areas: ['fabrica'], ativo: true, ultimo_usuario: null, ultimo_acesso: new Date().toISOString(), ultimo_ip: '177.12.45.9', navegador: 'Mozilla/5.0 (Linux; Android 14) Chrome/130.0 Mobile Safari/537.36' }] });
   else if (/^\/(fabrica\/)?producao\/resumo/.test(p)) r = json([
     { producao_turno: 1, producao_data: ISO, id_referencia: 1, codigo_referencia: '101', descricao: 'PAO FRANCES', producao_qtde: 1200, chave: '11' },
-    { producao_turno: 2, producao_data: ISO, id_referencia: 2, codigo_referencia: '205', descricao: 'PAO DE FORMA', producao_qtde: 300, chave: '22' }]);
+    { producao_turno: 2, producao_data: ISO, id_referencia: 2, codigo_referencia: '205', descricao: 'PAO DE FORMA', producao_qtde: 300, chave: '22' },
+    { producao_turno: 2, producao_data: ISO, id_referencia: 3, codigo_referencia: '206', descricao: 'PAO DE LEITE 50GR', producao_qtde: 180, chave: '23' },
+    { producao_turno: 3, producao_data: ISO, id_referencia: 4, codigo_referencia: '207', descricao: 'PAO DE BANHA 50 GR', producao_qtde: 199, chave: '34' }]);
   else if (/^\/(fabrica\/)?producao\/destinos/.test(p)) r = json([
     { data: ISO, hora: '06:00:00', producao_turno: 1, producao_data: ISO, id_unidade: 1, id_referencia: 1, codigo_referencia: '101', id_produto: 1, qtde_producao: 700, cliente_nome: 'MERCADO CENTRAL' },
     { data: ISO, hora: '07:30:00', producao_turno: 1, producao_data: ISO, id_unidade: 2, id_referencia: 1, codigo_referencia: '101', id_produto: 1, qtde_producao: 500, cliente_nome: 'PADARIA SOL' }]);

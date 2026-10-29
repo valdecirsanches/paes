@@ -22,6 +22,7 @@ import Funcionarios from './screens/Funcionarios.jsx';
 import Itinerario from './screens/Itinerario.jsx';
 import Cargas from './screens/Cargas.jsx';
 import Login from './screens/Login.jsx';
+import FabricaApp from './fabrica/FabricaApp.jsx';
 import Dispositivos from './screens/Dispositivos.jsx';
 import DispositivoBloqueado from './screens/DispositivoBloqueado.jsx';
 import AlterarSenha from './screens/AlterarSenha.jsx';
@@ -129,6 +130,7 @@ export default function App() {
     });
   };
   
+  if (usuario?.fabrica && !bloqueio) return <FabricaApp saude={saude} />; // máquina da fábrica: janela com o visual do sistema da fábrica
   const menus = usuario?.fabrica ? MENUS_FABRICA : MENUS; // máquina só da fábrica: usuário "fabrica" automático, só os menus da fábrica
   return (
     <div className="win">

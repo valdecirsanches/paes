@@ -661,3 +661,8 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 - Nova tela **Reclamações** (período De/Até, todas as unidades; grava a justificativa) — `GET /api/reclamacoes?de=&ate=`.
 - Nova tela **Pedidos extras** (`tb_extras`: novo/alterar; só os ainda não digitados; não altera pedido já digitado) — `/api/extras`, `/api/extras/opcoes`. Ambas aparecem também no menu Programação do faturamento.
 - Não portados (dormentes no sistema real): Recados (`tb_mensagens_producao`, o timer não tem rotina), Funcionários e Calendário (botões ocultos). Tema/Atualização não se aplicam à web.
+
+## Fase 114 — Janela da fábrica com o visual do sistema original
+- Máquina só *Fábrica* (usuário `fabrica`) agora abre `client/src/fabrica/FabricaApp.jsx`: janela escura como a do sistema Delphi da fábrica (barra de título, botões grandes com os **ícones originais extraídos do `u_main.dfm`**, abas das telas abertas, barra de status Compilação/Host/Mensagem). Visual isolado em `fabrica/fabrica.css` (escopo `.fb-win`): o design do faturamento não muda.
+- **Produção** refeita igual à original (`u_producao`): data grande com calendário (Hoje/Agora), botões Especiais/Salgados com a seta original, tamanho da fonte (padrão 16, guardado), cores do OnCustomDrawCell (horário 1 amarelo, 2 verde, 3 azul, selecionada vermelho/amarelo negrito), "Detalhamento de destino" à direita com soma, recarga a cada 2 min e ao trocar a data, "Carregando ...". Somente consulta.
+- Programação, Mercadorias, Cargas, Reclamações e Pedidos extras ainda aparecem no desenho do sistema web dentro dessa janela (marcadas `claro` em `FabricaApp.jsx`) até serem refeitas igual ao original (dependem de prints das telas).
