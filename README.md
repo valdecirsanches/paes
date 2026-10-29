@@ -576,3 +576,6 @@ Na aba Unidades há campo de pesquisa (nome, código, endereço, bairro, cidade,
 
 ### Fase 87 — Cadastro de clientes: filtro junto ao cliente e atalho da unidade ao cliente
 "Só unidades deste cliente" foi para a barra do cliente (no alto). Na ficha da unidade há o cliente dono e o botão "Ir para o cliente", que abre o cadastro dele.
+
+### Fase 88 — E-mail da NFe
+Remetente: se o usuário SMTP é um e-mail (ex.: nfe@levpao.com.br) ele é o "De"; o e-mail do emitente (ex.: sac@) vai como Responder-para. Corrige o 553 "Sender address rejected: not owned by user". Botão ✉ na linha de cada NFe autorizada (envia ao cliente, abre a tela de envio).

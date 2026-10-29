@@ -36,12 +36,12 @@ const LinhaItem = memo(function LinhaItem({ i, sel, onSel }) {
     </tr>
   );
 });
-const LinhaNota = memo(function LinhaNota({ r, i, sel, marc, foco, onClick, onMarcar, onModal, onClonar, onApagar }) {
+const LinhaNota = memo(function LinhaNota({ r, i, sel, marc, foco, onClick, onMarcar, onModal, onClonar, onApagar, onEmail }) {
   return (
     <tr className={`clicavel${foco ? ' foco' : ''}`} style={corLinha(r.status_e, sel) ?? undefined} onClick={(e) => onClick(e, r, i)}>
       <td className="ind">{foco ? '▶' : ''}</td>
       <td className="nf2-chk" onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={!!marc} onChange={() => onMarcar(r, i)} aria-label={`Marcar NFe ${r.nfe_numero || r.id}`} title="Marcar para autorizar (qualquer nota, sem ordem)" /></td>
-      <td className="nf2-ic"><button type="button" title="Dados do corpo da NFe" onClick={(e) => { e.stopPropagation(); onModal(r, i, 'corpo'); }}>📋</button><button type="button" title="Eventos da NFe" onClick={(e) => { e.stopPropagation(); onModal(r, i, 'eventos'); }}>🗓</button><button type="button" title="Clonar esta NFe (nova nota PENDENTE, sem XML, PDF, chave, protocolo e recibo)" onClick={(e) => { e.stopPropagation(); onClonar(r); }}>⧉</button>{!['AUTORIZADA', 'CANCELADA'].includes(r.status_e) && <button type="button" className="lx" title="Apagar esta NF (só notas não autorizadas)" onClick={(e) => { e.stopPropagation(); onApagar(r); }}>🗑</button>}</td>
+      <td className="nf2-ic"><button type="button" title="Dados do corpo da NFe" onClick={(e) => { e.stopPropagation(); onModal(r, i, 'corpo'); }}>📋</button><button type="button" title="Eventos da NFe" onClick={(e) => { e.stopPropagation(); onModal(r, i, 'eventos'); }}>🗓</button><button type="button" title="Clonar esta NFe (nova nota PENDENTE, sem XML, PDF, chave, protocolo e recibo)" onClick={(e) => { e.stopPropagation(); onClonar(r); }}>⧉</button>{r.status_e === 'AUTORIZADA' && <button type="button" title="Enviar esta NFe por e-mail ao cliente (XML + DANFE)" onClick={(e) => { e.stopPropagation(); onEmail(r); }}>✉</button>}{!['AUTORIZADA', 'CANCELADA'].includes(r.status_e) && <button type="button" className="lx" title="Apagar esta NF (só notas não autorizadas)" onClick={(e) => { e.stopPropagation(); onApagar(r); }}>🗑</button>}</td>
       {GRADE_COLS.map((c) => <td key={c[0]} className={c[2] === 'm' ? 'n' : c[2] === 'chk' ? 'c' : ''}>{celulaGrade(r, c)}</td>)}
     </tr>
   );
@@ -391,6 +391,7 @@ export default function NFe({ onFechar }) {
     }
     setEmailEnvio({ ids, destino });
   };
+  const emailLinha = useCallback((r) => setEmailEnvio({ ids: [r.id], destino: 'cliente' }), []);
   const naoMigrado = (t) => () => notificar('erro', `${t}: ainda não migrado.`);
 
   // ----- gravação (tbnfe.post / cancel)
@@ -662,7 +663,7 @@ export default function NFe({ onFechar }) {
                       <thead><tr><th className="ind" /><th className="nf2-chk"><input type="checkbox" checked={todosMarcados} onChange={marcarTodas} disabled={!linhas?.length} aria-label="Marcar todas" title="Marcar / desmarcar todas" /></th><th className="nf2-ic" />{GRADE_COLS.map(([k, r, , w]) => <th key={k} style={{ minWidth: w }}>{r}</th>)}</tr></thead>
                       <tbody>
                         {jn.acima > 0 && <tr className="cd-esp" style={{ height: jn.acima }}><td colSpan={GRADE_COLS.length + 2} /></tr>}
-                        {(linhas ?? []).slice(jn.ini, jn.fim).map((r, k) => <LinhaNota key={r.id} r={r} i={jn.ini + k} sel={marcados.has(r.id) || foco === r.id} marc={marcados.has(r.id)} foco={foco === r.id} onClick={clicar} onMarcar={marcar} onModal={abreModal} onClonar={clonarLinha} onApagar={apagarLinha} />)}
+                        {(linhas ?? []).slice(jn.ini, jn.fim).map((r, k) => <LinhaNota key={r.id} r={r} i={jn.ini + k} sel={marcados.has(r.id) || foco === r.id} marc={marcados.has(r.id)} foco={foco === r.id} onClick={clicar} onMarcar={marcar} onModal={abreModal} onClonar={clonarLinha} onApagar={apagarLinha} onEmail={emailLinha} />)}
                         {jn.abaixo > 0 && <tr className="cd-esp" style={{ height: jn.abaixo }}><td colSpan={GRADE_COLS.length + 2} /></tr>}
                         {linhas && linhas.length === 0 && <tr className="semlinha"><td colSpan={GRADE_COLS.length + 3} className="vazio">&lt;Não há notas para este filtro&gt;</td></tr>}
                       </tbody>

@@ -29,3 +29,11 @@ test('enviaEmail usa o transporte com to/cc/bcc/replyTo/anexos e recusa sem dest
   assert.match(envio.from, /nfe@levpao\.com\.br/); assert.equal(envio.attachments.length, 1);
   await assert.rejects(() => enviaEmail(cfg, { para: [], assunto: 'A', mensagem: 'x' }, transp), /destino/);
 });
+
+test('remetente: usuário SMTP (e-mail) é o remetente; e-mail do emitente vira Responder-para (evita 553 not owned by user)', async () => {
+  const c2 = { ...cfg, email: 'sac@levpao.com.br', email_usuario: 'nfe@levpao.com.br', email_confirmacao: '' };
+  let envio; const transp = { sendMail: async (o) => { envio = o; return { messageId: 'm', accepted: o.to, rejected: [] }; } };
+  await enviaEmail(c2, { para: ['cli@x.com'], assunto: 'A', mensagem: 'x' }, transp);
+  assert.match(envio.from, /<nfe@levpao\.com\.br>/); assert.doesNotMatch(envio.from, /sac@/);
+  assert.deepEqual(envio.replyTo, ['sac@levpao.com.br']);
+});

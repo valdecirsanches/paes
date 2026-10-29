@@ -65,8 +65,11 @@ export function criaTransporte(cfg) {
     connectionTimeout: 15000, greetingTimeout: 15000, socketTimeout: 60000,
   });
 }
+/** Remetente. O SMTP só aceita enviar como a caixa do próprio login (erro 553 "Sender address rejected: not owned by user"):
+ *  se o usuário SMTP é um e-mail, ele é o remetente e o e-mail do emitente vira Responder-para. */
+export const emailDoLogin = (cfg) => listaEmails(cfg.email_usuario).ok[0];
 export const remetente = (cfg) => {
-  const de = listaEmails(cfg.email, cfg.email_usuario).ok[0];
+  const de = emailDoLogin(cfg) || listaEmails(cfg.email).ok[0];
   if (!de) throw new AppError(422, 'Informe o e-mail do emitente (ou um usuário SMTP que seja um e-mail) para usar como remetente.');
   return cfg.fantasia || cfg.razao ? `"${String(cfg.fantasia || cfg.razao).replace(/"/g, '')}" <${de}>` : de;
 };
@@ -74,7 +77,7 @@ export const remetente = (cfg) => {
 /** Monta e envia. `anexos` = [{ filename, content(Buffer), contentType }]. `transporte` injetável (testes). */
 export async function enviaEmail(cfg, { para, cc = [], cco = [], assunto, mensagem, anexos = [] }, transporte = criaTransporte(cfg)) {
   if (!para.length) throw new AppError(422, 'Nenhum e-mail de destino válido.');
-  const replyTo = listaEmails(cfg.email_confirmacao).ok;
+  const replyTo = [...new Set([...listaEmails(cfg.email_confirmacao).ok, ...(emailDoLogin(cfg) ? listaEmails(cfg.email).ok.filter((e) => e.toLowerCase() !== emailDoLogin(cfg).toLowerCase()) : [])])];
   try {
     const r = await transporte.sendMail({
       from: remetente(cfg), to: para, cc: cc.length ? cc : undefined, bcc: cco.length ? cco : undefined, replyTo: replyTo.length ? replyTo : undefined,
