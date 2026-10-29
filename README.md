@@ -585,3 +585,6 @@ A tela de envio lista todos os e-mails (Para, Cc, Cco) de cada nota, cada um com
 
 ### Fase 90 — Botões Autorizar / Danfe conforme o status
 Autorizar só fica habilitado se há nota PENDENTE (em foco ou entre as marcadas; o contador mostra quantas). Danfe só fica habilitado para nota AUTORIZADA (ou CANCELADA, se for uma só), e o contador das marcadas conta só as autorizadas.
+
+### Fase 91 — Lista de destinatários completa
+Além de Para/Cc/Cco propostos, a lista do envio mostra a contabilidade (desmarcada) quando "enviar DANFE à contabilidade" está desligado; basta marcar para incluir.

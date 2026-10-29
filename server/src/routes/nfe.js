@@ -546,12 +546,14 @@ async function propostaEmail(nfe, cfg, destino) {
   const [[ext]] = await pool.query(
     'select (select email_nfe from tb_clientes where id = ?) as ec, (select email_nfe from tb_unidades where id = ?) as eu', [nfe.id_cliente ?? 0, nfe.id_unidade ?? 0]);
   const d = destinatarios(cfg, { emailCliente: [nfe.cliente_email, ext?.ec].filter(Boolean).join(';'), emailUnidade: ext?.eu }, destino);
+  // endereços conhecidos que não entram por padrão (aparecem desmarcados): contabilidade quando "enviar DANFE à contabilidade" está desligado
+  const opc = { cc: destino === 'cliente' ? listaEmails(cfg.nfe_email_contabilidade).ok.filter((e) => ![...d.para, ...d.cc, ...d.cco].some((x) => x.toLowerCase() === e.toLowerCase())) : [] };
   const avisos = [];
   if (nfe.status_e !== 'AUTORIZADA') avisos.push(`Nota ${nfe.status_e || ''}: só notas AUTORIZADAS podem ser enviadas.`.replace('Nota :', 'Nota:'));
   if (!d.para.length) avisos.push(destino === 'contabilidade' ? 'E-mail da contabilidade não configurado (Emitente › Envio de email).' : 'Cliente sem e-mail para NF-e.');
   if (d.invalidos.length) avisos.push(`E-mail(s) inválido(s) ignorado(s): ${d.invalidos.join(', ')}`);
   return { id: nfe.id, numero: nfe.nfe_numero, serie: nfe.nfe_serie, status: nfe.status_e, cliente: nfe.cliente_razao_social ?? '', valor: nfe.nf_valor_total,
-    para: d.para, cc: d.cc, cco: d.cco, assunto: assuntoPadrao(cfg, nfe), mensagem: mensagemPadrao(cfg, nfe, destino), avisos, pode: nfe.status_e === 'AUTORIZADA' && d.para.length > 0 };
+    para: d.para, cc: d.cc, cco: d.cco, opcionais: opc, assunto: assuntoPadrao(cfg, nfe), mensagem: mensagemPadrao(cfg, nfe, destino), avisos, pode: nfe.status_e === 'AUTORIZADA' && d.para.length > 0 };
 }
 /** XML e DANFE da nota: do disco, ou baixados da API (e guardados em disco para o próximo envio). */
 async function anexosDaNota(nfe, cfg) {
@@ -596,7 +598,7 @@ router.post('/email', async (req, res) => {
       const sel = !aj && req.body.selecao?.[id]; // várias notas: só os e-mails marcados na tela (subconjunto dos propostos)
       if (sel) {
         const f = (lst, pick) => { const ok = new Set(listaEmails([].concat(pick ?? []).join(';')).ok.map((e) => e.toLowerCase())); return lst.filter((e) => ok.has(e.toLowerCase())); };
-        para = f(para, sel.para); cc = f(cc, sel.cc); cco = f(cco, sel.cco);
+        para = f(para, sel.para); cc = f([...cc, ...(p.opcionais?.cc ?? [])], sel.cc); cco = f(cco, sel.cco);
       }
       if (!para.length) throw invalid(p.avisos[0] || 'Nenhum e-mail de destino marcado.');
       const r = await enviaEmail(cfg, { para, cc, cco, assunto, mensagem, anexos: await anexosDaNota(nfe, cfg) }, transporte);

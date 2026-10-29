@@ -26,10 +26,11 @@ export default function EnvioEmail({ ids, destino, onFechar, onEnviado }) {
     return () => { vivo = false; };
   }, [ids, destino]);
 
-  const on = (id, c, e) => marc[`${id}|${c}|${e}`] !== false;
-  const tog = (id, c, e) => setMarc((m) => ({ ...m, [`${id}|${c}|${e}`]: !on(id, c, e) }));
+  const todos = (n, c) => [...n[c], ...(n.opcionais?.[c] ?? [])]; // propostos + conhecidos que vêm desmarcados
+  const on = (n, c, e) => { const v = marc[`${n.id}|${c}|${e}`]; return v === undefined ? !(n.opcionais?.[c] ?? []).includes(e) : v; };
+  const tog = (n, c, e) => setMarc((m) => ({ ...m, [`${n.id}|${c}|${e}`]: !on(n, c, e) }));
   const maisEmails = unica ? extra.split(/[;,\s]+/).filter((x) => x.includes('@')) : [];
-  const escolhidos = (n) => ({ para: [...n.para.filter((e) => on(n.id, 'para', e)), ...maisEmails], cc: n.cc.filter((e) => on(n.id, 'cc', e)), cco: n.cco.filter((e) => on(n.id, 'cco', e)) });
+  const escolhidos = (n) => ({ para: [...todos(n, 'para').filter((e) => on(n, 'para', e)), ...maisEmails], cc: todos(n, 'cc').filter((e) => on(n, 'cc', e)), cco: todos(n, 'cco').filter((e) => on(n, 'cco', e)) });
   const prontasLista = prev?.notas.filter((n) => n.pode && escolhidos(n).para.length > 0) ?? [];
   const prontas = prontasLista.length;
   const enviar = async () => {
@@ -45,9 +46,9 @@ export default function EnvioEmail({ ids, destino, onFechar, onEnviado }) {
   /** Todos os e-mails que vão receber, cada um com seu checkbox (Para / Cópia / Cópia oculta). */
   const Destinos = ({ n }) => (
     <div className="em-dest">
-      {[['para', 'Para'], ['cc', 'Cópia (Cc)'], ['cco', 'Cópia oculta (Cco)']].map(([c, rot]) => n[c].length > 0 && (
+      {[['para', 'Para'], ['cc', 'Cópia (Cc)'], ['cco', 'Cópia oculta (Cco)']].map(([c, rot]) => todos(n, c).length > 0 && (
         <div key={c} className="em-dest-g"><b>{rot}</b>
-          {n[c].map((e) => <label key={e} className="em-dest-i"><input type="checkbox" checked={on(n.id, c, e)} onChange={() => tog(n.id, c, e)} />{e}</label>)}
+          {todos(n, c).map((e) => <label key={e} className="em-dest-i"><input type="checkbox" checked={on(n, c, e)} onChange={() => tog(n, c, e)} />{e}{(n.opcionais?.[c] ?? []).includes(e) ? <small> (contabilidade)</small> : null}</label>)}
         </div>))}
     </div>
   );
@@ -65,7 +66,7 @@ export default function EnvioEmail({ ids, destino, onFechar, onEnviado }) {
             {n.avisos.map((a) => <p key={a} className="em-aviso">⚠ {a}</p>)}
             <p className="em-sub">Marque quem deve receber:</p>
             <Destinos n={n} />
-            {!n.para.length && !n.cc.length && !n.cco.length && <p className="em-aviso">Nenhum e-mail cadastrado — informe abaixo.</p>}
+            {!todos(n, 'para').length && !todos(n, 'cc').length && !todos(n, 'cco').length && <p className="em-aviso">Nenhum e-mail cadastrado — informe abaixo.</p>}
             <label className="ee-mail-c"><span>Outros e-mails</span><input value={extra} placeholder="adicionar e-mails separados por ;" onChange={(e) => setExtra(e.target.value)} /></label>
             <label className="ee-mail-c"><span>Assunto</span><input value={aj.assunto} onChange={(e) => setAj((x) => ({ ...x, assunto: e.target.value }))} /></label>
             <label className="em-msg"><span>Mensagem</span><textarea rows={8} value={aj.mensagem} onChange={(e) => setAj((x) => ({ ...x, mensagem: e.target.value }))} /></label>
