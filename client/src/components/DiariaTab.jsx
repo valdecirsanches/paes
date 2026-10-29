@@ -406,10 +406,10 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
             {itens.map((i) => {
               const ed = draft && draft.id === i.id ? draft : i;
               return (
-                <tr key={i.id} className={`clicavel ${classeLinha(i)}${i.id === selId ? ' sel' : ''}${editando && draft.id === i.id ? ' edit' : ''}`}
+                <tr key={i.id} className={`clicavel ${classeLinha(i)}${i.id === selId ? ' sel' : ''}${(painel && i.id === selId) ? ' edit' : ''}`}
                   onClick={() => escolher(i.id)} onDoubleClick={alterar}
                   onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); escolher(i.id); setMenu({ x: e.clientX, y: e.clientY }); }}>
-                  <td className="ind">{editando && draft.id === i.id ? '✎' : i.id === selId ? '▶' : ''}</td>
+                  <td className="ind">{(painel && i.id === selId) ? '✎' : i.id === selId ? '▶' : ''}</td>
                   <td className="c"><input type="checkbox" readOnly checked={!!Number(i.registro_alterado)} tabIndex={-1} /></td>
                   <td className="c"><input type="checkbox" readOnly checked={bool(i.programacao_fixa)} tabIndex={-1} /></td>
                   <td className="num">{hhmm(ed.hora)}</td>
