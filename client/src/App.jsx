@@ -21,6 +21,7 @@ import Itinerario from './screens/Itinerario.jsx';
 import Cargas from './screens/Cargas.jsx';
 import Login from './screens/Login.jsx';
 import Dispositivos from './screens/Dispositivos.jsx';
+import Fabrica from './screens/Fabrica.jsx';
 import DispositivoBloqueado from './screens/DispositivoBloqueado.jsx';
 import AlterarSenha from './screens/AlterarSenha.jsx';
 
@@ -62,6 +63,7 @@ export default function App() {
   const [ambiente, setAmbiente] = useState(null); // 1 produção · 2 homologação (emissão de NFe)
   const [usuario, setUsuario] = useState(null); // null = sem sessão (tela de login)
   const [verificando, setVerificando] = useState(true);
+  const [soFabrica, setSoFabrica] = useState(false); // dispositivo liberado só para a fábrica: consulta sem login
   const [bloqueio, setBloqueio] = useState(null); // dispositivo não habilitado: { codigo, message }
   const [trocaSenha, setTrocaSenha] = useState(false);
   const [menuAberto, setMenuAberto] = useState(null);
@@ -73,7 +75,7 @@ export default function App() {
     return () => { document.removeEventListener('pointerdown', fora); document.removeEventListener('keydown', esc); };
   }, []);
   useEffect(() => { // dispositivo habilitado? (a tela de bloqueio mostra o código; qualquer chamada barrada também aciona o evento)
-    api.get('/dispositivo').then((d) => { if (d && d.habilitado === false) setBloqueio(d); }).catch(() => {});
+    api.get('/dispositivo').then((d) => { if (d && d.habilitado === false) setBloqueio(d); else if (d?.fabrica) setSoFabrica(true); }).catch(() => {});
     const f = (e) => setBloqueio(e.detail ?? { codigo: '' });
     window.addEventListener('dispositivo-bloqueado', f);
     return () => window.removeEventListener('dispositivo-bloqueado', f);
@@ -122,6 +124,7 @@ export default function App() {
     });
   };
   
+  if (soFabrica && !bloqueio) return <Fabrica />;
   return (
     <div className="win">
       <div className={`titulo-janela${ambiente === 1 ? ' prod' : ''}`}>Sistema Gestor WinBakery{ativa ? ` — [${TELAS[ativa].titulo}]` : ''}{ambiente === 1 ? '  ·  ⚠ NFe em PRODUÇÃO' : ambiente === 2 ? '  ·  NFe em homologação' : ''}</div>

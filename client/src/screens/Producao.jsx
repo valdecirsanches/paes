@@ -21,7 +21,7 @@ function useOrdem(padrao) {
 }
 
 /** Uma aba (Produção salgados / Produção especial): lista por horário × referência + detalhamento de destino. */
-function Painel({ tipo, data, recarga, ativo, onAviso }) {
+function Painel({ tipo, data, recarga, ativo, onAviso, base, leitura }) {
   const [mestre, setMestre] = useState([]);
   const [sel, setSel] = useState(null);
   const [destinos, setDestinos] = useState([]);
@@ -38,7 +38,7 @@ function Painel({ tipo, data, recarga, ativo, onAviso }) {
   const atual = mestre.find((r) => chaveMestre(r) === sel) ?? null;
 
   const carregarMestre = useCallback(async () => {
-    const rows = await api.get(`/producao/resumo?tipo=${tipo}&data=${data}`);
+    const rows = await api.get(`${base}/resumo?tipo=${tipo}&data=${data}`);
     setMestre(rows);
     setSel((s) => (rows.some((r) => chaveMestre(r) === s) ? s : (rows[0] ? chaveMestre(rows[0]) : null)));
   }, [tipo, data]);
@@ -46,7 +46,7 @@ function Painel({ tipo, data, recarga, ativo, onAviso }) {
 
   const carregarDestinos = useCallback(async () => {
     if (!atual) { setDestinos([]); return; }
-    const rows = await api.get(`/producao/destinos?tipo=${tipo}&data=${data}&turno=${atual.producao_turno}&referencia=${atual.id_referencia}`);
+    const rows = await api.get(`${base}/destinos?tipo=${tipo}&data=${data}&turno=${atual.producao_turno}&referencia=${atual.id_referencia}`);
     setDestinos(rows);
     setMarcados(new Set()); setFoco(null); ancora.current = null;
   }, [tipo, data, atual?.producao_turno, atual?.id_referencia, atual?.producao_qtde]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -83,6 +83,7 @@ function Painel({ tipo, data, recarga, ativo, onAviso }) {
   };
   const menuDestino = (e, r, i) => {
     e.preventDefault(); e.stopPropagation();
+    if (leitura) return; // fábrica: só consulta
     if (!marcados.has(chaveDestino(r))) clicarDestino({}, r, i);
     setMenu({ x: e.clientX, y: e.clientY });
   };
@@ -181,7 +182,9 @@ function Painel({ tipo, data, recarga, ativo, onAviso }) {
   );
 }
 
-export default function Producao({ onFechar }) {
+/** `fabrica` = modo consulta da área da fábrica (rotas /fabrica/producao, sem trocar horário). */
+export default function Producao({ onFechar, fabrica = false }) {
+  const base = fabrica ? '/fabrica/producao' : '/producao';
   const [data, setData] = useState(hoje());
   const [aba, setAba] = useState('salgados');
   const [recarga, setRecarga] = useState({ salgados: 0, especiais: 0 });
@@ -203,7 +206,7 @@ export default function Producao({ onFechar }) {
     const executar = async () => {
       setOcupado(true);
       try {
-        const linhas = await api.get(`/producao/${modo === 'resumo' ? 'resumo' : 'entrega'}?tipo=${tipo}&data=${data}`);
+        const linhas = await api.get(`${base}/${modo === 'resumo' ? 'resumo' : 'entrega'}?tipo=${tipo}&data=${data}`);
         if (!linhas.length) { onAviso('erro', `Não há produção de ${nomeTipo[tipo].toLowerCase()} para ${brData(data)}.`); return; }
         const { corpo, css } = modo === 'resumo' ? producaoResumo(tipo, linhas) : producaoEntrega(tipo, linhas);
         imprimirHtml(corpo, css);
@@ -217,7 +220,7 @@ export default function Producao({ onFechar }) {
       <Toast aviso={aviso} />
       <header className="pr2-topo">
         <div className="pr2-tit"><h1>🍞 Produção</h1><span className="pr2-data">{diaExtenso(data)}</span></div>
-        <button type="button" className="pr2-x" title="Fechar esta tela" onClick={() => onFechar?.()}>✕ Fechar</button>
+        {!fabrica && <button type="button" className="pr2-x" title="Fechar esta tela" onClick={() => onFechar?.()}>✕ Fechar</button>}
       </header>
       <section className="pr2-painel">
         <div className="pr2-card pr2-cal"><Calendario data={data} onChange={setData} /></div>
@@ -239,8 +242,8 @@ export default function Producao({ onFechar }) {
         <button role="tab" aria-selected={aba === 'especiais'} className={aba === 'especiais' ? 'on' : ''} onClick={() => abrirAba('especiais')}>⭐ Produção especial</button>
       </div>
       <div className="pr-corpo">
-        <Painel tipo="salgados" data={data} recarga={recarga.salgados} ativo={aba === 'salgados'} onAviso={onAviso} />
-        <Painel tipo="especiais" data={data} recarga={recarga.especiais} ativo={aba === 'especiais'} onAviso={onAviso} />
+        <Painel tipo="salgados" data={data} recarga={recarga.salgados} ativo={aba === 'salgados'} onAviso={onAviso} base={base} leitura={fabrica} />
+        <Painel tipo="especiais" data={data} recarga={recarga.especiais} ativo={aba === 'especiais'} onAviso={onAviso} base={base} leitura={fabrica} />
       </div>
 
       {confirma && (

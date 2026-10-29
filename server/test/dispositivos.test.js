@@ -1,12 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { novoCodigo, identifica, limpaCache, MENSAGEM } from '../src/services/dispositivos.js';
+import { novoCodigo, identifica, limpaCache, MENSAGEM, parseAreas } from '../src/services/dispositivos.js';
 
 // banco falso: guarda dispositivos em memória
-function bancoFalso(ativos = []) {
-  const linhas = new Map(ativos.map((c) => [c, { ativo: 1 }]));
+function bancoFalso(ativos = [], areas = {}) {
+  const linhas = new Map(ativos.map((c) => [c, { ativo: 1, areas: areas[c] ?? 'faturamento' }]));
   const db = { query: async (sql, par = []) => {
     if (/create table/i.test(sql)) return [[]];
+    if (/information_schema/i.test(sql)) return [[{ n: 1 }]];
     if (/count\(\*\)/i.test(sql)) return [[{ n: [...linhas.values()].filter((l) => l.ativo).length }]];
     if (/^select ativo/i.test(sql)) return [[linhas.get(par[0])]];
     if (/^insert ignore/i.test(sql)) { linhas.set(par[0], { ativo: 0 }); return [{}]; }
@@ -33,4 +34,22 @@ test('com um dispositivo habilitado, os demais são barrados com a mensagem', as
   const ruim = await identifica(reqFalsa('paes_disp=1111-2222-3333'), resFalsa(), db);
   assert.equal(ruim.habilitado, false); assert.equal(ruim.codigo, '1111-2222-3333');
   assert.match(MENSAGEM, /não habilitado/);
+});
+
+test('areas: texto inválido/vazio vira faturamento; aceita lista', () => {
+  assert.deepEqual(parseAreas(''), ['faturamento']); assert.deepEqual(parseAreas('x,fabrica'), ['fabrica']);
+  assert.deepEqual(parseAreas(['fabrica', 'faturamento', 'fabrica']), ['fabrica', 'faturamento']);
+});
+test('máquina só da fábrica: entra sem login na fábrica e é barrada no resto', async () => {
+  limpaCache(); const db = bancoFalso(['AAAA-BBBB-CCCC', 'DDDD-EEEE-FFFF'], { 'AAAA-BBBB-CCCC': 'fabrica', 'DDDD-EEEE-FFFF': 'faturamento' });
+  const f = await identifica(reqFalsa('paes_disp=AAAA-BBBB-CCCC'), resFalsa(), db);
+  assert.deepEqual(f.areas, ['fabrica']); assert.equal(f.fabricaSemLogin, true);
+  const g = await identifica(reqFalsa('paes_disp=DDDD-EEEE-FFFF'), resFalsa(), db);
+  assert.deepEqual(g.areas, ['faturamento']); assert.equal(g.fabricaSemLogin, false);
+  const x = await identifica(reqFalsa('paes_disp=1111-2222-3333'), resFalsa(), db);
+  assert.deepEqual(x.areas, []); assert.equal(x.fabricaSemLogin, false);
+});
+test('controle desligado: nunca dispensa login', async () => {
+  limpaCache(); const d = await identifica(reqFalsa(), resFalsa(), bancoFalso());
+  assert.equal(d.fabricaSemLogin, false); assert.deepEqual(d.areas, ['faturamento', 'fabrica']);
 });

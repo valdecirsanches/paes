@@ -26,6 +26,7 @@ import nfsConfirmadasRoutes from './routes/nfsConfirmadas.js';
 import { invalidaMercadorias } from './services/mercCache.js';
 import { exigeLogin } from './services/auth.js';
 import { exigeDispositivo } from './services/dispositivos.js';
+import fabricaRoutes from './routes/fabrica.js';
 import dispositivosAdmin, { publica as dispositivoPublico } from './routes/dispositivos.js';
 
 export const app = express();
@@ -36,6 +37,7 @@ app.use(express.json({ limit: '6mb' })); // etiquetas em PNG/base64 vão para a 
 // Dispositivo habilitado: antes do login (a tela de bloqueio mostra o código). /api/dispositivo e /api/health são livres.
 app.use('/api', exigeDispositivo);
 app.use('/api/dispositivo', dispositivoPublico);
+app.use('/api/fabrica', fabricaRoutes); // só consulta; máquinas da fábrica entram sem login
 // Login obrigatório em /api (menos /api/auth/login e /api/health). O usuário da sessão vira req.userId (logs de diária/fixa).
 app.use('/api', exigeLogin);
 // qualquer gravação feita por esta API esvazia o cache de Mercadorias (o resto é conferido a cada 8 s)

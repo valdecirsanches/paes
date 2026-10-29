@@ -42,17 +42,22 @@ export default function Dispositivos({ onFechar }) {
       </p>
       {erro && <p className="dspa-erro" role="alert">{erro}</p>}
       <div className="dspa-grade rolagem"><table className="grade">
-        <thead><tr><th>Habilitado</th><th>Código</th><th>Descrição (quem / onde)</th><th>Último usuário</th><th>Último acesso</th><th>IP</th><th>Navegador</th><th /></tr></thead>
+        <thead><tr><th>Habilitado</th><th>Acessa</th><th>Código</th><th>Descrição (quem / onde)</th><th>Último usuário</th><th>Último acesso</th><th>IP</th><th>Navegador</th><th /></tr></thead>
         <tbody>
           {itens.map((i) => (
             <tr key={i.id} className={i.ativo ? '' : 'dspa-pend'}>
               <td className="c"><input type="checkbox" checked={i.ativo} onChange={(e) => salva(i, { ativo: e.target.checked })} aria-label={`Habilitar ${i.codigo}`} /></td>
+              <td className="dspa-areas">
+                {[['faturamento', 'Faturamento'], ['fabrica', 'Fábrica']].map(([a, r]) => (
+                  <label key={a} title={a === 'fabrica' ? 'Somente consulta, sem login' : 'Sistema completo, com login'}><input type="checkbox" checked={i.areas.includes(a)}
+                    onChange={(e) => { const n = e.target.checked ? [...new Set([...i.areas, a])] : i.areas.filter((x) => x !== a); if (n.length) salva(i, { areas: n }); }} />{r}</label>))}
+              </td>
               <td><code>{i.codigo}</code>{i.codigo === dados.meu && <small className="dspa-eu"> este aqui</small>}</td>
               <td><input className="dspa-desc" defaultValue={i.descricao} maxLength={80} placeholder="ex.: Faturamento — Ingrid" onBlur={(e) => { if (e.target.value.trim() !== i.descricao) salva(i, { descricao: e.target.value }); }} /></td>
               <td>{i.ultimo_usuario || '—'}</td><td>{dh(i.ultimo_acesso)}</td><td>{i.ultimo_ip || '—'}</td><td title={i.navegador}>{resumoUA(i.navegador)}</td>
               <td className="dspa-ac"><button type="button" title="Copiar código" onClick={() => copiaTexto(i.codigo)}>📋</button><button type="button" className="lx" title="Excluir" onClick={() => exclui(i)}>🗑</button></td>
             </tr>))}
-          {dados && !itens.length && <tr className="semlinha"><td colSpan={8} className="vazio">&lt;Nenhum dispositivo nesta visão&gt;</td></tr>}
+          {dados && !itens.length && <tr className="semlinha"><td colSpan={9} className="vazio">&lt;Nenhum dispositivo nesta visão&gt;</td></tr>}
         </tbody>
       </table></div>
     </section>

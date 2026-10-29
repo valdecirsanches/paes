@@ -315,10 +315,16 @@ window.fetch = async (url, opts = {}) => {
   const b = typeof opts.body === 'string' ? JSON.parse(opts.body) : {};
   let r;
   if (m === 'GET' && p === '/health') r = json({ ok: true, host: '192.168.15.10', banco: 'levpao_new', mysql: 'preview' });
-  else if (p === '/dispositivo') r = json(window.__BLOQ ? { codigo: '7F3A-91C2-0B4E', habilitado: false, exigido: true, message: 'Dispositivo não habilitado para uso do aplicativo.' } : { codigo: '7F3A-91C2-0B4E', habilitado: true, exigido: true, message: '' });
+  else if (p === '/dispositivo') r = json(window.__BLOQ ? { codigo: '7F3A-91C2-0B4E', habilitado: false, exigido: true, message: 'Dispositivo não habilitado para uso do aplicativo.' } : { codigo: '7F3A-91C2-0B4E', habilitado: true, exigido: true, areas: window.__FAB ? ['fabrica'] : ['faturamento'], fabrica: Boolean(window.__FAB), message: '' });
   else if (m === 'GET' && p === '/dispositivos') r = json({ meu: '7F3A-91C2-0B4E', itens: [
-    { id: 1, codigo: '7F3A-91C2-0B4E', descricao: 'Faturamento — Ingrid', ativo: true, ultimo_usuario: 'sanches', ultimo_acesso: new Date().toISOString(), ultimo_ip: '192.168.15.31', navegador: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0 Safari/537.36' },
-    { id: 2, codigo: 'B81D-44AA-92F0', descricao: '', ativo: false, ultimo_usuario: null, ultimo_acesso: new Date().toISOString(), ultimo_ip: '177.12.45.9', navegador: 'Mozilla/5.0 (Linux; Android 14) Chrome/130.0 Mobile Safari/537.36' }] });
+    { id: 1, codigo: '7F3A-91C2-0B4E', descricao: 'Faturamento — Ingrid', ativo: true, areas: ['faturamento'], ultimo_usuario: 'sanches', ultimo_acesso: new Date().toISOString(), ultimo_ip: '192.168.15.31', navegador: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0 Safari/537.36' },
+    { id: 2, codigo: 'B81D-44AA-92F0', descricao: 'Fábrica — forno', areas: ['fabrica'], ativo: true, ultimo_usuario: null, ultimo_acesso: new Date().toISOString(), ultimo_ip: '177.12.45.9', navegador: 'Mozilla/5.0 (Linux; Android 14) Chrome/130.0 Mobile Safari/537.36' }] });
+  else if (/^\/(fabrica\/)?producao\/resumo/.test(p)) r = json([
+    { producao_turno: 1, producao_data: ISO, id_referencia: 1, codigo_referencia: '101', descricao: 'PAO FRANCES', producao_qtde: 1200, chave: '11' },
+    { producao_turno: 2, producao_data: ISO, id_referencia: 2, codigo_referencia: '205', descricao: 'PAO DE FORMA', producao_qtde: 300, chave: '22' }]);
+  else if (/^\/(fabrica\/)?producao\/destinos/.test(p)) r = json([
+    { data: ISO, hora: '06:00:00', producao_turno: 1, producao_data: ISO, id_unidade: 1, id_referencia: 1, codigo_referencia: '101', id_produto: 1, qtde_producao: 700, cliente_nome: 'MERCADO CENTRAL' },
+    { data: ISO, hora: '07:30:00', producao_turno: 1, producao_data: ISO, id_unidade: 2, id_referencia: 1, codigo_referencia: '101', id_produto: 1, qtde_producao: 500, cliente_nome: 'PADARIA SOL' }]);
   else if (p === '/auth/me') r = mockUser ? json(mockUser) : json({ message: 'Sem sessão.', login: true }, 401);
   else if (m === 'POST' && p === '/auth/login') {
     if (b.usuario?.toLowerCase() === 'sanches' && b.senha === '123') { mockUser = { id: 1, usuario: 'sanches', nome: 'VALDECIR SANCHES', admin: true }; r = json(mockUser); } else r = json({ message: 'Usuário ou senha inválido.' }, 401);

@@ -1744,3 +1744,5 @@ dialog.modal:has(.nfe-comandas){width:min(900px,96vw)}dialog .nfe-comandas{max-h
 .dspa-grade{flex:1;min-height:0;background:#fff;border:1px solid #e2d8c5;border-radius:10px;overflow:auto}
 .dspa-pend td{background:#fff6e0}.dspa-desc{width:100%;min-width:200px;border:1px solid #d8cdbb;border-radius:6px;padding:4px 8px;font:inherit}
 .dspa-eu{color:#c8742b;font-weight:700}.dspa-ac{white-space:nowrap}.dspa-ac button{border:0;background:none;cursor:pointer;font-size:15px}
+
+.dspa-areas{white-space:nowrap}.dspa-areas label{display:block;font-size:12px;color:#3b2d18}.dspa-areas input{margin-right:4px}
