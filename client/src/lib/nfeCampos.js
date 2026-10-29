@@ -85,7 +85,7 @@ export const REF_LINHAS = [
 
 /** Colunas visíveis da GridNFe: [campo, título, tipo, largura] */
 export const GRADE_COLS = [
-  ['id', 'ID', '', 36], ['status_e', 'Status', '', 82], ['nfe_impresso', 'Imp', 'chk', 40], ['nfe_email_enviado', 'Email', 'chk', 44], ['nfe_numero', 'Nº NFe', '', 58],
+  ['cfop_codigo', 'CFOP', '', 48], ['status_e', 'Status', '', 82], ['nfe_impresso', 'Imp', 'chk', 40], ['nfe_email_enviado', 'Email', 'chk', 44], ['nfe_numero', 'Nº NFe', '', 58],
   ['data_emissao', 'Emissão', 'd', 78], ['data_saida', 'Saída', 'd', 78], ['nfe_protocolo_data_hora', 'Autorização', '', 140], ['cliente_pedido', 'Referência', '', 190],
   ['nf_valor_total', 'Valor da NF', 'm', 92], ['usuario_autorizacao_nfe', 'Usuário', '', 70], ['comandas_faturadas', 'Comanda', '', 90],
 ];

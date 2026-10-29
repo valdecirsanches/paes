@@ -711,3 +711,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 128
 - Cadastro de clientes: o campo **Pessoa** (Física/Jurídica) voltava em branco depois de gravar. A coluna `tb_clientes.pessoa` no banco real não aceita o texto longo (provavelmente `char(1)` com 'F'/'J'), então o valor gravado não casava com o que a tela esperava. Agora o servidor descobre o formato da coluna (enum, char(1) ou texto), grava nele e sempre devolve FISICA/JURIDICA à tela, lendo também valores antigos ('F', 'J', 'Jurídica', etc.). Não testado contra o MySQL real.
+
+## Fase 129
+- Grade de NF-e: a coluna **ID** deu lugar a **CFOP** (`cfop_codigo` da nota). O id continua sendo usado internamente (seleção, ordenação), só não aparece mais.
