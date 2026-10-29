@@ -624,3 +624,6 @@ A linha do item que está sendo alterado (ou a linha "novo") fica laranja com �
 
 ### Fase 103 — Destaque mais forte do item em edição
 Laranja vivo (#ff8a00) com texto escuro em negrito, bordas marcadas e o indicador ✎ pulsando (sem animação se o sistema pedir menos movimento).
+
+### Fase 104 — Item em edição em amarelo forte
+Troca o laranja por amarelo forte (#ffe600) com texto escuro em negrito.
