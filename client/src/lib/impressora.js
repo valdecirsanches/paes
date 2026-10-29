@@ -166,8 +166,8 @@ export async function imprimirDocumento(tipo, doc0, aviso = () => {}) {
 /** PDF → páginas PNG (pdf.js carregado só quando preciso). `dpi` 150 basta para o DANFE em A4. */
 export async function pdfParaPngs(buffer, dpi = 150) {
   const pdfjs = await import('pdfjs-dist/build/pdf.min.mjs');
-  const worker = (await import('pdfjs-dist/build/pdf.worker.min.mjs?url')).default;
-  pdfjs.GlobalWorkerOptions.workerSrc = worker;
+  // worker empacotado como .js pelo Vite (o .mjs solto era servido com tipo MIME errado e o navegador recusava)
+  if (!pdfjs.GlobalWorkerOptions.workerPort) pdfjs.GlobalWorkerOptions.workerPort = new (await import('pdfjs-dist/build/pdf.worker.min.mjs?worker')).default();
   const pdf = await pdfjs.getDocument({ data: new Uint8Array(buffer) }).promise;
   const out = [];
   for (let n = 1; n <= pdf.numPages; n += 1) {

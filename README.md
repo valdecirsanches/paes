@@ -729,3 +729,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 - Danfe: ao clicar, aparece na hora o aviso **"Processando a impressão do DANFE…"** (some ao terminar). Falhas não ficam mais mudas: se o DANFE não puder ser obtido, aparece um aviso curto "indisponível — o motivo está no Log" (sem abrir painel); se o agente falhar, aviso de erro e abre a pré-visualização.
 - Cada linha **AUTORIZADA** da grade ganhou o botão 🖨 (imprime o DANFE daquela nota, direto ou em pré-visualização conforme "Impressão direta").
 - Mensagens de erro com botão **Copiar** voltaram a sumir sozinhas: 12 s, e fechamento garantido 6 s depois mesmo com o mouse em cima.
+
+## Fase 133
+- Impressão direta do DANFE: corrigido "Failed to fetch dynamically imported module … pdf.worker.min-….mjs". O worker do pdf.js agora é empacotado como `.js` (Vite `?worker`), pois o `.mjs` solto era recusado pelo navegador/servidor (tipo MIME). Conversão PDF→PNG testada no navegador; envio à impressora real não testado.
