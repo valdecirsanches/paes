@@ -105,6 +105,28 @@ export async function identifica(req, res, db = pool) {
   return { codigo, habilitado, exigido, areas, fabricaSemLogin };
 }
 
+// O que uma máquina só-Fábrica pode chamar (telas Programação diária/fixa, Mercadorias, Produção, Etinerário, Cargas, Reclamações e impressão de etiquetas).
+const PREFIXOS_FABRICA = ['status', 'diaria', 'fixa', 'produtos', 'mercadorias', 'producao', 'cargas', 'itinerario', 'reclamacoes', 'alteracoes', 'impressao', 'agente', 'layout-etiquetas'];
+export function rotaDaFabrica(req) {
+  const [, , seg, resto] = req.originalUrl.split('?')[0].split('/'); // ['', 'api', seg, ...]
+  if (seg === 'auth') return resto === 'me';
+  if (seg === 'produtos') return req.method === 'GET';
+  return PREFIXOS_FABRICA.includes(seg);
+}
+/** Usuário único "fabrica" (tb_usuarios): aparece nos logs das alterações. Criado na primeira vez; a senha gravada não corresponde a nenhuma senha digitável (não dá para logar). */
+let cacheFab = null;
+export async function usuarioFabrica(db = pool) {
+  if (cacheFab) return cacheFab;
+  try {
+    let [[u]] = await db.query("select id, usuario, nome from tb_usuarios where lower(usuario) = 'fabrica' limit 1");
+    if (!u) {
+      await db.query("insert into tb_usuarios (usuario, nome, senha) values ('fabrica', 'FABRICA', '!')");
+      [[u]] = await db.query("select id, usuario, nome from tb_usuarios where lower(usuario) = 'fabrica' limit 1");
+    }
+    if (u) { cacheFab = { id: u.id, usuario: u.usuario, nome: u.nome, fabrica: true }; return cacheFab; }
+  } catch (e) { console.error('[dispositivos] usuário fabrica:', e.message); }
+  return { id: null, usuario: 'fabrica', nome: 'FABRICA', fabrica: true }; // sem cache: tenta criar de novo na próxima
+}
 const LIVRES = new Set(['/api/health', '/api/dispositivo', '/api/agente/pacote']);
 /** Barra o dispositivo não habilitado (403) antes do login. Falha do banco não derruba o sistema: deixa passar e registra. */
 export async function exigeDispositivo(req, res, next) {
@@ -114,10 +136,10 @@ export async function exigeDispositivo(req, res, next) {
     const d = await Promise.race([identifica(req, res), new Promise((_, ko) => setTimeout(() => ko(new Error('banco demorou')), 4000).unref())]); // banco fora do ar não trava o sistema
     req.dispositivo = d.codigo; req.areas = d.areas ?? AREAS; req.fabricaSemLogin = Boolean(d.fabricaSemLogin);
     if (d.habilitado) {
-      const url = req.originalUrl.split('?')[0];
-      const naFabrica = url === '/api/fabrica' || url.startsWith('/api/fabrica/');
-      const precisa = naFabrica ? 'fabrica' : 'faturamento';
-      if (!req.areas.includes(precisa)) return res.status(403).json({ message: naFabrica ? 'Este dispositivo não está liberado para a área da fábrica.' : 'Este dispositivo está liberado apenas para a fábrica.', code: 'AREA_NEGADA' });
+      if (d.fabricaSemLogin) {
+        if (!rotaDaFabrica(req)) return res.status(403).json({ message: 'Este dispositivo está liberado apenas para a fábrica.', code: 'AREA_NEGADA' });
+        req.user = await usuarioFabrica(); req.userId = req.user.id;
+      } else if (!req.areas.includes('faturamento')) return res.status(403).json({ message: 'Este dispositivo não está liberado para o sistema.', code: 'AREA_NEGADA' });
       return next();
     }
     return res.status(403).json({ message: MENSAGEM, code: 'DISPOSITIVO_NAO_HABILITADO', codigo: d.codigo });

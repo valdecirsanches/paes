@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { novoCodigo, identifica, limpaCache, MENSAGEM, parseAreas } from '../src/services/dispositivos.js';
+import { novoCodigo, identifica, limpaCache, MENSAGEM, parseAreas, rotaDaFabrica } from '../src/services/dispositivos.js';
 
 // banco falso: guarda dispositivos em memória
 function bancoFalso(ativos = [], areas = {}) {
@@ -52,4 +52,11 @@ test('máquina só da fábrica: entra sem login na fábrica e é barrada no rest
 test('controle desligado: nunca dispensa login', async () => {
   limpaCache(); const d = await identifica(reqFalsa(), resFalsa(), bancoFalso());
   assert.equal(d.fabricaSemLogin, false); assert.deepEqual(d.areas, ['faturamento', 'fabrica']);
+});
+
+test('máquina da fábrica: só chama as rotas da fábrica', () => {
+  const r = (m, u) => ({ method: m, originalUrl: u });
+  for (const u of ['/api/status/1', '/api/diaria/5', '/api/fixa/5', '/api/producao/resumo?x=1', '/api/mercadorias', '/api/cargas/diaria', '/api/itinerario/roteiros', '/api/reclamacoes/3', '/api/layout-etiquetas/x', '/api/auth/me']) assert.equal(rotaDaFabrica(r('PUT', u)), true, u);
+  for (const u of ['/api/nfe/1', '/api/faturamento', '/api/comandas', '/api/cadastros/clientes', '/api/dispositivos', '/api/auth/senha', '/api/tributos']) assert.equal(rotaDaFabrica(r('GET', u)), false, u);
+  assert.equal(rotaDaFabrica(r('GET', '/api/produtos/codigo/1')), true); assert.equal(rotaDaFabrica(r('POST', '/api/produtos')), false);
 });

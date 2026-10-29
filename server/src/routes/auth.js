@@ -5,7 +5,7 @@ import { bloqueado, criaToken, gravaCookie, hashSenha, limpaFalhas, registraFalh
 
 // Login (u_acesso): usuário + senha conferidos em tb_usuarios (senha = PASSWORD() do MySQL, calculada aqui).
 const router = Router();
-const publico = (u) => ({ id: u.id, usuario: u.usuario, nome: u.nome, admin: String(u.usuario).toUpperCase() === 'SANCHES' });
+const publico = (u) => ({ id: u.id, usuario: u.usuario, nome: u.nome, admin: String(u.usuario).toUpperCase() === 'SANCHES', fabrica: u.fabrica === true });
 const texto = (v, rot, vazio = false) => {
   if (typeof v !== 'string' || (!v.length && !vazio)) throw invalid(`Informe ${rot}.`);
   if (v.length > 100) throw invalid(`${rot[0].toUpperCase()}${rot.slice(1)} muito longo.`);

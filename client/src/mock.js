@@ -325,7 +325,7 @@ window.fetch = async (url, opts = {}) => {
   else if (/^\/(fabrica\/)?producao\/destinos/.test(p)) r = json([
     { data: ISO, hora: '06:00:00', producao_turno: 1, producao_data: ISO, id_unidade: 1, id_referencia: 1, codigo_referencia: '101', id_produto: 1, qtde_producao: 700, cliente_nome: 'MERCADO CENTRAL' },
     { data: ISO, hora: '07:30:00', producao_turno: 1, producao_data: ISO, id_unidade: 2, id_referencia: 1, codigo_referencia: '101', id_produto: 1, qtde_producao: 500, cliente_nome: 'PADARIA SOL' }]);
-  else if (p === '/auth/me') r = mockUser ? json(mockUser) : json({ message: 'Sem sessão.', login: true }, 401);
+  else if (p === '/auth/me') r = window.__FAB ? json({ id: 9, usuario: 'fabrica', nome: 'FABRICA', admin: false, fabrica: true }) : mockUser ? json(mockUser) : json({ message: 'Sem sessão.', login: true }, 401);
   else if (m === 'POST' && p === '/auth/login') {
     if (b.usuario?.toLowerCase() === 'sanches' && b.senha === '123') { mockUser = { id: 1, usuario: 'sanches', nome: 'VALDECIR SANCHES', admin: true }; r = json(mockUser); } else r = json({ message: 'Usuário ou senha inválido.' }, 401);
   } else if (m === 'POST' && p === '/auth/logout') { mockUser = null; r = json({ ok: true }); }

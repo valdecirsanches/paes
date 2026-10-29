@@ -77,6 +77,7 @@ export const limpaFalhas = (chave) => falhas.delete(chave);
 const PUBLICAS = new Set(['/api/auth/login', '/api/health', '/api/agente/pacote']);
 /** Exige sessão válida em todas as rotas /api, exceto login e health. */
 export function exigeLogin(req, res, next) {
+  if (req.fabricaSemLogin && req.user) return next(); // máquina liberada só para a fábrica: sessão automática do usuário "fabrica"
   if (req.app.locals.exigirLogin === false) { req.userId = Number(req.header('x-user-id')) || null; return next(); }
   const p = leToken(leCookie(req));
   if (p) { req.user = p; req.userId = p.id; return next(); }

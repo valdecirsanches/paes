@@ -21,7 +21,6 @@ import Itinerario from './screens/Itinerario.jsx';
 import Cargas from './screens/Cargas.jsx';
 import Login from './screens/Login.jsx';
 import Dispositivos from './screens/Dispositivos.jsx';
-import Fabrica from './screens/Fabrica.jsx';
 import DispositivoBloqueado from './screens/DispositivoBloqueado.jsx';
 import AlterarSenha from './screens/AlterarSenha.jsx';
 
@@ -54,6 +53,8 @@ const MENUS = [
   { id: 'ferr', rotulo: 'Ferramentas', icone: '🛠️', itens: [['impressoras', 'Configurar impressoras', '🖨️'], ['instalar', 'Instalar agente de impressão', '⬇️'], ['dispositivos', 'Dispositivos autorizados', '🖥']] },
 ];
 const MENUS_FUTUROS = [];
+// Dispositivo liberado só para a fábrica: Programação (diária/fixa com reclamações, mercadorias, produção, etinerário, cargas) e impressão de etiquetas.
+const MENUS_FABRICA = [MENUS[0], { ...MENUS[4], itens: MENUS[4].itens.filter(([k]) => k !== 'dispositivos') }];
 
 export default function App() {
   const [abertas, setAbertas] = useState([]);
@@ -63,7 +64,6 @@ export default function App() {
   const [ambiente, setAmbiente] = useState(null); // 1 produção · 2 homologação (emissão de NFe)
   const [usuario, setUsuario] = useState(null); // null = sem sessão (tela de login)
   const [verificando, setVerificando] = useState(true);
-  const [soFabrica, setSoFabrica] = useState(false); // dispositivo liberado só para a fábrica: consulta sem login
   const [bloqueio, setBloqueio] = useState(null); // dispositivo não habilitado: { codigo, message }
   const [trocaSenha, setTrocaSenha] = useState(false);
   const [menuAberto, setMenuAberto] = useState(null);
@@ -75,7 +75,7 @@ export default function App() {
     return () => { document.removeEventListener('pointerdown', fora); document.removeEventListener('keydown', esc); };
   }, []);
   useEffect(() => { // dispositivo habilitado? (a tela de bloqueio mostra o código; qualquer chamada barrada também aciona o evento)
-    api.get('/dispositivo').then((d) => { if (d && d.habilitado === false) setBloqueio(d); else if (d?.fabrica) setSoFabrica(true); }).catch(() => {});
+    api.get('/dispositivo').then((d) => { if (d && d.habilitado === false) setBloqueio(d); }).catch(() => {});
     const f = (e) => setBloqueio(e.detail ?? { codigo: '' });
     window.addEventListener('dispositivo-bloqueado', f);
     return () => window.removeEventListener('dispositivo-bloqueado', f);
@@ -97,7 +97,7 @@ export default function App() {
     return () => { vivo = false; };
   }, []);
   useEffect(() => { // ambiente de emissão da NFe: sempre visível no menu (recarrega após gravar a configuração)
-    if (!usuario) { setAmbiente(null); return undefined; }
+    if (!usuario || usuario.fabrica) { setAmbiente(null); return undefined; }
     const ler = () => api.get('/nfe/ambiente').then((r) => setAmbiente(r.ambiente)).catch(() => setAmbiente(0));
     ler(); window.addEventListener('ambiente-alterado', ler);
     return () => window.removeEventListener('ambiente-alterado', ler);
@@ -124,13 +124,13 @@ export default function App() {
     });
   };
   
-  if (soFabrica && !bloqueio) return <Fabrica />;
+  const menus = usuario?.fabrica ? MENUS_FABRICA : MENUS; // máquina só da fábrica: usuário "fabrica" automático, só os menus da fábrica
   return (
     <div className="win">
       <div className={`titulo-janela${ambiente === 1 ? ' prod' : ''}`}>Sistema Gestor WinBakery{ativa ? ` — [${TELAS[ativa].titulo}]` : ''}{ambiente === 1 ? '  ·  ⚠ NFe em PRODUÇÃO' : ambiente === 2 ? '  ·  NFe em homologação' : ''}</div>
       <nav className="menubar" ref={barra} aria-label="Menu principal">
         <span className="menu-marca" aria-hidden="true">🥖</span>
-        {MENUS.map((m) => {
+        {menus.map((m) => {
           const aberto = menuAberto === m.id;
           return (
             <div key={m.id} className={`menu${aberto ? ' aberto' : ''}`} onPointerEnter={() => { if (menuAberto && menuAberto !== m.id) setMenuAberto(m.id); }}>
@@ -148,7 +148,7 @@ export default function App() {
           );
         })}
         {MENUS_FUTUROS.map(([r, ic]) => <span key={r} className="menu-bt desab" title="Próximas fases"><span className="mi" aria-hidden="true">{ic}</span>{r}</span>)}
-        <div className={`menu${menuAberto === 'usr' ? ' aberto' : ''}`} onPointerEnter={() => { if (menuAberto && menuAberto !== 'usr') setMenuAberto('usr'); }}>
+        {!usuario?.fabrica && <div className={`menu${menuAberto === 'usr' ? ' aberto' : ''}`} onPointerEnter={() => { if (menuAberto && menuAberto !== 'usr') setMenuAberto('usr'); }}>
           <button type="button" className="menu-bt" aria-haspopup="menu" aria-expanded={menuAberto === 'usr'} disabled={!usuario} onClick={() => setMenuAberto(menuAberto === 'usr' ? null : 'usr')}>
             <span className="mi" aria-hidden="true">👤</span>Usuário<span className="seta" aria-hidden="true">▾</span>
           </button>
@@ -158,7 +158,7 @@ export default function App() {
               <li role="none"><button role="menuitem" onClick={() => { setMenuAberto(null); setTrocaSenha(true); }}><span className="mi" aria-hidden="true">🔒</span><span className="rot">Alterar senha</span></button></li>
             </ul>
           )}
-        </div>
+        </div>}
         <span className="menu-espaco" />
         {usuario && ambiente !== null && (
           <button type="button" className={`amb-selo ${ambiente === 1 ? 'prod' : ambiente === 2 ? 'hom' : 'unk'}`} title="Ambiente de emissão de NFe — clique para configurar" onClick={() => abrir('nfe')}>
@@ -172,7 +172,7 @@ export default function App() {
           </button>
         )}
         {usuario && <span className="menu-usuario" title="Usuário conectado">👤 {usuario.nome || usuario.usuario}</span>}
-        <button type="button" className="menu-bt menu-fechar" title="Fechar o sistema (encerra a sessão)" disabled={!usuario} onClick={sair}><span className="mi" aria-hidden="true">⏻</span>Fechar</button>
+        {!usuario?.fabrica && <button type="button" className="menu-bt menu-fechar" title="Fechar o sistema (encerra a sessão)" disabled={!usuario} onClick={sair}><span className="mi" aria-hidden="true">⏻</span>Fechar</button>}
       </nav>
 
       <div className="abas-topo" role="tablist">

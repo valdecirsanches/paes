@@ -49,7 +49,7 @@ export default function Dispositivos({ onFechar }) {
               <td className="c"><input type="checkbox" checked={i.ativo} onChange={(e) => salva(i, { ativo: e.target.checked })} aria-label={`Habilitar ${i.codigo}`} /></td>
               <td className="dspa-areas">
                 {[['faturamento', 'Faturamento'], ['fabrica', 'Fábrica']].map(([a, r]) => (
-                  <label key={a} title={a === 'fabrica' ? 'Somente consulta, sem login' : 'Sistema completo, com login'}><input type="checkbox" checked={i.areas.includes(a)}
+                  <label key={a} title={a === 'fabrica' ? 'Sem login (usuário fabrica), só telas da fábrica' : 'Sistema completo, com login'}><input type="checkbox" checked={i.areas.includes(a)}
                     onChange={(e) => { const n = e.target.checked ? [...new Set([...i.areas, a])] : i.areas.filter((x) => x !== a); if (n.length) salva(i, { areas: n }); }} />{r}</label>))}
               </td>
               <td><code>{i.codigo}</code>{i.codigo === dados.meu && <small className="dspa-eu"> este aqui</small>}</td>
