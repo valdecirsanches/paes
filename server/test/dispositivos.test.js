@@ -56,7 +56,7 @@ test('controle desligado: nunca dispensa login', async () => {
 
 test('máquina da fábrica: só chama as rotas da fábrica', () => {
   const r = (m, u) => ({ method: m, originalUrl: u });
-  for (const u of ['/api/status/1', '/api/diaria/5', '/api/fixa/5', '/api/producao/resumo?x=1', '/api/mercadorias', '/api/cargas/diaria', '/api/itinerario/roteiros', '/api/reclamacoes/3', '/api/extras/opcoes', '/api/layout-etiquetas/x', '/api/auth/me']) assert.equal(rotaDaFabrica(r('PUT', u)), true, u);
+  for (const u of ['/api/status/1', '/api/diaria/5', '/api/fixa/5', '/api/producao/resumo?x=1', '/api/mercadorias', '/api/cargas/diaria', '/api/itinerario/roteiros', '/api/reclamacoes/3', '/api/extras/opcoes', '/api/auth/me']) assert.equal(rotaDaFabrica(r('PUT', u)), true, u);
   for (const u of ['/api/nfe/1', '/api/faturamento', '/api/comandas', '/api/cadastros/clientes', '/api/dispositivos', '/api/auth/senha', '/api/tributos']) assert.equal(rotaDaFabrica(r('GET', u)), false, u);
   assert.equal(rotaDaFabrica(r('GET', '/api/produtos/codigo/1')), true); assert.equal(rotaDaFabrica(r('POST', '/api/produtos')), false);
 });
@@ -71,4 +71,10 @@ test('cookie apagado: o número guardado no navegador (x-dispositivo) restaura o
 test('cookie e cabeçalho diferentes: vale o cookie', async () => {
   limpaCache(); const d = await identifica({ ...reqFalsa('paes_disp=AAAA-BBBB-CCCC'), headers: { cookie: 'paes_disp=AAAA-BBBB-CCCC', 'x-dispositivo': '1111-2222-3333' } }, resFalsa(), bancoFalso(['AAAA-BBBB-CCCC']));
   assert.equal(d.codigo, 'AAAA-BBBB-CCCC');
+});
+
+test('máquina da fábrica: sem ajuste de preço/cobrança, layout de etiqueta e configuração da unidade', () => {
+  const r = (m, u) => ({ method: m, originalUrl: u });
+  for (const [m, u] of [['POST', '/api/diaria/ajusta-preco-lote'], ['POST', '/api/diaria/5/ajusta-preco'], ['POST', '/api/diaria/5/ajusta-cobranca'], ['PUT', '/api/layout-etiquetas/etiqueta-mercadorias'], ['PUT', '/api/status/3/unidade']]) assert.equal(rotaDaFabrica(r(m, u)), false, u);
+  for (const [m, u] of [['GET', '/api/layout-etiquetas'], ['GET', '/api/status/3/unidade'], ['PUT', '/api/diaria/5'], ['POST', '/api/diaria/5/etiqueta']]) assert.equal(rotaDaFabrica(r(m, u)), true, u);
 });

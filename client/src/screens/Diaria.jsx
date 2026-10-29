@@ -1,3 +1,4 @@
+import { ehFabrica } from '../lib/perfil.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../api.js';
 import { FILTROS, STATUS, diaExtenso, hoje } from '../lib/rules.js';
@@ -72,13 +73,13 @@ export default function Diaria({ onFechar }) {
       && executar(() => api.post('/status/fixa-todas', { data }), (r) => (r.falhas.length
         ? `${r.criados} itens criados. Falhou em ${r.falhas.length} empresa(s).` : `Programação fixa ativada (${r.criados} itens).`))],
     ['Verificar integridade de status', () => executar(() => api.post('/status/recalcular', { data }), (r) => `${r.verificados} status verificados.`)],
-    ['Ajustar preços de todos os itens do dia', async () => (await confirmar('Trazer o preço atual do cadastro para todos os itens do dia?'))
-      && executar(() => api.post('/diaria/ajusta-preco-lote', { data }), (r) => `${r.atualizados} itens atualizados.`)],
+    ...(ehFabrica() ? [] : [['Ajustar preços de todos os itens do dia', async () => (await confirmar('Trazer o preço atual do cadastro para todos os itens do dia?'))
+      && executar(() => api.post('/diaria/ajusta-preco-lote', { data }), (r) => `${r.atualizados} itens atualizados.`)]]),
   ];
   const [menuAberto, setMenuAberto] = useState(false);
   const contagem = useMemo(() => { const c = [0, 0, 0, 0]; lista.forEach((r) => { c[r.status] = (c[r.status] || 0) + 1; }); return c; }, [lista]);
   const [diaSem, diaMes] = (() => { const d = new Date(`${data}T12:00:00`); return [d.toLocaleDateString('pt-BR', { weekday: 'long' }), d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })]; })();
-  const ABAS = [['diaria', '📋 Programação diária'], ['fixa', '📌 Programação fixa'], ['rcm', '💬 Reclamações'], ['cfg', '⚙ Configurações']];
+  const ABAS = [['diaria', '📋 Programação diária'], ['fixa', '📌 Programação fixa'], ['rcm', '💬 Reclamações'], ...(ehFabrica() ? [] : [['cfg', '⚙ Configurações']])];
 
   return (
     <div className="tela dr2">

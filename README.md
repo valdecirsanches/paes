@@ -683,3 +683,7 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 119
 - A foto do fundo do menu principal foi renomeada (`fundo-paes-v2.jpg`) para o navegador/Cloudflare não servir a versão antiga guardada em cache com o nome anterior.
+
+## Fase 120
+- Área da fábrica sem os botões de ajuste: **Ajustar etiqueta** e "Alterar lay-out" (Mercadorias), **Ajustar preços de todos os itens do dia**, ajustar preço/cobrança no menu do item e atalhos Alt+F2 / Alt+Shift+F2 / Ctrl+Shift+F2 (Programação diária) e a aba **Configurações** da unidade. Só aparecem no faturamento (`lib/perfil.js`).
+- Também bloqueado no servidor para máquinas só-Fábrica (`rotaDaFabrica`): rotas `/ajusta…`, gravação em `/layout-etiquetas` e gravação em `/status/:id/unidade`.

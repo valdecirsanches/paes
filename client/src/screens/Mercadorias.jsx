@@ -1,3 +1,4 @@
+import { ehFabrica } from '../lib/perfil.js';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useJanela } from '../components/janela.js';
 import { api } from '../api.js';
@@ -314,7 +315,7 @@ export default function Mercadorias({ onFechar }) {
               onContextMenu={(e) => { e.preventDefault(); setMenu({ x: e.clientX, y: e.clientY }); }}><IcoEtiqueta /><span>Etiqueta adesiva{marcados.size ? ` (${marcados.size})` : ''}</span></button>
             <button type="button" className="mc2-bt" onClick={imprimirLista}><IcoImpressora /><span>Imprimir lista</span></button>
             <button type="button" className="mc2-bt" onClick={alternarTodos} disabled={!visiveis.length}><IcoOk /><span>{todos ? 'Desfazer seleção' : 'Selecionar tudo'}</span></button>
-            <button type="button" className="mc2-bt" onClick={() => setEditorEtq(true)} title="Ajustar posição e espaçamento da etiqueta em milímetros"><span className="mc2-em">📐</span><span>Ajustar etiqueta</span></button>
+            {!ehFabrica() && <button type="button" className="mc2-bt" onClick={() => setEditorEtq(true)} title="Ajustar posição e espaçamento da etiqueta em milímetros"><span className="mc2-em">📐</span><span>Ajustar etiqueta</span></button>}
           </div>
           <p className="mc2-dica">Clique para marcar · Ctrl/Shift para vários · duplo clique converte a mercadoria</p>
         </div>
@@ -347,7 +348,7 @@ export default function Mercadorias({ onFechar }) {
         </table>
       </div>
 
-      {menu && (
+      {menu && !ehFabrica() && (
         <ul className="ctx" style={{ left: menu.x, top: menu.y }} onClick={(e) => e.stopPropagation()}>
           <li><button disabled title="O designer de layout do ReportBuilder não foi migrado">Alterar lay-out</button></li>
         </ul>

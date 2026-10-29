@@ -116,6 +116,10 @@ const PREFIXOS_FABRICA = ['status', 'diaria', 'fixa', 'produtos', 'mercadorias',
 export function rotaDaFabrica(req) {
   const [, , seg, resto] = req.originalUrl.split('?')[0].split('/'); // ['', 'api', seg, ...]
   if (seg === 'auth') return resto === 'me';
+  const caminho = req.originalUrl.split('?')[0];
+  if (/\/ajusta[-/]|\/ajusta$/.test(caminho)) return false; // ajustes de preço/cobrança: só faturamento
+  if (seg === 'layout-etiquetas' && req.method !== 'GET') return false; // ajuste de etiqueta: só faturamento
+  if (/^\/api\/status\/\d+\/unidade$/.test(caminho) && req.method !== 'GET') return false; // aba Configurações da unidade
   if (seg === 'produtos') return req.method === 'GET';
   return PREFIXOS_FABRICA.includes(seg);
 }

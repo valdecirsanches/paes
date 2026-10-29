@@ -1,3 +1,4 @@
+import { ehFabrica } from '../lib/perfil.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../api.js';
 import {
@@ -280,6 +281,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
   useEffect(() => {
     const tecla = (e) => {
       if (modal) return;
+      if (ehFabrica() && e.key === 'F2' && (e.altKey || e.ctrlKey)) return; // fábrica não ajusta preço
       if (e.key === 'F2' && e.altKey && e.shiftKey) { e.preventDefault(); ajustaTudo(); return; }
       if (e.key === 'F2' && e.altKey) { e.preventDefault(); ajustaPreco(); return; }
       if (e.key === 'F2' && e.ctrlKey && e.shiftKey) { e.preventDefault(); rodar(async () => { for (const i of itens) await api.post(`/diaria/${i.id}/ajusta-preco`); }, 'Preços do item ajustados.'); return; }
@@ -460,10 +462,10 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
             ['-'],
             ['Log de operações', verLogItem],
             ['Lay-out etiqueta adesiva', null, 'Designer do ReportBuilder: não migrado'],
-            ['-'],
+            ...(ehFabrica() ? [] : [['-'],
             ['Ajustar preço do item\tAlt+F2', ajustaPreco],
             ['Ajustar preço de todos os itens do dia\tAlt+Shift+F2', ajustaTudo],
-            ['Ajustar cobrança (comandas) do item', ajustaCobranca],
+            ['Ajustar cobrança (comandas) do item', ajustaCobranca]]),
           ].map(([r, fn, off], n) => (r === '-' ? <li key={n} className="sep-h" /> : (
             <li key={r}><button disabled={!fn || !!off} title={off || ''} onClick={() => { setMenu(null); fn(); }}>{r.split('\t')[0]}{r.includes('\t') && <kbd>{r.split('\t')[1]}</kbd>}</button></li>
           )))}
