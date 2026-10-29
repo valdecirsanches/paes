@@ -299,8 +299,12 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
 
   // JvEnterTab: Enter passa para o próximo campo do painel.
   const enterComoTab = (e) => {
-    if (e.key !== 'Enter' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON') return;
+    if (e.key !== 'Enter' || e.target.tagName === 'BUTTON') return;
     e.preventDefault();
+    if (e.target.tagName === 'TEXTAREA' && (e.ctrlKey || e.metaKey)) { // Ctrl+Enter = nova linha no texto
+      const t = e.target; t.setRangeText('\n', t.selectionStart, t.selectionEnd, 'end');
+      t.dispatchEvent(new Event('input', { bubbles: true })); return;
+    }
     const campos = [...e.currentTarget.querySelectorAll('input:not([disabled]):not([readonly]), select, textarea')];
     const prox = campos[campos.indexOf(e.target) + 1];
     e.target.blur();

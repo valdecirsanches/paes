@@ -609,3 +609,6 @@ Depois de escolher o produto na pesquisa (duplo clique no código), o foco vai p
 
 ### Fase 98 — Enter no último campo grava (Programação diária e fixa)
 Em item em edição, Enter no último campo do painel grava o item (as mesmas validações do botão Gravar).
+
+### Fase 99 — Enter e Ctrl+Enter nos campos de texto (Programação diária)
+Nos campos de anotação (faturamento/produção) Enter segue o fluxo (próximo campo; no último, grava o item) e Ctrl+Enter insere nova linha.
