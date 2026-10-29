@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { assinaUnidade, publicaUnidade, unidadeSelecionada } from '../lib/unidadeSel.js';
 import { api } from '../api.js';
 import { Modal } from '../components/ui.jsx';
 import { comandaTexto, imprimirHtml } from '../lib/print.js';
@@ -141,7 +142,7 @@ export default function Comandas({ onFechar }) {
   useEffect(() => { if (!aviso) return undefined; const t = setTimeout(() => setAviso(null), 9000); return () => clearTimeout(t); }, [aviso]);
 
   useEffect(() => {
-    api.get('/faturamento/unidades').then((u) => { setUnidades(u); setUniId((x) => x ?? u[0]?.id ?? null); }).catch((e) => notificar('erro', e.message));
+    api.get('/faturamento/unidades').then((u) => { setUnidades(u); setUniId((x) => x ?? (u.some((v) => v.id === unidadeSelecionada()) ? unidadeSelecionada() : u[0]?.id ?? null)); }).catch((e) => notificar('erro', e.message));
   }, [notificar]);
   const unidade = unidades.find((u) => u.id === uniId) ?? null;
 
@@ -183,7 +184,11 @@ export default function Comandas({ onFechar }) {
     window.addEventListener('nfe-alterada', aoAlterar);
     return () => { window.removeEventListener('nfe-alterada', aoAlterar); clearTimeout(t); };
   }, []);
-  const mudarUnidade = (id) => { setUniId(id); setLista(null); setSel(new Set()); setFoco(null); setDados(null); setDisparo((d) => d + 1); }; // um clique na unidade já lista as comandas
+  const mudarUnidade = (id, publicar = true) => { setUniId(id); setLista(null); setSel(new Set()); setFoco(null); setDados(null); setDisparo((d) => d + 1); if (publicar) publicaUnidade(id); }; // um clique na unidade já lista as comandas
+  // acompanha a unidade escolhida no Faturamento (não interrompe uma edição de comanda aberta)
+  const seguir = useRef(null);
+  seguir.current = (id) => { if (id === uniId || !unidades.some((u) => u.id === id) || edicao) return; mudarUnidade(id, false); };
+  useEffect(() => assinaUnidade((id) => seguir.current?.(id)), []);
   const clicaComanda = (e, id) => {
     const ids = (lista ?? []).map((r) => r.id);
     setFoco(id);

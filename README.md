@@ -636,3 +636,6 @@ O item aparece em amarelo forte assim que o painel "Alterando item" é aberto (F
 
 ### Fase 107 — Destaque do item em edição na Programação fixa
 As linhas da fixa já usam amarelo/ciano (especial/produção); o item em edição fica laranja forte com moldura escura grossa e indicador pulsando. Conferido em captura de tela.
+
+### Fase 108 — Cliente sincronizado entre Faturamento e Controle de comandas
+A unidade escolhida em uma das telas é seguida pela outra (módulo `client/src/lib/unidadeSel.js`), ao abrir e a cada troca, nos dois sentidos. Não troca se houver edição não gravada na tela que seguiria.

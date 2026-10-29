@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { assinaUnidade, publicaUnidade, unidadeSelecionada } from '../lib/unidadeSel.js';
 import { api } from '../api.js';
 import Calendario from '../components/Calendario.jsx';
 import { BuscaProduto, Modal } from '../components/ui.jsx';
@@ -281,7 +282,7 @@ export default function Faturamento({ onFechar }) {
     return () => clearTimeout(t);
   }, [aviso]);
   useEffect(() => {
-    api.get('/faturamento/unidades').then((u) => { setUnidades(u); setUniId((x) => x ?? u[0]?.id ?? null); }).catch((e) => notificar('erro', e.message));
+    api.get('/faturamento/unidades').then((u) => { setUnidades(u); setUniId((x) => x ?? (u.some((v) => v.id === unidadeSelecionada()) ? unidadeSelecionada() : u[0]?.id ?? null)); }).catch((e) => notificar('erro', e.message));
     api.get('/faturamento/config').then((c) => setMostrarValor(c.mostrarValor)).catch(() => {});
   }, [notificar]);
 
@@ -325,11 +326,15 @@ export default function Faturamento({ onFechar }) {
 
   // ---- lista de unidades (gridCliCellClick: trocar de unidade fecha a grade)
   const mudarUnidade = (id) => {
-    const trocar = () => { setUniId(id); setUniDraft({}); setLinhas(null); setFoco(null); setDraft({}); };
+    const trocar = () => { setUniId(id); setUniDraft({}); setLinhas(null); setFoco(null); setDraft({}); publicaUnidade(id); };
     if (id === uniId) return;
     if (Object.keys(uniDraft).length) perguntar({ texto: 'Há alterações não gravadas nas informações do cliente. Descartar?', opcoes: [{ rotulo: 'Descartar', acao: trocar }, { rotulo: 'Voltar' }] });
     else trocar();
   };
+  // acompanha a unidade escolhida no Controle de comandas (só se não houver edição pendente aqui)
+  const seguir = useRef(null);
+  seguir.current = (id) => { if (id === uniId || !unidades.some((u) => u.id === id) || Object.keys(uniDraft).length || Object.keys(draft).length) return; setUniId(id); setLinhas(null); setFoco(null); };
+  useEffect(() => assinaUnidade((id) => seguir.current?.(id)), []);
   const gravarUnidade = async () => {
     try {
       await api.put(`/faturamento/unidades/${unidade.id}`, uniDraft);
