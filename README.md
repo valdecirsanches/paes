@@ -699,3 +699,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 124
 - DANFE em modo silencioso: se a API, o disco e a pasta da API não entregam o PDF, o app busca o **XML autorizado** (disco → API → pasta da API) e gera o DANFE localmente (`services/danfeLocal.js`, biblioteca `@alexssmusica/node-pdf-nfe`, com o logo cadastrado e marca de CANCELADA). Vale para o DANFE individual, o lote, o anexo de e-mail e a sincronização; o PDF gerado é guardado no lugar do `nfe_pdf_file`. O layout é o da biblioteca, não o da API. **Rode `npm install` em `server/`.**
+
+## Fase 125
+- Tela principal do faturamento: agora mostra o cartaz Lev-Pão enviado (`public/principal-levpao.jpg`), inteiro e centralizado sobre fundo vermelho, sem o cartão central anterior.

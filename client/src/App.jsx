@@ -199,12 +199,7 @@ export default function App() {
         })}
         {!ativa && (
           <div className="fundo-paes">
-            <div className="fundo-foto" aria-hidden="true" />
-            <div className="fundo-cartao">
-              <img src="/logo.jpg" alt="Lev-Pão" />
-              <h2>Sistema Gestor WinBakery</h2>
-              <p>Escolha uma opção no menu acima para começar.</p>
-            </div>
+            <img className="fundo-poster" src="/principal-levpao.jpg" alt="Lev-Pão — Fornecimento para Indústrias, Cozinhas Industriais, Bancos, Bares, Restaurantes e Comércio em Geral" />
           </div>
         )}
       </div>
