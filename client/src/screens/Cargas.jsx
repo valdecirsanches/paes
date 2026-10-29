@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../api.js';
 import { Toast, confirmar } from '../components/toast.jsx';
-import { useJanela } from '../components/janela.js';
+import { useJanela, ALT_LINHA } from '../components/janela.js';
 import { etiquetaItem } from '../lib/print.js';
 import { imprimirDocumento, temDestino } from '../lib/impressora.js';
 import { bool, brData, fmtQtde, hhmm, hoje, semanaDia } from '../lib/rules.js';
@@ -77,7 +77,16 @@ function useSelecao(rows) {
   }, [alterna]); // eslint-disable-line react-hooks/exhaustive-deps
   const todos = rows.length > 0 && marcados.size === rows.length;
   const marcaTodos = () => setMarcados(todos ? new Set() : new Set(rows.map((r) => r.id)));
-  return { marcados, setMarcados, foco, setFoco, clica, checa, todos, marcaTodos };
+  // Setas ↑/↓ (e Home/End/PageUp/PageDown) mudam o item em foco; Shift estende a seleção; devolve o índice novo.
+  const move = useCallback((delta, shift, abs) => {
+    const ids = ref.current.map((r) => r.id); if (!ids.length) return -1;
+    const i = ids.indexOf(foco);
+    const n = abs !== undefined ? (abs < 0 ? ids.length - 1 : 0) : Math.min(ids.length - 1, Math.max(0, (i < 0 ? (delta > 0 ? -1 : ids.length) : i) + delta));
+    const id = ids[n]; setFoco(id);
+    if (shift && ancora.current != null) setMarcados(new Set(faixa(id))); else { setMarcados(new Set([id])); ancora.current = id; }
+    return n;
+  }, [foco]); // eslint-disable-line react-hooks/exhaustive-deps
+  return { marcados, setMarcados, foco, setFoco, clica, checa, todos, marcaTodos, move };
 }
 
 /** Ordenação por clique no título da coluna (1º clique crescente, 2º decrescente, 3º volta à ordem original). */
@@ -101,8 +110,23 @@ function useOrdem(brutas) {
 
 function Grade({ cols, rows, sel, classe, vazio, onKeyDown, ordem }) {
   const j = useJanela(rows.length);
+  const teclado = (e) => {
+    const k = e.key; const el = e.currentTarget;
+    if (e.target !== el && e.target.closest?.('input,select,textarea,button')) return onKeyDown?.(e);
+    const passo = { ArrowDown: [1], ArrowUp: [-1], PageDown: [10], PageUp: [-10] }[k];
+    if (passo || k === 'Home' || k === 'End') {
+      e.preventDefault();
+      const n = passo ? sel.move(passo[0], e.shiftKey) : sel.move(0, e.shiftKey, k === 'Home' ? 0 : -1);
+      if (n >= 0) { // mantém a linha em foco visível (a lista é virtual: calcula pela altura fixa das linhas)
+        const topo = n * ALT_LINHA; const cab = 34;
+        if (topo < el.scrollTop) el.scrollTop = topo; else if (topo + ALT_LINHA > el.scrollTop + el.clientHeight - cab) el.scrollTop = topo + ALT_LINHA - el.clientHeight + cab;
+      }
+      return undefined;
+    }
+    return onKeyDown?.(e);
+  };
   return (
-    <div className="trb2-tab cg-grade" ref={j.ref} onScroll={j.onScroll} tabIndex={0} onKeyDown={onKeyDown}>
+    <div className="trb2-tab cg-grade" ref={j.ref} onScroll={j.onScroll} tabIndex={0} onKeyDown={teclado}>
       <table>
         <thead><tr><th className="trb2-ck"><input type="checkbox" checked={sel.todos} onChange={sel.marcaTodos} aria-label="Marcar todos" title="Marcar/desmarcar todos" /></th>{cols.map(([k, r, , t]) => <th key={k} className={`${t ?? ''} cg-ord`} title="Clique para ordenar" onClick={() => ordem?.alternar(k)}>{r}{ordem?.ord?.[0] === k ? (ordem.ord[1] === 1 ? ' ⏶' : ' ⏷') : ''}</th>)}</tr></thead>
         <tbody>

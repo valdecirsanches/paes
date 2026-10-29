@@ -690,3 +690,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 121
 - Mercadorias na área da fábrica fica como no sistema da fábrica (só data + grade): sem Etiqueta adesiva, Imprimir lista, Selecionar tudo, Ajustar etiqueta, chips de resumo, histórico de etiquetas, coluna de seleção, duplo clique/Enter que convertem a mercadoria e menu de contexto.
+
+## Fase 122
+- Cargas (diária e fixa): setas ↑/↓ passam de um item para o outro (Shift+seta amplia a seleção; PageUp/PageDown e Home/End também), mantendo a linha visível na lista; o clique seleciona e o teclado continua dali. Vale para fábrica e faturamento.
