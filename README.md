@@ -639,3 +639,6 @@ As linhas da fixa já usam amarelo/ciano (especial/produção); o item em ediç�
 
 ### Fase 108 — Cliente sincronizado entre Faturamento e Controle de comandas
 A unidade escolhida em uma das telas é seguida pela outra (módulo `client/src/lib/unidadeSel.js`), ao abrir e a cada troca, nos dois sentidos. Não troca se houver edição não gravada na tela que seguiria.
+
+### Fase 109 — Sincronismo também pela linha em foco do Faturamento
+Com "Conectar cliente" desligado a grade do Faturamento mistura clientes: agora a unidade da linha em foco (`id_unidade`) também é publicada, e o Controle de comandas a segue. Cada tela ignora o próprio aviso (origem 'fat'/'cmd').

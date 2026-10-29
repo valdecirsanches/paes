@@ -326,7 +326,7 @@ export default function Faturamento({ onFechar }) {
 
   // ---- lista de unidades (gridCliCellClick: trocar de unidade fecha a grade)
   const mudarUnidade = (id) => {
-    const trocar = () => { setUniId(id); setUniDraft({}); setLinhas(null); setFoco(null); setDraft({}); publicaUnidade(id); };
+    const trocar = () => { setUniId(id); setUniDraft({}); setLinhas(null); setFoco(null); setDraft({}); publicaUnidade(id, 'fat'); };
     if (id === uniId) return;
     if (Object.keys(uniDraft).length) perguntar({ texto: 'Há alterações não gravadas nas informações do cliente. Descartar?', opcoes: [{ rotulo: 'Descartar', acao: trocar }, { rotulo: 'Voltar' }] });
     else trocar();
@@ -334,7 +334,9 @@ export default function Faturamento({ onFechar }) {
   // acompanha a unidade escolhida no Controle de comandas (só se não houver edição pendente aqui)
   const seguir = useRef(null);
   seguir.current = (id) => { if (id === uniId || !unidades.some((u) => u.id === id) || Object.keys(uniDraft).length || Object.keys(draft).length) return; setUniId(id); setLinhas(null); setFoco(null); };
-  useEffect(() => assinaUnidade((id) => seguir.current?.(id)), []);
+  useEffect(() => assinaUnidade((id, o) => { if (o !== 'fat') seguir.current?.(id); }), []);
+  // com "Conectar cliente" desligado a grade mistura clientes: a linha em foco define o cliente que as outras telas seguem
+  useEffect(() => { const r = (linhas ?? []).find((x) => x.id === foco); if (r?.id_unidade) publicaUnidade(Number(r.id_unidade), 'fat'); }, [foco]); // eslint-disable-line react-hooks/exhaustive-deps
   const gravarUnidade = async () => {
     try {
       await api.put(`/faturamento/unidades/${unidade.id}`, uniDraft);

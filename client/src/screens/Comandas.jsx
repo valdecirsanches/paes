@@ -184,11 +184,11 @@ export default function Comandas({ onFechar }) {
     window.addEventListener('nfe-alterada', aoAlterar);
     return () => { window.removeEventListener('nfe-alterada', aoAlterar); clearTimeout(t); };
   }, []);
-  const mudarUnidade = (id, publicar = true) => { setUniId(id); setLista(null); setSel(new Set()); setFoco(null); setDados(null); setDisparo((d) => d + 1); if (publicar) publicaUnidade(id); }; // um clique na unidade já lista as comandas
+  const mudarUnidade = (id, publicar = true) => { setUniId(id); setLista(null); setSel(new Set()); setFoco(null); setDados(null); setDisparo((d) => d + 1); if (publicar) publicaUnidade(id, 'cmd'); }; // um clique na unidade já lista as comandas
   // acompanha a unidade escolhida no Faturamento (não interrompe uma edição de comanda aberta)
   const seguir = useRef(null);
   seguir.current = (id) => { if (id === uniId || !unidades.some((u) => u.id === id) || edicao) return; mudarUnidade(id, false); };
-  useEffect(() => assinaUnidade((id) => seguir.current?.(id)), []);
+  useEffect(() => assinaUnidade((id, o) => { if (o !== 'cmd') seguir.current?.(id); }), []);
   const clicaComanda = (e, id) => {
     const ids = (lista ?? []).map((r) => r.id);
     setFoco(id);
