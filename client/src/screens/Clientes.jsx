@@ -116,6 +116,12 @@ export default function Clientes({ onFechar }) {
   const offU = !uni.atual && !uni.novo;
   const offC = !cli.atual && !cli.novo;
   const tiposU = TIPOS.includes(uni.v('tipo_faturamento')) || !uni.v('tipo_faturamento') ? TIPOS : [uni.v('tipo_faturamento'), ...TIPOS];
+  const irCliente = () => { // abre o cliente dono da unidade (limpa a pesquisa de clientes para ele aparecer)
+    const id = Number(uni.v('id_cliente')); if (!id) return;
+    if (uni.sujo) { notificar('erro', 'Grave ou desfaça as alterações da unidade antes de trocar de cliente.'); return; }
+    bCli.setTermo('');
+    if (cli.selecionar(id)) setAba('lista');
+  };
   const ABAS = [['lista', 'Lista de clientes'], ['uni', 'Unidades'], ['prod', 'Produtos']];
   const BOTOES_ETQ = [['Dia do nutricionista — todas', () => etiquetas(true, false)], ['Boas Festas — todas', () => etiquetas(false, false)],
     ['Dia do nutricionista — esta unidade', () => etiquetas(true, true)], ['Boas Festas — esta unidade', () => etiquetas(false, true)], ['Listagem das unidades', listagem]];
@@ -126,6 +132,7 @@ export default function Clientes({ onFechar }) {
       <div className="cd-barra">
         <Navegador ed={cli} onEditar={() => campoRazao.current?.focus()} />
         <b className="cd-titulo">{cli.novo ? cli.v('razao_social') || 'Novo cliente' : cli.atual?.razao_social}</b>
+        <label className="cd-filtro" title="Ligado: a aba Unidades mostra só as unidades do cliente selecionado. Desligado: todas as unidades (paginadas)."><input type="checkbox" checked={conectar} onChange={(e) => setConectar(e.target.checked)} />Só unidades deste cliente</label>
         <button type="button" className="cd-btn" onClick={tabela}>🖨 Tabela de preços</button>
         <span className="cd-esp-barra" />
         <Busca busca={bCli} total={clientes.length} placeholder="Pesquisar cliente (nome, código, CNPJ, cidade…)" className="larga" />
@@ -184,11 +191,16 @@ export default function Clientes({ onFechar }) {
             <div className="cd-minibarra">
               <Navegador compacto ed={uni} onEditar={() => campoNomeUni.current?.focus()} />
               <Busca busca={bUni} total={unidades.length} placeholder="Pesquisar unidade (nome, código, endereço, bairro…)" />
-              <label className="cd-filtro"><input type="checkbox" checked={conectar} onChange={(e) => setConectar(e.target.checked)} />Só unidades deste cliente{conectar && !idCli ? ' (nenhum cliente)' : ''}</label>
               <label className="cd-filtro"><input type="checkbox" checked={esconder} onChange={(e) => setEsconder(e.target.checked)} />Esconder inativas</label>
             </div>
             <div className="cd-secoes">
               <Secao titulo="Unidade" icone="🏪">
+                <Campo rotulo="Cliente dono da unidade" span={12}>
+                  <span className="cd-dono">
+                    <b>{clientes.find((c) => c.id === Number(uni.v('id_cliente')))?.razao_social || '—'}</b>
+                    <button type="button" className="cd-btn" disabled={!uni.v('id_cliente') || uni.novo} onClick={irCliente} title="Abre o cadastro do cliente dono desta unidade">👤 Ir para o cliente</button>
+                  </span>
+                </Campo>
                 <Campo rotulo="Código" span={3}><Txt ed={uni} k="codigo" /></Campo>
                 <Campo rotulo="Nome" span={6}><Txt ed={uni} k="nome" ref={campoNomeUni} /></Campo>
                 <Campo rotulo="Contato" span={3}><Txt ed={uni} k="contato" /></Campo>

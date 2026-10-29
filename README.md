@@ -573,3 +573,6 @@ Rejeição 225 (Falha no Schema XML) causada por telefone do destinatário com 1
 
 ### Fase 86 — Cadastro de clientes › Unidades: pesquisa e paginação
 Na aba Unidades há campo de pesquisa (nome, código, endereço, bairro, cidade, contato, nutricionista, região). Com "Só unidades deste cliente" marcado mostra as do cliente; desmarcado, todas as unidades. A grade é paginada (50 por página) e o navegador ◀ ▶ leva à página da unidade.
+
+### Fase 87 — Cadastro de clientes: filtro junto ao cliente e atalho da unidade ao cliente
+"Só unidades deste cliente" foi para a barra do cliente (no alto). Na ficha da unidade há o cliente dono e o botão "Ir para o cliente", que abre o cadastro dele.
