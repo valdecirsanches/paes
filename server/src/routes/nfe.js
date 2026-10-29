@@ -8,6 +8,7 @@ import { isIsoDate } from '../rules.js';
 import * as api from '../services/nfeApi.js';
 import { consultaNcm, pesquisaNcm } from '../services/ncm.js';
 import { lerDanfeCfg, gravarDanfeCfg, gravarLogo, lerLogo, removerLogo, ORIENTACOES } from '../services/danfeStore.js';
+import { danfeDoXml } from '../services/danfeLocal.js';
 import { lerA3, gravarA3, limparA3 } from '../services/a3Store.js';
 import { impostos, usuarioNfe } from '../services/geraFatura.js';
 import { destinatarios, assuntoPadrao, mensagemPadrao, enviaEmail, criaTransporte, listaEmails } from '../services/emailNfe.js';
@@ -365,8 +366,11 @@ async function sincronizaArquivos(nfe, cfg, docId, orientacao) {
       let r = await baixa().catch((e) => ({ status: 0, erro: e.message }));
       if (r.status !== 200 || !r.buffer?.length) {
         const l = await consultaPastaApi(nfe, cfg, tipo).catch(() => ({}));
-        if (!l.buffer?.length) { feito[tipo] = r.erro || `HTTP ${r.status}${l.motivo ? ` — ${l.motivo}` : ''}`; continue; }
-        r = { status: 200, buffer: l.buffer };
+        if (l.buffer?.length) r = { status: 200, buffer: l.buffer };
+        else if (tipo === 'pdf' && nfe.nfe_xml_file) {
+          try { r = { status: 200, buffer: await danfeDoXml(await readFile(paraLocal(nfe.nfe_xml_file)), { logo: await lerLogo(), cancelada: nfe.status_e === 'CANCELADA' }) }; }
+          catch { feito[tipo] = r.erro || `HTTP ${r.status}`; continue; }
+        } else { feito[tipo] = r.erro || `HTTP ${r.status}${l.motivo ? ` — ${l.motivo}` : ''}`; continue; }
       }
       const p = await gravaArquivo(cfg.cnpj, ambiente, `${nfe.nfe_chave}${ext}`, r.buffer);
       await pool.query(`update tb_nfe set ${campo} = ? where id = ?`, [p, nfe.id]);
@@ -558,19 +562,9 @@ async function propostaEmail(nfe, cfg, destino) {
 }
 /** XML e DANFE da nota: do disco, ou baixados da API (e guardados em disco para o próximo envio). */
 async function anexosDaNota(nfe, cfg) {
-  const anexos = []; let docId; const ambiente = Number(cfg.nfe_configuracoes_webservice_ambiente) === 1 ? 1 : 2;
-  const alvo = [['nfe_xml_file', `${nfe.nfe_chave}-procNFe.xml`, 'application/xml', () => api.xmlAutorizado(docId)],
-    ['nfe_pdf_file', `${nfe.nfe_chave}.pdf`, 'application/pdf', () => api.danfePdf(docId)]];
-  for (const [campo, nome, tipo, baixa] of alvo) {
-    const f = txt(nfe[campo]);
-    if (f && existsSync(paraLocal(f))) { anexos.push({ filename: nome, content: await readFile(paraLocal(f)), contentType: tipo }); continue; }
-    docId ??= (await docDaNota(nfe, cfg)).docId;
-    const r = await baixa();
-    if (r.status !== 200) throw new AppError(502, `A API de NF-e não devolveu ${campo === 'nfe_xml_file' ? 'o XML' : 'o DANFE'} (HTTP ${r.status}).`);
-    anexos.push({ filename: nome, content: r.buffer, contentType: tipo });
-    try { const p = await gravaArquivo(cfg.cnpj, ambiente, nome, r.buffer); await pool.query(`update tb_nfe set ${campo} = ? where id = ?`, [p, nfe.id]); } catch { /* guardar é melhor esforço */ }
-  }
-  return anexos;
+  const x = await buscaArquivo(nfe, cfg, 'nfe_xml_file', 'xml', (d) => api.xmlAutorizado(d));
+  const p = await buscaArquivo(nfe, cfg, 'nfe_pdf_file', 'pdf', (d, o) => api.danfePdf(d, o)); // sem PDF, gera do XML
+  return [{ filename: `${nfe.nfe_chave}-procNFe.xml`, content: x, contentType: 'application/xml' }, { filename: `${nfe.nfe_chave}.pdf`, content: p, contentType: 'application/pdf' }];
 }
 router.post('/email/previa', async (req, res) => {
   const { ids, destino } = pedidoEmail(req.body);
@@ -1063,6 +1057,15 @@ async function buscaArquivo(nfe, cfg, campo, nomeExt, baixa, orientacao) {
   // a API não entregou: usa a cópia que ela mesma guarda em disco
   const l = await consultaPastaApi(nfe, cfg, nomeExt === 'xml' ? 'xml' : 'pdf');
   if (l.buffer?.length) { await guarda(l.buffer); return l.buffer; }
+  // plano B silencioso: sem o PDF, busca o XML e gera o DANFE localmente
+  if (nomeExt === 'pdf') {
+    try {
+      const xml = await buscaArquivo(nfe, cfg, 'nfe_xml_file', 'xml', (d) => api.xmlAutorizado(d));
+      const pdf = await danfeDoXml(xml, { logo: await lerLogo(), cancelada: nfe.status_e === 'CANCELADA' });
+      await guarda(pdf);
+      return pdf;
+    } catch (e2) { erro = erro ?? e2; }
+  }
   throw new AppError(erro?.status === 404 ? 404 : 502, `${erro?.message ?? 'Arquivo indisponível.'} Também não achei na pasta da API: ${l.motivo ?? ''}`.trim());
 }
 async function arquivoOuApi(req, res, campo, tipo, nomeExt, baixa) {
