@@ -10,6 +10,7 @@ async function req(method, path, body) {
   const data = await res.json().catch(() => ({}));
   api.ultimoTiming = res.headers.get('server-timing') || '';
   if (res.status === 401 && data.login) window.dispatchEvent(new Event('sessao-expirada'));
+  if (res.status === 403 && data.code === 'DISPOSITIVO_NAO_HABILITADO') window.dispatchEvent(new CustomEvent('dispositivo-bloqueado', { detail: data }));
   if (!res.ok) throw Object.assign(new Error(data.message || 'Erro inesperado.'), { status: res.status, data });
   // faturar/gerar/emitir/cancelar mexem nas notas: avisa as outras telas abertas (ex.: Nota Fiscal Eletrônica) para recarregarem
   if (method !== 'GET' && /^\/(faturamento|nfe|comandas)/.test(path)) window.dispatchEvent(new CustomEvent('nfe-alterada', { detail: { path } }));

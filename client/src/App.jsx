@@ -20,6 +20,8 @@ import Funcionarios from './screens/Funcionarios.jsx';
 import Itinerario from './screens/Itinerario.jsx';
 import Cargas from './screens/Cargas.jsx';
 import Login from './screens/Login.jsx';
+import Dispositivos from './screens/Dispositivos.jsx';
+import DispositivoBloqueado from './screens/DispositivoBloqueado.jsx';
 import AlterarSenha from './screens/AlterarSenha.jsx';
 
 // Menu "Programação" do sistema antigo. `tela` = componente já convertido; sem tela = próxima fase.
@@ -37,6 +39,7 @@ const TELAS = {
   instalar: { titulo: 'Instalar agente de impressão', Tela: InstalarAgente },
   clientes: { titulo: 'Cadastro de Clientes', Tela: Clientes },
   produtos: { titulo: 'Produtos', Tela: Produtos },
+  dispositivos: { titulo: 'Dispositivos autorizados', Tela: Dispositivos },
   funcionarios: { titulo: 'Cadastro de funcionários', Tela: Funcionarios },
   relnfes: { titulo: 'Relatório de NFEs', Tela: RelatorioNfes },
   nfsconf: { titulo: 'Leitura de NFs confirmadas', Tela: NfsConfirmadas },
@@ -47,7 +50,7 @@ const MENUS = [
   { id: 'fat', rotulo: 'Faturamento', icone: '💳', itens: [['faturamento', 'Faturamento', '💳'], ['comandas', 'Controle de comandas', '🧾'], ['nfe', 'NFe', '📑'], ['tributos', 'Tributos', '🏷️'], ['quitacao', 'Quitação', '💰']] },
   { id: 'cad', rotulo: 'Cadastros', icone: '👥', itens: [['clientes', 'Clientes', '🏢'], ['produtos', 'Produtos', '🍞'], ['funcionarios', 'Funcionários', '🧑‍🍳']] },
   { id: 'outros', rotulo: 'Outros', icone: '📦', itens: [['relnfes', 'Relatório de NFEs', '📊'], ['nfsconf', 'Leitura de NFs confirmadas', '📥']] },
-  { id: 'ferr', rotulo: 'Ferramentas', icone: '🛠️', itens: [['impressoras', 'Configurar impressoras', '🖨️'], ['instalar', 'Instalar agente de impressão', '⬇️']] },
+  { id: 'ferr', rotulo: 'Ferramentas', icone: '🛠️', itens: [['impressoras', 'Configurar impressoras', '🖨️'], ['instalar', 'Instalar agente de impressão', '⬇️'], ['dispositivos', 'Dispositivos autorizados', '🖥']] },
 ];
 const MENUS_FUTUROS = [];
 
@@ -59,6 +62,7 @@ export default function App() {
   const [ambiente, setAmbiente] = useState(null); // 1 produção · 2 homologação (emissão de NFe)
   const [usuario, setUsuario] = useState(null); // null = sem sessão (tela de login)
   const [verificando, setVerificando] = useState(true);
+  const [bloqueio, setBloqueio] = useState(null); // dispositivo não habilitado: { codigo, message }
   const [trocaSenha, setTrocaSenha] = useState(false);
   const [menuAberto, setMenuAberto] = useState(null);
   const barra = useRef(null);
@@ -67,6 +71,12 @@ export default function App() {
     const esc = (e) => { if (e.key === 'Escape') setMenuAberto(null); };
     document.addEventListener('pointerdown', fora); document.addEventListener('keydown', esc);
     return () => { document.removeEventListener('pointerdown', fora); document.removeEventListener('keydown', esc); };
+  }, []);
+  useEffect(() => { // dispositivo habilitado? (a tela de bloqueio mostra o código; qualquer chamada barrada também aciona o evento)
+    api.get('/dispositivo').then((d) => { if (d && d.habilitado === false) setBloqueio(d); }).catch(() => {});
+    const f = (e) => setBloqueio(e.detail ?? { codigo: '' });
+    window.addEventListener('dispositivo-bloqueado', f);
+    return () => window.removeEventListener('dispositivo-bloqueado', f);
   }, []);
   useEffect(() => { api.get('/health').then(setSaude).catch((e) => setSaude({ ok: false, message: e.message })); }, []);
   useEffect(() => { if (usuario) sincronizaLayout({ forcar: true }); }, [usuario]); // layout de etiquetas compartilhado entre estações
@@ -126,7 +136,7 @@ export default function App() {
               </button>
               {aberto && (
                 <ul role="menu">
-                  {m.itens.map(([k, r, ic]) => (TELAS[k]
+                  {m.itens.filter(([k]) => k !== 'dispositivos' || usuario?.admin).map(([k, r, ic]) => (TELAS[k]
                     ? <li key={k} role="none"><button role="menuitem" className={abertas.includes(k) ? 'aberta' : ''} onClick={() => { setMenuAberto(null); abrir(k); }}><span className="mi" aria-hidden="true">{ic}</span><span className="rot">{r}</span>{abertas.includes(k) && <i className="ponto" title="Aberta" />}</button></li>
                     : <li key={k} role="none"><span role="menuitem" aria-disabled="true" className="desab" title="Próxima fase"><span className="mi" aria-hidden="true">{ic}</span><span className="rot">{r}</span><em>em breve</em></span></li>))}
                 </ul>
@@ -186,7 +196,8 @@ export default function App() {
         <span><b>Usuário:</b> {usuario ? usuario.nome || usuario.usuario : ''}</span>
         {saude && !saude.ok && <span className="falha">{saude.message}</span>}
       </footer>
-      {!verificando && !usuario && <Login saude={saude} onEntrou={(u) => { setUsuario(u); setAbertas([]); setAtiva(null); }} />}
+      {bloqueio && <DispositivoBloqueado codigo={bloqueio.codigo} mensagem={bloqueio.message} />}
+      {!verificando && !usuario && !bloqueio && <Login saude={saude} onEntrou={(u) => { setUsuario(u); setAbertas([]); setAtiva(null); }} />}
       {trocaSenha && usuario && <AlterarSenha onFechar={() => setTrocaSenha(false)} />}
     </div>
   );

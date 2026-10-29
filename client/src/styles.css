@@ -1730,3 +1730,17 @@ dialog.modal:has(.nfe-comandas){width:min(900px,96vw)}dialog .nfe-comandas{max-h
 .fixa .grade tr.edit td:not(.ind){box-shadow:inset 0 3px 0 #7a2e00,inset 0 -3px 0 #7a2e00}
 .fixa .grade tr.edit td.ind{background:#7a2e00!important;color:#fff!important;animation:edpulsoF 1.1s ease-in-out infinite}
 @keyframes edpulsoF{50%{background:#ff8a00!important;color:#7a2e00!important}}
+
+/* dispositivo não habilitado / administração de dispositivos */
+.dsp-fundo{position:fixed;inset:0;z-index:2000;background:#f3efe8;display:flex;align-items:center;justify-content:center;padding:24px}
+.dsp-caixa{background:#fff;border:1px solid #e2d8c5;border-radius:16px;box-shadow:0 8px 30px rgba(80,60,20,.15);max-width:560px;width:100%;padding:32px 28px;text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center;color:#3b2d18}
+.dsp-ico{font-size:44px}.dsp-caixa h1{margin:0;font-size:22px;line-height:1.3;color:#a3322a}.dsp-caixa p{margin:0;color:#6f5d42}
+.dsp-codigo{font:700 32px/1.1 ui-monospace,Consolas,monospace;letter-spacing:2px;background:#fbf6ea;border:2px dashed #c8742b;border-radius:10px;padding:14px 22px;user-select:all;color:#3b2d18}
+.dsp-caixa small{color:#8a7b66}
+.dspa{display:flex;flex-direction:column;gap:10px;padding:12px 16px;height:100%;min-height:0;background:#f3efe8}
+.dspa-topo{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.dspa-topo h2{margin:0;font-size:18px;color:#3b2d18}.dspa-esp{flex:1}
+.dspa-filtro{display:inline-flex;gap:4px}.dspa-filtro button{border:1px solid #d8cdbb;background:#fff;border-radius:16px;padding:4px 12px;cursor:pointer;color:#6f5d42}.dspa-filtro button.on{background:#c8742b;border-color:#c8742b;color:#fff;font-weight:700}
+.dspa-info{margin:0;font-size:12.5px;color:#6f5d42;background:#fff;border:1px solid #e2d8c5;border-radius:10px;padding:8px 12px}.dspa-erro{color:#a3322a;margin:0}
+.dspa-grade{flex:1;min-height:0;background:#fff;border:1px solid #e2d8c5;border-radius:10px;overflow:auto}
+.dspa-pend td{background:#fff6e0}.dspa-desc{width:100%;min-width:200px;border:1px solid #d8cdbb;border-radius:6px;padding:4px 8px;font:inherit}
+.dspa-eu{color:#c8742b;font-weight:700}.dspa-ac{white-space:nowrap}.dspa-ac button{border:0;background:none;cursor:pointer;font-size:15px}

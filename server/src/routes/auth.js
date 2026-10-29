@@ -25,6 +25,7 @@ router.post('/login', async (req, res) => {
   }
   limpaFalhas(chave);
   gravaCookie(res, req, criaToken(u));
+  if (req.dispositivo) pool.query('update tb_dispositivos set ultimo_usuario = ? where codigo = ?', [String(u.usuario).slice(0, 60), req.dispositivo]).catch(() => {});
   res.json(publico(u));
 });
 

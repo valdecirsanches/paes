@@ -1,0 +1,36 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { novoCodigo, identifica, limpaCache, MENSAGEM } from '../src/services/dispositivos.js';
+
+// banco falso: guarda dispositivos em memória
+function bancoFalso(ativos = []) {
+  const linhas = new Map(ativos.map((c) => [c, { ativo: 1 }]));
+  const db = { query: async (sql, par = []) => {
+    if (/create table/i.test(sql)) return [[]];
+    if (/count\(\*\)/i.test(sql)) return [[{ n: [...linhas.values()].filter((l) => l.ativo).length }]];
+    if (/^select ativo/i.test(sql)) return [[linhas.get(par[0])]];
+    if (/^insert ignore/i.test(sql)) { linhas.set(par[0], { ativo: 0 }); return [{}]; }
+    return [{}];
+  }, linhas };
+  return db;
+}
+const reqFalsa = (cookie) => ({ headers: cookie ? { cookie } : {}, socket: { remoteAddress: '10.0.0.5' }, app: { locals: {} }, originalUrl: '/api/x' });
+const resFalsa = () => { const h = {}; return { h, setHeader: (k, v) => { h[k] = v; }, getHeader: (k) => h[k] }; };
+
+test('código tem o formato XXXX-XXXX-XXXX', () => { assert.match(novoCodigo(), /^[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}$/); });
+
+test('controle desligado enquanto não há dispositivo habilitado; gera cookie e registra pendente', async () => {
+  limpaCache(); const db = bancoFalso(); const res = resFalsa();
+  const d = await identifica(reqFalsa(), res, db);
+  assert.equal(d.habilitado, true); assert.equal(d.exigido, false);
+  assert.match(res.h['Set-Cookie'], /paes_disp=[0-9A-F-]{14}; HttpOnly/);
+  assert.equal(db.linhas.get(d.codigo).ativo, 0);
+});
+test('com um dispositivo habilitado, os demais são barrados com a mensagem', async () => {
+  limpaCache(); const db = bancoFalso(['AAAA-BBBB-CCCC']);
+  const bom = await identifica(reqFalsa('paes_disp=AAAA-BBBB-CCCC'), resFalsa(), db);
+  assert.equal(bom.habilitado, true); assert.equal(bom.exigido, true);
+  const ruim = await identifica(reqFalsa('paes_disp=1111-2222-3333'), resFalsa(), db);
+  assert.equal(ruim.habilitado, false); assert.equal(ruim.codigo, '1111-2222-3333');
+  assert.match(MENSAGEM, /não habilitado/);
+});

@@ -315,6 +315,10 @@ window.fetch = async (url, opts = {}) => {
   const b = typeof opts.body === 'string' ? JSON.parse(opts.body) : {};
   let r;
   if (m === 'GET' && p === '/health') r = json({ ok: true, host: '192.168.15.10', banco: 'levpao_new', mysql: 'preview' });
+  else if (p === '/dispositivo') r = json(window.__BLOQ ? { codigo: '7F3A-91C2-0B4E', habilitado: false, exigido: true, message: 'Dispositivo não habilitado para uso do aplicativo.' } : { codigo: '7F3A-91C2-0B4E', habilitado: true, exigido: true, message: '' });
+  else if (m === 'GET' && p === '/dispositivos') r = json({ meu: '7F3A-91C2-0B4E', itens: [
+    { id: 1, codigo: '7F3A-91C2-0B4E', descricao: 'Faturamento — Ingrid', ativo: true, ultimo_usuario: 'sanches', ultimo_acesso: new Date().toISOString(), ultimo_ip: '192.168.15.31', navegador: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0 Safari/537.36' },
+    { id: 2, codigo: 'B81D-44AA-92F0', descricao: '', ativo: false, ultimo_usuario: null, ultimo_acesso: new Date().toISOString(), ultimo_ip: '177.12.45.9', navegador: 'Mozilla/5.0 (Linux; Android 14) Chrome/130.0 Mobile Safari/537.36' }] });
   else if (p === '/auth/me') r = mockUser ? json(mockUser) : json({ message: 'Sem sessão.', login: true }, 401);
   else if (m === 'POST' && p === '/auth/login') {
     if (b.usuario?.toLowerCase() === 'sanches' && b.senha === '123') { mockUser = { id: 1, usuario: 'sanches', nome: 'VALDECIR SANCHES', admin: true }; r = json(mockUser); } else r = json({ message: 'Usuário ou senha inválido.' }, 401);

@@ -1,4 +1,5 @@
 import test from 'node:test';
+process.env.DISPOSITIVOS_LIVRE = '1'; // o controle de dispositivos tem teste próprio (dispositivos.test.js)
 import assert from 'node:assert/strict';
 import { app } from '../src/app.js';
 import { bloqueado, criaToken, hashSenha, leToken, registraFalha } from '../src/services/auth.js';

@@ -49,7 +49,9 @@ export function leCookie(req, nome = COOKIE) {
 }
 export function gravaCookie(res, req, token) {
   const seguro = req.secure || req.headers['x-forwarded-proto'] === 'https';
-  res.setHeader('Set-Cookie', `${COOKIE}=${encodeURIComponent(token ?? '')}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${token ? DURACAO_S : 0}${seguro ? '; Secure' : ''}`);
+  const novo = `${COOKIE}=${encodeURIComponent(token ?? '')}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${token ? DURACAO_S : 0}${seguro ? '; Secure' : ''}`;
+  const antes = res.getHeader('Set-Cookie'); // preserva outros cookies já definidos na resposta (ex.: código do dispositivo)
+  res.setHeader('Set-Cookie', antes ? [].concat(antes, novo) : novo);
 }
 
 // Limite de tentativas: 5 erros seguidos para o mesmo IP+usuário bloqueiam por 60 s.
