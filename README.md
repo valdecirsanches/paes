@@ -670,3 +670,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 ## Fase 115
 - Pedidos extras: o servidor lê o tamanho real das colunas de `tb_extras` e corta os textos nesse tamanho (corrige "Data too long for column 'funcionario'").
 - Menu da fábrica sem os botões Tema e Atualização.
+
+## Fase 116
+- Fundo do menu principal do faturamento refeito: a foto de pães passou a ser textura desfocada (a original, 800 px, ficava serrilhada em telas grandes) sob degradê quente, com cartão central da marca (logo + "Escolha uma opção no menu"). Só no faturamento; a janela da fábrica não muda.

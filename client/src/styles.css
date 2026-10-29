@@ -709,7 +709,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .lg-srv .ok { color: #070; } .lg-srv .falha { color: #b00; }
 .lg-hist { flex: 1; margin: 2px; border: 1px solid #7da7cf; resize: none; font: 11px Arial, sans-serif; background: #fff; min-height: 0; }
 .lg-nfe { width: 304px; height: 345px; object-fit: contain; align-self: flex-start; }
-.fundo-paes { flex: 1; background: #c9a77a url('/fundo-paes.jpg') center / cover no-repeat; }
+/* Fundo do menu principal: a foto vira textura suave (desfocada, para não aparecer serrilhada em telas grandes) sob um degradê quente, com o cartão da marca no centro. */
+.fundo-paes { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #6b4423; }
+.fundo-foto { position: absolute; inset: -24px; background: url('/fundo-paes.jpg') center / cover no-repeat; filter: blur(3px) saturate(1.1); transform: scale(1.04); }
+.fundo-paes::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, rgba(60,36,12,.15) 0%, rgba(40,22,6,.62) 100%), linear-gradient(180deg, rgba(243,239,232,.10), rgba(40,22,6,.35)); }
+.fundo-cartao { position: relative; z-index: 1; text-align: center; background: rgba(255,251,243,.92); border: 1px solid rgba(226,216,197,.9); border-radius: 20px; padding: 28px 44px 26px; box-shadow: 0 18px 50px rgba(30,16,4,.45); backdrop-filter: blur(6px); max-width: min(520px, 86%); }
+.fundo-cartao img { max-width: 300px; width: 100%; height: auto; border-radius: 6px; }
+.fundo-cartao h2 { margin: 14px 0 4px; font-size: 21px; color: #3b2d18; letter-spacing: .3px; }
+.fundo-cartao p { margin: 0; color: #6f5d42; font-size: 14px; }
 button.menu-off { background: none; border: 0; font: inherit; }
 button.menu-off.sair { cursor: pointer; }
 

@@ -197,7 +197,16 @@ export default function App() {
           const { Tela } = TELAS[k];
           return <div key={k} className="slot" hidden={ativa !== k}><Tela onFechar={() => fechar(k)} /></div>;
         })}
-        {!ativa && <div className="fundo-paes" />}
+        {!ativa && (
+          <div className="fundo-paes">
+            <div className="fundo-foto" aria-hidden="true" />
+            <div className="fundo-cartao">
+              <img src="/logo.jpg" alt="Lev-Pão" />
+              <h2>Sistema Gestor WinBakery</h2>
+              <p>Escolha uma opção no menu acima para começar.</p>
+            </div>
+          </div>
+        )}
       </div>
 
       <footer className="rodape">
