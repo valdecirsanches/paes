@@ -719,3 +719,8 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 - **Impressão direta do DANFE**: com "Impressão direta" ligada na NF-e, o DANFE (individual ou das notas marcadas) vai direto para a impressora do agente, sem pré-visualização. Com ela desligada, abre o PDF no navegador como antes.
 - Em Ferramentas › Configurar impressoras há um novo documento **DANFE (NF-e) — impressão direta** (escolha a impressora e as cópias). O PDF é convertido em imagens A4 no navegador (pdf.js, carregado só nessa hora) e enviado ao agente como "imagem pelo driver" — por isso o destino precisa ser uma impressora do Windows com linguagem "imagem-driver". Se não houver destino ou o agente falhar, o app abre a pré-visualização e registra o motivo no Log. **Rode `npm install` em `client/`** (nova dependência `pdfjs-dist`).
 - Testado: conversão de um PDF A4 em PNG no navegador. Não testado: o envio real ao agente/impressora.
+
+## Fase 131
+- Configurar impressoras: botão **↻ Atualizar impressoras** (no topo e abaixo da lista) e atualização automática ao voltar da página do agente, para aparecerem as impressoras recém-criadas.
+- DANFE direto: o destino só precisa ser uma impressora **do Windows** (antes exigia a linguagem "imagem-driver", o que recusava impressoras novas). Se a impressão falhar, aparece aviso na tela (além do Log) e abre a pré-visualização.
+- Coluna **Imp** da grade de NF-e virou ícone: 🖨️ = DANFE já enviado à impressora, — = não. Marca na hora e grava em `tb_nfe.nfe_impresso` (`POST /api/nfe/impresso`). Só a impressão direta marca; abrir o PDF no navegador não marca, pois não há como saber se foi impresso. Não testado com impressora real.

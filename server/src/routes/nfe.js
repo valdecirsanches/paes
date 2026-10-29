@@ -1107,6 +1107,15 @@ async function arquivoOuApi(req, res, campo, tipo, nomeExt, baixa) {
   res.type(tipo).set('Content-Disposition', `inline; filename="${nfe.nfe_chave || id}.${nomeExt}"`).send(buf);
 }
 /** Vários DANFEs num único PDF (notas marcadas). Ignora as que não estão AUTORIZADAS e informa quais em X-Danfe-Ignoradas. */
+/** Marca (ou desmarca) notas como impressas — o app chama depois de enviar o DANFE à impressora do agente. */
+router.post('/impresso', async (req, res) => {
+  const ids = [...new Set((Array.isArray(req.body?.ids) ? req.body.ids : []).map((x) => idValido(x)))].slice(0, 500);
+  if (!ids.length) throw invalid('Selecione ao menos uma nota.');
+  const v = req.body?.impresso === false ? 'False' : 'True';
+  try { await pool.query('update tb_nfe set nfe_impresso = ? where id in (?)', [v, ids]); }
+  catch { await pool.query('update tb_nfe set nfe_impresso = ? where id in (?)', [v === 'True' ? 1 : 0, ids]); }
+  res.json({ ok: true, ids, impresso: v === 'True' });
+});
 router.post('/danfe-lote', async (req, res) => {
   const ids = [...new Set((Array.isArray(req.body?.ids) ? req.body.ids : []).map((x) => idValido(x)))].slice(0, 200);
   if (!ids.length) throw invalid('Selecione ao menos uma nota.');

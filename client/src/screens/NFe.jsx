@@ -23,6 +23,7 @@ const CFG_NFE = 2, CFG_CERT = 4; // posições das abas com blocos próprios (am
 const LIMITE_LISTA = 1500; // igual ao servidor
 const ALT_NOTA = 22; // px — altura fixa das linhas da grade de notas (rolagem virtual)
 function celulaGrade(r, [k, , t]) {
+  if (k === 'nfe_impresso') return temMarca(r[k]) ? <span className="nf2-imp on" title="Já impresso">🖨️</span> : <span className="nf2-imp" title="Não impresso">—</span>;
   if (t === 'chk') return <input type="checkbox" checked={temMarca(r[k])} readOnly tabIndex={-1} />;
   if (t === 'd') return r[k] ? brData(r[k]) : '';
   if (t === 'm') return fmtBr(r[k], 2);
@@ -354,10 +355,16 @@ export default function NFe({ onFechar }) {
     const direto = impDireta && temDestino('danfe'); // impressão direta: vai para a impressora do agente, sem pré-visualização
     if (impDireta && !direto) registraLog('Impressão direta ligada, mas não há impressora do DANFE definida (Ferramentas › Configurar impressoras): abrindo a pré-visualização.');
     const aba = direto ? null : window.open('', '_blank'); // abre já (clique do usuário) para o bloqueador de pop-up não barrar
+    const ids0 = lote ? [...marcados] : [nota?.id];
     const entrega = async (blob, rotulo) => {
       if (direto) {
-        try { await imprimirPdfDireto(await blob.arrayBuffer()); notificar('ok', `DANFE enviado à impressora (${rotulo}).`); return; }
-        catch (e) { registraLog(`Impressão direta do DANFE falhou (${e.message}): abrindo a pré-visualização.`); }
+        try {
+          await imprimirPdfDireto(await blob.arrayBuffer()); notificar('ok', `DANFE enviado à impressora (${rotulo}).`);
+          const ids = ids0.filter(Boolean);
+          setLinhas((ls) => ls?.map((r) => (ids.includes(r.id) ? { ...r, nfe_impresso: 'True' } : r))); // ícone "impresso" na hora
+          api.post('/nfe/impresso', { ids }).catch((e) => registraLog(`Não consegui marcar como impresso: ${e.message}`));
+          return;
+        } catch (e) { notificar('erro', `Impressão direta do DANFE falhou: ${e.message}. Abrindo a pré-visualização.`); registraLog(`Impressão direta do DANFE falhou (${e.message}).`); }
       }
       const url = URL.createObjectURL(blob);
       const w = aba ?? window.open('', '_blank');

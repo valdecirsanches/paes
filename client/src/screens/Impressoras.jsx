@@ -81,6 +81,8 @@ export default function Impressoras() {
     try { const s = await statusAgente(); setAgente(s); setDestinos(await destinosAgente()); } catch { setAgente(false); setDestinos([]); }
   }, []);
   useEffect(() => { verificar(); }, [verificar]);
+  // voltou da página do agente (onde se cadastram impressoras): recarrega a lista sozinho
+  useEffect(() => { const f = () => { statusAgente().then((s) => { setAgente(s); return destinosAgente(); }).then(setDestinos).catch(() => {}); }; window.addEventListener('focus', f); return () => window.removeEventListener('focus', f); }, []);
 
   const muda = (tipo, campo, valor) => {
     const n = { ...mapa, [tipo]: { ...mapa[tipo], [campo]: valor } };
@@ -103,7 +105,7 @@ export default function Impressoras() {
           <span className={`imp-selo ${estado[0]}`}><i />{estado[1]}</span>
         </header>
         <div className="imp-acoes">
-          <button type="button" className="imp-btn" onClick={verificar}>↻ Verificar novamente</button>
+          <button type="button" className="imp-btn" onClick={verificar}>↻ Atualizar impressoras</button>
           {agente && agente.via !== 'servidor' && <a className="imp-btn" href={AGENTE} target="_blank" rel="noreferrer">⚙ Cadastrar / editar impressoras</a>}
         </div>
       </section>
@@ -134,6 +136,7 @@ export default function Impressoras() {
             );
           })}
         </div>
+        <div className="imp-acoes"><button type="button" className="imp-btn" onClick={verificar}>↻ Atualizar impressoras</button><small>Criou ou mudou uma impressora no agente? Clique aqui para ela aparecer nas listas acima.</small></div>
         <p className="imp-nota">Se o agente estiver fora do ar, a impressão cai automaticamente no navegador.</p>
       </section>
       {editor && <EditorEtiqueta tipo={editor} onFechar={fechaEditor} />}
