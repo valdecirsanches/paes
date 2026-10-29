@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import { Modal } from './ui.jsx';
 
-const lista = (a) => (a ?? []).join('; ');
 const REAL = (v) => Number(v ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 /** Envio de NF-e por e-mail (cliente destinatário ou contabilidade). 1 nota: edita destinatários/assunto/texto; várias: confere e envia. */
@@ -11,7 +10,9 @@ export default function EnvioEmail({ ids, destino, onFechar, onEnviado }) {
   const [erro, setErro] = useState('');
   const [env, setEnv] = useState(false);
   const [res, setRes] = useState(null);
-  const [aj, setAj] = useState({ para: '', cc: '', cco: '', assunto: '', mensagem: '' });
+  const [aj, setAj] = useState({ assunto: '', mensagem: '' });
+  const [extra, setExtra] = useState(''); // e-mails a mais (nota única) — vão em "Para"
+  const [marc, setMarc] = useState({}); // "id|campo|email" -> false quando desmarcado (ausente = marcado)
   const unica = ids.length === 1;
   const quem = destino === 'contabilidade' ? 'Contabilidade' : 'Cliente destinatário';
 
@@ -20,23 +21,35 @@ export default function EnvioEmail({ ids, destino, onFechar, onEnviado }) {
     api.post('/nfe/email/previa', { ids, destino }).then((r) => {
       if (!vivo) return; setPrev(r);
       const n = r.notas[0];
-      if (r.notas.length === 1) setAj({ para: lista(n.para), cc: lista(n.cc), cco: lista(n.cco), assunto: n.assunto, mensagem: n.mensagem });
+      if (r.notas.length === 1) setAj({ assunto: n.assunto, mensagem: n.mensagem });
     }).catch((e) => vivo && setErro(e.message));
     return () => { vivo = false; };
   }, [ids, destino]);
 
-  const prontas = prev?.notas.filter((n) => n.pode).length ?? 0;
+  const on = (id, c, e) => marc[`${id}|${c}|${e}`] !== false;
+  const tog = (id, c, e) => setMarc((m) => ({ ...m, [`${id}|${c}|${e}`]: !on(id, c, e) }));
+  const maisEmails = unica ? extra.split(/[;,\s]+/).filter((x) => x.includes('@')) : [];
+  const escolhidos = (n) => ({ para: [...n.para.filter((e) => on(n.id, 'para', e)), ...maisEmails], cc: n.cc.filter((e) => on(n.id, 'cc', e)), cco: n.cco.filter((e) => on(n.id, 'cco', e)) });
+  const prontasLista = prev?.notas.filter((n) => n.pode && escolhidos(n).para.length > 0) ?? [];
+  const prontas = prontasLista.length;
   const enviar = async () => {
     setEnv(true); setErro('');
     try {
-      const corpo = { ids: prev.notas.filter((n) => n.pode).map((n) => n.id), destino };
-      if (unica) corpo.ajustes = aj;
+      const corpo = { ids: prontasLista.map((n) => n.id), destino };
+      if (unica) { const e = escolhidos(prev.notas[0]); corpo.ajustes = { ...aj, para: e.para.join(';'), cc: e.cc.join(';'), cco: e.cco.join(';') }; }
+      else corpo.selecao = Object.fromEntries(prontasLista.map((n) => [n.id, escolhidos(n)]));
       const r = await api.post('/nfe/email', corpo);
       setRes(r); onEnviado?.(r);
     } catch (e) { setErro(e.message); } finally { setEnv(false); }
   };
-  const campo = (k, rot, dica) => (
-    <label className="ee-mail-c"><span>{rot}</span><input value={aj[k]} placeholder={dica} onChange={(e) => setAj((x) => ({ ...x, [k]: e.target.value }))} /></label>
+  /** Todos os e-mails que vão receber, cada um com seu checkbox (Para / Cópia / Cópia oculta). */
+  const Destinos = ({ n }) => (
+    <div className="em-dest">
+      {[['para', 'Para'], ['cc', 'Cópia (Cc)'], ['cco', 'Cópia oculta (Cco)']].map(([c, rot]) => n[c].length > 0 && (
+        <div key={c} className="em-dest-g"><b>{rot}</b>
+          {n[c].map((e) => <label key={e} className="em-dest-i"><input type="checkbox" checked={on(n.id, c, e)} onChange={() => tog(n.id, c, e)} />{e}</label>)}
+        </div>))}
+    </div>
   );
 
   return (
@@ -50,10 +63,11 @@ export default function EnvioEmail({ ids, destino, onFechar, onEnviado }) {
           return (<>
             <p className="em-sub">NFe <b>{n.numero}</b> · {n.cliente || '—'} · {REAL(n.valor)} · anexos: <b>XML</b> autorizado e <b>DANFE</b> (PDF)</p>
             {n.avisos.map((a) => <p key={a} className="em-aviso">⚠ {a}</p>)}
-            {campo('para', 'Para', 'um ou mais e-mails separados por ;')}
-            {campo('cc', 'Cópia (Cc)')}
-            {campo('cco', 'Cópia oculta (Cco)')}
-            {campo('assunto', 'Assunto')}
+            <p className="em-sub">Marque quem deve receber:</p>
+            <Destinos n={n} />
+            {!n.para.length && !n.cc.length && !n.cco.length && <p className="em-aviso">Nenhum e-mail cadastrado — informe abaixo.</p>}
+            <label className="ee-mail-c"><span>Outros e-mails</span><input value={extra} placeholder="adicionar e-mails separados por ;" onChange={(e) => setExtra(e.target.value)} /></label>
+            <label className="ee-mail-c"><span>Assunto</span><input value={aj.assunto} onChange={(e) => setAj((x) => ({ ...x, assunto: e.target.value }))} /></label>
             <label className="em-msg"><span>Mensagem</span><textarea rows={8} value={aj.mensagem} onChange={(e) => setAj((x) => ({ ...x, mensagem: e.target.value }))} /></label>
           </>);
         })()}
@@ -62,9 +76,9 @@ export default function EnvioEmail({ ids, destino, onFechar, onEnviado }) {
           <div className="em-grade"><table>
             <thead><tr><th>NFe</th><th>Cliente</th><th>Valor</th><th>Destinatários</th></tr></thead>
             <tbody>{prev.notas.map((n) => (
-              <tr key={n.id} className={n.pode ? '' : 'em-x'}>
+              <tr key={n.id} className={n.pode && escolhidos(n).para.length ? '' : 'em-x'}>
                 <td>{n.numero || n.id}</td><td>{n.cliente}</td><td className="num">{REAL(n.valor)}</td>
-                <td>{n.pode ? <>{lista(n.para)}{n.cc.length ? <small> · cc: {lista(n.cc)}</small> : null}</> : <span className="em-aviso">{n.avisos[0]}</span>}</td>
+                <td>{n.pode ? <Destinos n={n} /> : <span className="em-aviso">{n.avisos[0]}</span>}</td>
               </tr>))}</tbody>
           </table></div>
         </>)}

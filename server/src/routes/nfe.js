@@ -593,7 +593,12 @@ router.post('/email', async (req, res) => {
         para = l(aj.para, para); cc = l(aj.cc, cc); cco = l(aj.cco, cco);
         assunto = txt(aj.assunto) || assunto; mensagem = txt(aj.mensagem) || mensagem;
       }
-      if (!para.length) throw invalid(p.avisos[0] || 'Sem e-mail de destino.');
+      const sel = !aj && req.body.selecao?.[id]; // várias notas: só os e-mails marcados na tela (subconjunto dos propostos)
+      if (sel) {
+        const f = (lst, pick) => { const ok = new Set(listaEmails([].concat(pick ?? []).join(';')).ok.map((e) => e.toLowerCase())); return lst.filter((e) => ok.has(e.toLowerCase())); };
+        para = f(para, sel.para); cc = f(cc, sel.cc); cco = f(cco, sel.cco);
+      }
+      if (!para.length) throw invalid(p.avisos[0] || 'Nenhum e-mail de destino marcado.');
       const r = await enviaEmail(cfg, { para, cc, cco, assunto, mensagem, anexos: await anexosDaNota(nfe, cfg) }, transporte);
       if (destino === 'cliente') { try { await pool.query("update tb_nfe set nfe_email_enviado = 'True' where id = ?", [id]); } catch { await pool.query('update tb_nfe set nfe_email_enviado = 1 where id = ?', [id]).catch(() => {}); } }
       await evento(pool, id, 'EMAIL', { resposta: `${destino === 'contabilidade' ? 'Contabilidade' : 'Cliente'}: ${[...para, ...cc].join('; ')}`, obs: assunto, retorno: JSON.stringify({ destino, para, cc, cco, ...r }) }).catch(() => {});

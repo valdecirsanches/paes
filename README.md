@@ -579,3 +579,6 @@ Na aba Unidades há campo de pesquisa (nome, código, endereço, bairro, cidade,
 
 ### Fase 88 — E-mail da NFe
 Remetente: se o usuário SMTP é um e-mail (ex.: nfe@levpao.com.br) ele é o "De"; o e-mail do emitente (ex.: sac@) vai como Responder-para. Corrige o 553 "Sender address rejected: not owned by user". Botão ✉ na linha de cada NFe autorizada (envia ao cliente, abre a tela de envio).
+
+### Fase 89 — Envio de e-mail: todos os destinatários com checkbox
+A tela de envio lista todos os e-mails (Para, Cc, Cco) de cada nota, cada um com checkbox (marcados por padrão); só os marcados recebem. Nota única permite acrescentar outros e-mails. O envio de várias notas também passa por essa tela (o interruptor "Confirma e-mail" saiu). O servidor aceita `selecao` (subconjunto dos e-mails propostos por nota).

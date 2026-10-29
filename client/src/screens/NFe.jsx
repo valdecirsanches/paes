@@ -168,7 +168,6 @@ export default function NFe({ onFechar }) {
   const [maisAberto, setMaisAberto] = useState(false);
   const [resposta, setResposta] = useState('');
   const [impDireta, setImpDireta] = useState(true);
-  const [confirmaEmail, setConfirmaEmail] = useState(true);
   const [emailEnvio, setEmailEnvio] = useState(null);
   const [progresso, setProgresso] = useState(4);
   const [ocupado, setOcupado] = useState(false);
@@ -382,13 +381,6 @@ export default function NFe({ onFechar }) {
   const apagarLinha = useCallback((r) => acoesLinha.current.apagar(r), []);
   const enviaEmail = (destino) => () => {
     const ids = [...alvo]; if (!ids.length) { setLog(['Selecione a NFe desejada.']); return; }
-    if (ids.length > 1 && !confirmaEmail) {
-      setConfirma({ texto: `Enviar ${ids.length} NF-e(s) por e-mail${destino === 'contabilidade' ? ' à contabilidade' : ' aos clientes'} sem conferir?`, ok: () => acao(async () => {
-        const r = await api.post('/nfe/email', { ids, destino }); setLog(r.resultados.map((x) => x.log)); setLogAberto(true);
-        notificar(r.ok ? 'ok' : 'erro', `${r.enviadas} e-mail(s) enviado(s).`); await filtrar(true);
-      }) });
-      return;
-    }
     setEmailEnvio({ ids, destino });
   };
   const emailLinha = useCallback((r) => setEmailEnvio({ ids: [r.id], destino: 'cliente' }), []);
@@ -643,7 +635,6 @@ export default function NFe({ onFechar }) {
           <div className="nf2-card">
             <div className="nf2-card-t">⚙ Opções</div>
             <label className="nf2-sw"><input type="checkbox" checked={impDireta} onChange={(e) => setImpDireta(e.target.checked)} />Impressão direta</label>
-            <label className="nf2-sw"><input type="checkbox" checked={confirmaEmail} onChange={(e) => setConfirmaEmail(e.target.checked)} />Confirma e-mail</label>
           </div>
           <div className="nfe-bar" title="Progresso"><div style={{ width: `${progresso}%` }} /><span>{progresso}%</span></div>
         </aside>
