@@ -705,3 +705,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 126
 - Danfe silencioso: se o DANFE não puder ser obtido, o app não mostra mais o pop-up vermelho nem abre o painel "Eventos fiscais · Consultas"; a mensagem vai para o **Log** da tela de NF-e (e para o log do servidor). Antes de desistir, busca o XML por mais um caminho: procura pela chave (ou pelo nome do arquivo gravado no banco) nas pastas `NFE_XML_DIR` e da API (`NFE_ARQUIVOS_DIR`), e com o XML gera o DANFE localmente.
+
+## Fase 127
+- Danfe silencioso agora faz o que se faz à mão: sem o PDF/XML no disco, na API (por id) ou na pasta da API, o servidor executa em segundo plano a **Consulta de protocolo pela chave** (a mesma do painel Eventos fiscais → Consultas), ajusta a nota local, grava o XML vindo na resposta e, se ainda faltar o PDF, gera o DANFE a partir desse XML. Cache de 60 s por chave; falhas vão para o log do servidor e para o Log da tela. Não testado contra a API real.

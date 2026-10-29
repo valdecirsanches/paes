@@ -1036,6 +1036,28 @@ router.post('/inutilizar', async (req, res) => {
 /** Arquivo da nota (XML/PDF): tenta a API primeiro (traz o atual e guarda no app); sem API, usa a cópia do disco. */
 /** Procura o arquivo na pasta onde a API guarda os XML/PDF (NFE_ARQUIVOS_DIR/<cnpj>/NFe/<data>/NFe). */
 const consultaPastaApi = (nfe, cfg, tipo) => lerArquivoNota({ chave: nfe.nfe_chave, cnpj: cfg.cnpj, tipo, datas: [nfe.nfe_protocolo_data_hora, nfe.data_emissao] });
+/** O que o botão "Consulta de protocolo pela chave" faz, só que em silêncio: consulta a API pela chave, ajusta a nota local e devolve o XML da resposta. */
+const consultaChaveCache = new Map();
+async function consultaChaveSilenciosa(nfe, cfg) {
+  const chave = String(nfe.nfe_chave ?? '').replace(/\D/g, '');
+  if (chave.length !== 44) return null;
+  const c = consultaChaveCache.get(chave);
+  if (c && Date.now() - c.t < 60000) return c.v;
+  let v = null;
+  try {
+    const empId = await api.empresaId(cfg.cnpj);
+    const r = await api.consultarProtocolo(empId, { chaveAcesso: chave, ambiente: ambienteCfg(cfg) });
+    if (r.status === 200 && r.body) {
+      const xml64 = r.body.xmlBase64 ?? r.body.documento?.xmlBase64;
+      v = { xml: xml64 ? Buffer.from(String(xml64), 'base64') : null };
+      try { await ajustaLocalPelaApi(cfg, { chave, d: { ...(r.body.documento ?? {}), ...r.body, id: r.body.documento?.id, protocolo: r.body.numeroProtocolo ?? r.body.documento?.protocolo, motivoRetorno: r.body.motivo }, xmlBase64: xml64 }); } catch { /* o XML da resposta já basta */ }
+      const [[atual]] = await pool.query('select nfe_xml_file, nfe_pdf_file from tb_nfe where id = ?', [nfe.id]);
+      if (atual) { nfe.nfe_xml_file = atual.nfe_xml_file; nfe.nfe_pdf_file = atual.nfe_pdf_file; }
+    } else console.warn(`[nfe] consulta pela chave ${chave}: HTTP ${r.status}`);
+  } catch (e) { console.warn(`[nfe] consulta pela chave ${chave} falhou: ${e.message}`); }
+  consultaChaveCache.set(chave, { t: Date.now(), v });
+  return v;
+}
 async function buscaArquivo(nfe, cfg, campo, nomeExt, baixa, orientacao) {
   const f = txt(nfe[campo]);
   const doDisco = f && existsSync(paraLocal(f));
@@ -1057,6 +1079,11 @@ async function buscaArquivo(nfe, cfg, campo, nomeExt, baixa, orientacao) {
   // a API não entregou: usa a cópia que ela mesma guarda em disco
   const l = await consultaPastaApi(nfe, cfg, nomeExt === 'xml' ? 'xml' : 'pdf');
   if (l.buffer?.length) { await guarda(l.buffer); return l.buffer; }
+  // plano B: a API conhece a nota pela chave (como na consulta manual): traz XML/PDF dela, em silêncio
+  const viaChave = await consultaChaveSilenciosa(nfe, cfg);
+  const depois = txt(nfe[campo]);
+  if (depois && existsSync(paraLocal(depois))) return readFile(paraLocal(depois));
+  if (nomeExt === 'xml' && viaChave?.xml?.length) { await guarda(viaChave.xml); return viaChave.xml; }
   if (nomeExt === 'xml') { // última tentativa: procura o XML pela chave nas pastas locais
     const x = await achaXmlLocal({ chave: nfe.nfe_chave, arquivoBanco: f, bases: [baseGravacao(), baseArquivos()] }).catch(() => null);
     if (x?.length) { await guarda(x); return x; }
@@ -1064,7 +1091,7 @@ async function buscaArquivo(nfe, cfg, campo, nomeExt, baixa, orientacao) {
   // plano B silencioso: sem o PDF, busca o XML e gera o DANFE localmente
   if (nomeExt === 'pdf') {
     try {
-      const xml = await buscaArquivo(nfe, cfg, 'nfe_xml_file', 'xml', (d) => api.xmlAutorizado(d));
+      const xml = viaChave?.xml?.length ? viaChave.xml : await buscaArquivo(nfe, cfg, 'nfe_xml_file', 'xml', (d) => api.xmlAutorizado(d));
       const pdf = await danfeDoXml(xml, { logo: await lerLogo(), cancelada: nfe.status_e === 'CANCELADA' });
       await guarda(pdf);
       return pdf;

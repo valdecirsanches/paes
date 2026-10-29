@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-const FASE = '126'; // atualizar a cada entrega; aparece no rodapé para conferir se o deploy pegou
+const FASE = '127'; // atualizar a cada entrega; aparece no rodapé para conferir se o deploy pegou
 const quando = new Date(Date.now() - 3 * 3600 * 1000).toISOString().slice(0, 16).replace('T', ' '); // hora de Brasília
 
 export default defineConfig({
