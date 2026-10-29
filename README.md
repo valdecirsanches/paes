@@ -680,3 +680,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 ## Fase 118 — Número do dispositivo à prova de perda
 - O número agora é guardado em dois lugares no navegador: cookie `paes_disp` e armazenamento do site (`localStorage`, enviado em todo pedido no cabeçalho `x-dispositivo`; o navegador também é instruído a não apagá-lo). Se um dos dois sumir, o servidor devolve o mesmo número e regrava o cookie. Só muda se os dois forem apagados (limpeza total dos dados do site, outro navegador/perfil, janela anônima).
 - Dispositivos › linha pendente: seletor **"Assumir lugar de…"** (sugere automaticamente o dispositivo liberado com o mesmo IP e navegador): passa habilitado, áreas e descrição do número antigo para o novo e apaga o antigo — `POST /api/dispositivos/:id/assume`.
+
+## Fase 119
+- A foto do fundo do menu principal foi renomeada (`fundo-paes-v2.jpg`) para o navegador/Cloudflare não servir a versão antiga guardada em cache com o nome anterior.
