@@ -1725,3 +1725,8 @@ dialog.modal:has(.nfe-comandas){width:min(900px,96vw)}dialog .nfe-comandas{max-h
 .grade tr.edit td.ind{background:#b39b00!important;color:#fff!important;font-weight:800;animation:edpulso 1.1s ease-in-out infinite}
 @keyframes edpulso{50%{background:#ffe600!important;color:#b39b00!important}}
 @media (prefers-reduced-motion:reduce){.grade tr.edit td.ind{animation:none}}
+/* Programação fixa: as linhas já usam amarelo/ciano (especial/produção), então o item em edição ganha laranja forte e moldura grossa */
+.fixa .grade tr.edit td,.diaria.fixa .grade tr.edit td{background:#ff8a00!important;color:#000!important;font-weight:800}
+.fixa .grade tr.edit td:not(.ind){box-shadow:inset 0 3px 0 #7a2e00,inset 0 -3px 0 #7a2e00}
+.fixa .grade tr.edit td.ind{background:#7a2e00!important;color:#fff!important;animation:edpulsoF 1.1s ease-in-out infinite}
+@keyframes edpulsoF{50%{background:#ff8a00!important;color:#7a2e00!important}}

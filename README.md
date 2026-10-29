@@ -633,3 +633,6 @@ O rodapé e a tela de login mostram `fase NNN · build aaaa-mm-dd hh:mm`, para c
 
 ### Fase 106 — Destaque vale já ao abrir o painel de alteração
 O item aparece em amarelo forte assim que o painel "Alterando item" é aberto (F3), não só depois da primeira edição. Conferido com captura de tela no preview.
+
+### Fase 107 — Destaque do item em edição na Programação fixa
+As linhas da fixa já usam amarelo/ciano (especial/produção); o item em edição fica laranja forte com moldura escura grossa e indicador pulsando. Conferido em captura de tela.
