@@ -702,3 +702,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 125
 - Tela principal do faturamento: agora mostra o cartaz Lev-Pão enviado (`public/principal-levpao.jpg`), inteiro e centralizado sobre fundo vermelho, sem o cartão central anterior.
+
+## Fase 126
+- Danfe silencioso: se o DANFE não puder ser obtido, o app não mostra mais o pop-up vermelho nem abre o painel "Eventos fiscais · Consultas"; a mensagem vai para o **Log** da tela de NF-e (e para o log do servidor). Antes de desistir, busca o XML por mais um caminho: procura pela chave (ou pelo nome do arquivo gravado no banco) nas pastas `NFE_XML_DIR` e da API (`NFE_ARQUIVOS_DIR`), e com o XML gera o DANFE localmente.

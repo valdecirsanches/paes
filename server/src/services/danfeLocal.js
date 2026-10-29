@@ -19,3 +19,27 @@ export async function danfeDoXml(xml, { logo = null, cancelada = false } = {}) {
     return buf;
   } finally { if (dir) await rm(dir, { recursive: true, force: true }).catch(() => {}); }
 }
+
+/** Procura o XML da nota nas pastas locais (NFE_XML_DIR e pasta da API) pela chave ou pelo nome do arquivo gravado no banco. */
+export async function achaXmlLocal({ chave, arquivoBanco, bases, limite = 20000 }) {
+  const { readdir, readFile } = await import('node:fs/promises');
+  const k = String(chave ?? '').replace(/\D/g, '');
+  const nomeBanco = String(arquivoBanco ?? '').split(/[\\/]/).pop().toLowerCase();
+  if (!k && !nomeBanco) return null;
+  let visitados = 0;
+  async function anda(dir, prof) {
+    if (prof > 6 || visitados > limite) return null;
+    let ents; try { ents = await readdir(dir, { withFileTypes: true }); } catch { return null; }
+    for (const e of ents) {
+      visitados += 1;
+      const n = e.name.toLowerCase();
+      if (e.isFile() && n.endsWith('.xml') && ((k && n.includes(k)) || (nomeBanco && n === nomeBanco))) {
+        try { return await readFile(path.join(dir, e.name)); } catch { /* segue */ }
+      }
+    }
+    for (const e of ents) if (e.isDirectory()) { const r = await anda(path.join(dir, e.name), prof + 1); if (r) return r; }
+    return null;
+  }
+  for (const b of bases.filter(Boolean)) { const r = await anda(b, 0); if (r) return r; }
+  return null;
+}

@@ -346,6 +346,7 @@ export default function NFe({ onFechar }) {
       } finally { setTimeout(() => setProgresso(4), 1200); }
     });
   };
+  const registraLog = (msg) => setLog((l) => [...(Array.isArray(l) ? l : []), `${new Date().toLocaleTimeString('pt-BR')} ${msg}`]);
   const danfe = async () => {
     const lote = marcados.size > 1 || (marcados.size === 1 && !marcados.has(foco));
     if (!nota && !lote) return;
@@ -357,9 +358,9 @@ export default function NFe({ onFechar }) {
         const ign = decodeURIComponent(r.headers.get('X-Danfe-Ignoradas') || '');
         const url = URL.createObjectURL(await r.blob());
         if (aba) aba.location.href = url; else window.open(url, '_blank');
-        if (ign) notificar('erro', `DANFE não incluída: ${ign}`);
+        if (ign) registraLog(`DANFE não incluída: ${ign}`);
         cacheDet.current.clear();
-      } catch (e) { aba?.close(); notificar('erro', `Danfe: ${e.message}`); }
+      } catch (e) { aba?.close(); registraLog(`Danfe: ${e.message}`); }
       return;
     }
     try {
@@ -368,7 +369,7 @@ export default function NFe({ onFechar }) {
       const url = URL.createObjectURL(await r.blob());
       if (aba) aba.location.href = url; else window.open(url, '_blank');
       recarregaDetalhe.current?.(nota.id); // o servidor guardou XML/PDF vindos da API
-    } catch (e) { aba?.close(); notificar('erro', `Danfe: ${e.message}`); setFiscal('consultas'); } // sem XML/DANFE: abre a consulta para buscar na API
+    } catch (e) { aba?.close(); registraLog(`Danfe da NF ${nota.nfe_numero}/${nota.nfe_serie ?? ''}: ${e.message}`); } // silencioso: sem pop-up nem painel; o motivo vai para o Log
   };
   const [fiscal, setFiscal] = useState(null); // aba aberta do painel de eventos fiscais
   const abreFiscal = (aba) => () => { if (!nota && aba !== 'inutilizar' && aba !== 'consultas' && aba !== 'numeracao') { setLog(['Selecione a NFe desejada.']); return; } setFiscal(aba); };

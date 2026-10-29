@@ -8,7 +8,7 @@ import { isIsoDate } from '../rules.js';
 import * as api from '../services/nfeApi.js';
 import { consultaNcm, pesquisaNcm } from '../services/ncm.js';
 import { lerDanfeCfg, gravarDanfeCfg, gravarLogo, lerLogo, removerLogo, ORIENTACOES } from '../services/danfeStore.js';
-import { danfeDoXml } from '../services/danfeLocal.js';
+import { danfeDoXml, achaXmlLocal } from '../services/danfeLocal.js';
 import { lerA3, gravarA3, limparA3 } from '../services/a3Store.js';
 import { impostos, usuarioNfe } from '../services/geraFatura.js';
 import { destinatarios, assuntoPadrao, mensagemPadrao, enviaEmail, criaTransporte, listaEmails } from '../services/emailNfe.js';
@@ -1057,6 +1057,10 @@ async function buscaArquivo(nfe, cfg, campo, nomeExt, baixa, orientacao) {
   // a API não entregou: usa a cópia que ela mesma guarda em disco
   const l = await consultaPastaApi(nfe, cfg, nomeExt === 'xml' ? 'xml' : 'pdf');
   if (l.buffer?.length) { await guarda(l.buffer); return l.buffer; }
+  if (nomeExt === 'xml') { // última tentativa: procura o XML pela chave nas pastas locais
+    const x = await achaXmlLocal({ chave: nfe.nfe_chave, arquivoBanco: f, bases: [baseGravacao(), baseArquivos()] }).catch(() => null);
+    if (x?.length) { await guarda(x); return x; }
+  }
   // plano B silencioso: sem o PDF, busca o XML e gera o DANFE localmente
   if (nomeExt === 'pdf') {
     try {
@@ -1066,6 +1070,7 @@ async function buscaArquivo(nfe, cfg, campo, nomeExt, baixa, orientacao) {
       return pdf;
     } catch (e2) { erro = erro ?? e2; }
   }
+  console.warn(`[nfe] ${nomeExt.toUpperCase()} da nota ${nfe.nfe_numero}/${nfe.nfe_serie} indisponível: ${erro?.message ?? ''}`);
   throw new AppError(erro?.status === 404 ? 404 : 502, `${erro?.message ?? 'Arquivo indisponível.'} Também não achei na pasta da API: ${l.motivo ?? ''}`.trim());
 }
 async function arquivoOuApi(req, res, campo, tipo, nomeExt, baixa) {
