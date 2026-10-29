@@ -621,3 +621,6 @@ Ao selecionar o produto (pesquisa ou código), se hora e quantidade já estão p
 
 ### Fase 102 — Item em edição destacado (diária e fixa)
 A linha do item que está sendo alterado (ou a linha "novo") fica laranja com ✎ no indicador, até gravar ou cancelar.
+
+### Fase 103 — Destaque mais forte do item em edição
+Laranja vivo (#ff8a00) com texto escuro em negrito, bordas marcadas e o indicador ✎ pulsando (sem animação se o sistema pedir menos movimento).
