@@ -171,8 +171,10 @@ export default function FixaTab({ status, roteiros, onChanged, notify }) {
     if (e.key !== 'Enter' || ['TEXTAREA', 'BUTTON'].includes(e.target.tagName)) return;
     e.preventDefault();
     const campos = [...e.currentTarget.querySelectorAll('input:not([disabled]):not([readonly]), select')];
-    const prox = campos[campos.indexOf(e.target) + 1]; e.target.blur(); if (prox) setTimeout(() => prox.focus(), 0);
+    const prox = campos[campos.indexOf(e.target) + 1]; e.target.blur();
+    if (prox) setTimeout(() => prox.focus(), 0); else if (editando) setTimeout(() => gravarRef.current?.(), 60); // Enter no último campo grava o item
   };
+  const gravarRef = useRef(null); gravarRef.current = gravar;
   const ref = (n) => (el) => { refs.current[n] = el; };
   const set = (k) => (e) => editar({ [k]: e.target.value });
 

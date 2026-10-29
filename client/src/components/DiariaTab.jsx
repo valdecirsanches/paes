@@ -305,7 +305,9 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
     const prox = campos[campos.indexOf(e.target) + 1];
     e.target.blur();
     if (prox) setTimeout(() => prox.focus(), 0);
+    else if (e.currentTarget === painelRef.current && editando) setTimeout(() => gravarRef.current?.(), 60); // Enter no último campo grava o item
   };
+  const gravarRef = useRef(null); gravarRef.current = gravar;
 
   const ref = (nome) => (el) => { refs.current[nome] = el; };
   const set = (k) => (e) => editar({ [k]: e.target.value });

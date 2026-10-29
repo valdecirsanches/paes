@@ -606,3 +606,6 @@ Novo cartão "Tipo de operação" (⬆ Saída / ⬇ Entrada, campo `movimento_es
 
 ### Fase 97 — Programação diária: foco após pesquisar o produto
 Depois de escolher o produto na pesquisa (duplo clique no código), o foco vai para "Descrição da comanda / nota fiscal".
+
+### Fase 98 — Enter no último campo grava (Programação diária e fixa)
+Em item em edição, Enter no último campo do painel grava o item (as mesmas validações do botão Gravar).
