@@ -323,7 +323,7 @@ export default function NFe({ onFechar }) {
     const el = jn.ref.current; if (!el || posFoco < 0) return;
     const topo = posFoco * ALT_NOTA; const base = topo + ALT_NOTA + 48; // 48 = cabeçalho + rodapé fixos
     if (topo < el.scrollTop) el.scrollTop = topo; else if (base > el.scrollTop + el.clientHeight) el.scrollTop = base - el.clientHeight;
-  }, [posFoco]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [posFoco, aba]); // eslint-disable-line react-hooks/exhaustive-deps -- aba: ao voltar à grade, a nota em foco volta à vista
 
   const acao = async (fn) => { setOcupado(true); try { await fn(); } catch (e) { notificar('erro', e.message); setLog([e.message]); } finally { setOcupado(false); } };
 

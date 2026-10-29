@@ -594,3 +594,6 @@ O aviso "Mostrando as 1500 notas mais recentes…" deixou de ser mensagem em des
 
 ### Fase 93 — Filtro de período
 O botão 📅 (hoje ↔ mês) e a troca das datas ligam automaticamente o checkbox "Período".
+
+### Fase 94 — Grade some ao voltar da configuração
+A rolagem virtual (`janela.js`) guardava a posição/altura do elemento antigo quando a aba era trocada e a grade remontava vazia até um clique/rolagem. Agora ela mede de novo e refaz o observador sempre que o elemento muda; ao voltar para a aba NFe a nota em foco é trazida à vista. Vale para todas as grades com rolagem virtual.

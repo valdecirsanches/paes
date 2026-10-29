@@ -9,14 +9,19 @@ export function useJanela(total, alt = ALT_LINHA) {
   const ref = useRef(null);
   const [j, setJ] = useState({ top: 0, h: 600 });
   const quadro = useRef(0);
+  // O elemento da grade pode sumir e voltar (troca de aba): a cada render confere se mudou e, se sim, mede de novo e
+  // refaz o observador — senão a janela guarda a rolagem/altura do elemento antigo e a grade volta vazia.
+  const visto = useRef(null); const ro = useRef(null);
   useLayoutEffect(() => {
-    const el = ref.current; if (!el) return undefined;
-    const mede = () => setJ((x) => (x.h === el.clientHeight ? x : { ...x, h: el.clientHeight || 600 }));
-    mede();
-    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(mede) : null;
-    ro?.observe(el);
-    return () => ro?.disconnect();
-  }, []);
+    const el = ref.current;
+    if (el === visto.current) return;
+    visto.current = el; ro.current?.disconnect(); ro.current = null;
+    if (!el) return;
+    const mede = () => setJ((x) => (x.h === (el.clientHeight || 600) ? x : { ...x, h: el.clientHeight || 600 }));
+    setJ({ top: el.scrollTop, h: el.clientHeight || 600 });
+    if (typeof ResizeObserver !== 'undefined') { ro.current = new ResizeObserver(mede); ro.current.observe(el); }
+  });
+  useEffect(() => () => ro.current?.disconnect(), []);
   const onScroll = useCallback((e) => {
     const top = e.currentTarget.scrollTop;
     if (quadro.current) return;
