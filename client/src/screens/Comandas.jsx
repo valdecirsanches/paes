@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { assinaUnidade, publicaUnidade, unidadeSelecionada } from '../lib/unidadeSel.js';
+import { assinaUnidade, publicaUnidade, unidadeSelecionada, useRolarParaSelecionada } from '../lib/unidadeSel.js';
 import { api } from '../api.js';
 import { Modal } from '../components/ui.jsx';
 import { comandaTexto, imprimirHtml } from '../lib/print.js';
@@ -142,9 +142,10 @@ export default function Comandas({ onFechar }) {
   useEffect(() => { if (!aviso) return undefined; const t = setTimeout(() => setAviso(null), 9000); return () => clearTimeout(t); }, [aviso]);
 
   useEffect(() => {
-    api.get('/faturamento/unidades').then((u) => { setUnidades(u); setUniId((x) => x ?? (u.some((v) => v.id === unidadeSelecionada()) ? unidadeSelecionada() : u[0]?.id ?? null)); }).catch((e) => notificar('erro', e.message));
+    api.get('/faturamento/unidades').then((u) => { const pre = u.some((v) => v.id === unidadeSelecionada()) ? unidadeSelecionada() : null; setUnidades(u); setUniId((x) => x ?? pre ?? u[0]?.id ?? null); if (pre) setDisparo((d) => d + 1); }).catch((e) => notificar('erro', e.message));
   }, [notificar]);
   const unidade = unidades.find((u) => u.id === uniId) ?? null;
+  const rolaUni = useRolarParaSelecionada(uniId);
 
   // bAtualizeClick
   const atualizar = useCallback(async (manter) => {
@@ -313,7 +314,7 @@ export default function Comandas({ onFechar }) {
             <tfoot><tr><td className="ind" /><td>{totais.n}</td><td colSpan={2} /><td className="n">{f2(totais.valor)}</td><td /></tr></tfoot>
           </table>
         </div>
-        <div className="rolagem cmd-g-uni">
+        <div className="rolagem cmd-g-uni" ref={rolaUni}>
           <table className="grade">
             <thead>
               <tr><th className="ind">✱</th><th>Unidade ⏶</th><th>Cliente</th><th>Faturamento</th></tr>

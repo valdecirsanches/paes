@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { assinaUnidade, publicaUnidade, unidadeSelecionada } from '../lib/unidadeSel.js';
+import { assinaUnidade, publicaUnidade, unidadeSelecionada, useRolarParaSelecionada } from '../lib/unidadeSel.js';
 import { api } from '../api.js';
 import Calendario from '../components/Calendario.jsx';
 import { BuscaProduto, Modal } from '../components/ui.jsx';
@@ -287,6 +287,7 @@ export default function Faturamento({ onFechar }) {
   }, [notificar]);
 
   const unidade = unidades.find((u) => u.id === uniId) ?? null;
+  const rolaUni = useRolarParaSelecionada(uniId);
   const uniV = unidade ? { ...unidade, ...uniDraft } : null;
   const visiveis = useMemo(() => (linhas ?? []).filter((r) => passaFiltro(r, { mercadoria: rgMerc, tipo: rgTipo, status: rgStatus })), [linhas, rgMerc, rgTipo, rgStatus]);
   const totais = useMemo(() => rodape(visiveis), [visiveis]);
@@ -522,7 +523,7 @@ export default function Faturamento({ onFechar }) {
               <section className="fp-card fp-unis">
                 <h4>🏢 Unidades <small>{unidades.length ? `${unidades.length} no período` : ''}</small></h4>
                 <div className="busca-lateral"><Busca busca={buscaUni} total={unidades.length} placeholder="Pesquisar unidade/cliente…" /></div>
-                <div className="rolagem fp-lista">
+                <div className="rolagem fp-lista" ref={rolaUni}>
                   <table className="grade">
                     <thead><tr><th className="ind" /><th>Unidade <i className="ord">⏶</i></th><th>Faturamento</th><th title="Comanda diária">CM</th></tr></thead>
                     <tbody>

@@ -642,3 +642,6 @@ A unidade escolhida em uma das telas é seguida pela outra (módulo `client/src/
 
 ### Fase 109 — Sincronismo também pela linha em foco do Faturamento
 Com "Conectar cliente" desligado a grade do Faturamento mistura clientes: agora a unidade da linha em foco (`id_unidade`) também é publicada, e o Controle de comandas a segue. Cada tela ignora o próprio aviso (origem 'fat'/'cmd').
+
+### Fase 110 — Sincronismo visível: rola até a unidade e já lista as comandas
+O estado já acompanhava a unidade, mas a lista (148 unidades) ficava no topo, sem mostrar a selecionada, e a grade de comandas ficava em "Clique em Atualizar". Agora a lista rola até a unidade selecionada (ao trocar e ao voltar para a aba) em Faturamento e Controle de comandas, e o Controle de comandas, ao abrir já numa unidade herdada, lista as comandas.
