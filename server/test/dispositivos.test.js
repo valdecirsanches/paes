@@ -75,6 +75,6 @@ test('cookie e cabeçalho diferentes: vale o cookie', async () => {
 
 test('máquina da fábrica: sem ajuste de preço/cobrança, layout de etiqueta e configuração da unidade', () => {
   const r = (m, u) => ({ method: m, originalUrl: u });
-  for (const [m, u] of [['POST', '/api/diaria/ajusta-preco-lote'], ['POST', '/api/diaria/5/ajusta-preco'], ['POST', '/api/diaria/5/ajusta-cobranca'], ['PUT', '/api/layout-etiquetas/etiqueta-mercadorias'], ['PUT', '/api/status/3/unidade']]) assert.equal(rotaDaFabrica(r(m, u)), false, u);
-  for (const [m, u] of [['GET', '/api/layout-etiquetas'], ['GET', '/api/status/3/unidade'], ['PUT', '/api/diaria/5'], ['POST', '/api/diaria/5/etiqueta']]) assert.equal(rotaDaFabrica(r(m, u)), true, u);
+  for (const [m, u] of [['POST', '/api/diaria/ajusta-preco-lote'], ['POST', '/api/diaria/5/ajusta-preco'], ['POST', '/api/diaria/5/ajusta-cobranca'], ['PUT', '/api/layout-etiquetas/etiqueta-mercadorias'], ['PUT', '/api/status/3/unidade'], ['POST', '/api/cargas/etiquetas'], ['POST', '/api/cargas/etiquetas/dados'], ['POST', '/api/mercadorias/etiquetas']]) assert.equal(rotaDaFabrica(r(m, u)), false, u);
+  for (const [m, u] of [['GET', '/api/layout-etiquetas'], ['GET', '/api/status/3/unidade'], ['PUT', '/api/diaria/5'], ['POST', '/api/diaria/5/etiqueta'], ['POST', '/api/cargas/diaria/separar'], ['PUT', '/api/cargas/diaria/7']]) assert.equal(rotaDaFabrica(r(m, u)), true, u);
 });

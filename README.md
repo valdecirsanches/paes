@@ -693,3 +693,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 122
 - Cargas (diária e fixa): setas ↑/↓ passam de um item para o outro (Shift+seta amplia a seleção; PageUp/PageDown e Home/End também), mantendo a linha visível na lista; o clique seleciona e o teclado continua dali. Vale para fábrica e faturamento.
+
+## Fase 123
+- Cargas na fábrica não imprime etiquetas: sem o botão **Etiquetas**, sem "Etiqueta adesiva" no menu, sem Enter que imprime e sem o log de impressão; o servidor também recusa `/api/cargas/etiquetas*` e `/api/mercadorias/etiquetas*` para máquinas só-Fábrica.

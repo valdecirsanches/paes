@@ -118,6 +118,7 @@ export function rotaDaFabrica(req) {
   if (seg === 'auth') return resto === 'me';
   const caminho = req.originalUrl.split('?')[0];
   if (/\/ajusta[-/]|\/ajusta$/.test(caminho)) return false; // ajustes de preço/cobrança: só faturamento
+  if ((seg === 'cargas' || seg === 'mercadorias') && /^\/api\/(cargas|mercadorias)\/etiquetas/.test(caminho)) return false; // impressão de etiquetas de Cargas/Mercadorias: só faturamento
   if (seg === 'layout-etiquetas' && req.method !== 'GET') return false; // ajuste de etiqueta: só faturamento
   if (/^\/api\/status\/\d+\/unidade$/.test(caminho) && req.method !== 'GET') return false; // aba Configurações da unidade
   if (seg === 'produtos') return req.method === 'GET';
