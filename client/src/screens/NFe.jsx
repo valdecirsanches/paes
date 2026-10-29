@@ -8,7 +8,7 @@ import { brData, hoje } from '../lib/rules.js';
 import { useJanela } from '../components/janela.js';
 import { imprimirPdfDireto, temDestino } from '../lib/impressora.js';
 import { CORPO_LINHAS, GRADE_COLS, ITEM_COLS, REF_LINHAS, alternaPeriodo, corLinha, fmtBr, parseBr, temMarca } from '../lib/nfeCampos.js';
-import { Confirma, Toast, confirmar, copiaTexto, entrada } from '../components/toast.jsx';
+import { Confirma, Toast, confirmar, copiaTexto, entrada, limpaMensagem, mensagem } from '../components/toast.jsx';
 
 // Configurações do emitente (tb_nfe_config)
 const CFG_TABS = [
@@ -38,12 +38,12 @@ const LinhaItem = memo(function LinhaItem({ i, sel, onSel }) {
     </tr>
   );
 });
-const LinhaNota = memo(function LinhaNota({ r, i, sel, marc, foco, onClick, onMarcar, onModal, onClonar, onApagar, onEmail }) {
+const LinhaNota = memo(function LinhaNota({ r, i, sel, marc, foco, onClick, onMarcar, onModal, onClonar, onApagar, onEmail, onDanfe }) {
   return (
     <tr className={`clicavel${foco ? ' foco' : ''}`} style={corLinha(r.status_e, sel) ?? undefined} onClick={(e) => onClick(e, r, i)}>
       <td className="ind">{foco ? '▶' : ''}</td>
       <td className="nf2-chk" onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={!!marc} onChange={() => onMarcar(r, i)} aria-label={`Marcar NFe ${r.nfe_numero || r.id}`} title="Marcar para autorizar (qualquer nota, sem ordem)" /></td>
-      <td className="nf2-ic"><button type="button" title="Dados do corpo da NFe" onClick={(e) => { e.stopPropagation(); onModal(r, i, 'corpo'); }}>📋</button><button type="button" title="Eventos da NFe" onClick={(e) => { e.stopPropagation(); onModal(r, i, 'eventos'); }}>🗓</button><button type="button" title="Clonar esta NFe (nova nota PENDENTE, sem XML, PDF, chave, protocolo e recibo)" onClick={(e) => { e.stopPropagation(); onClonar(r); }}>⧉</button>{r.status_e === 'AUTORIZADA' && <button type="button" title="Enviar esta NFe por e-mail ao cliente (XML + DANFE)" onClick={(e) => { e.stopPropagation(); onEmail(r); }}>✉</button>}{!['AUTORIZADA', 'CANCELADA'].includes(r.status_e) && <button type="button" className="lx" title="Apagar esta NF (só notas não autorizadas)" onClick={(e) => { e.stopPropagation(); onApagar(r); }}>🗑</button>}</td>
+      <td className="nf2-ic"><button type="button" title="Dados do corpo da NFe" onClick={(e) => { e.stopPropagation(); onModal(r, i, 'corpo'); }}>📋</button><button type="button" title="Eventos da NFe" onClick={(e) => { e.stopPropagation(); onModal(r, i, 'eventos'); }}>🗓</button><button type="button" title="Clonar esta NFe (nova nota PENDENTE, sem XML, PDF, chave, protocolo e recibo)" onClick={(e) => { e.stopPropagation(); onClonar(r); }}>⧉</button>{r.status_e === 'AUTORIZADA' && <button type="button" title={temMarca(r.nfe_impresso) ? 'Imprimir o DANFE novamente (já impresso)' : 'Imprimir o DANFE desta nota'} onClick={(e) => { e.stopPropagation(); onDanfe(r); }}>🖨</button>}{r.status_e === 'AUTORIZADA' && <button type="button" title="Enviar esta NFe por e-mail ao cliente (XML + DANFE)" onClick={(e) => { e.stopPropagation(); onEmail(r); }}>✉</button>}{!['AUTORIZADA', 'CANCELADA'].includes(r.status_e) && <button type="button" className="lx" title="Apagar esta NF (só notas não autorizadas)" onClick={(e) => { e.stopPropagation(); onApagar(r); }}>🗑</button>}</td>
       {GRADE_COLS.map((c) => <td key={c[0]} className={c[2] === 'm' ? 'n' : c[2] === 'chk' ? 'c' : ''}>{celulaGrade(r, c)}</td>)}
     </tr>
   );
@@ -349,45 +349,49 @@ export default function NFe({ onFechar }) {
     });
   };
   const registraLog = (msg) => setLog((l) => [...(Array.isArray(l) ? l : []), `${new Date().toLocaleTimeString('pt-BR')} ${msg}`]);
-  const danfe = async () => {
-    const lote = marcados.size > 1 || (marcados.size === 1 && !marcados.has(foco));
-    if (!nota && !lote) return;
+  const danfeRef = useRef(null);
+  /** DANFE de uma ou mais notas (ids): impressão direta no agente se ligada e configurada; senão, pré-visualização. */
+  const danfeDe = async (ids0) => {
+    const ids = ids0.filter(Boolean); if (!ids.length) return;
+    const lote = ids.length > 1;
+    const lin = (id) => (linhasRef.current ?? []).find((r) => r.id === id);
+    const rot = lote ? `${ids.length} notas` : `NF ${lin(ids[0])?.nfe_numero ?? ids[0]}`;
     const direto = impDireta && temDestino('danfe'); // impressão direta: vai para a impressora do agente, sem pré-visualização
     if (impDireta && !direto) registraLog('Impressão direta ligada, mas não há impressora do DANFE definida (Ferramentas › Configurar impressoras): abrindo a pré-visualização.');
     const aba = direto ? null : window.open('', '_blank'); // abre já (clique do usuário) para o bloqueador de pop-up não barrar
-    const ids0 = lote ? [...marcados] : [nota?.id];
-    const entrega = async (blob, rotulo) => {
+    const proc = direto ? mensagem('info', `Processando a impressão do DANFE (${rot})…`, { timeOut: 60000, extendedTimeOut: 0, id: 'danfe-proc' }) : null;
+    const fimProc = () => { if (proc !== null) limpaMensagem('danfe-proc'); };
+    const entrega = async (blob) => {
       if (direto) {
         try {
-          await imprimirPdfDireto(await blob.arrayBuffer()); notificar('ok', `DANFE enviado à impressora (${rotulo}).`);
-          const ids = ids0.filter(Boolean);
+          await imprimirPdfDireto(await blob.arrayBuffer()); fimProc(); notificar('ok', `DANFE enviado à impressora (${rot}).`);
           setLinhas((ls) => ls?.map((r) => (ids.includes(r.id) ? { ...r, nfe_impresso: 'True' } : r))); // ícone "impresso" na hora
           api.post('/nfe/impresso', { ids }).catch((e) => registraLog(`Não consegui marcar como impresso: ${e.message}`));
           return;
-        } catch (e) { notificar('erro', `Impressão direta do DANFE falhou: ${e.message}. Abrindo a pré-visualização.`); registraLog(`Impressão direta do DANFE falhou (${e.message}).`); }
+        } catch (e) { fimProc(); notificar('erro', `Impressão direta do DANFE falhou: ${e.message}. Abrindo a pré-visualização.`); registraLog(`Impressão direta do DANFE falhou (${e.message}).`); }
       }
       const url = URL.createObjectURL(blob);
       const w = aba ?? window.open('', '_blank');
       if (w) w.location.href = url; else window.open(url, '_blank');
     };
-    if (lote) { // notas marcadas: um único PDF com todas as DANFEs
-      try {
-        const r = await fetch('/api/nfe/danfe-lote', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: [...marcados] }) });
-        if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.message || `HTTP ${r.status}`); }
-        const ign = decodeURIComponent(r.headers.get('X-Danfe-Ignoradas') || '');
-        await entrega(await r.blob(), `${marcados.size} notas`);
-        if (ign) registraLog(`DANFE não incluída: ${ign}`);
-        cacheDet.current.clear();
-      } catch (e) { aba?.close(); registraLog(`Danfe: ${e.message}`); }
-      return;
-    }
     try {
-      const r = await fetch(`/api/nfe/${nota.id}/danfe`, { credentials: 'same-origin' });
+      const r = lote
+        ? await fetch('/api/nfe/danfe-lote', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids }) })
+        : await fetch(`/api/nfe/${ids[0]}/danfe`, { credentials: 'same-origin' });
       if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.message || `HTTP ${r.status}`); }
-      await entrega(await r.blob(), `NF ${nota.nfe_numero}`);
-      recarregaDetalhe.current?.(nota.id); // o servidor guardou XML/PDF vindos da API
-    } catch (e) { aba?.close(); registraLog(`Danfe da NF ${nota.nfe_numero}/${nota.nfe_serie ?? ''}: ${e.message}`); } // silencioso: sem pop-up nem painel; o motivo vai para o Log
+      const ign = decodeURIComponent(r.headers.get('X-Danfe-Ignoradas') || '');
+      await entrega(await r.blob());
+      if (ign) registraLog(`DANFE não incluída: ${ign}`);
+      if (lote) cacheDet.current.clear(); else recarregaDetalhe.current?.(ids[0]); // o servidor guardou XML/PDF vindos da API
+    } catch (e) { aba?.close(); fimProc(); registraLog(`Danfe (${rot}): ${e.message}`); notificar('aviso', `DANFE ${rot} indisponível — o motivo está no Log.`); } // sem pop-up de erro nem painel; o motivo vai para o Log
   };
+  const danfe = () => {
+    const lote = marcados.size > 1 || (marcados.size === 1 && !marcados.has(foco));
+    if (!nota && !lote) return;
+    danfeDe(lote ? [...marcados] : [nota.id]);
+  };
+  danfeRef.current = (r) => danfeDe([r.id]);
+  const danfeLinha = useCallback((r) => danfeRef.current(r), []);
   const [fiscal, setFiscal] = useState(null); // aba aberta do painel de eventos fiscais
   const abreFiscal = (aba) => () => { if (!nota && aba !== 'inutilizar' && aba !== 'consultas' && aba !== 'numeracao') { setLog(['Selecione a NFe desejada.']); return; } setFiscal(aba); };
   const reenviar = () => nota && setConfirma({ texto: `Reenviar a NFe ${nota.nfe_numero} à SEFAZ (mesmo XML)?`, ok: () => acao(async () => {
@@ -685,7 +689,7 @@ export default function NFe({ onFechar }) {
                       <thead><tr><th className="ind" /><th className="nf2-chk"><input type="checkbox" checked={todosMarcados} onChange={marcarTodas} disabled={!linhas?.length} aria-label="Marcar todas" title="Marcar / desmarcar todas" /></th><th className="nf2-ic" />{GRADE_COLS.map(([k, r, , w]) => <th key={k} style={{ minWidth: w }}>{r}</th>)}</tr></thead>
                       <tbody>
                         {jn.acima > 0 && <tr className="cd-esp" style={{ height: jn.acima }}><td colSpan={GRADE_COLS.length + 2} /></tr>}
-                        {(linhas ?? []).slice(jn.ini, jn.fim).map((r, k) => <LinhaNota key={r.id} r={r} i={jn.ini + k} sel={marcados.has(r.id) || foco === r.id} marc={marcados.has(r.id)} foco={foco === r.id} onClick={clicar} onMarcar={marcar} onModal={abreModal} onClonar={clonarLinha} onApagar={apagarLinha} onEmail={emailLinha} />)}
+                        {(linhas ?? []).slice(jn.ini, jn.fim).map((r, k) => <LinhaNota key={r.id} r={r} i={jn.ini + k} sel={marcados.has(r.id) || foco === r.id} marc={marcados.has(r.id)} foco={foco === r.id} onClick={clicar} onMarcar={marcar} onModal={abreModal} onClonar={clonarLinha} onApagar={apagarLinha} onEmail={emailLinha} onDanfe={danfeLinha} />)}
                         {jn.abaixo > 0 && <tr className="cd-esp" style={{ height: jn.abaixo }}><td colSpan={GRADE_COLS.length + 2} /></tr>}
                         {linhas && linhas.length === 0 && <tr className="semlinha"><td colSpan={GRADE_COLS.length + 3} className="vazio">&lt;Não há notas para este filtro&gt;</td></tr>}
                       </tbody>

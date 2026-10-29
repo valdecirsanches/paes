@@ -724,3 +724,8 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 - Configurar impressoras: botão **↻ Atualizar impressoras** (no topo e abaixo da lista) e atualização automática ao voltar da página do agente, para aparecerem as impressoras recém-criadas.
 - DANFE direto: o destino só precisa ser uma impressora **do Windows** (antes exigia a linguagem "imagem-driver", o que recusava impressoras novas). Se a impressão falhar, aparece aviso na tela (além do Log) e abre a pré-visualização.
 - Coluna **Imp** da grade de NF-e virou ícone: 🖨️ = DANFE já enviado à impressora, — = não. Marca na hora e grava em `tb_nfe.nfe_impresso` (`POST /api/nfe/impresso`). Só a impressão direta marca; abrir o PDF no navegador não marca, pois não há como saber se foi impresso. Não testado com impressora real.
+
+## Fase 132
+- Danfe: ao clicar, aparece na hora o aviso **"Processando a impressão do DANFE…"** (some ao terminar). Falhas não ficam mais mudas: se o DANFE não puder ser obtido, aparece um aviso curto "indisponível — o motivo está no Log" (sem abrir painel); se o agente falhar, aviso de erro e abre a pré-visualização.
+- Cada linha **AUTORIZADA** da grade ganhou o botão 🖨 (imprime o DANFE daquela nota, direto ou em pré-visualização conforme "Impressão direta").
+- Mensagens de erro com botão **Copiar** voltaram a sumir sozinhas: 12 s, e fechamento garantido 6 s depois mesmo com o mouse em cima.

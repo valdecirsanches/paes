@@ -19,19 +19,30 @@ function contêiner() {
 }
 
 const TEMPOS = { ok: 3500, info: 5000, aviso: 7000, erro: 9000 };
-/** tipo: 'ok' | 'erro' | 'aviso' | 'info' */
-export function mensagem(tipo, texto) {
-  if (!texto) return;
+const porId = new Map();
+/** Fecha o toast criado com `opc.id`. */
+export function limpaMensagem(id) { const t = porId.get(id); if (t) { toastr.clear(t, { force: true }); porId.delete(id); } }
+/** tipo: 'ok' | 'erro' | 'aviso' | 'info'. `opc`: { timeOut, extendedTimeOut, id } (id permite fechar depois com limpaMensagem). Devolve o toast. */
+export function mensagem(tipo, texto, opc = {}) {
+  if (!texto) return null;
   contêiner();
+  if (opc.id) limpaMensagem(opc.id);
   const fn = { ok: 'success', erro: 'error', aviso: 'warning', info: 'info' }[tipo] ?? 'info';
-  if (tipo !== 'erro') { toastr[fn](String(texto), '', { timeOut: TEMPOS[tipo] ?? 5000, extendedTimeOut: 2000 }); return; }
-  // erro: tem botão para copiar a mensagem (e fica mais tempo na tela)
-  const $t = toastr.error(`<div class="tq-msg">${esc(texto)}</div><button type="button" class="tq-copiar" title="Copiar a mensagem">📋 Copiar</button>`, '', { timeOut: 20000, extendedTimeOut: 8000, escapeHtml: false, tapToDismiss: false });
-  $t.find('.tq-copiar').on('click', function copia(e) {
-    e.stopPropagation();
-    const bt = this;
-    copiaTexto(String(texto)).then(() => { bt.textContent = '✔ Copiado'; setTimeout(() => { bt.textContent = '📋 Copiar'; }, 1800); }, () => { bt.textContent = 'Não foi possível copiar'; });
-  });
+  let $t;
+  if (tipo !== 'erro') $t = toastr[fn](String(texto), '', { timeOut: opc.timeOut ?? TEMPOS[tipo] ?? 5000, extendedTimeOut: opc.extendedTimeOut ?? 2000 });
+  else {
+    // erro: tem botão para copiar a mensagem. O temporizador continua valendo (o mouse em cima só adia um pouco) e há um fechamento garantido.
+    const tempo = 12000;
+    $t = toastr.error(`<div class="tq-msg">${esc(texto)}</div><button type="button" class="tq-copiar" title="Copiar a mensagem">📋 Copiar</button>`, '', { timeOut: tempo, extendedTimeOut: 3000, escapeHtml: false, tapToDismiss: false });
+    $t.find('.tq-copiar').on('click', function copia(e) {
+      e.stopPropagation();
+      const bt = this;
+      copiaTexto(String(texto)).then(() => { bt.textContent = '✔ Copiado'; setTimeout(() => { bt.textContent = '📋 Copiar'; }, 1800); }, () => { bt.textContent = 'Não foi possível copiar'; });
+    });
+    setTimeout(() => { try { toastr.clear($t, { force: true }); } catch { /* já fechado */ } }, tempo + 6000); // mesmo com o mouse em cima, some
+  }
+  if (opc.id && $t) porId.set(opc.id, $t);
+  return $t;
 }
 export async function copiaTexto(t) {
   try { await navigator.clipboard.writeText(t); return; } catch { /* sem permissão/contexto inseguro: usa o método antigo */ }
