@@ -666,3 +666,7 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 - Máquina só *Fábrica* (usuário `fabrica`) agora abre `client/src/fabrica/FabricaApp.jsx`: janela escura como a do sistema Delphi da fábrica (barra de título, botões grandes com os **ícones originais extraídos do `u_main.dfm`**, abas das telas abertas, barra de status Compilação/Host/Mensagem). Visual isolado em `fabrica/fabrica.css` (escopo `.fb-win`): o design do faturamento não muda.
 - **Produção** refeita igual à original (`u_producao`): data grande com calendário (Hoje/Agora), botões Especiais/Salgados com a seta original, tamanho da fonte (padrão 16, guardado), cores do OnCustomDrawCell (horário 1 amarelo, 2 verde, 3 azul, selecionada vermelho/amarelo negrito), "Detalhamento de destino" à direita com soma, recarga a cada 2 min e ao trocar a data, "Carregando ...". Somente consulta.
 - Programação, Mercadorias, Cargas, Reclamações e Pedidos extras ainda aparecem no desenho do sistema web dentro dessa janela (marcadas `claro` em `FabricaApp.jsx`) até serem refeitas igual ao original (dependem de prints das telas).
+
+## Fase 115
+- Pedidos extras: o servidor lê o tamanho real das colunas de `tb_extras` e corta os textos nesse tamanho (corrige "Data too long for column 'funcionario'").
+- Menu da fábrica sem os botões Tema e Atualização.

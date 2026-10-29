@@ -25,9 +25,21 @@ router.get('/opcoes', async (_req, res) => {
   res.json({ empresas: emp.map((r) => r.nome), contatos: ctt.map((r) => r.v), descricoes: des.map((r) => r.v), funcionarios: fun.map((r) => r.nome) });
 });
 
-function corpo(b = {}) {
-  const t = (v, max) => String(v ?? '').trim().slice(0, max);
-  const o = { empresa: t(b.empresa, 120), contato: t(b.contato, 80), funcionario: t(b.funcionario, 80), descricao: t(b.descricao, 2000), fone: t(b.fone, 30) };
+// Tamanho real de cada coluna de texto no banco (o legado não impõe o limite: o MySQL recusa com "Data too long"); corta no tamanho da coluna.
+let tamanhos = null;
+async function limites() {
+  if (tamanhos) return tamanhos;
+  try {
+    const [rows] = await pool.query("select column_name as c, character_maximum_length as n from information_schema.columns where table_schema = database() and table_name = 'tb_extras' and character_maximum_length is not null");
+    tamanhos = Object.fromEntries(rows.map((r) => [String(r.c).toLowerCase(), Number(r.n)]));
+  } catch { tamanhos = {}; }
+  return tamanhos;
+}
+
+async function corpo(b = {}) {
+  const lim = await limites();
+  const t = (v, campo, max) => String(v ?? '').trim().slice(0, Math.min(max, lim[campo] || max));
+  const o = { empresa: t(b.empresa, 'empresa', 120), contato: t(b.contato, 'contato', 80), funcionario: t(b.funcionario, 'funcionario', 80), descricao: t(b.descricao, 'descricao', 2000), fone: t(b.fone, 'fone', 30) };
   if (!o.funcionario) throw invalid('Obrigatório o preenchimento do nome do funcionário.');
   if (!o.descricao) throw invalid('Informe o produto ou mercadoria.');
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(b.data ?? ''))) throw invalid('Informe a data da entrega.');
@@ -36,7 +48,7 @@ function corpo(b = {}) {
 }
 
 router.post('/', async (req, res) => {
-  const [r] = await pool.query('insert into tb_extras set ?', [{ ...corpo(req.body), digitado: 'False' }]);
+  const [r] = await pool.query('insert into tb_extras set ?', [{ ...(await corpo(req.body)), digitado: 'False' }]);
   res.status(201).json({ id: r.insertId });
 });
 
@@ -44,7 +56,7 @@ router.put('/:id', async (req, res) => {
   const [[x]] = await pool.query('select digitado from tb_extras where id = ?', [req.params.id]);
   if (!x) throw notFound('Pedido extra');
   if (String(x.digitado) === 'True') throw invalid('Este pedido já foi digitado na programação e não pode ser alterado.');
-  await pool.query('update tb_extras set ? where id = ?', [corpo(req.body), req.params.id]);
+  await pool.query('update tb_extras set ? where id = ?', [await corpo(req.body), req.params.id]);
   res.json({ ok: true });
 });
 

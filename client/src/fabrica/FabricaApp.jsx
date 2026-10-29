@@ -39,8 +39,6 @@ export default function FabricaApp({ saude }) {
         <span className="fb-grip" />
         {BOTOES.map(([k, rot, ic]) => (
           <button key={k} type="button" className={`fb-bt${ativa === k ? ' on' : ''}`} onClick={() => abrir(k)}><img src={`/fabrica/${ic}.png`} alt="" /><span>{rot}</span></button>))}
-        <button type="button" className="fb-bt" onClick={() => setMsg('Troca de tema não está disponível na versão web.')}><img src="/fabrica/tema.png" alt="" /><span>Tema</span></button>
-        <button type="button" className="fb-bt" onClick={() => window.location.reload()}><img src="/fabrica/atualizacao.png" alt="" /><span>Atualização</span></button>
       </div>
       <div className="fb-abas" role="tablist">
         {abertas.map((k) => (
