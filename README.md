@@ -673,3 +673,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 116
 - Fundo do menu principal do faturamento refeito: a foto de pães passou a ser textura desfocada (a original, 800 px, ficava serrilhada em telas grandes) sob degradê quente, com cartão central da marca (logo + "Escolha uma opção no menu"). Só no faturamento; a janela da fábrica não muda.
+
+## Fase 117
+- Fundo do menu principal do faturamento: nova foto (pães franceses e cesta) enviada pelo usuário, sem desfoque, com cartão da marca no centro.
