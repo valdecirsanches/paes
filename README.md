@@ -582,3 +582,6 @@ Remetente: se o usuário SMTP é um e-mail (ex.: nfe@levpao.com.br) ele é o "De
 
 ### Fase 89 — Envio de e-mail: todos os destinatários com checkbox
 A tela de envio lista todos os e-mails (Para, Cc, Cco) de cada nota, cada um com checkbox (marcados por padrão); só os marcados recebem. Nota única permite acrescentar outros e-mails. O envio de várias notas também passa por essa tela (o interruptor "Confirma e-mail" saiu). O servidor aceita `selecao` (subconjunto dos e-mails propostos por nota).
+
+### Fase 90 — Botões Autorizar / Danfe conforme o status
+Autorizar só fica habilitado se há nota PENDENTE (em foco ou entre as marcadas; o contador mostra quantas). Danfe só fica habilitado para nota AUTORIZADA (ou CANCELADA, se for uma só), e o contador das marcadas conta só as autorizadas.

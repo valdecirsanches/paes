@@ -314,6 +314,10 @@ export default function NFe({ onFechar }) {
   const marcarTodas = () => setMarcados(todosMarcados ? new Set(foco ? [foco] : []) : new Set(linhas.map((r) => r.id)));
   const irPara = (i) => { const r = linhas?.[i]; if (r) { setFoco(r.id); setMarcados(new Set([r.id])); ancora.current = i; } };
   const alvo = marcados.size ? marcados : new Set(foco ? [foco] : []);
+  // Autorizar só vale para PENDENTE; Danfe só para AUTORIZADA (ou CANCELADA, no caso de uma nota). Com notas marcadas, vale se ao menos uma serve.
+  const statusDe = (id) => (id === foco && nota ? nota.status_e : (linhas ?? []).find((r) => r.id === id)?.status_e);
+  const nPendentes = [...alvo].filter((id) => statusDe(id) === 'PENDENTE').length;
+  const nComDanfe = [...alvo].filter((id) => ['AUTORIZADA', ...(marcados.size ? [] : ['CANCELADA'])].includes(statusDe(id))).length;
   const posFoco = (linhas ?? []).findIndex((r) => r.id === foco);
   const jn = useJanela((linhas ?? []).length, ALT_NOTA); // só as linhas visíveis existem no DOM
   useEffect(() => { // navegação por botões/teclado: mantém a nota em foco à vista (a linha pode nem existir no DOM)
@@ -327,12 +331,13 @@ export default function NFe({ onFechar }) {
   // ----- ações da barra
   const ambienteAtual = Number(cfg?.nfe_configuracoes_webservice_ambiente) === 1 ? 1 : 2;
   const autorizar = async () => {
-    if (alvo.size === 0) { notificar('erro', 'Selecione a NFE'); return; }
-    if (ambienteAtual === 1 && !(await confirmar(`⚠ AMBIENTE DE PRODUÇÃO\n\n${alvo.size} nota(s) serão autorizadas na SEFAZ com VALOR FISCAL REAL.\n\nDeseja continuar?`))) return;
+    const ids = [...alvo].filter((id) => statusDe(id) === 'PENDENTE');
+    if (ids.length === 0) { notificar('erro', 'Selecione uma NFe PENDENTE.'); return; }
+    if (ambienteAtual === 1 && !(await confirmar(`⚠ AMBIENTE DE PRODUÇÃO\n\n${ids.length} nota(s) serão autorizadas na SEFAZ com VALOR FISCAL REAL.\n\nDeseja continuar?`))) return;
     return acao(async () => {
       setLog([]); setSubNfe('nfe'); setProgresso(10);
       try {
-        const r = await api.post('/nfe/autorizar', { ids: [...alvo] });
+        const r = await api.post('/nfe/autorizar', { ids });
         setProgresso(100);
         setLog(r.resultados.flatMap((x) => [`— Nota ${x.id}`, ...x.log]));
         const ult = r.resultados.at(-1);
@@ -507,8 +512,8 @@ export default function NFe({ onFechar }) {
         </div>
         <div className="nf2-acoes">
           <button type="button" className="nf2-b novo" onClick={criar} disabled={ocupado}>＋ Criar</button>
-          <button type="button" className="nf2-b prim" onClick={autorizar} disabled={ocupado || !(pendente || marcados.size)} title="Autorizar NFe">✔ Autorizar{marcados.size > 0 ? ` (${marcados.size})` : ''}</button>
-          <button type="button" className="nf2-b" onClick={danfe} disabled={marcados.size > 0 ? false : !nota || (nota.status_e === 'PENDENTE' && !nota.nfe_numero)}>🖨 Danfe{marcados.size > 0 ? ` (${marcados.size})` : ''}</button>
+          <button type="button" className="nf2-b prim" onClick={autorizar} disabled={ocupado || nPendentes === 0} title={nPendentes === 0 ? 'Nada a autorizar: só notas PENDENTES' : 'Autorizar NFe'}>✔ Autorizar{marcados.size > 0 ? ` (${nPendentes})` : ''}</button>
+          <button type="button" className="nf2-b" onClick={danfe} disabled={nComDanfe === 0} title={nComDanfe === 0 ? 'Danfe só de notas AUTORIZADAS' : 'Imprimir o DANFE'}>🖨 Danfe{marcados.size > 0 ? ` (${nComDanfe})` : ''}</button>
           <button type="button" className={`nf2-b${todosMarcados ? ' on' : ''}`} onClick={marcarTodas} disabled={!linhas?.length} title="Marcar / desmarcar todas as notas da lista">{todosMarcados ? '☐ Desmarcar' : '☑ Marcar todas'}</button>
           <button type="button" className="nf2-b" onClick={() => setSubNfe('comanda')} disabled={!nota} title="Comandas ligadas à nota">🧾 Comandas{comandas.length ? ` (${comandas.length})` : ''}</button>
           <div className="nf2-mais">
