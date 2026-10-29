@@ -306,7 +306,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
       t.dispatchEvent(new Event('input', { bubbles: true })); return;
     }
     const campos = [...e.currentTarget.querySelectorAll('input:not([disabled]):not([readonly]), select, textarea')];
-    const prox = campos[campos.indexOf(e.target) + 1];
+    const prox = e.target.dataset.ultimo ? null : campos[campos.indexOf(e.target) + 1]; // "Informe p/ produção" é o último campo do fluxo: grava
     e.target.blur();
     if (prox) setTimeout(() => prox.focus(), 0);
     else if (e.currentTarget === painelRef.current && editando) setTimeout(() => gravarRef.current?.(), 60); // Enter no último campo grava o item
@@ -362,7 +362,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
                 <Campo rotulo="Valor total" className="if-total"><Num className="if-n" readOnly tabIndex={-1} casas={[2, 2]} value={v.preco_total} onChange={() => {}} /></Campo>
               </div>
               <Campo rotulo="Anotações p/ faturamento" className="if-nota"><textarea value={v.obs ?? ''} onChange={set('obs')} /></Campo>
-              <Campo rotulo="Informe p/ produção" className="if-nota"><textarea value={v.obs_producao ?? ''} onChange={set('obs_producao')} /></Campo>
+              <Campo rotulo="Informe p/ produção" className="if-nota"><textarea data-ultimo value={v.obs_producao ?? ''} onChange={set('obs_producao')} /></Campo>
             </div>
             {!mercadoria && (
               <div className="if-linha if-l4">

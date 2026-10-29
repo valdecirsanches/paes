@@ -612,3 +612,6 @@ Em item em edição, Enter no último campo do painel grava o item (as mesmas va
 
 ### Fase 99 — Enter e Ctrl+Enter nos campos de texto (Programação diária)
 Nos campos de anotação (faturamento/produção) Enter segue o fluxo (próximo campo; no último, grava o item) e Ctrl+Enter insere nova linha.
+
+### Fase 100 — Enter em "Informe p/ produção" grava
+O campo "Informe p/ produção" é o último do fluxo da programação diária: Enter nele grava o item (antes seguia para os campos de baixo — produção, turno, embalagem — e parecia travado).
