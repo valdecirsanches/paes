@@ -627,3 +627,6 @@ Laranja vivo (#ff8a00) com texto escuro em negrito, bordas marcadas e o indicado
 
 ### Fase 104 — Item em edição em amarelo forte
 Troca o laranja por amarelo forte (#ffe600) com texto escuro em negrito.
+
+### Fase 105 — Versão do build no rodapé
+O rodapé e a tela de login mostram `fase NNN · build aaaa-mm-dd hh:mm`, para conferir se o deploy pegou. Atualizar `FASE` em `client/vite.config.js` a cada entrega.

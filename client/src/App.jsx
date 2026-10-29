@@ -182,7 +182,7 @@ export default function App() {
 
       <footer className="rodape">
         <span><b>Host:</b> {saude ? (saude.ok ? `${saude.host}/${saude.banco}` : <em className="falha">sem conexão com o banco</em>) : '…'}</span>
-        <span><b>Versão:</b> web 1.0</span>
+        <span title="Se após o deploy este texto não mudou, o navegador/Cloudflare está com a versão antiga ou o build não foi refeito"><b>Versão:</b> web 1.0 · {typeof __BUILD__ === 'string' ? __BUILD__ : ''}</span>
         <span><b>Usuário:</b> {usuario ? usuario.nome || usuario.usuario : ''}</span>
         {saude && !saude.ok && <span className="falha">{saude.message}</span>}
       </footer>
