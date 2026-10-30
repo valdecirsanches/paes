@@ -748,3 +748,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 ## Fase 137
 - **Agente 1.1.0** (o recurso de gravar o XML no N: só existe nesta versão; a 1.0.0 não mostra nada de novo). Para atualizar: Ferramentas › Configurar impressoras › **Baixar instalador (atualizar)** e executar no computador que autoriza notas — mantém as impressoras cadastradas. A tela agora avisa "Agente desatualizado" quando a versão não tem o recurso.
 - A página do agente (http://127.0.0.1:9101) ganhou **"Gravação do XML da NF-e"**: mostra as pastas liberadas (padrão `N:/EDSMonitorPLUS/Arqs`), se a máquina as enxerga (✔/✖) e permite editá-las. `/status` informa `recursos`.
+
+## Fase 138
+- Novo botão **🛠 Ajustar NFe** na barra da NF-e (nota em foco ou marcadas): consulta a API (pela chave; sem chave, pelo número), atualiza a nota local (status, chave, protocolo, XML, DANFE) e em seguida grava o XML no N: pelo agente desta máquina (`N:/EDSMonitorPLUS/Arqs/<cnpj>/NFe/<ddmmaaaa>/NFe/<chave>-nfe.xml`), apontando `nfe_xml_file` para lá. Mostra "Ajustando…" e o resumo; detalhes por nota no Log. Servidor: `POST /api/nfe/:id/ajustar`. Requer o agente 1.1.0 e a unidade N:. Não testado contra a API real.

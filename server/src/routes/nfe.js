@@ -483,6 +483,29 @@ router.delete('/danfe-logo', async (_req, res) => {
 });
 
 /** Consulta de protocolo pela chave de acesso. */
+/**
+ * "Ajustar NFe": consulta a API (pela chave, ou pelo número se a nota não tem chave), atualiza a nota local (status, chave, protocolo, XML e DANFE).
+ * O XML no padrão do sistema antigo (N:/…) é gravado em seguida pela máquina do cliente (agente), com GET /:id/xml-legado.
+ */
+router.post('/:id/ajustar', async (req, res) => {
+  const nfe = await getNfe(idValido(req.params.id)); const cfg = await getCfg();
+  const chave = String(nfe.nfe_chave ?? '').replace(/\D/g, '');
+  const empId = await api.empresaId(cfg.cnpj);
+  let r; let ajuste;
+  if (chave.length === 44) {
+    r = await api.consultarProtocolo(empId, { chaveAcesso: chave, ambiente: ambienteCfg(cfg) });
+    if (r.status === 200) ajuste = await ajustaLocalPelaApi(cfg, { chave, d: { ...(r.body?.documento ?? {}), ...r.body, id: r.body?.documento?.id, protocolo: r.body?.numeroProtocolo ?? r.body?.documento?.protocolo, motivoRetorno: r.body?.motivo }, xmlBase64: r.body?.xmlBase64 });
+  } else {
+    if (!Number(nfe.nfe_numero)) throw invalid('A nota não tem número nem chave: não há o que buscar na API.');
+    r = await api.porNumero(empId, Number(nfe.nfe_numero), Number(nfe.nfe_serie) || 1);
+    if (r.body?.existe && r.body?.documento?.id) ajuste = await ajustaLocalPelaApi(cfg, { numero: nfe.nfe_numero, serie: Number(nfe.nfe_serie) || 1, d: r.body.documento });
+  }
+  const jaTem = ['AUTORIZADA', 'CANCELADA'].includes(nfe.status_e) && chave.length === 44; // a API respondeu sem mudar nada, mas a nota local já é válida: segue para gravar o XML
+  if (r.status !== 200 && !jaTem) throw new AppError(502, `A API não respondeu à consulta (HTTP ${r.status}${r.body?.motivo ? ` — ${r.body.motivo}` : ''}).`);
+  if (!ajuste?.achou && !jaTem) throw new AppError(404, 'A API não localizou a nota (ou ainda não consta como autorizada).');
+  const [[atual]] = await pool.query('select id, status_e, nfe_chave, nfe_numero from tb_nfe where id = ?', [ajuste?.id ?? nfe.id]);
+  res.json({ ok: true, id: atual.id, status: atual.status_e, chave: atual.nfe_chave, numero: atual.nfe_numero, arquivos: ajuste.arquivos });
+});
 router.post('/consultar-chave', async (req, res) => {
   const chave = String(req.body?.chave ?? '').replace(/\D/g, '');
   if (chave.length !== 44) throw invalid('A chave de acesso precisa ter 44 dígitos.');

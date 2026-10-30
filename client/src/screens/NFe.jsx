@@ -351,6 +351,23 @@ export default function NFe({ onFechar }) {
     }
     if (avisar) notificar(ok === ids.length ? 'ok' : 'aviso', `XML gravado no N: (${ok} de ${ids.length}).${ok < ids.length ? ' Veja o Log.' : ''}`);
   };
+  /** Ajustar NFe: busca na API (status, chave, protocolo, XML, DANFE), atualiza a nota e grava o XML no N: (sistema antigo) por esta máquina. */
+  const ajustarNfe = async () => {
+    const ids = [...alvo].filter((id) => ['AUTORIZADA', 'CANCELADA', 'PENDENTE'].includes(statusDe(id)));
+    if (!ids.length) { notificar('aviso', 'Selecione a NFe a ajustar.'); return; }
+    mensagem('info', `Ajustando ${ids.length} NFe (busca na API e gravação no N:)…`, { timeOut: 120000, extendedTimeOut: 0, id: 'nfe-ajusta' });
+    let ok = 0; const gravar = [];
+    for (const id of ids) {
+      try { const r = await api.post(`/nfe/${id}/ajustar`, {}); registraLog(`NFe ${r.numero || id}: ajustada pela API (${r.status}).`); if (['AUTORIZADA', 'CANCELADA'].includes(r.status)) gravar.push(r.id ?? id); ok += 1; }
+      catch (e) { registraLog(`NFe ${lin0(id)}: não ajustada — ${e.message}`); }
+    }
+    let gravadas = 0;
+    for (const id of gravar) { try { await salvaXmlLegado(id, api); gravadas += 1; } catch (e) { registraLog(`NFe ${lin0(id)}: XML não gravado no N: — ${e.message}`); } }
+    limpaMensagem('nfe-ajusta');
+    notificar(ok === ids.length && gravadas === gravar.length ? 'ok' : 'aviso', `Ajuste: ${ok} de ${ids.length} nota(s) atualizadas pela API; XML gravado no N: em ${gravadas}.${ok < ids.length || gravadas < gravar.length ? ' Veja o Log.' : ''}`);
+    cacheDet.current.clear(); await filtrar(true);
+  };
+  const lin0 = (id) => (linhas ?? []).find((r) => r.id === id)?.nfe_numero || id;
   // ----- ações da barra
   const ambienteAtual = Number(cfg?.nfe_configuracoes_webservice_ambiente) === 1 ? 1 : 2;
   const autorizar = async () => {
@@ -557,6 +574,7 @@ export default function NFe({ onFechar }) {
         <div className="nf2-acoes">
           <button type="button" className="nf2-b novo" onClick={criar} disabled={ocupado}>＋ Criar</button>
           <button type="button" className="nf2-b prim" onClick={autorizar} disabled={ocupado || nPendentes === 0} title={nPendentes === 0 ? 'Nada a autorizar: só notas PENDENTES' : 'Autorizar NFe'}>✔ Autorizar{marcados.size > 0 ? ` (${nPendentes})` : ''}</button>
+          <button type="button" className="nf2-b" onClick={ajustarNfe} disabled={ocupado || (!nota && marcados.size === 0)} title="Busca a nota na API, atualiza o cadastro e grava o XML no N: para o sistema antigo">🛠 Ajustar NFe</button>
           <button type="button" className="nf2-b" onClick={danfe} disabled={nComDanfe === 0} title={nComDanfe === 0 ? 'Danfe só de notas AUTORIZADAS' : 'Imprimir o DANFE'}>🖨 Danfe{marcados.size > 0 ? ` (${nComDanfe})` : ''}</button>
           <button type="button" className={`nf2-b${todosMarcados ? ' on' : ''}`} onClick={marcarTodas} disabled={!linhas?.length} title="Marcar / desmarcar todas as notas da lista">{todosMarcados ? '☐ Desmarcar' : '☑ Marcar todas'}</button>
           <button type="button" className="nf2-b" onClick={() => setSubNfe('comanda')} disabled={!nota} title="Comandas ligadas à nota">🧾 Comandas{comandas.length ? ` (${comandas.length})` : ''}</button>
