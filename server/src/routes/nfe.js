@@ -229,7 +229,8 @@ router.post('/:id/duplicar', async (req, res) => {
   const novo = await tx(async (c) => {
     const [[o]] = await c.query('select * from tb_nfe where id = ?', [id]);
     if (!o) throw notFound('Nota');
-    const copia = { ...o, ...Object.fromEntries(Object.entries(LIMPAR_NA_COPIA).filter(([k]) => k in o)), data_saida: new Date().toISOString().slice(0, 10) };
+    const [[{ hoje }]] = await c.query("select date_format(curdate(), '%Y-%m-%d') as hoje"); // data do banco (evita virar o dia por fuso)
+    const copia = { ...o, ...Object.fromEntries(Object.entries(LIMPAR_NA_COPIA).filter(([k]) => k in o)), data_saida: hoje, data_emissao: hoje };
     delete copia.id;
     const [r] = await c.query('insert into tb_nfe set ?', [copia]);
     const [itens] = await c.query('select * from tb_nfe_itens where id_nfe = ?', [id]);

@@ -751,3 +751,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 138
 - Novo botão **🛠 Ajustar NFe** na barra da NF-e (nota em foco ou marcadas): consulta a API (pela chave; sem chave, pelo número), atualiza a nota local (status, chave, protocolo, XML, DANFE) e em seguida grava o XML no N: pelo agente desta máquina (`N:/EDSMonitorPLUS/Arqs/<cnpj>/NFe/<ddmmaaaa>/NFe/<chave>-nfe.xml`), apontando `nfe_xml_file` para lá. Mostra "Ajustando…" e o resumo; detalhes por nota no Log. Servidor: `POST /api/nfe/:id/ajustar`. Requer o agente 1.1.0 e a unidade N:. Não testado contra a API real.
+
+## Fase 139
+- Clonar NFe: a cópia nasce com **data de emissão e de saída do dia atual** (data do banco). Antes mantinha a emissão da nota original (e a saída era calculada em UTC). Não testado contra o MySQL real.
