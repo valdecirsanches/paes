@@ -243,3 +243,16 @@ test('/gravar: grava *-nfe.xml só em pasta liberada', async () => {
     assert.equal((await call('POST', '/gravar', { caminho: `${raiz}/a-nfe.xml`, dados_b64: xml }, { origin: H.origin })).status, 400);
   } finally { s.close(); }
 });
+
+test('/api/pastas: lista e grava as pastas liberadas; status informa a versão e o recurso gravar', async () => {
+  const { s, call, cfg } = await monta();
+  try {
+    const st = await call('GET', '/status', undefined, {});
+    assert.match(st.json.versao, /^1\.[1-9]/); assert.ok(st.json.recursos.includes('gravar'));
+    const origem = { origin: `http://127.0.0.1:${cfg.porta}` };
+    assert.equal((await call('POST', '/api/pastas', { pastas: 'N:/EDSMonitorPLUS/Arqs\nD:/x' }, origem)).status, 200);
+    assert.deepEqual(cfg.pastas_gravacao, ['N:/EDSMonitorPLUS/Arqs', 'D:/x']);
+    assert.equal((await call('POST', '/api/pastas', { pastas: '../x' }, origem)).status, 422);
+    assert.equal((await call('GET', '/api/pastas', undefined, origem)).json.length, 2);
+  } finally { s.close(); }
+});

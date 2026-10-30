@@ -113,6 +113,12 @@ export default function Impressoras() {
       <PonteServidor onMudou={verificar} />
 
       {agente === false && <CaixaInstalar />}
+      {agente && agente.via !== 'servidor' && !(agente.recursos ?? []).includes('gravar') && (
+        <section className="imp-card imp-inst">
+          <header><span className="imp-ico" aria-hidden="true">⚠️</span><div><h3>Agente desatualizado (v{agente.versao}) neste computador</h3><p>A versão antiga não grava o XML da NF-e no N: (sistema antigo). Baixe e execute o instalador abaixo: ele atualiza o agente e mantém as impressoras.</p></div></header>
+          <div className="imp-acoes"><a className="imp-btn principal" href="/api/agente/instalador.bat" download>⬇ Baixar instalador (atualizar)</a></div>
+        </section>
+      )}
 
       <section className="imp-card">
         <header><span className="imp-ico" aria-hidden="true">📄</span><div><h3>Onde imprimir cada documento</h3><p>Vale só para este computador</p></div></header>

@@ -744,3 +744,7 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 136
 - Coluna **Imp** (e Email) da grade de NF-e: a impressão marcada pelo sistema antigo agora é reconhecida. O app só aceitava `True/1/S/SIM`; passou a valer qualquer valor preenchido que não seja negação (`False`, `0`, `N`, `não`, vazio, data zerada), incluindo texto como `IMPRESSO`, data/hora e bit. Se o sistema antigo usar um valor que signifique "não impresso" fora dessa lista, me diga qual. Não testado contra o banco real.
+
+## Fase 137
+- **Agente 1.1.0** (o recurso de gravar o XML no N: só existe nesta versão; a 1.0.0 não mostra nada de novo). Para atualizar: Ferramentas › Configurar impressoras › **Baixar instalador (atualizar)** e executar no computador que autoriza notas — mantém as impressoras cadastradas. A tela agora avisa "Agente desatualizado" quando a versão não tem o recurso.
+- A página do agente (http://127.0.0.1:9101) ganhou **"Gravação do XML da NF-e"**: mostra as pastas liberadas (padrão `N:/EDSMonitorPLUS/Arqs`), se a máquina as enxerga (✔/✖) e permite editá-las. `/status` informa `recursos`.

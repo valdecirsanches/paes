@@ -1,6 +1,6 @@
 import { pngTeste } from './png.js';
 import http from 'node:http';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { timingSafeEqual } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
@@ -8,7 +8,7 @@ import { caminhoConfig, carregaConfig, ipsDaMaquina, salvaConfig, validaDestino,
 import { enviaRede, enviaSerial, enviaWindowsPng, enviaWindowsRaw, listaWindows, papeisWindows } from './transportes.js';
 import { paginaAdmin } from './admin.js';
 
-const VERSAO = '1.0.0';
+const VERSAO = '1.1.0'; // 1.1.0: gravação do XML da NF-e no N: (POST /gravar)
 const MAX_CORPO = 4 * 1024 * 1024;
 
 /** Cria o servidor. `deps` permite trocar os transportes nos testes. */
@@ -43,9 +43,10 @@ export function criaServidor({ cfg, arquivoCfg, deps = {} } = {}) {
   });
   const b64 = (v, rot) => { if (typeof v !== 'string' || !v || !/^[A-Za-z0-9+/=\r\n]+$/.test(v)) throw erro(422, `${rot} ausente ou inválido.`); const b = Buffer.from(v, 'base64'); if (!b.length) throw erro(422, `${rot} vazio.`); return b; };
 
+  const pastas = () => (Array.isArray(cfg.pastas_gravacao) && cfg.pastas_gravacao.length ? cfg.pastas_gravacao : ['N:/EDSMonitorPLUS/Arqs']).map((x) => String(x).replaceAll('\\', '/').replace(/\/+$/, ''));
   /** Grava o XML da NF-e numa pasta liberada (padrão do sistema antigo, ex.: N:/EDSMonitorPLUS/Arqs/<cnpj>/NFe/<ddmmaaaa>/NFe/<chave>-nfe.xml). */
   async function gravar(corpo) {
-    const raizes = (Array.isArray(cfg.pastas_gravacao) && cfg.pastas_gravacao.length ? cfg.pastas_gravacao : ['N:/EDSMonitorPLUS/Arqs']).map((x) => String(x).replaceAll('\\', '/').replace(/\/+$/, ''));
+    const raizes = pastas();
     const cam = String(corpo.caminho ?? '').replaceAll('\\', '/');
     if (!raizes.some((r) => cam.toLowerCase().startsWith(`${r.toLowerCase()}/`))) throw erro(403, `Pasta não liberada para gravação (liberadas: ${raizes.join(', ')}).`);
     if (cam.split('/').some((p) => p === '..' || p === '.')) throw erro(422, 'Caminho inválido.');
@@ -107,7 +108,7 @@ export function criaServidor({ cfg, arquivoCfg, deps = {} } = {}) {
       const url = new URL(req.url, 'http://x');
       const r = (status, corpo) => resp(res, status, corpo, cors);
 
-      if (req.method === 'GET' && url.pathname === '/status') return r(200, { ok: true, versao: VERSAO, plataforma: process.platform, destinos: Object.keys(cfg.destinos).length });
+      if (req.method === 'GET' && url.pathname === '/status') return r(200, { ok: true, versao: VERSAO, plataforma: process.platform, destinos: Object.keys(cfg.destinos).length, recursos: ['imprimir', 'gravar'] });
       if (req.method === 'GET' && url.pathname === '/destinos') return r(200, Object.entries(cfg.destinos).map(([nome, d]) => ({ nome, ...d })));
       if (req.method === 'POST' && url.pathname === '/imprimir') {
         if (req.headers['x-agente'] !== 'paes') return r(400, { message: 'Cabeçalho X-Agente ausente.' });
@@ -132,6 +133,15 @@ export function criaServidor({ cfg, arquivoCfg, deps = {} } = {}) {
       const admin = url.pathname.startsWith('/api/');
       if (admin) {
         if (req.method !== 'GET' && !proprio(origem)) return r(403, { message: 'Alterações só pela página do próprio agente (http://127.0.0.1:' + cfg.porta + ').' });
+        // pastas liberadas para gravar o XML da NF-e (sistema antigo) e se esta máquina as enxerga
+        if (req.method === 'GET' && url.pathname === '/api/pastas') return r(200, await Promise.all(pastas().map(async (p) => ({ pasta: p, existe: await stat(p).then((x) => x.isDirectory(), () => false) }))));
+        if (req.method === 'POST' && url.pathname === '/api/pastas') {
+          const b = await lerJson(req);
+          const lista = String(b.pastas ?? '').split(/[;\n]/).map((x) => x.trim().replaceAll('\\', '/').replace(/\/+$/, '')).filter(Boolean);
+          if (!lista.length || lista.some((x) => !/^([A-Za-z]:|\/\/[^/]+\/[^/]+|\/)/.test(x) || x.split('/').includes('..'))) return r(422, { message: 'Informe pastas válidas (ex.: N:/EDSMonitorPLUS/Arqs), uma por linha.' });
+          cfg.pastas_gravacao = lista; salvaConfig(cfg, arquivoCfg);
+          return r(200, { ok: true, pastas: lista });
+        }
         if (req.method === 'GET' && url.pathname === '/api/impressoras') return r(200, await T.lista());
         // papéis que o driver oferece (diagnóstico de etiqueta: ex. /api/papeis?impressora=Brother%20QL-800)
         if (req.method === 'GET' && url.pathname === '/api/papeis') return r(200, await T.papeis(String(url.searchParams.get('impressora') ?? '')));
