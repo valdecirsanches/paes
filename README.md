@@ -763,3 +763,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 142
 - **Ajustar NFe** agora esvazia `nfe_pdf_file` (e `nfe_file_pdf`, se a coluna existir) ao terminar. Obs.: ao pedir o DANFE de novo, o app busca/gera o PDF e volta a preencher o campo. Não testado contra o MySQL real.
+
+## Fase 143
+- Emissão: o JSON enviado à API agora leva as **duplicatas** da nota (`tb_receita`): `"duplicatas": [{ "vencimento": "2026-11-29", "valor": 280.93 }, …]`, em ordem de vencimento; linhas sem data válida ou com valor 0 são ignoradas, e sem duplicatas o campo não é enviado. Testado no JSON gerado; não testado contra a API real.

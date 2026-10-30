@@ -133,7 +133,17 @@ export function cfopDoItem(it, nfe) {
 
 /** Telefone para o XML: só dígitos, 6 a 14 (schema da SEFAZ). Fora disso (ex.: dois números juntos no cadastro) é omitido para não dar "Falha no Schema XML". */
 export const fone = (v) => { const d = String(v ?? '').replace(/\D/g, '').replace(/^0+/, ''); return d.length >= 6 && d.length <= 14 ? d : undefined; };
-export function montaJsonNfe(nfe, itens, cfg, { numero, ibsCbs = true, agora = new Date(), referencias = [], orientacao = 'retrato' } = {}) {
+/** Linhas de tb_receita ({ vencto, valor }) → [{ vencimento: 'aaaa-mm-dd', valor }] (ignora linhas sem data válida ou sem valor). */
+export function duplicatasJson(linhas = []) {
+  const iso = (v) => {
+    if (v instanceof Date) return Number.isNaN(v.getTime()) ? '' : `${v.getFullYear()}-${String(v.getMonth() + 1).padStart(2, '0')}-${String(v.getDate()).padStart(2, '0')}`;
+    const m = /^(\d{4}-\d{2}-\d{2})/.exec(String(v ?? '')) ?? /^(\d{2})\/(\d{2})\/(\d{4})/.exec(String(v ?? ''));
+    return !m ? '' : m.length === 2 ? m[1] : `${m[3]}-${m[2]}-${m[1]}`;
+  };
+  return linhas.map((d) => ({ vencimento: iso(d.vencto), valor: Math.round((Number(String(d.valor ?? 0).replace(',', '.')) || 0) * 100) / 100 }))
+    .filter((d) => d.vencimento && d.valor > 0).sort((a, b) => a.vencimento.localeCompare(b.vencimento));
+}
+export function montaJsonNfe(nfe, itens, cfg, { numero, ibsCbs = true, agora = new Date(), referencias = [], orientacao = 'retrato', duplicatas = [] } = {}) {
   const regime = regimeDoCrt(cfg.nfe_crt);
   const simples = regime === 1 || regime === 2;
   const ambiente = Number(cfg.nfe_configuracoes_webservice_ambiente) === 1 ? 1 : 2; // 1 produção / 2 homologação
@@ -216,6 +226,9 @@ export function montaJsonNfe(nfe, itens, cfg, { numero, ibsCbs = true, agora = n
     pagamentos: [{ meio: txt(nfe.forma_pagamento).padStart(2, '0'), valor: txt(nfe.forma_pagamento).padStart(2, '0') === '90' ? 0 : total }], // 90 = sem pagamento: valor 0,00
     informacoesComplementares: txt(nfe.texto_corpo) || undefined,
   };
+  // duplicatas (tb_receita da nota): [{ vencimento: 'aaaa-mm-dd', valor }], em ordem de vencimento
+  const dupJson = duplicatasJson(duplicatas);
+  if (dupJson.length) json.duplicatas = dupJson;
   const chaves = chavesDe(referencias);
   if (chaves.length) json.documentosReferenciados = chaves.map((chaveNfe) => ({ chaveNfe })); // chave da NF-e original (devolução)
   if (n(nfe.frete_valor) > 0 && json.modalidadeFrete !== 9) json.valorFrete = n(nfe.frete_valor);

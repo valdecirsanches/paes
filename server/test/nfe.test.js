@@ -192,3 +192,11 @@ test('fone: telefone fora de 6–14 dígitos é omitido (evita Falha no Schema X
   assert.equal(fone('(11) 3687-7622'), '1136877622');
   assert.equal(fone(''), undefined);
 });
+
+import { duplicatasJson } from '../src/services/nfeJson.js';
+test('duplicatas vão no JSON da API: vencimento aaaa-mm-dd e valor, em ordem', () => {
+  const j = montaJsonNfe(nfe, itens, cfg, { numero: 5, duplicatas: [{ vencto: new Date(2026, 11, 29), valor: '280.93' }, { vencto: '2026-11-29 00:00:00', valor: 280.93 }, { vencto: null, valor: 10 }, { vencto: '2026-12-01', valor: 0 }] });
+  assert.deepEqual(j.duplicatas, [{ vencimento: '2026-11-29', valor: 280.93 }, { vencimento: '2026-12-29', valor: 280.93 }]);
+  assert.equal(montaJsonNfe(nfe, itens, cfg, { numero: 5 }).duplicatas, undefined);
+  assert.deepEqual(duplicatasJson([{ vencto: '29/11/2026', valor: '1,5' }]), [{ vencimento: '2026-11-29', valor: 1.5 }]);
+});

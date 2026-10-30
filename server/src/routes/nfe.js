@@ -920,7 +920,7 @@ async function autorizaUma(id, usuario, ibsCbs) {
   const [itens] = await pool.query(
     `select i.*, t.cBenef, t.cst, t.cClassTrib, t.pIBS, t.pCBS, t.red_aliq
        from tb_nfe_itens i left join tb_tributos t on t.id = i.id_tributo where i.id_nfe = ? order by i.id`, [id]);
-  const [dup] = await pool.query('select vencto from tb_receita where id_nfe = ?', [id]);
+  const [dup] = await pool.query('select vencto, valor from tb_receita where id_nfe = ?', [id]);
   let [referencias] = await pool.query('select refNFe from tb_nfe_referencia where id_nfe = ? order by id', [id]);
   referencias = await completaReferenciaDevolucao(id, nfe, referencias);
   const erros = validaParaAutorizar(nfe, itens, cfg, { vencimentos: dup.map((d) => d.vencto), referencias });
@@ -946,7 +946,7 @@ async function autorizaUma(id, usuario, ibsCbs) {
   }
   if (ncmsRuins.length) return { id, ok: false, log: ncmsRuins };
   await pool.query('update tb_nfe set nfe_numero = ? where id = ?', [numero, id]); // como no Delphi: grava o número antes, para busca posterior
-  const json = montaJsonNfe(nfe, itens, cfg, { numero, ibsCbs, referencias, orientacao: (await lerDanfeCfg()).orientacao });
+  const json = montaJsonNfe(nfe, itens, cfg, { numero, ibsCbs, referencias, duplicatas: dup, orientacao: (await lerDanfeCfg()).orientacao });
   if (ibsCbs && json.itens.some((i) => i.ibsCbs && ['200', '210'].includes(i.ibsCbs.cst))) {
     aplicaReducaoIbs(json, []); // nomes documentados pela API (reducaoAliquotaIbsUf, aliquotaEfetivaIbsUf, reducaoAliquotaCbs, aliquotaEfetivaCbs)
   }
