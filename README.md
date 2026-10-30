@@ -760,3 +760,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 141
 - Grade de NF-e: ao abrir (e a cada refiltro) vem ordenada por **nº da NFe** crescente (notas ainda sem número, nº 0, ficam no topo; empate pelo id). Clicar no cabeçalho muda a ordem como antes; o terceiro clique volta à ordem por id.
+
+## Fase 142
+- **Ajustar NFe** agora esvazia `nfe_pdf_file` (e `nfe_file_pdf`, se a coluna existir) ao terminar. Obs.: ao pedir o DANFE de novo, o app busca/gera o PDF e volta a preencher o campo. Não testado contra o MySQL real.

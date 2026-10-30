@@ -505,7 +505,10 @@ router.post('/:id/ajustar', async (req, res) => {
   const jaTem = ['AUTORIZADA', 'CANCELADA'].includes(nfe.status_e) && chave.length === 44; // a API respondeu sem mudar nada, mas a nota local já é válida: segue para gravar o XML
   if (r.status !== 200 && !jaTem) throw new AppError(502, `A API não respondeu à consulta (HTTP ${r.status}${r.body?.motivo ? ` — ${r.body.motivo}` : ''}).`);
   if (!ajuste?.achou && !jaTem) throw new AppError(404, 'A API não localizou a nota (ou ainda não consta como autorizada).');
-  const [[atual]] = await pool.query('select id, status_e, nfe_chave, nfe_numero from tb_nfe where id = ?', [ajuste?.id ?? nfe.id]);
+  const idAj = ajuste?.id ?? nfe.id;
+  await pool.query("update tb_nfe set nfe_pdf_file = '' where id = ?", [idAj]); // ajustar esvazia o caminho do PDF (o DANFE é buscado de novo quando for pedido)
+  await pool.query("update tb_nfe set nfe_file_pdf = '' where id = ?", [idAj]).catch(() => {}); // coluna alternativa, se existir neste banco
+  const [[atual]] = await pool.query('select id, status_e, nfe_chave, nfe_numero from tb_nfe where id = ?', [idAj]);
   res.json({ ok: true, id: atual.id, status: atual.status_e, chave: atual.nfe_chave, numero: atual.nfe_numero, arquivos: ajuste.arquivos });
 });
 router.post('/consultar-chave', async (req, res) => {
