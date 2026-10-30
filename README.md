@@ -754,3 +754,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 139
 - Clonar NFe: a cópia nasce com **data de emissão e de saída do dia atual** (data do banco). Antes mantinha a emissão da nota original (e a saída era calculada em UTC). Não testado contra o MySQL real.
+
+## Fase 140
+- Clonar NFe: além de `nfe_pdf_file`/`nfe_xml_file`, **toda coluna cujo nome contenha `pdf` ou `xml`** (inclusive `nfe_fine_pdf`) é esvaziada na cópia. Se o campo que você citou tiver outro nome, me diga o nome exato da coluna. Não testado contra o MySQL real.

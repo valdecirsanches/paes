@@ -231,6 +231,7 @@ router.post('/:id/duplicar', async (req, res) => {
     if (!o) throw notFound('Nota');
     const [[{ hoje }]] = await c.query("select date_format(curdate(), '%Y-%m-%d') as hoje"); // data do banco (evita virar o dia por fuso)
     const copia = { ...o, ...Object.fromEntries(Object.entries(LIMPAR_NA_COPIA).filter(([k]) => k in o)), data_saida: hoje, data_emissao: hoje };
+    for (const k of Object.keys(copia)) if (/pdf|xml/i.test(k)) copia[k] = ''; // nfe_pdf_file, nfe_fine_pdf, nfe_xml_file…: a cópia não herda arquivos da original
     delete copia.id;
     const [r] = await c.query('insert into tb_nfe set ?', [copia]);
     const [itens] = await c.query('select * from tb_nfe_itens where id_nfe = ?', [id]);
