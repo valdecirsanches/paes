@@ -13,7 +13,7 @@ import { lerA3, gravarA3, limparA3 } from '../services/a3Store.js';
 import { impostos, usuarioNfe } from '../services/geraFatura.js';
 import { destinatarios, assuntoPadrao, mensagemPadrao, enviaEmail, criaTransporte, listaEmails } from '../services/emailNfe.js';
 import { enriquece, arquivoDoEvento } from '../services/eventosNfe.js';
-import { baseGravacao, paraBanco, paraLocal } from '../services/caminhosNfe.js';
+import { baseGravacao, paraBanco, paraLocal, caminhoXmlLegado, prefixoArqs } from '../services/caminhosNfe.js';
 import { acharArquivoNota, lerArquivoNota, baseArquivos } from '../services/arquivosApi.js';
 import { aplicaReducaoIbs, montaJsonNfe, validaParaAutorizar, dataHoraBr, regimeDoCrt, ehDevolucao } from '../services/nfeJson.js';
 
@@ -34,6 +34,14 @@ async function gravaArquivo(cnpj, ambiente, nome, dados) {
   const f = path.join(dir, nome);
   await writeFile(f, dados);
   return paraBanco(f); // valor para tb_nfe: caminho que as outras máquinas (sistema antigo) enxergam
+}
+
+/** XML autorizado no padrão do sistema antigo (pasta por emissão, <chave>-nfe.xml); devolve o valor para tb_nfe.nfe_xml_file. */
+async function gravaXmlLegado(nfe, cfg, dados) {
+  const c = caminhoXmlLegado({ cnpj: cfg.cnpj, dataEmissao: nfe.data_emissao, chave: nfe.nfe_chave });
+  await mkdir(path.dirname(c.local), { recursive: true });
+  await writeFile(c.local, dados);
+  return c.banco;
 }
 
 const getCfg = async (c = pool) => { const [[cfg]] = await c.query('select * from tb_nfe_config limit 1'); if (!cfg) throw new AppError(422, 'tb_nfe_config está vazia (dados do emitente).'); return cfg; };
@@ -372,7 +380,7 @@ async function sincronizaArquivos(nfe, cfg, docId, orientacao) {
           catch { feito[tipo] = r.erro || `HTTP ${r.status}`; continue; }
         } else { feito[tipo] = r.erro || `HTTP ${r.status}${l.motivo ? ` — ${l.motivo}` : ''}`; continue; }
       }
-      const p = await gravaArquivo(cfg.cnpj, ambiente, `${nfe.nfe_chave}${ext}`, r.buffer);
+      const p = tipo === 'xml' ? await gravaXmlLegado(nfe, cfg, r.buffer) : await gravaArquivo(cfg.cnpj, ambiente, `${nfe.nfe_chave}${ext}`, r.buffer);
       await pool.query(`update tb_nfe set ${campo} = ? where id = ?`, [p, nfe.id]);
       nfe[campo] = p; feito[tipo] = 'ok';
     } catch (e) { feito[tipo] = e.message; }
@@ -851,7 +859,7 @@ async function gravaAutorizada(id, cfg, doc, { ambiente, numero, usuario, increm
   const log = [];
   let xmlFile = ''; let pdfFile = '';
   try {
-    if (doc.xmlBase64) xmlFile = await gravaArquivo(cfg.cnpj, ambiente, `${doc.chaveAcesso}-procNFe.xml`, Buffer.from(doc.xmlBase64, 'base64'));
+    if (doc.xmlBase64) xmlFile = await gravaXmlLegado({ ...(await getNfe(id)), nfe_chave: doc.chaveAcesso }, cfg, Buffer.from(doc.xmlBase64, 'base64'));
     if (doc.danfePdfBase64) pdfFile = await gravaArquivo(cfg.cnpj, ambiente, `${doc.chaveAcesso}.pdf`, Buffer.from(doc.danfePdfBase64, 'base64'));
   } catch (e) { log.push(`ATENÇÃO: não consegui gravar o XML/PDF em disco (${e.message}). A nota está autorizada; baixe o XML pela tela.`); }
   const quando = dataHoraBr(doc.dataAutorizacao);
@@ -1064,7 +1072,7 @@ async function buscaArquivo(nfe, cfg, campo, nomeExt, baixa, orientacao) {
   const ambiente = Number(cfg.nfe_configuracoes_webservice_ambiente) === 1 ? 1 : 2;
   const guarda = async (buf) => {
     try {
-      const p = await gravaArquivo(cfg.cnpj, ambiente, `${nfe.nfe_chave}${nomeExt === 'xml' ? '-procNFe.xml' : '.pdf'}`, buf);
+      const p = nomeExt === 'xml' ? await gravaXmlLegado(nfe, cfg, buf) : await gravaArquivo(cfg.cnpj, ambiente, `${nfe.nfe_chave}.pdf`, buf);
       if (p !== f) await pool.query(`update tb_nfe set ${campo} = ? where id = ?`, [p, nfe.id]);
     } catch { /* guardar é melhor esforço */ }
   };
@@ -1115,6 +1123,28 @@ router.post('/impresso', async (req, res) => {
   try { await pool.query('update tb_nfe set nfe_impresso = ? where id in (?)', [v, ids]); }
   catch { await pool.query('update tb_nfe set nfe_impresso = ? where id in (?)', [v === 'True' ? 1 : 0, ids]); }
   res.json({ ok: true, ids, impresso: v === 'True' });
+});
+/** Regrava no padrão do sistema antigo (N:/EDSMonitorPLUS/Arqs/…/<chave>-nfe.xml) o XML de notas já autorizadas por este app. Body: { ids } ou { de, ate } (data de emissão). */
+router.post('/regravar-xml', async (req, res) => {
+  const b = req.body ?? {}; const cfg = await getCfg();
+  let notas;
+  if (Array.isArray(b.ids) && b.ids.length) [notas] = await pool.query("select * from tb_nfe where id in (?) and status_e in ('AUTORIZADA','CANCELADA') and nfe_chave <> ''", [b.ids.map((x) => idValido(x))]);
+  else {
+    if (!isIsoDate(b.de) || !isIsoDate(b.ate)) throw invalid('Informe ids ou o período (de/ate, aaaa-mm-dd).');
+    [notas] = await pool.query("select * from tb_nfe where data_emissao between ? and ? and status_e in ('AUTORIZADA','CANCELADA') and nfe_chave <> '' order by id limit 2000", [b.de, b.ate]);
+  }
+  const alvo = prefixoArqs().toLowerCase().replaceAll('\\', '/');
+  const r = { total: notas.length, regravadas: 0, jaNoPadrao: 0, falhas: [] };
+  for (const n of notas) {
+    if (String(n.nfe_xml_file ?? '').replaceAll('\\', '/').toLowerCase().startsWith(alvo)) { r.jaNoPadrao += 1; continue; }
+    try {
+      const xml = await buscaArquivo(n, cfg, 'nfe_xml_file', 'xml', (d) => api.xmlAutorizado(d));
+      const p = await gravaXmlLegado(n, cfg, xml);
+      await pool.query('update tb_nfe set nfe_xml_file = ? where id = ?', [p, n.id]);
+      r.regravadas += 1;
+    } catch (e) { r.falhas.push(`${n.nfe_numero || n.id}: ${e.message}`.slice(0, 200)); }
+  }
+  res.json(r);
 });
 router.post('/danfe-lote', async (req, res) => {
   const ids = [...new Set((Array.isArray(req.body?.ids) ? req.body.ids : []).map((x) => idValido(x)))].slice(0, 200);

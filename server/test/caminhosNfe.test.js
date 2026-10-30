@@ -20,3 +20,16 @@ test('prefixo com letra de unidade', () => {
   assert.equal(paraLocal('z:\\nfe\\x\\y.pdf'), '/srv/nfe/x/y.pdf');
   delete process.env.NFE_XML_DB_PREFIXO; delete process.env.NFE_XML_DIR;
 });
+
+import { caminhoXmlLegado } from '../src/services/caminhosNfe.js';
+test('XML no padrão do sistema antigo: pasta ddmmaaaa e <chave>-nfe.xml, banco com N:/', () => {
+  process.env.NFE_ARQUIVOS_DIR = '/mnt/arqs'; delete process.env.NFE_ARQUIVOS_DB_PREFIXO;
+  const chave = '35261003707154000106550010000712361229244540';
+  const c = caminhoXmlLegado({ cnpj: '03.707.154/0001-06', dataEmissao: '2026-10-29', chave });
+  assert.equal(c.banco, `N:/EDSMonitorPLUS/Arqs/03707154000106/NFe/29102026/NFe/${chave}-nfe.xml`);
+  assert.equal(c.local, `/mnt/arqs/03707154000106/NFe/29102026/NFe/${chave}-nfe.xml`);
+  assert.equal(paraLocal(c.banco), c.local);
+  assert.equal(paraLocal(c.banco.replaceAll('/', '\\')), c.local);
+  assert.throws(() => caminhoXmlLegado({ cnpj: '1', dataEmissao: null, chave }), /data de emissão/);
+  delete process.env.NFE_ARQUIVOS_DIR;
+});

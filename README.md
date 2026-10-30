@@ -732,3 +732,9 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 133
 - Impressão direta do DANFE: corrigido "Failed to fetch dynamically imported module … pdf.worker.min-….mjs". O worker do pdf.js agora é empacotado como `.js` (Vite `?worker`), pois o `.mjs` solto era recusado pelo navegador/servidor (tipo MIME). Conversão PDF→PNG testada no navegador; envio à impressora real não testado.
+
+## Fase 134
+- **Compatibilidade com o sistema antigo (EDSMonitorPLUS)**: o XML autorizado agora é gravado em `<Arqs>/<cnpj>/NFe/<ddmmaaaa da emissão>/NFe/<chave>-nfe.xml` e `tb_nfe.nfe_xml_file` recebe `N:/EDSMonitorPLUS/Arqs/<cnpj>/NFe/<ddmmaaaa>/NFe/<chave>-nfe.xml`. Vale na autorização, no reenvio, na sincronização com a API e sempre que o XML é rebaixado.
+- Onde grava no servidor: `NFE_ARQUIVOS_DIR` (padrão `/mnt/hdbackup/API/levpao/arquivos/nfe/EDSMonitorPLUS/Arqs`, a mesma pasta que o `N:` enxerga). O prefixo que vai ao banco é `NFE_ARQUIVOS_DB_PREFIXO` (padrão `N:/EDSMonitorPLUS/Arqs`). O servidor precisa ter escrita nessa pasta.
+- Notas já emitidas: `POST /api/nfe/regravar-xml` com `{ "de": "2026-10-01", "ate": "2026-10-30" }` (ou `{ "ids": [...] }`) pega o XML (disco → API → pasta da API) e regrava no novo padrão.
+- DANFE/PDF, cancelamento e CC-e continuam no caminho anterior. Não testado com o sistema antigo nem com a pasta de rede real.
