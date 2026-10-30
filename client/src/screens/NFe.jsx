@@ -7,7 +7,7 @@ import NfeFiscal, { EventosTabela, abrirArquivo } from '../components/NfeFiscal.
 import { brData, hoje } from '../lib/rules.js';
 import { useJanela } from '../components/janela.js';
 import { imprimirPdfDireto, salvaXmlLegado, temDestino } from '../lib/impressora.js';
-import { CORPO_LINHAS, GRADE_COLS, ITEM_COLS, REF_LINHAS, alternaPeriodo, corLinha, fmtBr, parseBr, temMarca } from '../lib/nfeCampos.js';
+import { CORPO_LINHAS, GRADE_COLS, ITEM_COLS, REF_LINHAS, alternaPeriodo, corLinha, fmtBr, parseBr, temMarca, foiMarcado } from '../lib/nfeCampos.js';
 import { Confirma, Toast, confirmar, copiaTexto, entrada, limpaMensagem, mensagem } from '../components/toast.jsx';
 
 // Configurações do emitente (tb_nfe_config)
@@ -28,14 +28,14 @@ function ordenaLinhas(rows, ord) {
   if (ord.k === 'id') return [...rows].sort((a, b) => a.id - b.id);
   const [k, , t] = GRADE_COLS.find((c) => c[0] === ord.k) ?? [];
   if (!k) return rows;
-  const val = (r) => (t === 'm' ? Number(r[k]) || 0 : t === 'chk' ? (temMarca(r[k]) ? 1 : 0) : r[k] ?? '');
+  const val = (r) => (t === 'm' ? Number(r[k]) || 0 : t === 'chk' ? (foiMarcado(r[k]) ? 1 : 0) : r[k] ?? '');
   const cmp = (a, b) => { const x = val(a); const y = val(b); return typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y), 'pt-BR', { numeric: true, sensitivity: 'base' }); };
   const f = ord.dir === 'desc' ? -1 : 1;
   return [...rows].sort((a, b) => f * cmp(a, b) || a.id - b.id);
 }
 function celulaGrade(r, [k, , t]) {
-  if (k === 'nfe_impresso') return temMarca(r[k]) ? <span className="nf2-imp on" title="Já impresso">🖨️</span> : <span className="nf2-imp" title="Não impresso">—</span>;
-  if (t === 'chk') return <input type="checkbox" checked={temMarca(r[k])} readOnly tabIndex={-1} />;
+  if (k === 'nfe_impresso') return foiMarcado(r[k]) ? <span className="nf2-imp on" title="Já impresso">🖨️</span> : <span className="nf2-imp" title="Não impresso">—</span>;
+  if (t === 'chk') return <input type="checkbox" checked={foiMarcado(r[k])} readOnly tabIndex={-1} />;
   if (t === 'd') return r[k] ? brData(r[k]) : '';
   if (t === 'm') return fmtBr(r[k], 2);
   return String(r[k] ?? '');
@@ -54,7 +54,7 @@ const LinhaNota = memo(function LinhaNota({ r, i, sel, marc, foco, onClick, onMa
     <tr className={`clicavel${foco ? ' foco' : ''}`} style={corLinha(r.status_e, sel) ?? undefined} onClick={(e) => onClick(e, r, i)}>
       <td className="ind">{foco ? '▶' : ''}</td>
       <td className="nf2-chk" onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={!!marc} onChange={() => onMarcar(r, i)} aria-label={`Marcar NFe ${r.nfe_numero || r.id}`} title="Marcar para autorizar (qualquer nota, sem ordem)" /></td>
-      <td className="nf2-ic"><button type="button" title="Dados do corpo da NFe" onClick={(e) => { e.stopPropagation(); onModal(r, i, 'corpo'); }}>📋</button><button type="button" title="Eventos da NFe" onClick={(e) => { e.stopPropagation(); onModal(r, i, 'eventos'); }}>🗓</button><button type="button" title="Clonar esta NFe (nova nota PENDENTE, sem XML, PDF, chave, protocolo e recibo)" onClick={(e) => { e.stopPropagation(); onClonar(r); }}>⧉</button>{r.status_e === 'AUTORIZADA' && <button type="button" title={temMarca(r.nfe_impresso) ? 'Imprimir o DANFE novamente (já impresso)' : 'Imprimir o DANFE desta nota'} onClick={(e) => { e.stopPropagation(); onDanfe(r); }}>🖨</button>}{r.status_e === 'AUTORIZADA' && <button type="button" title="Enviar esta NFe por e-mail ao cliente (XML + DANFE)" onClick={(e) => { e.stopPropagation(); onEmail(r); }}>✉</button>}{!['AUTORIZADA', 'CANCELADA'].includes(r.status_e) && <button type="button" className="lx" title="Apagar esta NF (só notas não autorizadas)" onClick={(e) => { e.stopPropagation(); onApagar(r); }}>🗑</button>}</td>
+      <td className="nf2-ic"><button type="button" title="Dados do corpo da NFe" onClick={(e) => { e.stopPropagation(); onModal(r, i, 'corpo'); }}>📋</button><button type="button" title="Eventos da NFe" onClick={(e) => { e.stopPropagation(); onModal(r, i, 'eventos'); }}>🗓</button><button type="button" title="Clonar esta NFe (nova nota PENDENTE, sem XML, PDF, chave, protocolo e recibo)" onClick={(e) => { e.stopPropagation(); onClonar(r); }}>⧉</button>{r.status_e === 'AUTORIZADA' && <button type="button" title={foiMarcado(r.nfe_impresso) ? 'Imprimir o DANFE novamente (já impresso)' : 'Imprimir o DANFE desta nota'} onClick={(e) => { e.stopPropagation(); onDanfe(r); }}>🖨</button>}{r.status_e === 'AUTORIZADA' && <button type="button" title="Enviar esta NFe por e-mail ao cliente (XML + DANFE)" onClick={(e) => { e.stopPropagation(); onEmail(r); }}>✉</button>}{!['AUTORIZADA', 'CANCELADA'].includes(r.status_e) && <button type="button" className="lx" title="Apagar esta NF (só notas não autorizadas)" onClick={(e) => { e.stopPropagation(); onApagar(r); }}>🗑</button>}</td>
       {GRADE_COLS.map((c) => <td key={c[0]} className={c[2] === 'm' ? 'n' : c[2] === 'chk' ? 'c' : ''}>{celulaGrade(r, c)}</td>)}
     </tr>
   );

@@ -741,3 +741,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 - **Ordenação:** clicar no cabeçalho da grade de NF-e ordena por aquela coluna (▲/▼); segundo clique inverte, terceiro volta à ordem original. A ordem se mantém ao refiltrar.
 - **DANFE em duas vias:** a impressão direta envia 2 cópias por padrão (ajustável em Configurar impressoras; o campo "Cópias" do DANFE já aparece com 2). A pré-visualização do navegador não controla cópias.
 - Testes do agente (`/gravar`) e do servidor passam; não testado com a unidade N: real.
+
+## Fase 136
+- Coluna **Imp** (e Email) da grade de NF-e: a impressão marcada pelo sistema antigo agora é reconhecida. O app só aceitava `True/1/S/SIM`; passou a valer qualquer valor preenchido que não seja negação (`False`, `0`, `N`, `não`, vazio, data zerada), incluindo texto como `IMPRESSO`, data/hora e bit. Se o sistema antigo usar um valor que signifique "não impresso" fora dessa lista, me diga qual. Não testado contra o banco real.

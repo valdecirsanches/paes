@@ -14,6 +14,18 @@ export const corLinha = (status, selecionada) => {
   return selecionada ? { background: c[2], color: c[3] } : { background: c[0], color: c[1] };
 };
 
+/**
+ * "Impresso"/"e-mail enviado" gravados pelo sistema antigo podem vir em formatos variados (True, 1, S, SIM, IMPRESSO, uma data/hora, bit…).
+ * Vale como marcado tudo que não for vazio nem uma negação explícita.
+ */
+export const foiMarcado = (v) => {
+  if (v == null) return false;
+  if (typeof v === 'object') { if (Array.isArray(v.data)) return v.data.some(Boolean); return v instanceof Date; }
+  const t = String(v).trim().toLowerCase();
+  if (t === '' || ['false', '0', 'n', 'nao', 'não', 'falso', 'null', 'nenhum', '0000-00-00', '0000-00-00 00:00:00', '30/12/1899'].includes(t)) return false;
+  return true;
+};
+
 /** Campos booleanos do legado vêm como texto ('True'/'False'), 1/0 ou S/N. */
 export const temMarca = (v) => ['true', '1', 'sim', 's', 'verdadeiro', 'x'].includes(String(v ?? '').trim().toLowerCase());
 
