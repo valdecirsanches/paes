@@ -144,8 +144,8 @@ export default function NFe({ onFechar }) {
   const [f, setF] = useState({ periodo: false, campo: 'emissao', d1: hoje(), d2: hoje(), cli: false, cliente: '', st: ST_INICIAL, nfe1: '', nfe2: '', ref: '' });
   const [clientes, setClientes] = useState([]);
   const [linhas, setLinhas] = useState(null); // versão leve (colunas da grade)
-  const [ordem, setOrdem] = useState(null); // { k, dir } da coluna clicada no cabeçalho; null = ordem do banco
-  const ordemRef = useRef(null);
+  const [ordem, setOrdem] = useState({ k: 'nfe_numero', dir: 'asc' }); // { k, dir } da coluna clicada no cabeçalho; null = ordem do banco
+  const ordemRef = useRef({ k: 'nfe_numero', dir: 'asc' }); // ao abrir, a grade vem por nº da NFe
   const ordenaPor = (k) => { const n = ordemRef.current?.k === k ? (ordemRef.current.dir === 'asc' ? { k, dir: 'desc' } : null) : { k, dir: 'asc' }; ordemRef.current = n; setOrdem(n); setLinhas((ls) => (n ? ordenaLinhas(ls, n) : ordenaLinhas(ls, { k: 'id', dir: 'asc' }))); };
   const [completa, setCompleta] = useState(null); // nota em foco, completa (GET /nfe/:id)
   const [foco, setFoco] = useState(null);

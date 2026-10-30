@@ -757,3 +757,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 140
 - Clonar NFe: além de `nfe_pdf_file`/`nfe_xml_file`, **toda coluna cujo nome contenha `pdf` ou `xml`** (inclusive `nfe_fine_pdf`) é esvaziada na cópia. Se o campo que você citou tiver outro nome, me diga o nome exato da coluna. Não testado contra o MySQL real.
+
+## Fase 141
+- Grade de NF-e: ao abrir (e a cada refiltro) vem ordenada por **nº da NFe** crescente (notas ainda sem número, nº 0, ficam no topo; empate pelo id). Clicar no cabeçalho muda a ordem como antes; o terceiro clique volta à ordem por id.
