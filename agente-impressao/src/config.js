@@ -101,7 +101,7 @@ export function carregaConfig(arquivo = caminhoConfig()) {
 export function salvaConfig(cfg, arquivo = caminhoConfig()) {
   fs.mkdirSync(path.dirname(arquivo), { recursive: true });
   const destinos = { ...Object.fromEntries(Object.entries(cfg.invalidos ?? {}).map(([n, v]) => [n, v.bruto])), ...cfg.destinos };
-  const texto = JSON.stringify({ porta: cfg.porta, escuta: cfg.escuta, token: cfg.token, origens: cfg.origens, destinos }, null, 2);
+  const texto = JSON.stringify({ porta: cfg.porta, escuta: cfg.escuta, token: cfg.token, origens: cfg.origens, ...(Array.isArray(cfg.pastas_gravacao) ? { pastas_gravacao: cfg.pastas_gravacao } : {}), destinos }, null, 2);
   try { if (fs.existsSync(arquivo)) { leJson(arquivo); fs.copyFileSync(arquivo, `${arquivo}.bak`); } } catch { /* o atual está ilegível: não sobrescreve um bom .bak */ }
   const tmp = `${arquivo}.tmp`;
   try {

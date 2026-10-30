@@ -1767,3 +1767,4 @@ dialog.modal:has(.nfe-comandas){width:min(900px,96vw)}dialog .nfe-comandas{max-h
 
 .mc2-fab .mc2-sel{display:none}
 .nf2-imp{opacity:.35}.nf2-imp.on{opacity:1}
+th.ord{cursor:pointer;user-select:none}th.ord:hover{filter:brightness(1.15)}

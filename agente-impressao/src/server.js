@@ -1,5 +1,7 @@
 import { pngTeste } from './png.js';
 import http from 'node:http';
+import { mkdir, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import { timingSafeEqual } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { caminhoConfig, carregaConfig, ipsDaMaquina, salvaConfig, validaDestino, validaRede } from './config.js';
@@ -40,6 +42,20 @@ export function criaServidor({ cfg, arquivoCfg, deps = {} } = {}) {
     req.on('error', falha);
   });
   const b64 = (v, rot) => { if (typeof v !== 'string' || !v || !/^[A-Za-z0-9+/=\r\n]+$/.test(v)) throw erro(422, `${rot} ausente ou inválido.`); const b = Buffer.from(v, 'base64'); if (!b.length) throw erro(422, `${rot} vazio.`); return b; };
+
+  /** Grava o XML da NF-e numa pasta liberada (padrão do sistema antigo, ex.: N:/EDSMonitorPLUS/Arqs/<cnpj>/NFe/<ddmmaaaa>/NFe/<chave>-nfe.xml). */
+  async function gravar(corpo) {
+    const raizes = (Array.isArray(cfg.pastas_gravacao) && cfg.pastas_gravacao.length ? cfg.pastas_gravacao : ['N:/EDSMonitorPLUS/Arqs']).map((x) => String(x).replaceAll('\\', '/').replace(/\/+$/, ''));
+    const cam = String(corpo.caminho ?? '').replaceAll('\\', '/');
+    if (!raizes.some((r) => cam.toLowerCase().startsWith(`${r.toLowerCase()}/`))) throw erro(403, `Pasta não liberada para gravação (liberadas: ${raizes.join(', ')}).`);
+    if (cam.split('/').some((p) => p === '..' || p === '.')) throw erro(422, 'Caminho inválido.');
+    if (!/-nfe\.xml$/i.test(cam)) throw erro(422, 'Só é permitido gravar arquivos *-nfe.xml.');
+    const dados = b64(corpo.dados_b64, 'Arquivo');
+    if (dados.subarray(0, 64).toString('utf8').replace(/^\uFEFF/, '').trimStart()[0] !== '<') throw erro(422, 'O arquivo não parece um XML.');
+    await mkdir(path.dirname(cam), { recursive: true });
+    await writeFile(cam, dados);
+    return cam;
+  }
 
   async function imprimir(corpo) {
     const nome = corpo.destino;
@@ -97,6 +113,11 @@ export function criaServidor({ cfg, arquivoCfg, deps = {} } = {}) {
         if (req.headers['x-agente'] !== 'paes') return r(400, { message: 'Cabeçalho X-Agente ausente.' });
         await imprimir(await lerJson(req));
         return r(200, { ok: true });
+      }
+
+      if (req.method === 'POST' && url.pathname === '/gravar') {
+        if (req.headers['x-agente'] !== 'paes') return r(400, { message: 'Cabeçalho X-Agente ausente.' });
+        return r(200, { ok: true, caminho: await gravar(await lerJson(req)) });
       }
 
       // teste de um destino: liberado também ao sistema web (origem autorizada), como /imprimir

@@ -40,3 +40,6 @@ export function caminhoXmlLegado({ cnpj, dataEmissao, chave }) {
   const rel = [String(cnpj).replace(/\D/g, ''), 'NFe', `${p.d}${p.m}${p.a}`, 'NFe', `${String(chave).replace(/\D/g, '')}-nfe.xml`];
   return { local: path.join(baseArquivos(), ...rel), banco: `${prefixoArqs().replaceAll('\\', '/')}/${rel.join('/')}` };
 }
+
+/** O valor de nfe_xml_file já aponta para o padrão do sistema antigo (gravado pelo agente na máquina do cliente)? */
+export const ehCaminhoLegado = (v) => String(v ?? '').replaceAll('\\', '/').toLowerCase().startsWith(`${prefixoArqs().replaceAll('\\', '/').toLowerCase()}/`);

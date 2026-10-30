@@ -128,7 +128,7 @@ export default function Impressoras() {
                   {destinos.map((x) => <option key={x.nome} value={x.nome}>{x.nome} — {x.linguagem}</option>)}
                   {c.destino && !dest && <option value={c.destino}>{c.destino} (não encontrado)</option>}
                 </select>
-                <label className="imp-cop">Cópias<input type="number" min="1" max="99" value={c.copias ?? 1} disabled={!c.destino} onChange={(e) => muda(tipo, 'copias', Math.max(1, Math.min(99, Number(e.target.value) || 1)))} /></label>
+                <label className="imp-cop">Cópias<input type="number" min="1" max="99" value={c.copias ?? d.copias ?? 1} disabled={!c.destino} onChange={(e) => muda(tipo, 'copias', Math.max(1, Math.min(99, Number(e.target.value) || 1)))} /></label>
                 {d.etiqueta && <label className="imp-cop" title="Altura da página = passo entre etiquetas. Se cada etiqueta sair mais abaixo que a anterior, diminua; se sair cortada/apertada, aumente.">Altura mm<input type="number" min="20" max="100" step="0.5" placeholder={String(d.mm[1])} value={c.altura ?? ''} disabled={!c.destino} onChange={(e) => muda(tipo, 'altura', e.target.value === '' ? undefined : Number(e.target.value))} /></label>}
                 {d.etiqueta && <button type="button" className="imp-btn ajuste" onClick={() => setEditor(tipo)} title="Ajustar posições, fontes e altura em milímetros">📐 Editor{temAjuste(tipo) ? ' ●' : ''}</button>}
                 <button type="button" className="imp-btn" disabled={!c.destino || !!ocupado} onClick={() => testar(tipo, c.destino)}>{ocupado === tipo ? 'Enviando…' : 'Teste'}</button>

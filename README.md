@@ -733,8 +733,11 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 ## Fase 133
 - Impressão direta do DANFE: corrigido "Failed to fetch dynamically imported module … pdf.worker.min-….mjs". O worker do pdf.js agora é empacotado como `.js` (Vite `?worker`), pois o `.mjs` solto era recusado pelo navegador/servidor (tipo MIME). Conversão PDF→PNG testada no navegador; envio à impressora real não testado.
 
-## Fase 134
-- **Compatibilidade com o sistema antigo (EDSMonitorPLUS)**: o XML autorizado agora é gravado em `<Arqs>/<cnpj>/NFe/<ddmmaaaa da emissão>/NFe/<chave>-nfe.xml` e `tb_nfe.nfe_xml_file` recebe `N:/EDSMonitorPLUS/Arqs/<cnpj>/NFe/<ddmmaaaa>/NFe/<chave>-nfe.xml`. Vale na autorização, no reenvio, na sincronização com a API e sempre que o XML é rebaixado.
-- Onde grava no servidor: `NFE_ARQUIVOS_DIR` (padrão `/mnt/hdbackup/API/levpao/arquivos/nfe/EDSMonitorPLUS/Arqs`, a mesma pasta que o `N:` enxerga). O prefixo que vai ao banco é `NFE_ARQUIVOS_DB_PREFIXO` (padrão `N:/EDSMonitorPLUS/Arqs`). O servidor precisa ter escrita nessa pasta.
-- Notas já emitidas: `POST /api/nfe/regravar-xml` com `{ "de": "2026-10-01", "ate": "2026-10-30" }` (ou `{ "ids": [...] }`) pega o XML (disco → API → pasta da API) e regrava no novo padrão.
-- DANFE/PDF, cancelamento e CC-e continuam no caminho anterior. Não testado com o sistema antigo nem com a pasta de rede real.
+## Fase 135
+- **Compatibilidade (corrige a 134):** a estrutura atual de gravação voltou ao que era (pasta do servidor). O XML no padrão do sistema antigo é gravado **na máquina do cliente**, pelo agente de impressão: `N:/EDSMonitorPLUS/Arqs/<cnpj>/NFe/<ddmmaaaa da emissão>/NFe/<chave>-nfe.xml`, e `tb_nfe.nfe_xml_file` passa a apontar para esse caminho (e não é mais sobrescrito pelo app).
+  - Novo no agente: `POST /gravar` (só `*-nfe.xml`, só dentro de pastas liberadas — padrão `N:/EDSMonitorPLUS/Arqs`, configurável em `pastas_gravacao` no config.json do agente; recusa `..` e conteúdo que não seja XML). **O agente precisa ser atualizado nas máquinas que autorizam notas** e a unidade N: precisa existir nelas.
+  - Novo no servidor: `GET /api/nfe/:id/xml-legado` e `POST /api/nfe/:id/xml-legado/confirma`.
+  - Na tela: após autorizar, o XML é gravado no N: em segundo plano (falhas no Log). Notas antigas: selecione e use **Mais ações › 💾 Gravar XML no N:**.
+- **Ordenação:** clicar no cabeçalho da grade de NF-e ordena por aquela coluna (▲/▼); segundo clique inverte, terceiro volta à ordem original. A ordem se mantém ao refiltrar.
+- **DANFE em duas vias:** a impressão direta envia 2 cópias por padrão (ajustável em Configurar impressoras; o campo "Cópias" do DANFE já aparece com 2). A pré-visualização do navegador não controla cópias.
+- Testes do agente (`/gravar`) e do servidor passam; não testado com a unidade N: real.

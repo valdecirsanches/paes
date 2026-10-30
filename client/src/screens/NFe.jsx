@@ -6,7 +6,7 @@ import NcmCampo from '../components/NcmCampo.jsx';
 import NfeFiscal, { EventosTabela, abrirArquivo } from '../components/NfeFiscal.jsx';
 import { brData, hoje } from '../lib/rules.js';
 import { useJanela } from '../components/janela.js';
-import { imprimirPdfDireto, temDestino } from '../lib/impressora.js';
+import { imprimirPdfDireto, salvaXmlLegado, temDestino } from '../lib/impressora.js';
 import { CORPO_LINHAS, GRADE_COLS, ITEM_COLS, REF_LINHAS, alternaPeriodo, corLinha, fmtBr, parseBr, temMarca } from '../lib/nfeCampos.js';
 import { Confirma, Toast, confirmar, copiaTexto, entrada, limpaMensagem, mensagem } from '../components/toast.jsx';
 
@@ -22,6 +22,17 @@ const CFG_NFE = 2, CFG_CERT = 4; // posições das abas com blocos próprios (am
 
 const LIMITE_LISTA = 1500; // igual ao servidor
 const ALT_NOTA = 22; // px — altura fixa das linhas da grade de notas (rolagem virtual)
+/** Ordena as linhas da grade por uma coluna (números, datas e marcas comparam pelo valor; texto, em pt-BR com números naturais). */
+function ordenaLinhas(rows, ord) {
+  if (!ord || !rows) return rows;
+  if (ord.k === 'id') return [...rows].sort((a, b) => a.id - b.id);
+  const [k, , t] = GRADE_COLS.find((c) => c[0] === ord.k) ?? [];
+  if (!k) return rows;
+  const val = (r) => (t === 'm' ? Number(r[k]) || 0 : t === 'chk' ? (temMarca(r[k]) ? 1 : 0) : r[k] ?? '');
+  const cmp = (a, b) => { const x = val(a); const y = val(b); return typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y), 'pt-BR', { numeric: true, sensitivity: 'base' }); };
+  const f = ord.dir === 'desc' ? -1 : 1;
+  return [...rows].sort((a, b) => f * cmp(a, b) || a.id - b.id);
+}
 function celulaGrade(r, [k, , t]) {
   if (k === 'nfe_impresso') return temMarca(r[k]) ? <span className="nf2-imp on" title="Já impresso">🖨️</span> : <span className="nf2-imp" title="Não impresso">—</span>;
   if (t === 'chk') return <input type="checkbox" checked={temMarca(r[k])} readOnly tabIndex={-1} />;
@@ -133,6 +144,9 @@ export default function NFe({ onFechar }) {
   const [f, setF] = useState({ periodo: false, campo: 'emissao', d1: hoje(), d2: hoje(), cli: false, cliente: '', st: ST_INICIAL, nfe1: '', nfe2: '', ref: '' });
   const [clientes, setClientes] = useState([]);
   const [linhas, setLinhas] = useState(null); // versão leve (colunas da grade)
+  const [ordem, setOrdem] = useState(null); // { k, dir } da coluna clicada no cabeçalho; null = ordem do banco
+  const ordemRef = useRef(null);
+  const ordenaPor = (k) => { const n = ordemRef.current?.k === k ? (ordemRef.current.dir === 'asc' ? { k, dir: 'desc' } : null) : { k, dir: 'asc' }; ordemRef.current = n; setOrdem(n); setLinhas((ls) => (n ? ordenaLinhas(ls, n) : ordenaLinhas(ls, { k: 'id', dir: 'asc' }))); };
   const [completa, setCompleta] = useState(null); // nota em foco, completa (GET /nfe/:id)
   const [foco, setFoco] = useState(null);
   const focoRef = useRef(null);
@@ -219,7 +233,7 @@ export default function NFe({ onFechar }) {
       const rows = await api.get(`/nfe?${q}`);
       if (minha !== seqFiltro.current) return; // resposta velha: o filtro já mudou
       recarregaDetalhe.current?.(manter || fixa ? (fixa ?? focoRef.current) : null);
-      setLinhas(rows); setMarcados(new Set()); setDraft({}); setSubNfe('nfe');
+      setLinhas(ordenaLinhas(rows, ordemRef.current)); setMarcados(new Set()); setDraft({}); setSubNfe('nfe');
       setFoco((a) => (fixa && rows.some((r) => r.id === fixa) ? fixa : manter && rows.some((r) => r.id === a) ? a : rows.at(-1)?.id ?? null));
     } catch (e) { if (minha === seqFiltro.current) notificar('erro', e.message); } finally { if (minha === seqFiltro.current) setOcupado(false); }
   }, [f, notificar]);
@@ -329,6 +343,14 @@ export default function NFe({ onFechar }) {
 
   const acao = async (fn) => { setOcupado(true); try { await fn(); } catch (e) { notificar('erro', e.message); setLog([e.message]); } finally { setOcupado(false); } };
 
+  /** XML no padrão do sistema antigo, gravado nesta máquina (N:/EDSMonitorPLUS/Arqs/…) pelo agente. Falhas vão para o Log. */
+  const gravaNoN = async (ids, avisar = false) => {
+    let ok = 0;
+    for (const id of ids) {
+      try { await salvaXmlLegado(id, api); ok += 1; } catch (e) { registraLog(`XML da nota ${id} não gravado no N: — ${e.message}`); }
+    }
+    if (avisar) notificar(ok === ids.length ? 'ok' : 'aviso', `XML gravado no N: (${ok} de ${ids.length}).${ok < ids.length ? ' Veja o Log.' : ''}`);
+  };
   // ----- ações da barra
   const ambienteAtual = Number(cfg?.nfe_configuracoes_webservice_ambiente) === 1 ? 1 : 2;
   const autorizar = async () => {
@@ -345,6 +367,7 @@ export default function NFe({ onFechar }) {
         setResposta(JSON.stringify(ult?.resumo ?? {}, null, 2));
         if (r.resultados.every((x) => x.ok)) notificar('ok', 'A U T O R I Z A D A !'); else notificar('erro', ult?.temporario ? 'Agente do certificado A3 offline: tente de novo quando a máquina do token estiver ligada.' : ult?.log?.[0] ?? 'Não foi possível autorizar.');
         await filtrar(true);
+        gravaNoN(r.resultados.filter((x) => x.ok).map((x) => x.id)); // cópia no padrão do sistema antigo (N:), em segundo plano
       } finally { setTimeout(() => setProgresso(4), 1200); }
     });
   };
@@ -551,6 +574,7 @@ export default function NFe({ onFechar }) {
                   <button type="button" role="menuitem" onClick={reenviar} disabled={ocupado || nota?.status_e !== 'PENDENTE' || !nota?.nfe_numero}>↻ Reenviar à SEFAZ</button>
                   <button type="button" role="menuitem" onClick={abreFiscal('consultas')} disabled={ocupado}>🏛 Consultas e status Receita</button>
                   <button type="button" role="menuitem" onClick={abreFiscal('arquivos')} disabled={!nota}>📄 Arquivos e retornos</button>
+                  <button type="button" role="menuitem" onClick={() => { const ids = [...alvo].filter((id) => ['AUTORIZADA', 'CANCELADA'].includes(statusDe(id))); if (ids.length) gravaNoN(ids, true); else notificar('aviso', 'Selecione notas autorizadas.'); }}>💾 Gravar XML no N: (sistema antigo)</button>
                   <small>Envio</small>
                   <button type="button" role="menuitem" onClick={enviaEmail('cliente')}>✉ Enviar e-mail ao cliente</button>
                   <button type="button" role="menuitem" onClick={enviaEmail('contabilidade')}>📧 Enviar à Contabilidade</button>
@@ -686,7 +710,7 @@ export default function NFe({ onFechar }) {
                 <>
                   <div className="nfe-grade rolagem" ref={jn.ref} onScroll={jn.onScroll} style={{ height: altGrade }}>
                     <table className="grade">
-                      <thead><tr><th className="ind" /><th className="nf2-chk"><input type="checkbox" checked={todosMarcados} onChange={marcarTodas} disabled={!linhas?.length} aria-label="Marcar todas" title="Marcar / desmarcar todas" /></th><th className="nf2-ic" />{GRADE_COLS.map(([k, r, , w]) => <th key={k} style={{ minWidth: w }}>{r}</th>)}</tr></thead>
+                      <thead><tr><th className="ind" /><th className="nf2-chk"><input type="checkbox" checked={todosMarcados} onChange={marcarTodas} disabled={!linhas?.length} aria-label="Marcar todas" title="Marcar / desmarcar todas" /></th><th className="nf2-ic" />{GRADE_COLS.map(([k, r, , w]) => <th key={k} style={{ minWidth: w }} className="ord" aria-sort={ordem?.k === k ? (ordem.dir === 'asc' ? 'ascending' : 'descending') : 'none'} title="Clique para ordenar (clique de novo inverte; terceiro clique volta à ordem original)" onClick={() => ordenaPor(k)}>{r}{ordem?.k === k ? (ordem.dir === 'asc' ? ' ▲' : ' ▼') : ''}</th>)}</tr></thead>
                       <tbody>
                         {jn.acima > 0 && <tr className="cd-esp" style={{ height: jn.acima }}><td colSpan={GRADE_COLS.length + 2} /></tr>}
                         {(linhas ?? []).slice(jn.ini, jn.fim).map((r, k) => <LinhaNota key={r.id} r={r} i={jn.ini + k} sel={marcados.has(r.id) || foco === r.id} marc={marcados.has(r.id)} foco={foco === r.id} onClick={clicar} onMarcar={marcar} onModal={abreModal} onClonar={clonarLinha} onApagar={apagarLinha} onEmail={emailLinha} onDanfe={danfeLinha} />)}

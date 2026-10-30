@@ -15,7 +15,7 @@ export const DOCS = {
   'etiqueta-mercadorias': { rotulo: 'Etiquetas de mercadorias', etiqueta: true, mm: [62, 41] },
   'etiqueta-carga': { rotulo: 'Etiquetas de carga (expedição)', etiqueta: true, mm: [62, 45] },
   'comanda': { rotulo: 'Comanda e demonstrativo (faturamento)', cupom: true },
-  'danfe': { rotulo: 'DANFE (NF-e) — impressão direta', pagina: true, mm: [210, 297] },
+  'danfe': { rotulo: 'DANFE (NF-e) — impressão direta (2 vias)', pagina: true, mm: [210, 297], copias: 2 },
   'cupom-expedicao': { rotulo: 'Cupom da expedição (alterações)', cupom: true },
 };
 
@@ -191,11 +191,23 @@ export async function imprimirPdfDireto(buffer) {
   const d = destinos.find((x) => x.nome === cfg.destino);
   if (!d) throw new Error(`o destino "${cfg.destino}" não existe mais no agente`);
   if (d.tipo !== 'windows') throw new Error(`o destino "${cfg.destino}" não é uma impressora do Windows (rede/serial/etiqueta não imprimem página A4)`);
-  const copias = Math.max(1, Number(cfg.copias ?? 1));
+  const copias = Math.max(1, Number(cfg.copias ?? DOCS.danfe.copias)); // padrão: duas vias
   const pags = await pdfParaPngs(buffer);
   let lote = []; let bytes = 0;
   const manda = async () => { if (!lote.length) return; await enviar(cfg.destino, { tipo: 'png', paginas_b64: lote.map((x) => x.png), largura_mm: Math.min(220, Math.round(lote[0].larguraMm)), altura_mm: Math.round(lote[0].alturaMm), copias }); lote = []; bytes = 0; };
   for (const p of pags) { if (bytes + p.png.length > 2.8 * 1024 * 1024) await manda(); lote.push(p); bytes += p.png.length; }
   await manda();
   return 'agente';
+}
+
+/**
+ * Compatibilidade com o sistema antigo: grava o XML da nota em N:/EDSMonitorPLUS/Arqs/… NESTA máquina (pelo agente local)
+ * e aponta tb_nfe.nfe_xml_file para esse caminho. Devolve o caminho gravado.
+ */
+export async function salvaXmlLegado(idNota, api) {
+  const { destino, xml_b64: xml } = await api.get(`/nfe/${idNota}/xml-legado`);
+  const r = await pedido(AGENTE, '/gravar', { method: 'POST', body: JSON.stringify({ caminho: destino, dados_b64: xml }), timeout: 15000 }, { 'X-Agente': 'paes' })
+    .catch((e) => { throw new Error(e[SEM_REDE] ? 'o agente de impressão não respondeu neste computador (ele grava no N:)' : e.message); });
+  await api.post(`/nfe/${idNota}/xml-legado/confirma`, {});
+  return r.caminho ?? destino;
 }

@@ -226,3 +226,20 @@ test('validaDestino guarda IP/host e COM informados mesmo para destino do Window
   assert.equal(r.impressora, 'Zebra');
   assert.throws(() => validaDestino('E', { tipo: 'windows', impressora: 'X', linguagem: 'escpos', host: 'a b' }), /Host/);
 });
+
+test('/gravar: grava *-nfe.xml só em pasta liberada', async () => {
+  const raiz = fs.mkdtempSync(path.join(os.tmpdir(), 'arqs-')).replaceAll('\\', '/');
+  const { s, cfg, call } = await monta();
+  cfg.pastas_gravacao = [raiz];
+  const xml = Buffer.from('<nfeProc/>').toString('base64');
+  try {
+    const dest = `${raiz}/03707154000106/NFe/29102026/NFe/35261003707154000106550010000712361229244540-nfe.xml`;
+    assert.equal((await call('POST', '/gravar', { caminho: dest, dados_b64: xml }, H)).status, 200);
+    assert.equal(fs.readFileSync(dest, 'utf8'), '<nfeProc/>');
+    assert.equal((await call('POST', '/gravar', { caminho: '/etc/x-nfe.xml', dados_b64: xml }, H)).status, 403);
+    assert.equal((await call('POST', '/gravar', { caminho: `${raiz}/../fora-nfe.xml`, dados_b64: xml }, H)).status, 422);
+    assert.equal((await call('POST', '/gravar', { caminho: `${raiz}/a.exe`, dados_b64: xml }, H)).status, 422);
+    assert.equal((await call('POST', '/gravar', { caminho: `${raiz}/a-nfe.xml`, dados_b64: Buffer.from('MZ').toString('base64') }, H)).status, 422);
+    assert.equal((await call('POST', '/gravar', { caminho: `${raiz}/a-nfe.xml`, dados_b64: xml }, { origin: H.origin })).status, 400);
+  } finally { s.close(); }
+});
