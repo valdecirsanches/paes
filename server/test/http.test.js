@@ -205,3 +205,8 @@ test('funcionário: foto com tipo ou conteúdo inválido → 422', async () => {
   assert.equal(await f('x.png', Buffer.from([1, 2, 3, 4])), 422); // assinatura não é PNG
   assert.equal(await f('x.png', Buffer.alloc(0)), 422);
 });
+
+test('cadastro de usuários exige administrador (sem login de teste → 403)', async () => {
+  assert.equal((await call('GET', '/api/cadastros/usuarios')).status, 403);
+  assert.equal((await call('POST', '/api/cadastros/usuarios', { usuario: 'x', nome: 'X', senha: '1234' })).status, 403);
+});

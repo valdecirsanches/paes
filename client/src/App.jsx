@@ -24,6 +24,7 @@ import Cargas from './screens/Cargas.jsx';
 import Login from './screens/Login.jsx';
 import FabricaApp from './fabrica/FabricaApp.jsx';
 import Auditoria from './screens/Auditoria.jsx';
+import Usuarios from './screens/Usuarios.jsx';
 import Dispositivos from './screens/Dispositivos.jsx';
 import DispositivoBloqueado from './screens/DispositivoBloqueado.jsx';
 import AlterarSenha from './screens/AlterarSenha.jsx';
@@ -47,6 +48,7 @@ const TELAS = {
   produtos: { titulo: 'Produtos', Tela: Produtos },
   dispositivos: { titulo: 'Dispositivos autorizados', Tela: Dispositivos },
   auditoria: { titulo: 'Auditoria', Tela: Auditoria },
+  usuarios: { titulo: 'Cadastro de usuários', Tela: Usuarios },
   funcionarios: { titulo: 'Cadastro de funcionários', Tela: Funcionarios },
   relnfes: { titulo: 'Relatório de NFEs', Tela: RelatorioNfes },
   nfsconf: { titulo: 'Leitura de NFs confirmadas', Tela: NfsConfirmadas },
@@ -66,6 +68,7 @@ const MENUS_FABRICA = [{ ...MENUS[0], itens: ORDEM_FABRICA.map((k) => MENUS[0].i
 
 export default function App() {
   const [abertas, setAbertas] = useState([]);
+  const [popUsuario, setPopUsuario] = useState(false);
   const [ativa, setAtiva] = useState(null);
   const [saude, setSaude] = useState(null);
   const [impr, setImpr] = useState(null); // estado do agente de impressão desta estação
@@ -159,12 +162,12 @@ export default function App() {
         {MENUS_FUTUROS.map(([r, ic]) => <span key={r} className="menu-bt desab" title="Próximas fases"><span className="mi" aria-hidden="true">{ic}</span>{r}</span>)}
         {!usuario?.fabrica && <div className={`menu${menuAberto === 'usr' ? ' aberto' : ''}`} onPointerEnter={() => { if (menuAberto && menuAberto !== 'usr') setMenuAberto('usr'); }}>
           <button type="button" className="menu-bt" aria-haspopup="menu" aria-expanded={menuAberto === 'usr'} disabled={!usuario} onClick={() => setMenuAberto(menuAberto === 'usr' ? null : 'usr')}>
-            <span className="mi" aria-hidden="true">👤</span>Usuário<span className="seta" aria-hidden="true">▾</span>
+            <span className="mi" aria-hidden="true">👤</span>Usuários<span className="seta" aria-hidden="true">▾</span>
           </button>
           {menuAberto === 'usr' && (
             <ul role="menu">
-              <li role="none"><button role="menuitem" onClick={() => { setMenuAberto(null); sair(); }}><span className="mi" aria-hidden="true">🔑</span><span className="rot">Login (trocar usuário)</span></button></li>
-              <li role="none"><button role="menuitem" onClick={() => { setMenuAberto(null); setTrocaSenha(true); }}><span className="mi" aria-hidden="true">🔒</span><span className="rot">Alterar senha</span></button></li>
+              {usuario?.admin && <li role="none"><button role="menuitem" onClick={() => { setMenuAberto(null); abrir('usuarios'); }}><span className="mi" aria-hidden="true">👥</span><span className="rot">Cadastro de usuários</span></button></li>}
+              <li role="none"><button role="menuitem" onClick={() => { setMenuAberto(null); sair(); }}><span className="mi" aria-hidden="true">🚪</span><span className="rot">Sair</span></button></li>
             </ul>
           )}
         </div>}
@@ -180,7 +183,15 @@ export default function App() {
             🖨️ {impr.on ? `Agente · ${impr.ligados ? `${impr.ligados} doc(s) direto` : 'sem direcionamento'}` : 'Navegador'}
           </button>
         )}
-        {usuario && <span className="menu-usuario" title="Usuário conectado">👤 {usuario.nome || usuario.usuario}</span>}
+        {usuario && (
+          <span className="menu-usuario" style={{ position: 'relative' }}>
+            <button type="button" className="menu-usuario-bt" title={usuario.fabrica ? 'Usuário conectado' : 'Usuário conectado — clique para trocar a senha'} aria-haspopup="menu" aria-expanded={popUsuario} onClick={() => { if (!usuario.fabrica) setPopUsuario((x) => !x); }}>👤 {usuario.nome || usuario.usuario}</button>
+            {popUsuario && (<>
+              <div className="nf2-veu" onClick={() => setPopUsuario(false)} />
+              <div className="menu-usuario-pop" role="menu"><button type="button" role="menuitem" onClick={() => { setPopUsuario(false); setTrocaSenha(true); }}>🔒 Trocar senha</button></div>
+            </>)}
+          </span>
+        )}
         {!usuario?.fabrica && <button type="button" className="menu-bt menu-fechar" title="Fechar o sistema (encerra a sessão)" disabled={!usuario} onClick={sair}><span className="mi" aria-hidden="true">⏻</span>Fechar</button>}
       </nav>
 

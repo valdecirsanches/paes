@@ -142,7 +142,7 @@ const ST = [['AUTORIZADA', 'Autorizadas'], ['CANCELADA', 'Canceladas'], ['PENDEN
 const ST_INICIAL = { PENDENTE: true, AUTORIZADA: false, CANCELADA: false, INUTILIZADA: false, DEVOLVIDO: false };
 
 export default function NFe({ onFechar }) {
-  const [f, setF] = useState({ periodo: false, campo: 'emissao', d1: hoje(), d2: hoje(), cli: false, cliente: '', st: ST_INICIAL, nfe1: '', nfe2: '', ref: '' });
+  const [f, setF] = useState({ periodo: true, campo: 'emissao', d1: hoje(), d2: hoje(), cli: false, cliente: '', st: ST_INICIAL, nfe1: '', nfe2: '', ref: '' });
   const [clientes, setClientes] = useState([]);
   const [linhas, setLinhas] = useState(null); // versão leve (colunas da grade)
   const [ordem, setOrdem] = useState({ k: 'nfe_numero', dir: 'asc' }); // { k, dir } da coluna clicada no cabeçalho; null = ordem do banco

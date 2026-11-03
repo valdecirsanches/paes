@@ -776,3 +776,8 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
   - Ações que só acontecem no navegador também entram (`POST /api/auditoria/evento`): impressão direta do DANFE (sucesso/falha), gravação do XML no N:, impressões de etiquetas/comandas (agente ou navegador).
   - **Ferramentas › Auditoria** (só administrador, fora do menu da fábrica): filtros por período, usuário, tela, método, nº do registro, texto e "só erros"; detalhes por clique; exportar CSV.
   - `AUDITORIA=0` no `.env` desliga. Falha ao gravar a auditoria nunca derruba a operação. A tabela não é apagada pelo app; guarde/arquive conforme sua política. Observação: alterações feitas direto no banco ou pelo sistema antigo não passam por aqui. Testado: regras de sanitização/descrição/filtro; não testado contra o MySQL real.
+
+## Fase 146
+- **NF-e**: ao abrir a tela já vem filtrada pelo **dia atual (data de emissão) e só Pendentes**.
+- **Cadastro de usuários** (Usuários › Cadastro de usuários, só administrador): criar, alterar nome/login, redefinir senha (gravada com `PASSWORD()` do MySQL como no login) e excluir. Bloqueios: login duplicado, espaços, usuário reservado `fabrica`, não exclui o administrador nem o próprio usuário, e usuário com histórico (FK) não é excluído. API `/api/cadastros/usuarios` (403 para não-administradores); a senha nunca volta para a tela. Tudo vai para a auditoria.
+- **Menu "Usuários"**: agora tem **Cadastro de usuários** (admin) e **Sair** (volta ao logon). **Trocar senha** passou para o nome do usuário no canto superior (clique nele). Não testado contra o MySQL real.

@@ -28,6 +28,7 @@ import { exigeLogin } from './services/auth.js';
 import { exigeDispositivo } from './services/dispositivos.js';
 import auditoriaRoutes from './routes/auditoria.js';
 import { auditoria } from './services/auditoria.js';
+import usuariosRoutes from './routes/usuarios.js';
 import extrasRoutes from './routes/extras.js';
 import dispositivosAdmin, { publica as dispositivoPublico } from './routes/dispositivos.js';
 
@@ -74,6 +75,7 @@ app.use('/api/itinerario', itinerarioRoutes);
 app.use('/api/tributos', tributosRoutes);
 app.use('/api/nfs', nfsConfirmadasRoutes);
 app.use('/api/cadastros/funcionarios', funcionariosRoutes);
+app.use('/api/cadastros/usuarios', usuariosRoutes);
 app.use('/api/cadastros/clientes', clientesRoutes);
 app.use('/api/cadastros/produtos', produtosRoutes);
 app.use('/api', diariaRoutes);
