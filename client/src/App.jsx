@@ -57,7 +57,7 @@ const TELAS = {
 const MENUS = [
   { id: 'prog', rotulo: 'Programação', icone: '🗓️', itens: [['diaria', 'Fixa/Diária', '📋'], ['mercadorias', 'Mercadorias', '🛒'], ['producao', 'Produção', '🥖'], ['itinerario', 'Etinerário', '🧭'], ['cargas', 'Cargas', '🚚'], ['reclamacoes', 'Reclamações', '💬'], ['extras', 'Pedidos extras', '🛍']] },
   { id: 'fat', rotulo: 'Faturamento', icone: '💳', itens: [['faturamento', 'Faturamento', '💳'], ['comandas', 'Controle de comandas', '🧾'], ['nfe', 'NFe', '📑'], ['tributos', 'Tributos', '🏷️'], ['quitacao', 'Quitação', '💰']] },
-  { id: 'cad', rotulo: 'Cadastros', icone: '👥', itens: [['clientes', 'Clientes', '🏢'], ['produtos', 'Produtos', '🍞'], ['funcionarios', 'Funcionários', '🧑‍🍳']] },
+  { id: 'cad', rotulo: 'Cadastros', icone: '👥', itens: [['clientes', 'Clientes', '🏢'], ['produtos', 'Produtos', '🍞'], ['funcionarios', 'Funcionários', '🧑‍🍳'], ['usuarios', 'Usuários', '🔑']] },
   { id: 'outros', rotulo: 'Outros', icone: '📦', itens: [['relnfes', 'Relatório de NFEs', '📊'], ['nfsconf', 'Leitura de NFs confirmadas', '📥']] },
   { id: 'ferr', rotulo: 'Ferramentas', icone: '🛠️', itens: [['impressoras', 'Configurar impressoras', '🖨️'], ['instalar', 'Instalar agente de impressão', '⬇️'], ['dispositivos', 'Dispositivos autorizados', '🖥'], ['auditoria', 'Auditoria', '🕵️']] },
 ];
@@ -151,7 +151,7 @@ export default function App() {
               </button>
               {aberto && (
                 <ul role="menu">
-                  {m.itens.filter(([k]) => (k !== 'dispositivos' && k !== 'auditoria') || usuario?.admin).map(([k, r, ic]) => (TELAS[k]
+                  {m.itens.filter(([k]) => !['dispositivos', 'auditoria', 'usuarios'].includes(k) || usuario?.admin).map(([k, r, ic]) => (TELAS[k]
                     ? <li key={k} role="none"><button role="menuitem" className={abertas.includes(k) ? 'aberta' : ''} onClick={() => { setMenuAberto(null); abrir(k); }}><span className="mi" aria-hidden="true">{ic}</span><span className="rot">{r}</span>{abertas.includes(k) && <i className="ponto" title="Aberta" />}</button></li>
                     : <li key={k} role="none"><span role="menuitem" aria-disabled="true" className="desab" title="Próxima fase"><span className="mi" aria-hidden="true">{ic}</span><span className="rot">{r}</span><em>em breve</em></span></li>))}
                 </ul>
@@ -160,17 +160,6 @@ export default function App() {
           );
         })}
         {MENUS_FUTUROS.map(([r, ic]) => <span key={r} className="menu-bt desab" title="Próximas fases"><span className="mi" aria-hidden="true">{ic}</span>{r}</span>)}
-        {!usuario?.fabrica && <div className={`menu${menuAberto === 'usr' ? ' aberto' : ''}`} onPointerEnter={() => { if (menuAberto && menuAberto !== 'usr') setMenuAberto('usr'); }}>
-          <button type="button" className="menu-bt" aria-haspopup="menu" aria-expanded={menuAberto === 'usr'} disabled={!usuario} onClick={() => setMenuAberto(menuAberto === 'usr' ? null : 'usr')}>
-            <span className="mi" aria-hidden="true">👤</span>Usuários<span className="seta" aria-hidden="true">▾</span>
-          </button>
-          {menuAberto === 'usr' && (
-            <ul role="menu">
-              {usuario?.admin && <li role="none"><button role="menuitem" onClick={() => { setMenuAberto(null); abrir('usuarios'); }}><span className="mi" aria-hidden="true">👥</span><span className="rot">Cadastro de usuários</span></button></li>}
-              <li role="none"><button role="menuitem" onClick={() => { setMenuAberto(null); sair(); }}><span className="mi" aria-hidden="true">🚪</span><span className="rot">Sair</span></button></li>
-            </ul>
-          )}
-        </div>}
         <span className="menu-espaco" />
         {usuario && ambiente !== null && (
           <button type="button" className={`amb-selo ${ambiente === 1 ? 'prod' : ambiente === 2 ? 'hom' : 'unk'}`} title="Ambiente de emissão de NFe — clique para configurar" onClick={() => abrir('nfe')}>
@@ -192,6 +181,7 @@ export default function App() {
             </>)}
           </span>
         )}
+        {usuario && !usuario.fabrica && <button type="button" className="menu-bt menu-sair" title="Sair e voltar ao logon (troca de usuário)" onClick={sair}><span className="mi" aria-hidden="true">🚪</span>Sair</button>}
         {!usuario?.fabrica && <button type="button" className="menu-bt menu-fechar" title="Fechar o sistema (encerra a sessão)" disabled={!usuario} onClick={sair}><span className="mi" aria-hidden="true">⏻</span>Fechar</button>}
       </nav>
 

@@ -781,3 +781,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 - **NF-e**: ao abrir a tela já vem filtrada pelo **dia atual (data de emissão) e só Pendentes**.
 - **Cadastro de usuários** (Usuários › Cadastro de usuários, só administrador): criar, alterar nome/login, redefinir senha (gravada com `PASSWORD()` do MySQL como no login) e excluir. Bloqueios: login duplicado, espaços, usuário reservado `fabrica`, não exclui o administrador nem o próprio usuário, e usuário com histórico (FK) não é excluído. API `/api/cadastros/usuarios` (403 para não-administradores); a senha nunca volta para a tela. Tudo vai para a auditoria.
 - **Menu "Usuários"**: agora tem **Cadastro de usuários** (admin) e **Sair** (volta ao logon). **Trocar senha** passou para o nome do usuário no canto superior (clique nele). Não testado contra o MySQL real.
+
+## Fase 147
+- Menu: **Usuários** (cadastro) agora fica em **Cadastros** (só administrador); o menu "Usuários" saiu. O botão **Sair** (volta ao logon) fica ao lado de **Fechar**, no canto superior direito. **Trocar senha** continua atrelado ao nome do usuário logado (clique no nome).
