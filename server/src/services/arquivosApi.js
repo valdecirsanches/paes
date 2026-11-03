@@ -30,6 +30,29 @@ export function nomesPastaData({ a, m, d }) {
 const ehDir = async (p) => { try { return (await stat(p)).isDirectory(); } catch { return false; } };
 async function lista(p) { try { return await readdir(p, { withFileTypes: true }); } catch { return []; } }
 
+/**
+ * Pasta do CNPJ a partir da base configurada: a própria base (se for a pasta do CNPJ, ou se já tiver NFe/ dentro) ou a primeira
+ * subpasta com o nome do CNPJ em até 4 níveis (ex.: base = …/levpao/NFe e os arquivos em …/EDSMonitorPLUS/Arqs/<cnpj>).
+ */
+export async function achaRaizCnpj(base, cn) {
+  if (!(await ehDir(base))) return null;
+  const direta = path.join(base, cn);
+  if (await ehDir(direta)) return direta;
+  if (path.basename(base) === cn) return base;
+  const filhos = await lista(base);
+  if (filhos.some((e) => e.isDirectory() && e.name.toLowerCase() === 'nfe')) return base;
+  const busca = async (dir, prof) => {
+    for (const e of await lista(dir)) {
+      if (!e.isDirectory()) continue;
+      if (e.name === cn) return path.join(dir, e.name);
+    }
+    if (prof <= 0) return null;
+    for (const e of await lista(dir)) { if (e.isDirectory()) { const r = await busca(path.join(dir, e.name), prof - 1); if (r) return r; } }
+    return null;
+  };
+  return busca(base, 3);
+}
+
 /** Varre `dir` (até `prof` níveis) e devolve arquivos com a extensão, ignorando pastas de evento quando `semEventos`. */
 async function varre(dir, exts, prof, limite = { n: 4000 }) {
   const achados = [];
@@ -54,8 +77,14 @@ export async function acharArquivoNota({ chave, cnpj, datas = [], tipo = 'xml' }
   const tentou = [];
   const exts = tipo === 'pdf' ? ['.pdf'] : ['.xml'];
   if (ch.length !== 44) return { arquivo: null, tentou, motivo: 'Nota sem chave de acesso.' };
-  const raizCnpj = path.join(baseArquivos(), cn);
-  if (!(await ehDir(raizCnpj))) return { arquivo: null, tentou: [raizCnpj], motivo: `Pasta não encontrada: ${raizCnpj} (o servidor do app enxerga ${baseArquivos()}? Defina NFE_ARQUIVOS_DIR no .env).` };
+  const raizCnpj = await achaRaizCnpj(baseArquivos(), cn);
+  if (!raizCnpj) {
+    const base = baseArquivos(); const existe = await ehDir(base);
+    const amostra = existe ? (await lista(base)).slice(0, 12).map((e) => e.name).join(', ') || '(vazia)' : '';
+    return { arquivo: null, tentou: [base], motivo: existe
+      ? `Não achei a pasta do CNPJ ${cn} dentro de ${base} (nem em até 4 níveis abaixo). Conteúdo de ${base}: ${amostra}. Aponte NFE_ARQUIVOS_DIR para a pasta que contém ${cn}/NFe/… e confira a permissão de leitura do usuário do serviço.`
+      : `Pasta não encontrada: ${base}. O servidor do app não enxerga esse caminho (ou o usuário do serviço não tem permissão para entrar nele). Defina NFE_ARQUIVOS_DIR no .env.` };
+  }
   // a pasta "NFe" pode vir com outra caixa
   const sub = (await lista(raizCnpj)).find((e) => e.isDirectory() && e.name.toLowerCase() === 'nfe');
   const raiz = sub ? path.join(raizCnpj, sub.name) : raizCnpj;

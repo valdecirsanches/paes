@@ -34,5 +34,17 @@ test('não achou: explica', async () => {
   const r = await acharArquivoNota({ chave: '1'.repeat(44), cnpj: '03707154000106', datas: [] });
   assert.equal(r.arquivo, null); assert.match(r.motivo, /Nenhum XML/);
   const r2 = await acharArquivoNota({ chave: CH, cnpj: '99999999999999', datas: [] });
-  assert.match(r2.motivo, /Pasta não encontrada/);
+  assert.match(r2.motivo, /Não achei a pasta do CNPJ 99999999999999/);
+});
+
+import { achaRaizCnpj } from '../src/services/arquivosApi.js';
+test('achaRaizCnpj: base direta, base já é o CNPJ, base com NFe/ e CNPJ mais fundo', async () => {
+  const b = mkdtempSync(path.join(os.tmpdir(), 'raiz-'));
+  const fundo = path.join(b, 'a', 'EDSMonitorPLUS', 'Arqs', '03707154000106'); mkdirSync(fundo, { recursive: true });
+  assert.equal(await achaRaizCnpj(b, '03707154000106'), fundo);
+  assert.equal(await achaRaizCnpj(fundo, '03707154000106'), fundo);
+  const plano = path.join(b, 'plano'); mkdirSync(path.join(plano, 'NFe'), { recursive: true });
+  assert.equal(await achaRaizCnpj(plano, '03707154000106'), plano);
+  assert.equal(await achaRaizCnpj(path.join(b, 'nao-existe'), '03707154000106'), null);
+  assert.equal(await achaRaizCnpj(path.join(b, 'a'), '99999999999999'), null);
 });

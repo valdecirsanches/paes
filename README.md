@@ -766,3 +766,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 143
 - Emissão: o JSON enviado à API agora leva as **duplicatas** da nota (`tb_receita`): `"duplicatas": [{ "vencimento": "2026-11-29", "valor": 280.93 }, …]`, em ordem de vencimento; linhas sem data válida ou com valor 0 são ignoradas, e sem duplicatas o campo não é enviado. Testado no JSON gerado; não testado contra a API real.
+
+## Fase 144
+- Pasta de arquivos da API (`NFE_ARQUIVOS_DIR`): se `<base>/<cnpj>` não existir, o app procura a pasta do CNPJ em até 4 níveis abaixo da base (ex.: base `/home/sanches/levpao/NFe` com os arquivos em `…/EDSMonitorPLUS/Arqs/<cnpj>/NFe/…`) e também aceita base que já seja a pasta do CNPJ ou que já contenha `NFe/`. Quando não acha, a mensagem lista o conteúdo da base e lembra de conferir a permissão de leitura do usuário do serviço. Não testado no servidor real.
