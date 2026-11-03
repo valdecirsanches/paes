@@ -73,13 +73,13 @@ export default function App() {
   const [popUsuario, setPopUsuario] = useState(false);
   const [fundo, setFundo] = useState('/principal-paes.jpg'); // imagem da tela principal (padrão ou a escolhida em Ferramentas)
   const carregaFundo = useCallback(() => { api.get('/tela-principal').then((i) => setFundo(i.personalizada ? `/api/tela-principal/imagem?v=${i.versao}` : '/principal-paes.jpg')).catch(() => {}); }, []);
-  useEffect(() => { if (usuario) carregaFundo(); }, [usuario, carregaFundo]);
   useEffect(() => { window.addEventListener('tela-principal-alterada', carregaFundo); return () => window.removeEventListener('tela-principal-alterada', carregaFundo); }, [carregaFundo]);
   const [ativa, setAtiva] = useState(null);
   const [saude, setSaude] = useState(null);
   const [impr, setImpr] = useState(null); // estado do agente de impressão desta estação
   const [ambiente, setAmbiente] = useState(null); // 1 produção · 2 homologação (emissão de NFe)
   const [usuario, setUsuario] = useState(null); // null = sem sessão (tela de login)
+  useEffect(() => { if (usuario) carregaFundo(); }, [usuario, carregaFundo]);
   const [verificando, setVerificando] = useState(true);
   const [bloqueio, setBloqueio] = useState(null); // dispositivo não habilitado: { codigo, message }
   const [trocaSenha, setTrocaSenha] = useState(false);

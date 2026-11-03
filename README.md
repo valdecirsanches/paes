@@ -792,3 +792,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 ## Fase 149
 - **Ferramentas › Imagem da tela principal** (só administrador): escolhe a foto que aparece ao abrir o sistema, para todos os usuários. PNG/JPG/WEBP; imagens grandes são reduzidas no navegador (máx. 4 MB no servidor). **Voltar à padrão** restaura os pães.
 - Servidor: `GET/PUT/DELETE /api/tela-principal` (+ `/imagem`); arquivo gravado em `tela-principal.bin/json` na pasta `NFE_DANFE_DIR` (ou pasta do servidor), ignorado pelo git.
+
+## Fase 150
+- Correção da tela branca da fase 149: o carregamento da imagem da tela principal usava `usuario` antes de ele ser declarado (erro do React ao abrir). Agora fica depois da declaração.
