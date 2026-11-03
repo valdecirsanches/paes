@@ -1,6 +1,6 @@
 import { sincronizaLayout } from './lib/ajustes.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { api } from './api.js';
+import { api, imagemApi } from './api.js';
 import Diaria from './screens/Diaria.jsx';
 import Mercadorias from './screens/Mercadorias.jsx';
 import Producao from './screens/Producao.jsx';
@@ -72,7 +72,7 @@ export default function App() {
   const [abertas, setAbertas] = useState([]);
   const [popUsuario, setPopUsuario] = useState(false);
   const [fundo, setFundo] = useState('/principal-paes.jpg'); // imagem da tela principal (padrão ou a escolhida em Ferramentas)
-  const carregaFundo = useCallback(() => { api.get('/tela-principal').then((i) => setFundo(i.personalizada ? `/api/tela-principal/imagem?v=${i.versao}` : '/principal-paes.jpg')).catch(() => {}); }, []);
+  const carregaFundo = useCallback(async () => { try { const i = await api.get('/tela-principal'); const u = i.personalizada ? await imagemApi(`/tela-principal/imagem?v=${i.versao}`) : null; setFundo(u ?? '/principal-paes.jpg'); } catch { /* fica a imagem atual */ } }, []);
   useEffect(() => { window.addEventListener('tela-principal-alterada', carregaFundo); return () => window.removeEventListener('tela-principal-alterada', carregaFundo); }, [carregaFundo]);
   const [ativa, setAtiva] = useState(null);
   const [saude, setSaude] = useState(null);

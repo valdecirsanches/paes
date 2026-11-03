@@ -795,3 +795,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 150
 - Correção da tela branca da fase 149: o carregamento da imagem da tela principal usava `usuario` antes de ele ser declarado (erro do React ao abrir). Agora fica depois da declaração.
+
+## Fase 151
+- Imagem da tela principal escolhida não aparecia: a foto era pedida direto pelo CSS, que não envia o número do dispositivo (a API pode recusar). Agora o app baixa a imagem pela API (com o cabeçalho do dispositivo) e a exibe; se falhar, volta à imagem padrão em vez de ficar vazio.

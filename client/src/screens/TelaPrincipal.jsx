@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { api } from '../api.js';
+import { api, imagemApi } from '../api.js';
 import { Toast } from '../components/toast.jsx';
 
 const MAX_LADO = 2560;
@@ -25,7 +25,9 @@ export default function TelaPrincipal() {
   const [previa, setPrevia] = useState(null);
   const arq = useRef(null);
   const carrega = useCallback(() => api.get('/tela-principal').then(setInfo).catch((e) => setAviso({ tipo: 'erro', m: e.message })), []);
+  const [remota, setRemota] = useState(null);
   useEffect(() => { carrega(); }, [carrega]);
+  useEffect(() => { let vivo = true; if (info?.personalizada) imagemApi(`/tela-principal/imagem?v=${info.versao}`).then((u) => { if (vivo) setRemota(u); }); else setRemota(null); return () => { vivo = false; }; }, [info]);
   const escolhe = async (e) => {
     const f = e.target.files?.[0]; e.target.value = ''; if (!f) return;
     setOcupado(true);
@@ -41,7 +43,7 @@ export default function TelaPrincipal() {
     setOcupado(true);
     try { await api.del('/tela-principal'); setPrevia(null); setAviso({ tipo: 'ok', m: 'Imagem padrão restaurada.' }); window.dispatchEvent(new Event('tela-principal-alterada')); carrega(); } catch (er) { setAviso({ tipo: 'erro', m: er.message }); } finally { setOcupado(false); }
   };
-  const src = previa ?? (info?.personalizada ? `/api/tela-principal/imagem?v=${info.versao}` : '/principal-paes.jpg');
+  const src = previa ?? remota ?? '/principal-paes.jpg';
   return (
     <section className="tp">
       <Toast aviso={aviso} />

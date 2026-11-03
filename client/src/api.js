@@ -30,6 +30,14 @@ async function upload(path, file) {
   if (!res.ok) throw Object.assign(new Error(data.message || 'Erro inesperado.'), { status: res.status, data });
   return data;
 }
+/** Baixa uma imagem da API (com o número do dispositivo no cabeçalho, que o CSS/<img> não enviam) e devolve uma URL local; null se falhar. */
+export async function imagemApi(path) {
+  try {
+    const res = await fetch(`/api${path}`, { headers: lerDispositivo() ? { 'x-dispositivo': lerDispositivo() } : {} });
+    if (!res.ok) return null;
+    return URL.createObjectURL(await res.blob());
+  } catch { return null; }
+}
 export const api = {
   upload,
   get: (p) => req('GET', p),
