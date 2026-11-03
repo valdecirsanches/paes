@@ -769,3 +769,10 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 144
 - Pasta de arquivos da API (`NFE_ARQUIVOS_DIR`): se `<base>/<cnpj>` não existir, o app procura a pasta do CNPJ em até 4 níveis abaixo da base (ex.: base `/home/sanches/levpao/NFe` com os arquivos em `…/EDSMonitorPLUS/Arqs/<cnpj>/NFe/…`) e também aceita base que já seja a pasta do CNPJ ou que já contenha `NFe/`. Quando não acha, a mensagem lista o conteúdo da base e lembra de conferir a permissão de leitura do usuário do serviço. Não testado no servidor real.
+
+## Fase 145
+- **Auditoria**: tudo o que é feito no app é gravado em `tb_auditoria` (criada sozinha): data/hora, usuário, dispositivo, IP real (Cloudflare), método, rota, entidade, ação, nº do registro, status HTTP, duração, mensagem de erro e **os dados enviados** (senhas, tokens e arquivos/base64 são removidos ou resumidos; textos e listas longos são cortados).
+  - Registra **toda gravação** (POST/PUT/PATCH/DELETE), **logins** (ok e falhos, sem a senha), **negações** (dispositivo/área/login) e erros, além de GETs sensíveis (DANFE/XML/eventos de NF-e, relatórios, NFs confirmadas) e qualquer 5xx. Não registra consultas comuns de tela (para não encher a tabela) nem a própria auditoria.
+  - Ações que só acontecem no navegador também entram (`POST /api/auditoria/evento`): impressão direta do DANFE (sucesso/falha), gravação do XML no N:, impressões de etiquetas/comandas (agente ou navegador).
+  - **Ferramentas › Auditoria** (só administrador, fora do menu da fábrica): filtros por período, usuário, tela, método, nº do registro, texto e "só erros"; detalhes por clique; exportar CSV.
+  - `AUDITORIA=0` no `.env` desliga. Falha ao gravar a auditoria nunca derruba a operação. A tabela não é apagada pelo app; guarde/arquive conforme sua política. Observação: alterações feitas direto no banco ou pelo sistema antigo não passam por aqui. Testado: regras de sanitização/descrição/filtro; não testado contra o MySQL real.

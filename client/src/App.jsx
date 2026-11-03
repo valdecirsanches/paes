@@ -23,6 +23,7 @@ import Itinerario from './screens/Itinerario.jsx';
 import Cargas from './screens/Cargas.jsx';
 import Login from './screens/Login.jsx';
 import FabricaApp from './fabrica/FabricaApp.jsx';
+import Auditoria from './screens/Auditoria.jsx';
 import Dispositivos from './screens/Dispositivos.jsx';
 import DispositivoBloqueado from './screens/DispositivoBloqueado.jsx';
 import AlterarSenha from './screens/AlterarSenha.jsx';
@@ -45,6 +46,7 @@ const TELAS = {
   clientes: { titulo: 'Cadastro de Clientes', Tela: Clientes },
   produtos: { titulo: 'Produtos', Tela: Produtos },
   dispositivos: { titulo: 'Dispositivos autorizados', Tela: Dispositivos },
+  auditoria: { titulo: 'Auditoria', Tela: Auditoria },
   funcionarios: { titulo: 'Cadastro de funcionários', Tela: Funcionarios },
   relnfes: { titulo: 'Relatório de NFEs', Tela: RelatorioNfes },
   nfsconf: { titulo: 'Leitura de NFs confirmadas', Tela: NfsConfirmadas },
@@ -55,12 +57,12 @@ const MENUS = [
   { id: 'fat', rotulo: 'Faturamento', icone: '💳', itens: [['faturamento', 'Faturamento', '💳'], ['comandas', 'Controle de comandas', '🧾'], ['nfe', 'NFe', '📑'], ['tributos', 'Tributos', '🏷️'], ['quitacao', 'Quitação', '💰']] },
   { id: 'cad', rotulo: 'Cadastros', icone: '👥', itens: [['clientes', 'Clientes', '🏢'], ['produtos', 'Produtos', '🍞'], ['funcionarios', 'Funcionários', '🧑‍🍳']] },
   { id: 'outros', rotulo: 'Outros', icone: '📦', itens: [['relnfes', 'Relatório de NFEs', '📊'], ['nfsconf', 'Leitura de NFs confirmadas', '📥']] },
-  { id: 'ferr', rotulo: 'Ferramentas', icone: '🛠️', itens: [['impressoras', 'Configurar impressoras', '🖨️'], ['instalar', 'Instalar agente de impressão', '⬇️'], ['dispositivos', 'Dispositivos autorizados', '🖥']] },
+  { id: 'ferr', rotulo: 'Ferramentas', icone: '🛠️', itens: [['impressoras', 'Configurar impressoras', '🖨️'], ['instalar', 'Instalar agente de impressão', '⬇️'], ['dispositivos', 'Dispositivos autorizados', '🖥'], ['auditoria', 'Auditoria', '🕵️']] },
 ];
 const MENUS_FUTUROS = [];
 // Dispositivo liberado só para a fábrica (menu do sistema da fábrica): Programação, Produção, Mercadorias, Cargas, Reclamações, Pedidos extras + impressoras.
 const ORDEM_FABRICA = ['diaria', 'producao', 'mercadorias', 'cargas', 'reclamacoes', 'extras']; // mesma ordem do menu do sistema da fábrica
-const MENUS_FABRICA = [{ ...MENUS[0], itens: ORDEM_FABRICA.map((k) => MENUS[0].itens.find(([x]) => x === k)) }, { ...MENUS[4], itens: MENUS[4].itens.filter(([k]) => k !== 'dispositivos') }];
+const MENUS_FABRICA = [{ ...MENUS[0], itens: ORDEM_FABRICA.map((k) => MENUS[0].itens.find(([x]) => x === k)) }, { ...MENUS[4], itens: MENUS[4].itens.filter(([k]) => k !== 'dispositivos' && k !== 'auditoria') }];
 
 export default function App() {
   const [abertas, setAbertas] = useState([]);
@@ -146,7 +148,7 @@ export default function App() {
               </button>
               {aberto && (
                 <ul role="menu">
-                  {m.itens.filter(([k]) => k !== 'dispositivos' || usuario?.admin).map(([k, r, ic]) => (TELAS[k]
+                  {m.itens.filter(([k]) => (k !== 'dispositivos' && k !== 'auditoria') || usuario?.admin).map(([k, r, ic]) => (TELAS[k]
                     ? <li key={k} role="none"><button role="menuitem" className={abertas.includes(k) ? 'aberta' : ''} onClick={() => { setMenuAberto(null); abrir(k); }}><span className="mi" aria-hidden="true">{ic}</span><span className="rot">{r}</span>{abertas.includes(k) && <i className="ponto" title="Aberta" />}</button></li>
                     : <li key={k} role="none"><span role="menuitem" aria-disabled="true" className="desab" title="Próxima fase"><span className="mi" aria-hidden="true">{ic}</span><span className="rot">{r}</span><em>em breve</em></span></li>))}
                 </ul>

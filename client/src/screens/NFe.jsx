@@ -6,7 +6,8 @@ import NcmCampo from '../components/NcmCampo.jsx';
 import NfeFiscal, { EventosTabela, abrirArquivo } from '../components/NfeFiscal.jsx';
 import { brData, hoje } from '../lib/rules.js';
 import { useJanela } from '../components/janela.js';
-import { imprimirPdfDireto, salvaXmlLegado, temDestino } from '../lib/impressora.js';
+import { audita } from '../lib/auditoria.js';
+import { imprimirPdfDireto, lerMapa, salvaXmlLegado, temDestino } from '../lib/impressora.js';
 import { CORPO_LINHAS, GRADE_COLS, ITEM_COLS, REF_LINHAS, alternaPeriodo, corLinha, fmtBr, parseBr, temMarca, foiMarcado } from '../lib/nfeCampos.js';
 import { Confirma, Toast, confirmar, copiaTexto, entrada, limpaMensagem, mensagem } from '../components/toast.jsx';
 
@@ -347,7 +348,7 @@ export default function NFe({ onFechar }) {
   const gravaNoN = async (ids, avisar = false) => {
     let ok = 0;
     for (const id of ids) {
-      try { await salvaXmlLegado(id, api); ok += 1; } catch (e) { registraLog(`XML da nota ${id} não gravado no N: — ${e.message}`); }
+      try { const c = await salvaXmlLegado(id, api); audita('XML gravado no N:', { entidade: 'nfe', idRegistro: id, tela: 'NFe', detalhes: { caminho: c } }); ok += 1; } catch (e) { audita('XML não gravado no N:', { entidade: 'nfe', idRegistro: id, ok: false, erro: e.message, tela: 'NFe' }); registraLog(`XML da nota ${id} não gravado no N: — ${e.message}`); }
     }
     if (avisar) notificar(ok === ids.length ? 'ok' : 'aviso', `XML gravado no N: (${ok} de ${ids.length}).${ok < ids.length ? ' Veja o Log.' : ''}`);
   };
@@ -404,11 +405,11 @@ export default function NFe({ onFechar }) {
     const entrega = async (blob) => {
       if (direto) {
         try {
-          await imprimirPdfDireto(await blob.arrayBuffer()); fimProc(); notificar('ok', `DANFE enviado à impressora (${rot}).`);
+          await imprimirPdfDireto(await blob.arrayBuffer()); audita('DANFE impresso no agente', { entidade: 'nfe', idRegistro: ids.join(','), tela: 'NFe', detalhes: { notas: rot, destino: lerMapa().danfe?.destino, copias: lerMapa().danfe?.copias ?? 2 } }); fimProc(); notificar('ok', `DANFE enviado à impressora (${rot}).`);
           setLinhas((ls) => ls?.map((r) => (ids.includes(r.id) ? { ...r, nfe_impresso: 'True' } : r))); // ícone "impresso" na hora
           api.post('/nfe/impresso', { ids }).catch((e) => registraLog(`Não consegui marcar como impresso: ${e.message}`));
           return;
-        } catch (e) { fimProc(); notificar('erro', `Impressão direta do DANFE falhou: ${e.message}. Abrindo a pré-visualização.`); registraLog(`Impressão direta do DANFE falhou (${e.message}).`); }
+        } catch (e) { audita('DANFE: impressão direta falhou', { entidade: 'nfe', idRegistro: ids.join(','), ok: false, erro: e.message, tela: 'NFe' }); fimProc(); notificar('erro', `Impressão direta do DANFE falhou: ${e.message}. Abrindo a pré-visualização.`); registraLog(`Impressão direta do DANFE falhou (${e.message}).`); }
       }
       const url = URL.createObjectURL(blob);
       const w = aba ?? window.open('', '_blank');

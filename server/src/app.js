@@ -26,6 +26,8 @@ import nfsConfirmadasRoutes from './routes/nfsConfirmadas.js';
 import { invalidaMercadorias } from './services/mercCache.js';
 import { exigeLogin } from './services/auth.js';
 import { exigeDispositivo } from './services/dispositivos.js';
+import auditoriaRoutes from './routes/auditoria.js';
+import { auditoria } from './services/auditoria.js';
 import extrasRoutes from './routes/extras.js';
 import dispositivosAdmin, { publica as dispositivoPublico } from './routes/dispositivos.js';
 
@@ -34,6 +36,8 @@ const origens = (process.env.CORS_ORIGIN || '').split(',').map((s) => s.trim()).
 app.use(cors({ origin: origens.length ? origens : true }));
 app.use(express.json({ limit: '6mb' })); // etiquetas em PNG/base64 vão para a ponte de impressão
 
+// Auditoria: primeiro de tudo em /api, para registrar também logins, negações (dispositivo/login) e erros
+app.use('/api', auditoria);
 // Dispositivo habilitado: antes do login (a tela de bloqueio mostra o código). /api/dispositivo e /api/health são livres.
 app.use('/api', exigeDispositivo);
 app.use('/api/dispositivo', dispositivoPublico);
@@ -43,6 +47,7 @@ app.use('/api', exigeLogin);
 app.use('/api', (req, res, next) => { if (req.method !== 'GET') res.on('finish', () => { if (res.statusCode < 400) invalidaMercadorias(); }); next(); });
 app.use('/api/auth', authRoutes);
 app.use('/api/dispositivos', dispositivosAdmin);
+app.use('/api/auditoria', auditoriaRoutes);
 app.use('/api/agente', agenteRoutes);
 app.use('/api/impressao', impressaoRoutes);
 app.use('/api/layout-etiquetas', layoutEtiquetasRoutes);

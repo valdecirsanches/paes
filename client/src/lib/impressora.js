@@ -1,5 +1,6 @@
 // Cliente do agente de impressão local (127.0.0.1:9101) + roteamento por tipo de documento.
 import { imprimirHtml } from './print.js';
+import { audita } from './auditoria.js';
 import { cssAjustes, sincronizaLayout } from './ajustes.js';
 import { bitsDeRgba, cupomEscPos, escposImagem, paraBase64, tsplImagem, zplImagem } from './rasterizar.js';
 
@@ -122,7 +123,7 @@ export async function imprimirDocumento(tipo, doc0, aviso = () => {}) {
   const doc = { ...doc0, css: `${doc0.css ?? ''}${cssAjustes(tipo)}` }; // ajustes milimétricos do editor de layout
   const def = DOCS[tipo]; const cfg = lerMapa()[tipo];
   const navegador = () => imprimirHtml(doc.corpo, doc.css);
-  if (!def || !cfg?.destino) { navegador(); return 'navegador'; }
+  if (!def || !cfg?.destino) { audita(`Impressão (${tipo}) pelo navegador`, { entidade: 'impressao', detalhes: { tipo } }); navegador(); return 'navegador'; }
   try {
     const destinos = await destinosAgente();
     const d = destinos.find((x) => x.nome === cfg.destino);
@@ -154,8 +155,10 @@ export async function imprimirDocumento(tipo, doc0, aviso = () => {}) {
         for (let i = 0; i < partes.length; i += 20) await enviar(cfg.destino, { tipo: 'raw', dados_b64: paraBase64(concatena(partes.slice(i, i + 20))) });
       }
     }
+    audita(`Impressão (${tipo}) no agente`, { entidade: 'impressao', detalhes: { tipo, destino: cfg.destino } });
     return 'agente';
   } catch (e) {
+    audita(`Impressão (${tipo}) falhou`, { entidade: 'impressao', ok: false, erro: e.message, detalhes: { tipo, destino: cfg.destino } });
     if (doc0.semNavegador) { aviso('erro', `Impressora ${cfg.destino} indisponível: ${e.message}`); return 'erro'; } // comanda/demonstrativo: não abre a pré-visualização do navegador
     aviso('erro', `Impressora ${cfg.destino} indisponível (${e.message}). Abrindo a impressão do navegador.`);
     navegador();

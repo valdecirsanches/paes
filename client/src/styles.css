@@ -1768,3 +1768,8 @@ dialog.modal:has(.nfe-comandas){width:min(900px,96vw)}dialog .nfe-comandas{max-h
 .mc2-fab .mc2-sel{display:none}
 .nf2-imp{opacity:.35}.nf2-imp.on{opacity:1}
 th.ord{cursor:pointer;user-select:none}th.ord:hover{filter:brightness(1.15)}
+.aud{padding:12px 16px;overflow:auto;height:100%;box-sizing:border-box;position:relative}.aud h2{margin:0 0 2px}.aud header small{color:#5a6b7d}
+.aud-filtros{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:flex-end;margin:10px 0}.aud-filtros label{display:flex;flex-direction:column;font-size:12px;gap:2px}.aud-filtros .aud-chk{flex-direction:row;align-items:center;gap:4px}
+.aud-tab{max-height:calc(100% - 190px);overflow:auto;border:1px solid #cfe0f1;border-radius:8px;background:#fff}.aud-tab table{width:100%;border-collapse:collapse;font-size:12.5px}.aud-tab th{position:sticky;top:0;background:#e3eef9;text-align:left;padding:5px 8px}.aud-tab td{padding:4px 8px;border-top:1px solid #eef3f8;white-space:nowrap;max-width:320px;overflow:hidden;text-overflow:ellipsis}
+.aud-tab tr.clicavel{cursor:pointer}.aud-tab tr.clicavel:hover{background:#f3f8fd}.aud-ruim td{color:#a02020;background:#fff5f5}.aud-erro{color:#a02020}.aud-pag{display:flex;gap:10px;align-items:center;margin-top:8px}
+.aud-det{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:50}.aud-det>div{background:#fff;border-radius:10px;padding:14px 18px;width:min(820px,92vw);max-height:80vh;overflow:auto}.aud-det pre{background:#f6f9fc;padding:10px;border-radius:6px;white-space:pre-wrap;word-break:break-word;font-size:12px}
