@@ -210,3 +210,8 @@ test('cadastro de usuários exige administrador (sem login de teste → 403)', a
   assert.equal((await call('GET', '/api/cadastros/usuarios')).status, 403);
   assert.equal((await call('POST', '/api/cadastros/usuarios', { usuario: 'x', nome: 'X', senha: '1234' })).status, 403);
 });
+
+test('imagem da tela principal: só administrador troca (sem login de teste → 403)', async () => {
+  assert.equal((await call('PUT', '/api/tela-principal', { arquivoBase64: 'AAAA' })).status, 403);
+  assert.equal((await call('DELETE', '/api/tela-principal')).status, 403);
+});

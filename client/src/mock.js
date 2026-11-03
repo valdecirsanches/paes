@@ -316,6 +316,7 @@ window.fetch = async (url, opts = {}) => {
   let r;
   if (m === 'GET' && p === '/health') r = json({ ok: true, host: '192.168.15.10', banco: 'levpao_new', mysql: 'preview' });
   else if (p === '/dispositivo') r = json(window.__BLOQ ? { codigo: '7F3A-91C2-0B4E', habilitado: false, exigido: true, message: 'Dispositivo não habilitado para uso do aplicativo.' } : { codigo: '7F3A-91C2-0B4E', habilitado: true, exigido: true, areas: window.__FAB ? ['fabrica'] : ['faturamento'], fabrica: Boolean(window.__FAB), message: '' });
+  else if (m === 'GET' && p === '/tela-principal') r = json({ personalizada: false, nome: null, bytes: 0, versao: 0 });
   else if (m === 'GET' && p === '/dispositivos') r = json({ meu: '7F3A-91C2-0B4E', itens: [
     { id: 1, codigo: '7F3A-91C2-0B4E', descricao: 'Faturamento — Ingrid', ativo: true, areas: ['faturamento'], ultimo_usuario: 'sanches', ultimo_acesso: new Date().toISOString(), ultimo_ip: '192.168.15.31', navegador: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0 Safari/537.36' },
     { id: 3, codigo: 'C0DE-1234-ABCD', descricao: '', areas: ['faturamento'], ativo: false, ultimo_usuario: 'sanches', ultimo_acesso: new Date().toISOString(), ultimo_ip: '192.168.15.31', navegador: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0 Safari/537.36' },

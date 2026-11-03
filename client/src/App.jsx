@@ -1,5 +1,5 @@
 import { sincronizaLayout } from './lib/ajustes.js';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from './api.js';
 import Diaria from './screens/Diaria.jsx';
 import Mercadorias from './screens/Mercadorias.jsx';
@@ -24,6 +24,7 @@ import Cargas from './screens/Cargas.jsx';
 import Login from './screens/Login.jsx';
 import FabricaApp from './fabrica/FabricaApp.jsx';
 import Auditoria from './screens/Auditoria.jsx';
+import TelaPrincipal from './screens/TelaPrincipal.jsx';
 import Usuarios from './screens/Usuarios.jsx';
 import Dispositivos from './screens/Dispositivos.jsx';
 import DispositivoBloqueado from './screens/DispositivoBloqueado.jsx';
@@ -49,6 +50,7 @@ const TELAS = {
   dispositivos: { titulo: 'Dispositivos autorizados', Tela: Dispositivos },
   auditoria: { titulo: 'Auditoria', Tela: Auditoria },
   usuarios: { titulo: 'Cadastro de usuários', Tela: Usuarios },
+  telaprincipal: { titulo: 'Imagem da tela principal', Tela: TelaPrincipal },
   funcionarios: { titulo: 'Cadastro de funcionários', Tela: Funcionarios },
   relnfes: { titulo: 'Relatório de NFEs', Tela: RelatorioNfes },
   nfsconf: { titulo: 'Leitura de NFs confirmadas', Tela: NfsConfirmadas },
@@ -59,16 +61,20 @@ const MENUS = [
   { id: 'fat', rotulo: 'Faturamento', icone: '💳', itens: [['faturamento', 'Faturamento', '💳'], ['comandas', 'Controle de comandas', '🧾'], ['nfe', 'NFe', '📑'], ['tributos', 'Tributos', '🏷️'], ['quitacao', 'Quitação', '💰']] },
   { id: 'cad', rotulo: 'Cadastros', icone: '👥', itens: [['clientes', 'Clientes', '🏢'], ['produtos', 'Produtos', '🍞'], ['funcionarios', 'Funcionários', '🧑‍🍳'], ['usuarios', 'Usuários', '🔑']] },
   { id: 'outros', rotulo: 'Outros', icone: '📦', itens: [['relnfes', 'Relatório de NFEs', '📊'], ['nfsconf', 'Leitura de NFs confirmadas', '📥']] },
-  { id: 'ferr', rotulo: 'Ferramentas', icone: '🛠️', itens: [['impressoras', 'Configurar impressoras', '🖨️'], ['instalar', 'Instalar agente de impressão', '⬇️'], ['dispositivos', 'Dispositivos autorizados', '🖥'], ['auditoria', 'Auditoria', '🕵️']] },
+  { id: 'ferr', rotulo: 'Ferramentas', icone: '🛠️', itens: [['impressoras', 'Configurar impressoras', '🖨️'], ['instalar', 'Instalar agente de impressão', '⬇️'], ['dispositivos', 'Dispositivos autorizados', '🖥'], ['auditoria', 'Auditoria', '🕵️'], ['telaprincipal', 'Imagem da tela principal', '🖼']] },
 ];
 const MENUS_FUTUROS = [];
 // Dispositivo liberado só para a fábrica (menu do sistema da fábrica): Programação, Produção, Mercadorias, Cargas, Reclamações, Pedidos extras + impressoras.
 const ORDEM_FABRICA = ['diaria', 'producao', 'mercadorias', 'cargas', 'reclamacoes', 'extras']; // mesma ordem do menu do sistema da fábrica
-const MENUS_FABRICA = [{ ...MENUS[0], itens: ORDEM_FABRICA.map((k) => MENUS[0].itens.find(([x]) => x === k)) }, { ...MENUS[4], itens: MENUS[4].itens.filter(([k]) => k !== 'dispositivos' && k !== 'auditoria') }];
+const MENUS_FABRICA = [{ ...MENUS[0], itens: ORDEM_FABRICA.map((k) => MENUS[0].itens.find(([x]) => x === k)) }, { ...MENUS[4], itens: MENUS[4].itens.filter(([k]) => k !== 'dispositivos' && k !== 'auditoria' && k !== 'telaprincipal') }];
 
 export default function App() {
   const [abertas, setAbertas] = useState([]);
   const [popUsuario, setPopUsuario] = useState(false);
+  const [fundo, setFundo] = useState('/principal-paes.jpg'); // imagem da tela principal (padrão ou a escolhida em Ferramentas)
+  const carregaFundo = useCallback(() => { api.get('/tela-principal').then((i) => setFundo(i.personalizada ? `/api/tela-principal/imagem?v=${i.versao}` : '/principal-paes.jpg')).catch(() => {}); }, []);
+  useEffect(() => { if (usuario) carregaFundo(); }, [usuario, carregaFundo]);
+  useEffect(() => { window.addEventListener('tela-principal-alterada', carregaFundo); return () => window.removeEventListener('tela-principal-alterada', carregaFundo); }, [carregaFundo]);
   const [ativa, setAtiva] = useState(null);
   const [saude, setSaude] = useState(null);
   const [impr, setImpr] = useState(null); // estado do agente de impressão desta estação
@@ -151,7 +157,7 @@ export default function App() {
               </button>
               {aberto && (
                 <ul role="menu">
-                  {m.itens.filter(([k]) => !['dispositivos', 'auditoria', 'usuarios'].includes(k) || usuario?.admin).map(([k, r, ic]) => (TELAS[k]
+                  {m.itens.filter(([k]) => !['dispositivos', 'auditoria', 'usuarios', 'telaprincipal'].includes(k) || usuario?.admin).map(([k, r, ic]) => (TELAS[k]
                     ? <li key={k} role="none"><button role="menuitem" className={abertas.includes(k) ? 'aberta' : ''} onClick={() => { setMenuAberto(null); abrir(k); }}><span className="mi" aria-hidden="true">{ic}</span><span className="rot">{r}</span>{abertas.includes(k) && <i className="ponto" title="Aberta" />}</button></li>
                     : <li key={k} role="none"><span role="menuitem" aria-disabled="true" className="desab" title="Próxima fase"><span className="mi" aria-hidden="true">{ic}</span><span className="rot">{r}</span><em>em breve</em></span></li>))}
                 </ul>
@@ -201,7 +207,7 @@ export default function App() {
           return <div key={k} className="slot" hidden={ativa !== k}><Tela onFechar={() => fechar(k)} /></div>;
         })}
         {!ativa && (
-          <div className="fundo-paes" style={{ backgroundImage: 'url(/principal-paes.jpg)' }} role="img" aria-label="Pães franceses saindo do forno" />
+          <div className="fundo-paes" style={{ backgroundImage: `url(${fundo})` }} role="img" aria-label="Pães franceses saindo do forno" />
         )}
       </div>
 

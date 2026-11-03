@@ -29,6 +29,7 @@ import { exigeDispositivo } from './services/dispositivos.js';
 import auditoriaRoutes from './routes/auditoria.js';
 import { auditoria } from './services/auditoria.js';
 import usuariosRoutes from './routes/usuarios.js';
+import telaPrincipalRoutes from './routes/telaPrincipal.js';
 import extrasRoutes from './routes/extras.js';
 import dispositivosAdmin, { publica as dispositivoPublico } from './routes/dispositivos.js';
 
@@ -49,6 +50,7 @@ app.use('/api', (req, res, next) => { if (req.method !== 'GET') res.on('finish',
 app.use('/api/auth', authRoutes);
 app.use('/api/dispositivos', dispositivosAdmin);
 app.use('/api/auditoria', auditoriaRoutes);
+app.use('/api/tela-principal', telaPrincipalRoutes);
 app.use('/api/agente', agenteRoutes);
 app.use('/api/impressao', impressaoRoutes);
 app.use('/api/layout-etiquetas', layoutEtiquetasRoutes);

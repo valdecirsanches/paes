@@ -788,3 +788,7 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 ## Fase 148
 - Tela principal: foto de pães enviada (`public/principal-paes.jpg`) ocupando toda a área, no lugar do cartaz anterior.
 - **Trocar senha pelo nome do usuário**: o menu não aparecia porque o contêiner do nome tinha `overflow:hidden` e cortava o menu suspenso; corrigido. Conferido no navegador de teste: clicar no nome abre "🔒 Trocar senha" e abre a janela de troca.
+
+## Fase 149
+- **Ferramentas › Imagem da tela principal** (só administrador): escolhe a foto que aparece ao abrir o sistema, para todos os usuários. PNG/JPG/WEBP; imagens grandes são reduzidas no navegador (máx. 4 MB no servidor). **Voltar à padrão** restaura os pães.
+- Servidor: `GET/PUT/DELETE /api/tela-principal` (+ `/imagem`); arquivo gravado em `tela-principal.bin/json` na pasta `NFE_DANFE_DIR` (ou pasta do servidor), ignorado pelo git.

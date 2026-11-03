@@ -11,3 +11,5 @@ ncm-tabela.json
 server/xmls/
 client/public/_prev.html
 *.zip
+tela-principal.bin
+tela-principal.json
