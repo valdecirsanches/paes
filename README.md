@@ -784,3 +784,7 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 147
 - Menu: **Usuários** (cadastro) agora fica em **Cadastros** (só administrador); o menu "Usuários" saiu. O botão **Sair** (volta ao logon) fica ao lado de **Fechar**, no canto superior direito. **Trocar senha** continua atrelado ao nome do usuário logado (clique no nome).
+
+## Fase 148
+- Tela principal: foto de pães enviada (`public/principal-paes.jpg`) ocupando toda a área, no lugar do cartaz anterior.
+- **Trocar senha pelo nome do usuário**: o menu não aparecia porque o contêiner do nome tinha `overflow:hidden` e cortava o menu suspenso; corrigido. Conferido no navegador de teste: clicar no nome abre "🔒 Trocar senha" e abre a janela de troca.

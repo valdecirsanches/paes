@@ -1778,3 +1778,9 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{filter:brightness(1.15)}
 .usr-lista table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #cfe0f1;font-size:13px}.usr-lista th{background:#e3eef9;text-align:left;padding:5px 8px}.usr-lista td{padding:4px 8px;border-top:1px solid #eef3f8}.usr-lista tr.clicavel{cursor:pointer}.usr-lista tr.foco{background:#fff3d6}
 .usr-form{flex:1 1 320px;max-width:420px;display:flex;flex-direction:column;gap:8px;background:#fff;border:1px solid #cfe0f1;border-radius:10px;padding:14px}.usr-form h3{margin:0}.usr-form label{display:flex;flex-direction:column;font-size:12px;gap:3px}.usr-form input{padding:6px 8px}.usr-bts{display:flex;gap:8px;margin-top:4px}
 .menu-usuario-bt{background:none;border:0;font:inherit;color:inherit;cursor:pointer;padding:4px 8px;border-radius:6px}.menu-usuario-bt:hover{background:rgba(255,255,255,.35)}.menu-usuario-pop{position:absolute;right:8px;top:100%;z-index:60;background:#fff;border:1px solid #cfe0f1;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:4px;min-width:160px}.menu-usuario-pop button{display:block;width:100%;text-align:left;border:0;background:none;padding:7px 10px;border-radius:6px;cursor:pointer;font:inherit}.menu-usuario-pop button:hover{background:#eef5fc}
+/* o contêiner do nome não pode cortar o menu suspenso (antes tinha overflow:hidden) */
+.menu-usuario { overflow: visible; padding: 0; position: relative; }
+.menu-usuario-bt { max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 4px 12px; }
+.menu-usuario-pop { left: auto; right: 0; top: calc(100% + 4px); z-index: 80; }
+/* tela principal: foto de pães em toda a área, com um leve escurecimento nas bordas */
+.fundo-paes { background: #6b4423 center / cover no-repeat; box-shadow: inset 0 0 120px rgba(40,22,6,.45); }

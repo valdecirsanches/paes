@@ -201,9 +201,7 @@ export default function App() {
           return <div key={k} className="slot" hidden={ativa !== k}><Tela onFechar={() => fechar(k)} /></div>;
         })}
         {!ativa && (
-          <div className="fundo-paes">
-            <img className="fundo-poster" src="/principal-levpao.jpg" alt="Lev-Pão — Fornecimento para Indústrias, Cozinhas Industriais, Bancos, Bares, Restaurantes e Comércio em Geral" />
-          </div>
+          <div className="fundo-paes" style={{ backgroundImage: 'url(/principal-paes.jpg)' }} role="img" aria-label="Pães franceses saindo do forno" />
         )}
       </div>
 
