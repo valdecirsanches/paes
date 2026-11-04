@@ -96,6 +96,30 @@ export function etiquetaItem(i, unidadeNome) {
   return { corpo, css };
 }
 
+/* ---------- ppAdesivas de Cargas (u_prg_cargas / cargas_etiquetas.rtm): etiqueta adesiva do item, 62 × 45 mm ---------- */
+const pad5 = (t) => String(t).padStart(5, ' ');
+const semZeros = (n) => String(n ?? '').replace(/\.000$/, '').replace(/\.0+$/, '');
+export function etiquetaCarga(i) {
+  const alt = Number(i.qtde_alterada) || 0; const tot = Number(i.xqtde_total ?? (Number(i.qtde_original) + alt));
+  const qtde = `${pad5(semZeros(i.qtde_original))} ${alt < 0 ? '-' : '+'} ${pad5(semZeros(Math.abs(alt)))} = ${pad5(semZeros(tot))}`; // LPAD 5 como no Delphi
+  const especial = bool(i.produto_especial);
+  const corpo = `<div class="e"><b class="nome">${esc(i.nome ?? i.unidade_nome)}</b><hr class="l1"><div class="dt">${esc(`${dow(i.data)} - ${brData(i.data).replaceAll('/', ' / ')}`)}</div>
+    <b class="hora">${esc(hhmm(i.hora))}</b><b class="qt">${esc(qtde)}</b>${bool(i.cancelado) ? '<b class="cc">CANCELADO</b>' : ''}
+    <b class="ds">${esc(i.produto_descricao_expedicao)}</b><div class="rg"><div class="ob">${esc(i.obs_producao)}</div></div><div class="cx"></div><div class="in">${esc(i.inform ?? '')}</div><div class="ct">${Number(i.etiqueta_adesiva) ? `(${esc(i.etiqueta_adesiva)})` : ''}</div>
+    ${especial ? `<span class="fab">Fabricação:</span><span class="fad">${esc(brData(i.data).replace(/\/(\d\d)(\d\d)$/, '/$2'))}</span><span class="val"> Validade: 2 (Dois) dias</span>` : ''}</div>`;
+  const css = `@page{size:62mm 45mm;margin:0}body{margin:0;font-family:Arial}.e{position:relative;width:62mm;height:45mm;overflow:hidden}.e>*{position:absolute;margin:0;box-sizing:border-box}
+  .nome{left:1.85mm;top:2.65mm;width:58.5mm;height:6.6mm;font-size:16pt;white-space:nowrap;overflow:hidden;background:#c0c0c0}.l1{left:1.6mm;top:9.5mm;width:58.7mm;border:0;border-top:.27mm solid #000}
+  .dt{left:1.85mm;top:9.26mm;width:58.2mm;font-size:11pt;text-align:center;white-space:nowrap}
+  .hora{left:1.6mm;top:13.76mm;width:13mm;height:5.82mm;border:.3mm solid #000;font-size:12pt;text-align:center;line-height:5.2mm}
+  .qt{left:15.08mm;top:13.76mm;width:45.25mm;height:5.82mm;border:.3mm solid #000;font-size:12pt;text-align:center;line-height:5.2mm;white-space:pre;background:#c0c0c0}
+  .cc{left:29.63mm;top:14.29mm;width:29.9mm;height:5mm;font-size:12pt;text-align:center;background:#000;color:#fff;line-height:5mm}
+  .ds{left:1.6mm;top:19.84mm;width:58.7mm;height:8.5mm;font-size:10pt;overflow:hidden;line-height:1.1}
+  .rg{left:1.85mm;top:27.78mm;width:58.2mm;height:7.4mm;border:.3mm dotted #000}.ob{position:absolute;left:.8mm;top:.26mm;width:36.2mm;height:6.1mm;font-size:8pt;overflow:hidden;line-height:1.05}
+  .cx{left:1.85mm;top:35.72mm;width:58.2mm;height:2.9mm;border:.3mm solid #000}.in{left:2.4mm;top:35.98mm;font-size:6pt;white-space:nowrap}.ct{left:53.2mm;top:35.98mm;font-size:6pt}
+  .fab{left:1.85mm;top:39.16mm;font-size:8pt;background:#c0c0c0;white-space:pre}.fad{left:17.2mm;top:39.16mm;font-size:8pt;background:#c0c0c0}.val{left:29.4mm;top:39.16mm;width:31mm;font-size:8pt;background:#c0c0c0;white-space:pre}`;
+  return { corpo, css };
+}
+
 /* ---------- ppValidade: etiqueta de validade, 62 × 45 mm ---------- */
 export function etiquetaValidade(i) {
   const corpo = `<div class="e"><div class="bx"></div><b class="t">${esc(i.produto_descricao)}</b><b class="p">Pêso  : 0,05 KG</b><b class="tr">Tara   : 0,05 KG</b>

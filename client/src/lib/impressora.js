@@ -14,7 +14,7 @@ export const DOCS = {
   'etiqueta-nutricionista': { rotulo: 'Etiquetas de nutricionista', etiqueta: true, mm: [62, 45] },
   // 41 mm = altura da banda do ppAdesivas no Delphi: é o passo real entre etiquetas na impressora de rolo (a página de 45 mm deixava ~10% a mais)
   'etiqueta-mercadorias': { rotulo: 'Etiquetas de mercadorias', etiqueta: true, mm: [62, 41] },
-  'etiqueta-carga': { rotulo: 'Etiquetas de carga (expedição)', etiqueta: true, mm: [62, 45] },
+  'etiqueta-carga': { rotulo: 'Etiquetas de carga (expedição)', etiqueta: true, mm: [62, 45], giro: true },
   'comanda': { rotulo: 'Comanda e demonstrativo (faturamento)', cupom: true },
   'danfe': { rotulo: 'DANFE (NF-e) — impressão direta (2 vias)', pagina: true, mm: [210, 297], copias: 2 },
   'cupom-expedicao': { rotulo: 'Cupom da expedição (alterações)', cupom: true },
@@ -93,6 +93,14 @@ export async function htmlParaCanvas(corpo, css, larguraMm, alturaMm, dpi = 203)
   }
   return out;
 }
+/** Gira o canvas 90° (cw = horário, ccw = anti-horário): a imagem fica altura × largura. */
+function girarCanvas(c, sentido) {
+  const o = document.createElement('canvas'); o.width = c.height; o.height = c.width;
+  const g = o.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, o.width, o.height);
+  if (sentido === 'cw') { g.translate(o.width, 0); g.rotate(Math.PI / 2); } else { g.translate(0, o.height); g.rotate(-Math.PI / 2); }
+  g.drawImage(c, 0, 0);
+  return o;
+}
 const pngB64 = (c) => c.toDataURL('image/png').split(',')[1];
 
 /** Cupom de texto (comanda/demonstrativo) desenhado como UMA imagem contínua, para destinos que não são ESC/POS (ex.: driver do Windows). */
@@ -143,8 +151,11 @@ export async function imprimirDocumento(tipo, doc0, aviso = () => {}) {
       if (cupomImagem) { lm = d.largura_mm ?? 80; const im = cupomComoImagem(doc.linhas, lm); corpoImg = im.corpo; cssImg = im.css; am = im.altura; }
       const cs = (await htmlParaCanvas(corpoImg, cssImg, lm, am, dpi)).flatMap((c) => Array(copias).fill(c));
       if (d.linguagem === 'imagem-driver') {
+        // etiqueta "deitada" (como no Delphi): o lado de 62 mm corre ao longo da saída do papel e a página do driver é am × lm
+        const giro = def.giro && cfg.giro !== 'nao' ? (cfg.giro === 'ccw' ? 'ccw' : 'cw') : null;
+        const paginas = giro ? cs.map((c) => girarCanvas(c, giro)) : cs;
         // um trabalho com uma PÁGINA por etiqueta (a Brother QL corta a cada página); lotes de 20 por pedido
-        for (let i = 0; i < cs.length; i += 20) await enviar(cfg.destino, { tipo: 'png', paginas_b64: cs.slice(i, i + 20).map(pngB64), largura_mm: lm, altura_mm: am, copias: 1 });
+        for (let i = 0; i < paginas.length; i += 20) await enviar(cfg.destino, { tipo: 'png', paginas_b64: paginas.slice(i, i + 20).map(pngB64), largura_mm: giro ? am : lm, altura_mm: giro ? lm : am, copias: 1 });
       } else {
         const partes = cs.map((c, k) => {
           const im = bitsDeRgba(c.getContext('2d').getImageData(0, 0, c.width, c.height).data, c.width, c.height);

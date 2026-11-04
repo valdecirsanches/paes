@@ -2,14 +2,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { Modal } from './ui.jsx';
 import { DOCS, imprimirDocumento, gravarMapa, lerMapa } from '../lib/impressora.js';
 import { cssAjustes, ELEMENTOS, gravarAjustes, lerAjustes, publicaLayout, sincronizaLayout } from '../lib/ajustes.js';
-import { etiquetaItem, etiquetaMercadoria, etiquetaValidade, etiquetasNutricionista } from '../lib/print.js';
+import { etiquetaCarga, etiquetaItem, etiquetaMercadoria, etiquetaValidade, etiquetasNutricionista } from '../lib/print.js';
 import { mensagem } from './toast.jsx';
 
 const HOJE = new Date().toISOString().slice(0, 10);
 const AMOSTRAS = {
   'etiqueta-mercadorias': () => etiquetaMercadoria({ unidade_nome: 'Unidade 1005', data: HOJE, hora: '07:00:00', qtde_pendente: 12, produto_descricao_expedicao: 'PÃO FRANCÊS 50G CAIXA COM 12 UNIDADES' }),
   'etiqueta-item': () => etiquetaItem({ nome: 'Unidade 1005', data: HOJE, hora: '07:00:00', qtde_original: 10, qtde_alterada: 2, xqtde_total: 12, produto_descricao_expedicao: 'PÃO FRANCÊS 50G', obs_producao: 'Entregar na portaria', inform: 'Rota 3', etiqueta_adesiva: 1, cancelado: 'False' }),
-  'etiqueta-carga': () => etiquetaItem({ nome: 'Unidade 1005', data: HOJE, hora: '07:00:00', qtde_original: 10, qtde_alterada: 2, xqtde_total: 12, produto_descricao_expedicao: 'PÃO FRANCÊS 50G', obs_producao: 'Entregar na portaria', inform: 'Rota 3', etiqueta_adesiva: 1, cancelado: 'False' }),
+  'etiqueta-carga': () => etiquetaCarga({ nome: 'Unidade 1005', data: HOJE, hora: '07:00:00', qtde_original: 10, qtde_alterada: 2, xqtde_total: 12, produto_descricao_expedicao: 'PÃO FRANCÊS 50G', obs_producao: 'Entregar na portaria', inform: 'Rota 3', etiqueta_adesiva: 1, cancelado: 'False' }),
   'etiqueta-validade': () => etiquetaValidade({ produto_descricao: 'PÃO DE FORMA TRADICIONAL', ingredientes: 'Farinha de trigo, água, açúcar, sal, fermento biológico e melhorador.', data: HOJE, validade: '05/11/2026' }),
   'etiqueta-nutricionista': () => etiquetasNutricionista([{ nome: 'Unidade 1005', nutricionista_nome: 'Maria da Silva' }], false),
 };

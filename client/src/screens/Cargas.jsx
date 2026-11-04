@@ -2,7 +2,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../api.js';
 import { Toast, confirmar } from '../components/toast.jsx';
 import { useJanela, ALT_LINHA } from '../components/janela.js';
-import { etiquetaItem } from '../lib/print.js';
+import { etiquetaCarga } from '../lib/print.js';
 import { imprimirDocumento, temDestino } from '../lib/impressora.js';
 import { bool, brData, fmtQtde, hhmm, hoje, semanaDia } from '../lib/rules.js';
 
@@ -233,7 +233,7 @@ function CargaDiaria({ roteiros, notificar }) {
     try {
       const dados = await api.post('/cargas/etiquetas/dados', { ids });
       if (!(await confirmar(`Prosseguir com ${dados.length} etiqueta(s)?`))) return;
-      const pecas = dados.map((d) => etiquetaItem({ ...d, nome: d.unidade_nome }));
+      const pecas = dados.map((d) => etiquetaCarga({ ...d, nome: d.unidade_nome }));
       await imprimirDocumento('etiqueta-carga', { corpo: pecas.map((p) => p.corpo).join(''), css: `${pecas[0].css}.e{page-break-after:always}`, semNavegador: temDestino('etiqueta-carga') }, notificar);
       await api.post('/cargas/etiquetas', { ids }); // o navegador não confirma a impressão: registra ao enviar (como o Delphi)
       notificar('ok', `${ids.length} etiqueta(s) enviada(s) para impressão.`);
