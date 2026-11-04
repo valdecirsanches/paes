@@ -583,10 +583,6 @@ export default function NFe({ onFechar }) {
           <button type="button" className="nf2-b" onClick={danfe} disabled={nComDanfe === 0} title={nComDanfe === 0 ? 'Danfe só de notas AUTORIZADAS' : 'Imprimir o DANFE'}>🖨 Danfe{marcados.size > 0 ? ` (${nComDanfe})` : ''}</button>
           <button type="button" className={`nf2-b${todosMarcados ? ' on' : ''}`} onClick={marcarTodas} disabled={!linhas?.length} title="Marcar / desmarcar todas as notas da lista">{todosMarcados ? '☐ Desmarcar' : '☑ Marcar todas'}</button>
           <button type="button" className="nf2-b" onClick={() => setSubNfe('comanda')} disabled={!nota} title="Comandas ligadas à nota">🧾 Comandas{comandas.length ? ` (${comandas.length})` : ''}</button>
-          <div className="nf2-cols">
-            <button type="button" className="nf2-b" onClick={() => setMenuCols((v) => !v)} title="Escolher as colunas da grade de notas">☰ Colunas</button>
-            {menuCols && <div className="nf2-cols-pop" onMouseLeave={() => setMenuCols(false)}>{GRADE_OPCIONAIS.map(([k, r]) => <label key={k}><input type="checkbox" checked={extras.includes(k)} onChange={() => alternaCol(k)} /> {r}</label>)}</div>}
-          </div>
           <div className="nf2-mais">
             <button type="button" className="nf2-b" aria-haspopup="menu" aria-expanded={maisAberto} onClick={() => setMaisAberto((x) => !x)}>⋯ Mais ações ▾</button>
             {maisAberto && (
@@ -735,6 +731,11 @@ export default function NFe({ onFechar }) {
 
               {(
                 <>
+                  <div className="nf2-gwrap">
+                    <div className="nf2-cols">
+                      <button type="button" className="nf2-colbt" onClick={() => setMenuCols((v) => !v)} title="Escolher as colunas da grade">☰</button>
+                      {menuCols && <div className="nf2-cols-pop" onMouseLeave={() => setMenuCols(false)}>{GRADE_OPCIONAIS.map(([k, r]) => <label key={k}><input type="checkbox" checked={extras.includes(k)} onChange={() => alternaCol(k)} /> {r}</label>)}</div>}
+                    </div>
                   <div className="nfe-grade rolagem" ref={jn.ref} onScroll={jn.onScroll} style={{ height: altGrade }}>
                     <table className="grade">
                       <thead><tr><th className="ind" /><th className="nf2-chk"><input type="checkbox" checked={todosMarcados} onChange={marcarTodas} disabled={!linhas?.length} aria-label="Marcar todas" title="Marcar / desmarcar todas" /></th><th className="nf2-ic" />{cols.map(([k, r, , w]) => <th key={k} style={{ minWidth: w }} className="ord" aria-sort={ordem?.k === k ? (ordem.dir === 'asc' ? 'ascending' : 'descending') : 'none'} title="Clique para ordenar (clique de novo inverte; terceiro clique volta à ordem original)" onClick={() => ordenaPor(k)}>{r}{ordem?.k === k ? (ordem.dir === 'asc' ? ' ▲' : ' ▼') : ''}</th>)}</tr></thead>
@@ -748,6 +749,7 @@ export default function NFe({ onFechar }) {
                         <td className="ind" /><td /><td />{cols.map(([k, , t]) => <td key={k} className={t === 'm' ? 'n' : ''}>{k === 'status_e' ? <><b>{linhas?.length ?? 0}</b>{(linhas?.length ?? 0) >= LIMITE_LISTA && <span className="nf2-lim" title={`Mostrando as ${LIMITE_LISTA} notas mais recentes do filtro. Refine o período para ver as demais.`}>+</span>}</> : k === 'nf_valor_total' ? <b>{fmtBr(totalNF, 2)}</b> : ''}</td>)}
                       </tr></tfoot>
                     </table>
+                  </div>
                   </div>
                   <div className="nfe-split" role="separator" aria-orientation="horizontal" title="Arraste para redimensionar"
                     onMouseDown={(e) => { const y0 = e.clientY; const h0 = altGrade; const mv = (m) => setAltGrade(Math.max(80, Math.min(600, h0 + m.clientY - y0))); const up = () => { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); }; window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up); }} />

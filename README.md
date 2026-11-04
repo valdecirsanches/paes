@@ -807,3 +807,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 154
 - Cabeçalho: removido o botão **Fechar** (fazia o mesmo que **Sair**).
+
+## Fase 155
+- Grade da NFe: "Nome do cliente" fica **depois** de "Referência"; o botão **☰** de colunas foi para o cantinho superior direito da grade.
