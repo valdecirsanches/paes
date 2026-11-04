@@ -8,7 +8,7 @@ import { brData, hoje } from '../lib/rules.js';
 import { useJanela } from '../components/janela.js';
 import { audita } from '../lib/auditoria.js';
 import { imprimirPdfDireto, lerMapa, salvaXmlLegado, temDestino } from '../lib/impressora.js';
-import { CORPO_LINHAS, GRADE_COLS, ITEM_COLS, REF_LINHAS, alternaPeriodo, corLinha, fmtBr, parseBr, temMarca, foiMarcado } from '../lib/nfeCampos.js';
+import { CORPO_LINHAS, GRADE_COLS, GRADE_OPCIONAIS, colunasGrade, ITEM_COLS, REF_LINHAS, alternaPeriodo, corLinha, fmtBr, parseBr, temMarca, foiMarcado } from '../lib/nfeCampos.js';
 import { Confirma, Toast, confirmar, copiaTexto, entrada, limpaMensagem, mensagem } from '../components/toast.jsx';
 
 // Configurações do emitente (tb_nfe_config)
@@ -24,10 +24,10 @@ const CFG_NFE = 2, CFG_CERT = 4; // posições das abas com blocos próprios (am
 const LIMITE_LISTA = 1500; // igual ao servidor
 const ALT_NOTA = 22; // px — altura fixa das linhas da grade de notas (rolagem virtual)
 /** Ordena as linhas da grade por uma coluna (números, datas e marcas comparam pelo valor; texto, em pt-BR com números naturais). */
-function ordenaLinhas(rows, ord) {
+function ordenaLinhas(rows, ord, cols = colunasGrade(GRADE_OPCIONAIS.map((c) => c[0]))) {
   if (!ord || !rows) return rows;
   if (ord.k === 'id') return [...rows].sort((a, b) => a.id - b.id);
-  const [k, , t] = GRADE_COLS.find((c) => c[0] === ord.k) ?? [];
+  const [k, , t] = cols.find((c) => c[0] === ord.k) ?? [];
   if (!k) return rows;
   const val = (r) => (t === 'm' ? Number(r[k]) || 0 : t === 'chk' ? (foiMarcado(r[k]) ? 1 : 0) : r[k] ?? '');
   const cmp = (a, b) => { const x = val(a); const y = val(b); return typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y), 'pt-BR', { numeric: true, sensitivity: 'base' }); };
@@ -50,13 +50,13 @@ const LinhaItem = memo(function LinhaItem({ i, sel, onSel }) {
     </tr>
   );
 });
-const LinhaNota = memo(function LinhaNota({ r, i, sel, marc, foco, onClick, onMarcar, onModal, onClonar, onApagar, onEmail, onDanfe }) {
+const LinhaNota = memo(function LinhaNota({ cols, r, i, sel, marc, foco, onClick, onMarcar, onModal, onClonar, onApagar, onEmail, onDanfe }) {
   return (
     <tr className={`clicavel${foco ? ' foco' : ''}`} style={corLinha(r.status_e, sel) ?? undefined} onClick={(e) => onClick(e, r, i)}>
       <td className="ind">{foco ? '▶' : ''}</td>
       <td className="nf2-chk" onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={!!marc} onChange={() => onMarcar(r, i)} aria-label={`Marcar NFe ${r.nfe_numero || r.id}`} title="Marcar para autorizar (qualquer nota, sem ordem)" /></td>
       <td className="nf2-ic"><button type="button" title="Dados do corpo da NFe" onClick={(e) => { e.stopPropagation(); onModal(r, i, 'corpo'); }}>📋</button><button type="button" title="Eventos da NFe" onClick={(e) => { e.stopPropagation(); onModal(r, i, 'eventos'); }}>🗓</button><button type="button" title="Clonar esta NFe (nova nota PENDENTE, sem XML, PDF, chave, protocolo e recibo)" onClick={(e) => { e.stopPropagation(); onClonar(r); }}>⧉</button>{r.status_e === 'AUTORIZADA' && <button type="button" title={foiMarcado(r.nfe_impresso) ? 'Imprimir o DANFE novamente (já impresso)' : 'Imprimir o DANFE desta nota'} onClick={(e) => { e.stopPropagation(); onDanfe(r); }}>🖨</button>}{r.status_e === 'AUTORIZADA' && <button type="button" title="Enviar esta NFe por e-mail ao cliente (XML + DANFE)" onClick={(e) => { e.stopPropagation(); onEmail(r); }}>✉</button>}{!['AUTORIZADA', 'CANCELADA'].includes(r.status_e) && <button type="button" className="lx" title="Apagar esta NF (só notas não autorizadas)" onClick={(e) => { e.stopPropagation(); onApagar(r); }}>🗑</button>}</td>
-      {GRADE_COLS.map((c) => <td key={c[0]} className={c[2] === 'm' ? 'n' : c[2] === 'chk' ? 'c' : ''}>{celulaGrade(r, c)}</td>)}
+      {cols.map((c) => <td key={c[0]} className={c[2] === 'm' ? 'n' : c[2] === 'chk' ? 'c' : ''}>{celulaGrade(r, c)}</td>)}
     </tr>
   );
 });
@@ -144,6 +144,10 @@ const ST_INICIAL = { PENDENTE: true, AUTORIZADA: false, CANCELADA: false, INUTIL
 export default function NFe({ onFechar }) {
   const [f, setF] = useState({ periodo: true, campo: 'emissao', d1: hoje(), d2: hoje(), cli: false, cliente: '', st: ST_INICIAL, nfe1: '', nfe2: '', ref: '' });
   const [clientes, setClientes] = useState([]);
+  const [extras, setExtras] = useState(() => { try { return JSON.parse(localStorage.getItem('nfe_colunas_extras') || '[]'); } catch { return []; } }); // colunas opcionais da grade escolhidas pelo usuário
+  const [menuCols, setMenuCols] = useState(false);
+  const cols = useMemo(() => colunasGrade(extras), [extras]);
+  const alternaCol = (k) => setExtras((e) => { const n = e.includes(k) ? e.filter((x) => x !== k) : [...e, k]; try { localStorage.setItem('nfe_colunas_extras', JSON.stringify(n)); } catch { /* sem armazenamento */ } return n; });
   const [linhas, setLinhas] = useState(null); // versão leve (colunas da grade)
   const [ordem, setOrdem] = useState({ k: 'nfe_numero', dir: 'asc' }); // { k, dir } da coluna clicada no cabeçalho; null = ordem do banco
   const ordemRef = useRef({ k: 'nfe_numero', dir: 'asc' }); // ao abrir, a grade vem por nº da NFe
@@ -579,6 +583,10 @@ export default function NFe({ onFechar }) {
           <button type="button" className="nf2-b" onClick={danfe} disabled={nComDanfe === 0} title={nComDanfe === 0 ? 'Danfe só de notas AUTORIZADAS' : 'Imprimir o DANFE'}>🖨 Danfe{marcados.size > 0 ? ` (${nComDanfe})` : ''}</button>
           <button type="button" className={`nf2-b${todosMarcados ? ' on' : ''}`} onClick={marcarTodas} disabled={!linhas?.length} title="Marcar / desmarcar todas as notas da lista">{todosMarcados ? '☐ Desmarcar' : '☑ Marcar todas'}</button>
           <button type="button" className="nf2-b" onClick={() => setSubNfe('comanda')} disabled={!nota} title="Comandas ligadas à nota">🧾 Comandas{comandas.length ? ` (${comandas.length})` : ''}</button>
+          <div className="nf2-cols">
+            <button type="button" className="nf2-b" onClick={() => setMenuCols((v) => !v)} title="Escolher as colunas da grade de notas">☰ Colunas</button>
+            {menuCols && <div className="nf2-cols-pop" onMouseLeave={() => setMenuCols(false)}>{GRADE_OPCIONAIS.map(([k, r]) => <label key={k}><input type="checkbox" checked={extras.includes(k)} onChange={() => alternaCol(k)} /> {r}</label>)}</div>}
+          </div>
           <div className="nf2-mais">
             <button type="button" className="nf2-b" aria-haspopup="menu" aria-expanded={maisAberto} onClick={() => setMaisAberto((x) => !x)}>⋯ Mais ações ▾</button>
             {maisAberto && (
@@ -729,15 +737,15 @@ export default function NFe({ onFechar }) {
                 <>
                   <div className="nfe-grade rolagem" ref={jn.ref} onScroll={jn.onScroll} style={{ height: altGrade }}>
                     <table className="grade">
-                      <thead><tr><th className="ind" /><th className="nf2-chk"><input type="checkbox" checked={todosMarcados} onChange={marcarTodas} disabled={!linhas?.length} aria-label="Marcar todas" title="Marcar / desmarcar todas" /></th><th className="nf2-ic" />{GRADE_COLS.map(([k, r, , w]) => <th key={k} style={{ minWidth: w }} className="ord" aria-sort={ordem?.k === k ? (ordem.dir === 'asc' ? 'ascending' : 'descending') : 'none'} title="Clique para ordenar (clique de novo inverte; terceiro clique volta à ordem original)" onClick={() => ordenaPor(k)}>{r}{ordem?.k === k ? (ordem.dir === 'asc' ? ' ▲' : ' ▼') : ''}</th>)}</tr></thead>
+                      <thead><tr><th className="ind" /><th className="nf2-chk"><input type="checkbox" checked={todosMarcados} onChange={marcarTodas} disabled={!linhas?.length} aria-label="Marcar todas" title="Marcar / desmarcar todas" /></th><th className="nf2-ic" />{cols.map(([k, r, , w]) => <th key={k} style={{ minWidth: w }} className="ord" aria-sort={ordem?.k === k ? (ordem.dir === 'asc' ? 'ascending' : 'descending') : 'none'} title="Clique para ordenar (clique de novo inverte; terceiro clique volta à ordem original)" onClick={() => ordenaPor(k)}>{r}{ordem?.k === k ? (ordem.dir === 'asc' ? ' ▲' : ' ▼') : ''}</th>)}</tr></thead>
                       <tbody>
-                        {jn.acima > 0 && <tr className="cd-esp" style={{ height: jn.acima }}><td colSpan={GRADE_COLS.length + 2} /></tr>}
-                        {(linhas ?? []).slice(jn.ini, jn.fim).map((r, k) => <LinhaNota key={r.id} r={r} i={jn.ini + k} sel={marcados.has(r.id) || foco === r.id} marc={marcados.has(r.id)} foco={foco === r.id} onClick={clicar} onMarcar={marcar} onModal={abreModal} onClonar={clonarLinha} onApagar={apagarLinha} onEmail={emailLinha} onDanfe={danfeLinha} />)}
-                        {jn.abaixo > 0 && <tr className="cd-esp" style={{ height: jn.abaixo }}><td colSpan={GRADE_COLS.length + 2} /></tr>}
-                        {linhas && linhas.length === 0 && <tr className="semlinha"><td colSpan={GRADE_COLS.length + 3} className="vazio">&lt;Não há notas para este filtro&gt;</td></tr>}
+                        {jn.acima > 0 && <tr className="cd-esp" style={{ height: jn.acima }}><td colSpan={cols.length + 2} /></tr>}
+                        {(linhas ?? []).slice(jn.ini, jn.fim).map((r, k) => <LinhaNota key={r.id} cols={cols} r={r} i={jn.ini + k} sel={marcados.has(r.id) || foco === r.id} marc={marcados.has(r.id)} foco={foco === r.id} onClick={clicar} onMarcar={marcar} onModal={abreModal} onClonar={clonarLinha} onApagar={apagarLinha} onEmail={emailLinha} onDanfe={danfeLinha} />)}
+                        {jn.abaixo > 0 && <tr className="cd-esp" style={{ height: jn.abaixo }}><td colSpan={cols.length + 2} /></tr>}
+                        {linhas && linhas.length === 0 && <tr className="semlinha"><td colSpan={cols.length + 3} className="vazio">&lt;Não há notas para este filtro&gt;</td></tr>}
                       </tbody>
                       <tfoot><tr>
-                        <td className="ind" /><td /><td />{GRADE_COLS.map(([k, , t]) => <td key={k} className={t === 'm' ? 'n' : ''}>{k === 'status_e' ? <><b>{linhas?.length ?? 0}</b>{(linhas?.length ?? 0) >= LIMITE_LISTA && <span className="nf2-lim" title={`Mostrando as ${LIMITE_LISTA} notas mais recentes do filtro. Refine o período para ver as demais.`}>+</span>}</> : k === 'nf_valor_total' ? <b>{fmtBr(totalNF, 2)}</b> : ''}</td>)}
+                        <td className="ind" /><td /><td />{cols.map(([k, , t]) => <td key={k} className={t === 'm' ? 'n' : ''}>{k === 'status_e' ? <><b>{linhas?.length ?? 0}</b>{(linhas?.length ?? 0) >= LIMITE_LISTA && <span className="nf2-lim" title={`Mostrando as ${LIMITE_LISTA} notas mais recentes do filtro. Refine o período para ver as demais.`}>+</span>}</> : k === 'nf_valor_total' ? <b>{fmtBr(totalNF, 2)}</b> : ''}</td>)}
                       </tr></tfoot>
                     </table>
                   </div>

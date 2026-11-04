@@ -101,6 +101,13 @@ export const GRADE_COLS = [
   ['data_emissao', 'Emissão', 'd', 78], ['data_saida', 'Saída', 'd', 78], ['nfe_protocolo_data_hora', 'Autorização', '', 140], ['cliente_pedido', 'Referência', '', 190],
   ['nf_valor_total', 'Valor da NF', 'm', 92], ['usuario_autorizacao_nfe', 'Usuário', '', 70], ['comandas_faturadas', 'Comanda', '', 90],
 ];
+/** Colunas que o usuário pode ligar/desligar na grade (Colunas ▾). Entram antes de "Referência". */
+export const GRADE_OPCIONAIS = [['cliente_razao_social', 'Nome do cliente', '', 220]];
+export const colunasGrade = (extras = []) => {
+  const add = GRADE_OPCIONAIS.filter(([k]) => extras.includes(k));
+  const i = GRADE_COLS.findIndex((c) => c[0] === 'cliente_pedido');
+  return add.length ? [...GRADE_COLS.slice(0, i), ...add, ...GRADE_COLS.slice(i)] : GRADE_COLS;
+};
 /** Colunas da grade de itens (GriITENS) */
 export const ITEM_COLS = [
   ['produto_codigo', 'Código do item', '', 90], ['produto_descricao', 'Descrição do item', '', 230], ['un', 'Un.', '', 34], ['preco', 'Preço unitário', 'p', 90],

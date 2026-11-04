@@ -187,7 +187,7 @@ router.delete('/certificado/a3', async (_req, res) => { await limparA3(); res.js
 // ------------------------------------------------------------------ lista (bFiltroClick)
 export const LIMITE_LISTA = 1500;
 const COLUNAS_LISTA = ['id', 'cfop_codigo', 'status_e', 'nfe_impresso', 'nfe_email_enviado', 'nfe_numero', 'data_emissao', 'data_saida', 'nfe_protocolo_data_hora', 'cliente_pedido',
-  'nf_valor_total', 'valor_produtos', 'usuario_autorizacao_nfe', 'comandas_faturadas', 'nfe_xml_file'].map((c) => `n.${c}`).join(', ');
+  'nf_valor_total', 'valor_produtos', 'usuario_autorizacao_nfe', 'comandas_faturadas', 'nfe_xml_file', 'cliente_razao_social'].map((c) => `n.${c}`).join(', ');
 router.get('/', async (req, res) => {
   const q = req.query;
   let onde = ' where 1=1';

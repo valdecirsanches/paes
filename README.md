@@ -801,3 +801,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 152
 - **DANFE cortado no rodapé**: o agente (1.1.1) desenhava a página A4 no tamanho cheio, mas a impressora tem margem física e o Windows não imprime nela; o fim da folha saía cortado. Para páginas grandes (A4) a imagem agora é encaixada na área imprimível (centralizada, sem ampliar). Etiquetas continuam como antes. **É preciso reinstalar/atualizar o agente de impressão** (Ferramentas › Instalar agente) — a correção está nele, não no site.
+
+## Fase 153
+- Grade de notas (NFe): botão **☰ Colunas** para escolher colunas opcionais; por enquanto **Nome do cliente** (aparece antes de "Referência", ordenável pelo cabeçalho). A escolha fica gravada neste navegador. A lista do servidor passou a trazer `cliente_razao_social`.
