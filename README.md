@@ -820,4 +820,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 158
 - **Etiqueta de Cargas no modelo do Delphi** (`ppAdesivas` de `u_prg_cargas`, 62 × 45 mm): nome da unidade em faixa cinza, dia por extenso centralizado (`quinta-feira - 05 / 11 / 2026`), hora e quantidades (`60 - 20 = 40`, cinza), descrição em negrito, quadro pontilhado da observação, caixa de informação com o contador `(1)` e, para produto especial, "Fabricação / Validade: 2 (Dois) dias". A etiqueta do Diária (`etiqueta-item`) não mudou.
-- **Giro de 90°** (só destinos "imagem do driver", ex.: Brother pelo Windows): a etiqueta de carga sai deitada, com os 62 mm ao longo do papel, e a página enviada ao driver passa a ser 45 × 62 mm. Em Ferramentas › Configurar impressoras há o campo **Giro** (horário padrão / anti-horário / sem giro) para acertar o sentido se sair de cabeça para baixo.
+
+## Fase 159
+- Desfeito o **giro de 90°** da Fase 158: ele enviava uma página de 45 × 62 mm, e a Brother QL-800 (rolo contínuo 62 mm) recusava com "o rolo não corresponde ao selecionado". A etiqueta de Cargas volta a ser enviada em 62 × 45 mm (como antes de dar erro), já no modelo do Delphi.
