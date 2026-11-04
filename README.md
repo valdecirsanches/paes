@@ -814,3 +814,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 ## Fase 156
 - NFe: botão **☰** (colunas) no canto esquerdo da grade, sobre a coluna dos ícones.
 - Cargas (diária e fixa): **🖨 Imprimir lista** (imprime a lista como está na tela, em A4 paisagem, pelo navegador — vale também para a fábrica) e abertura **por ordem de hora**.
+
+## Fase 157
+- Cargas (diária): o botão **🏷 Etiqueta do item** agora aparece também na **área da fábrica** (como no sistema antigo): imprime a etiqueta adesiva dos itens marcados ou, sem marcação, do item em foco; Enter continua imprimindo; o log de impressão aparece para todos. O servidor deixou de recusar `/api/cargas/etiquetas*` à máquina só-Fábrica (as de **Mercadorias** continuam bloqueadas). Revoga a restrição da Fase 134 sobre Cargas.

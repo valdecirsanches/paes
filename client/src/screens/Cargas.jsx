@@ -3,7 +3,6 @@ import { api } from '../api.js';
 import { Toast, confirmar } from '../components/toast.jsx';
 import { useJanela, ALT_LINHA } from '../components/janela.js';
 import { etiquetaItem } from '../lib/print.js';
-import { ehFabrica } from '../lib/perfil.js';
 import { imprimirDocumento, temDestino } from '../lib/impressora.js';
 import { bool, brData, fmtQtde, hhmm, hoje, semanaDia } from '../lib/rules.js';
 
@@ -229,9 +228,9 @@ function CargaDiaria({ roteiros, notificar }) {
   useEffect(() => { if (!sel.foco) { setLog([]); return; } api.get(`/cargas/diaria/${sel.foco}/etiquetas`).then(setLog).catch(() => setLog([])); }, [sel.foco]);
 
   const etiquetas = async () => {
-    if (!sel.marcados.size) { notificar('erro', 'Selecione ao menos um item para impressão.'); return; }
+    const ids = sel.marcados.size ? [...sel.marcados] : item ? [item.id] : []; // sem marcação: o item em foco
+    if (!ids.length) { notificar('erro', 'Selecione ao menos um item para impressão.'); return; }
     try {
-      const ids = [...sel.marcados];
       const dados = await api.post('/cargas/etiquetas/dados', { ids });
       if (!(await confirmar(`Prosseguir com ${dados.length} etiqueta(s)?`))) return;
       const pecas = dados.map((d) => etiquetaItem({ ...d, nome: d.unidade_nome }));
@@ -243,7 +242,7 @@ function CargaDiaria({ roteiros, notificar }) {
     } catch (e) { notificar('erro', e.message); }
   };
   const teclas = (e) => {
-    if (e.key !== 'Enter' || !item || ehFabrica()) return; // fábrica não imprime etiquetas
+    if (e.key !== 'Enter' || !item) return;
     e.preventDefault();
     if (bool(item.cancelado)) notificar('erro', 'Programação cancelada!'); else etiquetas();
   };
@@ -271,10 +270,10 @@ function CargaDiaria({ roteiros, notificar }) {
       <div className="cg-barra cg-acoes">
         <span className={`trb2-chip${sel.marcados.size ? ' on' : ''}`}>Registros marcados: {sel.marcados.size}</span>
         <button type="button" className="trb2-btn" onClick={() => sel.setMarcados(new Set(rows.map((r) => r.id)))}>Selecionar tudo</button>
-        {!ehFabrica() && <button type="button" className="trb2-btn principal" onClick={etiquetas}>🏷 Etiquetas</button>}
+        <button type="button" className="trb2-btn principal" onClick={etiquetas} title="Imprime a etiqueta adesiva do(s) item(ns) marcado(s) ou do item em foco">🏷 Etiqueta do item</button>
         <button type="button" className="trb2-btn" onClick={() => imprimirLista('Roteiro de cargas — carga diária', COLS_DIARIA.filter((c) => c[0] !== 'registro_alterado'), rows, `Data ${brData(data)}`)} disabled={!rows.length} title="Imprime a lista como está na tela">🖨 Imprimir lista</button>
         <MenuAcomodacao tabela="diaria" sel={sel} aoAplicar={carrega} notificar={notificar}
-          extra={<><small>Outras ações</small>{!ehFabrica() && <button type="button" role="menuitem" onClick={etiquetas}>🏷 Etiqueta adesiva</button>}<button type="button" role="menuitem" onClick={separarMarcadas}>✔ Marcar como separadas</button></>} />
+          extra={<><small>Outras ações</small><button type="button" role="menuitem" onClick={etiquetas}>🏷 Etiqueta adesiva</button><button type="button" role="menuitem" onClick={separarMarcadas}>✔ Marcar como separadas</button></>} />
         <span className="cg-esp" />
         <input className="cg-bip" value={bip} onChange={(e) => setBip(e.target.value.replace(/\D/g, ''))} onKeyDown={separar} placeholder="Separar: nº da etiqueta + Enter" aria-label="Separar pelo número da etiqueta" />
       </div>
@@ -283,16 +282,16 @@ function CargaDiaria({ roteiros, notificar }) {
       <div className="cg-meio">
         <section className="trb2-card cg-lista">
           <Grade cols={COLS_DIARIA} rows={rows} sel={sel} ordem={ordem} classe={classeDiaria} vazio={carregando ? 'Carregando…' : 'Nenhum item para este filtro'} onKeyDown={teclas} />
-          <footer>{rows.length} item(ns){rows.length >= 5000 ? ' — lista limitada; refine o filtro' : ''} {!ehFabrica() && '· Enter imprime a etiqueta do item'}</footer>
+          <footer>{rows.length} item(ns){rows.length >= 5000 ? ' — lista limitada; refine o filtro' : ''} '· Enter imprime a etiqueta do item'</footer>
         </section>
-        {!ehFabrica() && <aside className="trb2-card cg-log">
+        <aside className="trb2-card cg-log">
           <header><div><h3>Log de impressão de etiquetas</h3><p>{item ? item.unidade_nome : 'Escolha um item'}</p></div></header>
           <div className="trb2-tab">
             <table><thead><tr><th>Data e hora</th><th>Usuário</th><th>Origem</th></tr></thead>
               <tbody>{log.map((l) => <tr key={l.id}><td>{brData(String(l.data_hora))} {String(l.data_hora).slice(11, 16)}</td><td>{l.usuario}</td><td>{l.origem}</td></tr>)}
                 {log.length === 0 && <tr><td colSpan={3} className="trb2-vazio">Sem impressões</td></tr>}</tbody></table>
           </div>
-        </aside>}
+        </aside>
       </div>
     </div>
   );
