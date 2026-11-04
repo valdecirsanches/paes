@@ -12,7 +12,7 @@ import Faturamento from './screens/Faturamento.jsx';
 import NFe from './screens/NFe.jsx';
 import Comandas from './screens/Comandas.jsx';
 import Tributos from './screens/Tributos.jsx';
-import { statusAgente, lerMapa } from './lib/impressora.js';
+import { statusAgente, lerMapa, AGENTE } from './lib/impressora.js';
 import { preaquece } from './lib/mercCache.js';
 import Impressoras from './screens/Impressoras.jsx';
 import InstalarAgente from './screens/InstalarAgente.jsx';
@@ -121,7 +121,7 @@ export default function App() {
   }, [usuario]);
   useEffect(() => { // ambiente de impressão: agente local online/offline e quantos documentos estão ligados a ele
     if (!usuario) { setImpr(null); return undefined; }
-    const ler = () => statusAgente().then((s) => setImpr({ on: true, destinos: s.destinos, ligados: Object.keys(lerMapa()).length })).catch(() => setImpr({ on: false, ligados: 0 }));
+    const ler = () => statusAgente().then((s) => setImpr({ on: true, via: s.via, destinos: s.destinos, ligados: Object.keys(lerMapa()).length })).catch(() => setImpr({ on: false, ligados: 0 }));
     ler(); const t = setInterval(ler, 30000); window.addEventListener('impressoras-alteradas', ler);
     return () => { clearInterval(t); window.removeEventListener('impressoras-alteradas', ler); };
   }, [usuario]);
@@ -177,6 +177,9 @@ export default function App() {
             title={impr.on ? `Agente de impressão conectado · ${impr.destinos} impressora(s) cadastrada(s) · ${impr.ligados} documento(s) direcionado(s). Clique para configurar.` : 'Agente de impressão não encontrado: tudo imprime pelo navegador. Clique para configurar/instalar.'}>
             🖨️ {impr.on ? `Agente · ${impr.ligados ? `${impr.ligados} doc(s) direto` : 'sem direcionamento'}` : 'Navegador'}
           </button>
+        )}
+        {usuario && impr?.on && impr.via === 'local' && ( // esta é a máquina do agente: atalho para a página de administração dele
+          <a className="imp-selo-topo adm" href={AGENTE} target="_blank" rel="noreferrer" title="Abrir a página de administração do agente de impressão desta máquina (impressoras, pastas de gravação, status)">⚙ Agente</a>
         )}
         {usuario && (
           <span className="menu-usuario" style={{ position: 'relative' }}>

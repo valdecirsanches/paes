@@ -832,3 +832,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 162
 - Grade da NFe: **ID** entra na lista de colunas opcionais do botão ☰ (aparece como primeira coluna; ordena crescente/decrescente pelo cabeçalho).
+
+## Fase 163
+- Cabeçalho: botão **⚙ Agente** aparece só quando o navegador alcança o agente **nesta mesma máquina** (127.0.0.1:9101); abre a página de administração do agente (impressoras, pastas de gravação, status) em nova aba. Em outras máquinas (agente via servidor) o botão não aparece.
