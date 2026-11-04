@@ -823,3 +823,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 159
 - Desfeito o **giro de 90°** da Fase 158: ele enviava uma página de 45 × 62 mm, e a Brother QL-800 (rolo contínuo 62 mm) recusava com "o rolo não corresponde ao selecionado". A etiqueta de Cargas volta a ser enviada em 62 × 45 mm (como antes de dar erro), já no modelo do Delphi.
+
+## Fase 160
+- **Etiqueta saindo em paisagem/deslocada** (Brother QL-800 pelo driver do Windows): o agente (1.1.2) agora fixa a orientação **retrato** (`Landscape=false`) em toda impressão por imagem; o driver vinha em paisagem e girava/deslocava a página de 62 × 45 mm. Tamanho do papel e posição do layout não mudaram. **Atualize o agente de impressão** no computador da etiqueta (Ferramentas › Instalar agente de impressão).

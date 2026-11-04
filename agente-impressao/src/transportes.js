@@ -76,6 +76,8 @@ try {
   }
   if(-not $papel){ $papel=New-Object System.Drawing.Printing.PaperSize('Etiqueta',$w,$h) }
   $pd.DefaultPageSettings.PaperSize=$papel
+  # orientação RETRATO sempre: o driver da Brother vinha em paisagem e girava/deslocava a página (a etiqueta saía cortada e deslocada)
+  $pd.DefaultPageSettings.Landscape=$false
   $pd.DefaultPageSettings.Margins=New-Object System.Drawing.Printing.Margins(0,0,0,0)
   $pd.OriginAtMargins=$false
   $script:i=0
