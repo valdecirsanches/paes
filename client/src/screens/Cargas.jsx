@@ -98,8 +98,8 @@ const cmpOrdem = (a, b) => {
   if (x !== '' && y !== '' && Number.isFinite(nx) && Number.isFinite(ny)) return nx - ny;
   return String(x).localeCompare(String(y), 'pt-BR', { numeric: true, sensitivity: 'base' });
 };
-function useOrdem(brutas) {
-  const [ord, setOrd] = useState(null); // [coluna, 1 | -1]
+function useOrdem(brutas, inicial = null) {
+  const [ord, setOrd] = useState(inicial); // [coluna, 1 | -1]
   const alternar = useCallback((k) => setOrd((o) => (o?.[0] !== k ? [k, 1] : o[1] === 1 ? [k, -1] : null)), []);
   const rows = useMemo(() => {
     if (!ord) return brutas;
@@ -193,12 +193,23 @@ function MenuAcomodacao({ tabela, sel, aoAplicar, extra, notificar }) {
   );
 }
 
+/** Imprime a lista como está na tela (ordem e linhas atuais), pelo navegador. */
+const esc = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+function imprimirLista(titulo, cols, rows, sub) {
+  const cab = cols.map(([, r]) => `<th>${esc(r)}</th>`).join('');
+  const corpo = rows.map((r) => `<tr>${cols.map(([k, , f]) => `<td>${esc(f ? f(r) : r[k])}</td>`).join('')}</tr>`).join('');
+  return imprimirDocumento('lista-carga', {
+    corpo: `<h2>${esc(titulo)}</h2><p>${esc(sub)} · ${rows.length} item(ns)</p><table><thead><tr>${cab}</tr></thead><tbody>${corpo}</tbody></table>`,
+    css: 'body{font:11px Arial,sans-serif}h2{margin:0 0 2px}p{margin:0 0 6px;color:#555}table{border-collapse:collapse;width:100%}th,td{border:1px solid #999;padding:2px 4px;text-align:left}th{background:#eee}@page{size:A4 landscape;margin:8mm}',
+  });
+}
+
 /** Aba "Carga diária" (tb_diaria) */
 function CargaDiaria({ roteiros, notificar }) {
   const [data, setData] = useState(hoje());
   const [f, setF] = useState(PADRAO);
   const [brutas, setRows] = useState([]);
-  const ordem = useOrdem(brutas);
+  const ordem = useOrdem(brutas, ['xhora', 1]); // a carga abre por ordem de hora
   const rows = ordem.rows;
   const [carregando, setCarregando] = useState(false);
   const [log, setLog] = useState([]);
@@ -261,6 +272,7 @@ function CargaDiaria({ roteiros, notificar }) {
         <span className={`trb2-chip${sel.marcados.size ? ' on' : ''}`}>Registros marcados: {sel.marcados.size}</span>
         <button type="button" className="trb2-btn" onClick={() => sel.setMarcados(new Set(rows.map((r) => r.id)))}>Selecionar tudo</button>
         {!ehFabrica() && <button type="button" className="trb2-btn principal" onClick={etiquetas}>🏷 Etiquetas</button>}
+        <button type="button" className="trb2-btn" onClick={() => imprimirLista('Roteiro de cargas — carga diária', COLS_DIARIA.filter((c) => c[0] !== 'registro_alterado'), rows, `Data ${brData(data)}`)} disabled={!rows.length} title="Imprime a lista como está na tela">🖨 Imprimir lista</button>
         <MenuAcomodacao tabela="diaria" sel={sel} aoAplicar={carrega} notificar={notificar}
           extra={<><small>Outras ações</small>{!ehFabrica() && <button type="button" role="menuitem" onClick={etiquetas}>🏷 Etiqueta adesiva</button>}<button type="button" role="menuitem" onClick={separarMarcadas}>✔ Marcar como separadas</button></>} />
         <span className="cg-esp" />
@@ -291,7 +303,7 @@ function CargaFixa({ roteiros, notificar }) {
   const [dia, setDia] = useState(semanaDia(hoje()));
   const [des, setDes] = useState(() => new Set()); // chips desmarcados
   const [brutas, setRows] = useState([]);
-  const ordem = useOrdem(brutas);
+  const ordem = useOrdem(brutas, ['hora', 1]); // a carga abre por ordem de hora
   const rows = ordem.rows;
   const [carregando, setCarregando] = useState(false);
   const [filtrosAbertos, setFiltrosAbertos] = useState(true);
@@ -328,6 +340,7 @@ function CargaFixa({ roteiros, notificar }) {
       <div className="cg-barra cg-acoes">
         <span className={`trb2-chip${sel.marcados.size ? ' on' : ''}`}>Registros marcados: {sel.marcados.size}</span>
         <button type="button" className="trb2-btn" onClick={() => sel.setMarcados(new Set(rows.map((r) => r.id)))}>Selecionar tudo</button>
+        <button type="button" className="trb2-btn" onClick={() => imprimirLista('Roteiro de cargas — carga fixa', COLS_FIXA, rows, DIAS_SEMANA[dia - 1])} disabled={!rows.length} title="Imprime a lista como está na tela">🖨 Imprimir lista</button>
         <MenuAcomodacao tabela="fixa" sel={sel} aoAplicar={carrega} notificar={notificar} />
       </div>
       <EditorItem tabela="fixa" item={item} roteiros={roteiros} aoGravar={carrega} notificar={notificar} />

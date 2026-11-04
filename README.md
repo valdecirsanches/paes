@@ -810,3 +810,7 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 155
 - Grade da NFe: "Nome do cliente" fica **depois** de "Referência"; o botão **☰** de colunas foi para o cantinho superior direito da grade.
+
+## Fase 156
+- NFe: botão **☰** (colunas) no canto esquerdo da grade, sobre a coluna dos ícones.
+- Cargas (diária e fixa): **🖨 Imprimir lista** (imprime a lista como está na tela, em A4 paisagem, pelo navegador — vale também para a fábrica) e abertura **por ordem de hora**.
