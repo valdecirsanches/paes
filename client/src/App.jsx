@@ -188,7 +188,6 @@ export default function App() {
           </span>
         )}
         {usuario && !usuario.fabrica && <button type="button" className="menu-bt menu-sair" title="Sair e voltar ao logon (troca de usuário)" onClick={sair}><span className="mi" aria-hidden="true">🚪</span>Sair</button>}
-        {!usuario?.fabrica && <button type="button" className="menu-bt menu-fechar" title="Fechar o sistema (encerra a sessão)" disabled={!usuario} onClick={sair}><span className="mi" aria-hidden="true">⏻</span>Fechar</button>}
       </nav>
 
       <div className="abas-topo" role="tablist">

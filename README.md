@@ -804,3 +804,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 153
 - Grade de notas (NFe): botão **☰ Colunas** para escolher colunas opcionais; por enquanto **Nome do cliente** (aparece antes de "Referência", ordenável pelo cabeçalho). A escolha fica gravada neste navegador. A lista do servidor passou a trazer `cliente_razao_social`.
+
+## Fase 154
+- Cabeçalho: removido o botão **Fechar** (fazia o mesmo que **Sair**).
