@@ -26,7 +26,7 @@ const ALT_NOTA = 22; // px — altura fixa das linhas da grade de notas (rolagem
 /** Ordena as linhas da grade por uma coluna (números, datas e marcas comparam pelo valor; texto, em pt-BR com números naturais). */
 function ordenaLinhas(rows, ord, cols = colunasGrade(GRADE_OPCIONAIS.map((c) => c[0]))) {
   if (!ord || !rows) return rows;
-  if (ord.k === 'id') return [...rows].sort((a, b) => a.id - b.id);
+  if (ord.k === 'id') return [...rows].sort((a, b) => (ord.dir === 'desc' ? b.id - a.id : a.id - b.id));
   const [k, , t] = cols.find((c) => c[0] === ord.k) ?? [];
   if (!k) return rows;
   const val = (r) => (t === 'm' ? Number(r[k]) || 0 : t === 'chk' ? (foiMarcado(r[k]) ? 1 : 0) : r[k] ?? '');

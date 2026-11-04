@@ -829,3 +829,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 161
 - NFe: o botão **☰** (colunas) passou para uma célula própria do cabeçalho da grade (à direita do checkbox "marcar todas"), sem ficar por cima dele; o menu abre em posição fixa, fora da rolagem.
+
+## Fase 162
+- Grade da NFe: **ID** entra na lista de colunas opcionais do botão ☰ (aparece como primeira coluna; ordena crescente/decrescente pelo cabeçalho).

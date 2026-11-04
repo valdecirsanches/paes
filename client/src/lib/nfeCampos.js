@@ -102,11 +102,12 @@ export const GRADE_COLS = [
   ['nf_valor_total', 'Valor da NF', 'm', 92], ['usuario_autorizacao_nfe', 'Usuário', '', 70], ['comandas_faturadas', 'Comanda', '', 90],
 ];
 /** Colunas que o usuário pode ligar/desligar na grade (Colunas ▾). Entram depois de "Referência". */
-export const GRADE_OPCIONAIS = [['cliente_razao_social', 'Nome do cliente', '', 220]];
+export const GRADE_OPCIONAIS = [['id', 'ID', 'n', 60], ['cliente_razao_social', 'Nome do cliente', '', 220]];
 export const colunasGrade = (extras = []) => {
-  const add = GRADE_OPCIONAIS.filter(([k]) => extras.includes(k));
+  const ini = extras.includes('id') ? [GRADE_OPCIONAIS[0]] : [];
+  const add = GRADE_OPCIONAIS.filter(([k]) => k !== 'id' && extras.includes(k));
   const i = GRADE_COLS.findIndex((c) => c[0] === 'cliente_pedido') + 1;
-  return add.length ? [...GRADE_COLS.slice(0, i), ...add, ...GRADE_COLS.slice(i)] : GRADE_COLS;
+  return ini.length || add.length ? [...ini, ...GRADE_COLS.slice(0, i), ...add, ...GRADE_COLS.slice(i)] : GRADE_COLS;
 };
 /** Colunas da grade de itens (GriITENS) */
 export const ITEM_COLS = [
