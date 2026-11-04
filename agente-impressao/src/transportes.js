@@ -79,7 +79,10 @@ try {
   $pd.DefaultPageSettings.Margins=New-Object System.Drawing.Printing.Margins(0,0,0,0)
   $pd.OriginAtMargins=$false
   $script:i=0
-  $pd.add_PrintPage({ param($s,$e) $e.Graphics.PageUnit=[System.Drawing.GraphicsUnit]::Display; $e.Graphics.InterpolationMode='HighQualityBicubic'; $e.Graphics.DrawImage($imgs[$script:i],0,0,$w,$h); $script:i++; $e.HasMorePages=($script:i -lt $imgs.Count) })
+  $pd.add_PrintPage({ param($s,$e) $e.Graphics.PageUnit=[System.Drawing.GraphicsUnit]::Display; $e.Graphics.InterpolationMode='HighQualityBicubic'; $x=0; $y=0; $dw=$w; $dh=$h
+    # página inteira (DANFE em A4): a impressora tem margem física e o Windows não imprime nela; desenhar o tamanho cheio cortava o rodapé. Encaixa a imagem na área imprimível.
+    if($LarguraMm -ge 150){ $vb=$e.Graphics.VisibleClipBounds; $k=[math]::Min([math]::Min($vb.Width/$w,$vb.Height/$h),1.0); $dw=$w*$k; $dh=$h*$k; $x=$vb.X+($vb.Width-$dw)/2; $y=$vb.Y }
+    $e.Graphics.DrawImage($imgs[$script:i],[single]$x,[single]$y,[single]$dw,[single]$dh); $script:i++; $e.HasMorePages=($script:i -lt $imgs.Count) })
   # remove da fila trabalhos NOSSOS que ficaram travados antes (ex.: rolo diferente do papel) para não bloquear esta impressão
   $pref='PaesEtiqueta-'
   try { Get-PrintJob -PrinterName $Impressora -ErrorAction Stop | Where-Object { $_.DocumentName -like ($pref+'*') -and [string]$_.JobStatus -match 'Error|Offline|Paper|UserIntervention|Blocked' } | Remove-PrintJob -ErrorAction SilentlyContinue } catch {}
