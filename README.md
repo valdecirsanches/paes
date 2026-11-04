@@ -826,3 +826,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 160
 - **Etiqueta saindo em paisagem/deslocada** (Brother QL-800 pelo driver do Windows): o agente (1.1.2) agora fixa a orientação **retrato** (`Landscape=false`) em toda impressão por imagem; o driver vinha em paisagem e girava/deslocava a página de 62 × 45 mm. Tamanho do papel e posição do layout não mudaram. **Atualize o agente de impressão** no computador da etiqueta (Ferramentas › Instalar agente de impressão).
+
+## Fase 161
+- NFe: o botão **☰** (colunas) passou para uma célula própria do cabeçalho da grade (à direita do checkbox "marcar todas"), sem ficar por cima dele; o menu abre em posição fixa, fora da rolagem.

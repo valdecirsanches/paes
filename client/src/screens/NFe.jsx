@@ -145,7 +145,7 @@ export default function NFe({ onFechar }) {
   const [f, setF] = useState({ periodo: true, campo: 'emissao', d1: hoje(), d2: hoje(), cli: false, cliente: '', st: ST_INICIAL, nfe1: '', nfe2: '', ref: '' });
   const [clientes, setClientes] = useState([]);
   const [extras, setExtras] = useState(() => { try { return JSON.parse(localStorage.getItem('nfe_colunas_extras') || '[]'); } catch { return []; } }); // colunas opcionais da grade escolhidas pelo usuário
-  const [menuCols, setMenuCols] = useState(false);
+  const [menuCols, setMenuCols] = useState(null); // { x, y } do menu de colunas (posição fixa, fora da rolagem)
   const cols = useMemo(() => colunasGrade(extras), [extras]);
   const alternaCol = (k) => setExtras((e) => { const n = e.includes(k) ? e.filter((x) => x !== k) : [...e, k]; try { localStorage.setItem('nfe_colunas_extras', JSON.stringify(n)); } catch { /* sem armazenamento */ } return n; });
   const [linhas, setLinhas] = useState(null); // versão leve (colunas da grade)
@@ -732,13 +732,10 @@ export default function NFe({ onFechar }) {
               {(
                 <>
                   <div className="nf2-gwrap">
-                    <div className="nf2-cols">
-                      <button type="button" className="nf2-colbt" onClick={() => setMenuCols((v) => !v)} title="Escolher as colunas da grade">☰</button>
-                      {menuCols && <div className="nf2-cols-pop" onMouseLeave={() => setMenuCols(false)}>{GRADE_OPCIONAIS.map(([k, r]) => <label key={k}><input type="checkbox" checked={extras.includes(k)} onChange={() => alternaCol(k)} /> {r}</label>)}</div>}
-                    </div>
+                    {menuCols && <div className="nf2-cols-pop" style={{ position: 'fixed', left: menuCols.x, top: menuCols.y }} onMouseLeave={() => setMenuCols(null)}>{GRADE_OPCIONAIS.map(([k, r]) => <label key={k}><input type="checkbox" checked={extras.includes(k)} onChange={() => alternaCol(k)} /> {r}</label>)}</div>}
                   <div className="nfe-grade rolagem" ref={jn.ref} onScroll={jn.onScroll} style={{ height: altGrade }}>
                     <table className="grade">
-                      <thead><tr><th className="ind" /><th className="nf2-chk"><input type="checkbox" checked={todosMarcados} onChange={marcarTodas} disabled={!linhas?.length} aria-label="Marcar todas" title="Marcar / desmarcar todas" /></th><th className="nf2-ic" />{cols.map(([k, r, , w]) => <th key={k} style={{ minWidth: w }} className="ord" aria-sort={ordem?.k === k ? (ordem.dir === 'asc' ? 'ascending' : 'descending') : 'none'} title="Clique para ordenar (clique de novo inverte; terceiro clique volta à ordem original)" onClick={() => ordenaPor(k)}>{r}{ordem?.k === k ? (ordem.dir === 'asc' ? ' ▲' : ' ▼') : ''}</th>)}</tr></thead>
+                      <thead><tr><th className="ind" /><th className="nf2-chk"><input type="checkbox" checked={todosMarcados} onChange={marcarTodas} disabled={!linhas?.length} aria-label="Marcar todas" title="Marcar / desmarcar todas" /></th><th className="nf2-ic"><button type="button" className="nf2-colbt" title="Escolher as colunas da grade" onClick={(e) => { const r = e.currentTarget.getBoundingClientRect(); setMenuCols((m) => (m ? null : { x: r.left, y: r.bottom + 2 })); }}>☰</button></th>{cols.map(([k, r, , w]) => <th key={k} style={{ minWidth: w }} className="ord" aria-sort={ordem?.k === k ? (ordem.dir === 'asc' ? 'ascending' : 'descending') : 'none'} title="Clique para ordenar (clique de novo inverte; terceiro clique volta à ordem original)" onClick={() => ordenaPor(k)}>{r}{ordem?.k === k ? (ordem.dir === 'asc' ? ' ▲' : ' ▼') : ''}</th>)}</tr></thead>
                       <tbody>
                         {jn.acima > 0 && <tr className="cd-esp" style={{ height: jn.acima }}><td colSpan={cols.length + 2} /></tr>}
                         {(linhas ?? []).slice(jn.ini, jn.fim).map((r, k) => <LinhaNota key={r.id} cols={cols} r={r} i={jn.ini + k} sel={marcados.has(r.id) || foco === r.id} marc={marcados.has(r.id)} foco={foco === r.id} onClick={clicar} onMarcar={marcar} onModal={abreModal} onClonar={clonarLinha} onApagar={apagarLinha} onEmail={emailLinha} onDanfe={danfeLinha} />)}
