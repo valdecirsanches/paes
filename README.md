@@ -918,3 +918,6 @@ O filtro dependia de marcar a caixa "Só produtos de…" e o cliente vinha pré-
 ## Fase 187 — Setas em todas as grades; edição de item enxuta
 - **Setas ↑ ↓ (e PageUp/PageDown/Home/End)** passeiam pelos registros de qualquer grade: vale para a última grade em que se clicou e age como um clique na linha vizinha (seleciona e carrega o registro). Telas com tratamento próprio (Produção, Cargas, itens da NFe) continuam como estavam; campos de formulário, janelas e calendário não são afetados. Código em `client/src/lib/setasGrade.js`.
 - **Edição do item (diária e fixa):** ao entrar em edição, a faixa de calendário/apresentação/clientes recolhe para o formulário e a lista do dia caberem na tela; espaçamentos reduzidos e a linha de dicas virou "F5 salva · Esc cancela". Ao salvar/cancelar a faixa volta.
+
+## Fase 188 — Cadastro de produtos remodelado
+A edição do produto passou a usar a largura: seção "Produto" (ID, código, cliente, referência e as duas descrições em 2 linhas), "Preço e medidas", "Fiscal" e "Opções" lado a lado, e "Ingredientes e validade" em uma linha; a lista à esquerda ficou mais estreita. A aba Produtos do cliente mantém o formato enxuto. As setas ↑ ↓ passeiam pelos registros desta e de todas as grades (Fase 187).

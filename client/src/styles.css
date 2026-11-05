@@ -1899,3 +1899,13 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{filter:brightness(1.15)}
 .dp .if-pn legend{padding:0 4px;font-size:11px}
 .dp-a{gap:2px}.dp .if-nums{gap:4px}
 .dp textarea{min-height:0}
+
+/* ---- Cadastro de produto remodelado (Fase 188): seções lado a lado, sem espaço perdido ---- */
+.cd-secoes.pf2{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:8px;align-items:stretch}
+.pf2 .pf-full{grid-column:1/-1}
+.pf2 .cd-secao{padding:6px 10px 8px;border-radius:10px}
+.pf2 .cd-secao h4{margin:0 0 5px;font-size:12px}.pf2 .cd-secao h4 i{font-size:14px}
+.pf2 .cd-grid{gap:5px 8px}
+.pf2 .cd-campo input,.pf2 .cd-campo select,.pf2 .cd-campo textarea{padding:4px 7px}
+.pf2 .cd-chave{min-height:24px}
+.cd-prod{grid-template-columns:minmax(300px,.6fr) minmax(520px,1.4fr)}
