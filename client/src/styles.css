@@ -1831,3 +1831,11 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{filter:brightness(1.15)}
 .dr2-lado .dr2-sel b{font-size:14px}
 @media (max-width:900px){.dr2-lado>.cal,.dr2-lado>.dr2-card.dr2-cab:not(.dr2-lista){width:auto}}
 .dr2-lado .dr2-seg{align-self:stretch}.dr2-lado .dr2-seg button{flex:1;padding:7px 2px;font-size:11.5px}
+/* Fase 173: formulário do item em painéis (como no Delphi) */
+.if-pn{border:1px solid #e2d8c5;border-radius:10px;background:#fdfaf4;margin:0;padding:6px 10px 8px;min-width:0}
+.if-pn>legend{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#8a4b12;padding:0 6px}
+.if-nota.if-pn{display:flex;flex-direction:column}
+.if-l4p{grid-template-columns:minmax(260px,1fr) 2fr;align-items:stretch}
+.if-l4p .if-prodsel{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+@media (max-width:1100px){.if-l4p{grid-template-columns:1fr}}
+.if-pn>.if-linha+.if-linha{margin-top:8px}

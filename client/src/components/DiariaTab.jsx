@@ -215,7 +215,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
       let id = r.id;
       if (novo) ({ id } = await api.post(`/status/${status.id}/diaria`, corpo));
       else await api.put(`/diaria/${r.id}`, corpo);
-      setDraft(null);
+      setDraft(null); setPainel(false);
       await atualizar();
       setSelId(id);
       notify.ok('Item gravado.');
@@ -281,6 +281,8 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
   useEffect(() => {
     const tecla = (e) => {
       if (modal) return;
+      if (e.key === 'F5') { e.preventDefault(); if (editando && !ocupado) gravarRef.current?.(); return; } // F5 grava (e fecha a edição)
+      if (e.key === 'Escape' && (editando || painel) && !document.querySelector('dialog[open]')) { e.preventDefault(); setDraft(null); setPainel(false); return; } // Esc cancela e fecha a edição
       if (ehFabrica() && e.key === 'F2' && (e.altKey || e.ctrlKey)) return; // fábrica não ajusta preço
       if (e.key === 'F2' && e.altKey && e.shiftKey) { e.preventDefault(); ajustaTudo(); return; }
       if (e.key === 'F2' && e.altKey) { e.preventDefault(); ajustaPreco(); return; }
@@ -308,10 +310,13 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
       t.dispatchEvent(new Event('input', { bubbles: true })); return;
     }
     const campos = [...e.currentTarget.querySelectorAll('input:not([disabled]):not([readonly]), select, textarea')];
+    if (e.currentTarget === painelRef.current && editando && e.target === refs.current.extra) { // Enter no campo Extra grava o item (e fecha a edição)
+      e.target.blur(); setTimeout(() => gravarRef.current?.(), 60); return;
+    }
     const prox = e.target.dataset.ultimo ? null : campos[campos.indexOf(e.target) + 1]; // "Informe p/ produção" é o último campo do fluxo: grava
     e.target.blur();
     if (prox) setTimeout(() => prox.focus(), 0);
-    else if (e.currentTarget === painelRef.current && editando) setTimeout(async () => { if (await gravarRef.current?.()) setPainel(false); }, 60); // Enter no último campo grava o item e fecha a edição
+    else if (e.currentTarget === painelRef.current && editando) setTimeout(() => gravarRef.current?.(), 60); // Enter no último campo grava o item
   };
   const gravarRef = useRef(null); gravarRef.current = gravar;
 
@@ -332,8 +337,8 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
         <button className="bt" onClick={alterar} disabled={editando || !status}>F3 Alterar</button>
         <button className="bt" onClick={() => excluir()} disabled={editando || !status}>🗑 F4 Excluir</button>
         <button className="bt" onClick={atualizar} disabled={editando || !status}>Atualizar</button>
-        <button className="bt larga" onClick={gravar} disabled={!editando || ocupado}><IcoDisco />&nbsp;<u>S</u>alvar</button>
-        <button className="bt larga" onClick={desfazer} disabled={!editando}><IcoDesfazer />&nbsp;<u>D</u>esfazer</button>
+        <button className="bt larga" onClick={gravar} disabled={!editando || ocupado} title="F5"><IcoDisco />&nbsp;F5 Salvar</button>
+        <button className="bt larga" onClick={() => { desfazer(); setPainel(false); }} disabled={!editando} title="Esc"><IcoDesfazer />&nbsp;Esc Cancelar</button>
         <button className="bt larga" onClick={imprimirAlteracoes}><IcoImpressora />&nbsp;Imprimir alterações</button>
         <label className="chk-completa"><input type="checkbox" checked={completa} onChange={(e) => setCompleta(e.target.checked)} />Imprimir programação completa</label>
         <button className="bt larga" onClick={alterar} disabled={!status || editando}>Mostrar/Esconder&nbsp;item</button>
@@ -344,6 +349,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
         <div className={`if${novo ? ' novo' : ''}`} ref={painelRef} onKeyDown={enterComoTab}>
           <TopoItem novo={novo} sujo={editando} contexto={`${status?.unidade_nome ?? ''}${v.data ? ` · ${diaDaSemana(v.data)}, ${brData(v.data)}` : ''}`} />
           <div className="if-corpo">
+            <fieldset className="if-pn"><legend>Item</legend>
             <div className="if-linha if-l1">
               <HoraGrande refHora={ref('hora')} valor={v.hora} onChange={(h) => editar({ hora: h })} sugestoes={horasDoDia(itens)} />
               <Campo rotulo="Data" className="if-data"><input type="date" ref={ref('data')} value={v.data ?? ''} onChange={set('data')} /></Campo>
@@ -355,7 +361,9 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
               <Campo rotulo="Descrição da comanda / nota fiscal"><input ref={ref('nf')} value={v.produto_descricao ?? ''} onChange={set('produto_descricao')} /></Campo>
               <Campo rotulo="Descrição para expedição" className="if-destaque"><input value={v.produto_descricao_expedicao ?? ''} onChange={set('produto_descricao_expedicao')} /></Campo>
             </div>
+            </fieldset>
             <div className="if-linha if-l3">
+              <fieldset className="if-pn"><legend>Quantidade e preço</legend>
               <div className="if-nums">
                 <Campo rotulo="Qtde fixa"><Num className="if-n" casas={[1, 3]} disabled={!bool(v.programacao_fixa)} value={v.qtde_original} onChange={(n) => editar({ qtde_original: n, preco_total: total({ ...v, qtde_original: n }) })} /></Campo>
                 <Campo rotulo="Extra" className="if-destaque"><Num className="if-n centro" inputRef={ref('extra')} casas={[0, 3]} value={v.qtde_alterada} onChange={(n) => editar({ qtde_alterada: n })} /></Campo>
@@ -363,17 +371,21 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
                 <Campo rotulo="Cada"><Num className="if-n centro" casas={[0, 3]} value={v.produto_preco_cada} onChange={(n) => editar({ produto_preco_cada: n })} /></Campo>
                 <Campo rotulo="Valor total" className="if-total"><Num className="if-n" readOnly tabIndex={-1} casas={[2, 2]} value={v.preco_total} onChange={() => {}} /></Campo>
               </div>
-              <Campo rotulo="Anotações p/ faturamento" className="if-nota"><textarea value={v.obs ?? ''} onChange={set('obs')} /></Campo>
-              <Campo rotulo="Informe p/ produção" className="if-nota"><textarea data-ultimo value={v.obs_producao ?? ''} onChange={set('obs_producao')} /></Campo>
+              </fieldset>
+              <Campo rotulo="Anotações p/ faturamento" className="if-nota if-pn"><textarea value={v.obs ?? ''} onChange={set('obs')} /></Campo>
+              <Campo rotulo="Informe p/ produção" className="if-nota if-pn"><textarea data-ultimo value={v.obs_producao ?? ''} onChange={set('obs_producao')} /></Campo>
             </div>
             {!mercadoria && (
-              <div className="if-linha if-l4">
+              <div className="if-linha if-l4 if-l4p">
+                <fieldset className="if-pn"><legend>Acabamento do produto</legend>
                 <div className="if-pills">
                   {[['cortado', 'Cortado'], ['margarina', 'C/ margarina'], ['coco', 'Cobertura côco'], ['acucar', 'Cobertura açúcar'],
                     ['plastico', 'Embalado individual (plástico)'], ['papel', 'Embalado individual (papel)'], ['pacote', 'Em pacote plástico']].map(([k, r]) => (
                       <Pilula key={k} marcado={bool(v[`extra_${k}`])} onChange={marcaExtra(k)}>{r}</Pilula>
                   ))}
                 </div>
+                </fieldset>
+                <fieldset className="if-pn"><legend>Produção e entrega</legend>
                 <div className="if-prodsel">
                   <Campo rotulo="Produção data"><input type="date" value={String(v.producao_data ?? '').slice(0, 10)} onChange={set('producao_data')} /></Campo>
                   <Campo rotulo="Turno"><select value={v.producao_turno ?? ''} onChange={set('producao_turno')}><option value="" />{[1, 2, 3].map((n) => <option key={n} value={n}>{n}º horário</option>)}</select></Campo>
@@ -381,6 +393,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
                   <Campo rotulo="Preparação da carga"><select value={v.carga ?? ''} onChange={set('carga')}><option value="" />{[1, 2, 3].map((n) => <option key={n} value={n}>{n}ª carga</option>)}</select></Campo>
                   <Campo rotulo="Itinerário"><select value={v.id_roteiro ?? 0} onChange={set('id_roteiro')}><option value={0} />{roteiroOpcoes}</select></Campo>
                 </div>
+                </fieldset>
               </div>
             )}
           </div>

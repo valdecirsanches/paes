@@ -866,3 +866,6 @@ Pesquisa de produto na programação: só os produtos do cliente selecionado (se
 
 ### Fase 172
 Programação diária: faixa do topo com calendário maior, lista de clientes mais larga e "empresa selecionada" mais estreita; Enter no último campo do item grava e FECHA o painel de edição.
+
+### Fase 173
+Programação diária/fixa: formulário do item em painéis (Item, Quantidade e preço, Anotações, Acabamento, Produção e entrega); **F5** grava, **Esc** cancela; gravar (F5/Salvar/Enter) fecha o painel de edição; Enter no campo **Extra** (diária) e na **Qtde** (fixa, quando o item está completo) grava automaticamente. Aba do app volta a "Programação diária"; título do navegador fixo em "AppBakery".

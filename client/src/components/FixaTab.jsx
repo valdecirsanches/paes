@@ -111,10 +111,10 @@ export default function FixaTab({ status, roteiros, onChanged, notify }) {
   };
   const gravar = async () => {
     const r = draft;
-    if (!r) return;
-    if (!r.hora) { notify.erro('Informe a hora da entrega.'); foca('hora'); return; }
-    if (!String(r.produto_codigo ?? '').length) { notify.erro('Informe o produto.'); foca('codigo'); return; }
-    if (!(Number(r.produto_qtde) > 0)) { notify.erro('Informe a quantidade.'); foca('qtde'); return; }
+    if (!r) return false;
+    if (!r.hora) { notify.erro('Informe a hora da entrega.'); foca('hora'); return false; }
+    if (!String(r.produto_codigo ?? '').length) { notify.erro('Informe o produto.'); foca('codigo'); return false; }
+    if (!(Number(r.produto_qtde) > 0)) { notify.erro('Informe a quantidade.'); foca('qtde'); return false; }
     const corpo = {
       semana_dia: Number(r.semana_dia), hora: r.hora, produto_codigo: r.produto_codigo, produto_qtde: Number(r.produto_qtde) || 0,
       produto_descricao_expedicao: r.produto_descricao_expedicao || r.produto_descricao_original,
@@ -126,8 +126,9 @@ export default function FixaTab({ status, roteiros, onChanged, notify }) {
     try {
       let id = r.id;
       if (novo) ({ id } = await api.post(`/status/${status.id}/fixa`, corpo)); else await api.put(`/fixa/${r.id}`, corpo);
-      setDraft(null); await carregar(); setSelId(id); notify.ok('Item gravado.');
-    } catch (e) { notify.erro(e.message); } finally { setOcupado(false); }
+      setDraft(null); setPainel(false); await carregar(); setSelId(id); notify.ok('Item gravado.');
+      return true;
+    } catch (e) { notify.erro(e.message); return false; } finally { setOcupado(false); }
   };
   const ativarOuDesativar = async () => {
     if (info.ativada) {
@@ -158,6 +159,8 @@ export default function FixaTab({ status, roteiros, onChanged, notify }) {
   useEffect(() => {
     const tecla = (e) => {
       if (modal) return;
+      if (e.key === 'F5') { e.preventDefault(); if (editando && !ocupado) gravarRef.current?.(); return; } // F5 grava (e fecha a edição)
+      if (e.key === 'Escape' && (editando || painel) && !document.querySelector('dialog[open]')) { e.preventDefault(); setDraft(null); setPainel(false); return; } // Esc cancela e fecha a edição
       if (e.key === 'F2') { e.preventDefault(); incluir(); }
       if (e.key === 'F3') { e.preventDefault(); alterar(); }
       if (e.key === 'F4') { e.preventDefault(); excluir(); }
@@ -178,6 +181,8 @@ export default function FixaTab({ status, roteiros, onChanged, notify }) {
     if (e.key !== 'Enter' || ['TEXTAREA', 'BUTTON'].includes(e.target.tagName)) return;
     e.preventDefault();
     const campos = [...e.currentTarget.querySelectorAll('input:not([disabled]):not([readonly]), select')];
+    // Enter na Qtde grava o item quando já está completo (hora, produto e qtde), como o Enter do campo Extra na diária
+    if (editando && e.target === refs.current.qtde && draftRef.current?.hora && draftRef.current?.produto_codigo && Number(draftRef.current?.produto_qtde) > 0) { e.target.blur(); setTimeout(() => gravarRef.current?.(), 60); return; }
     const prox = campos[campos.indexOf(e.target) + 1]; e.target.blur();
     if (prox) setTimeout(() => prox.focus(), 0); else if (editando) setTimeout(() => gravarRef.current?.(), 60); // Enter no último campo grava o item
   };
@@ -192,8 +197,8 @@ export default function FixaTab({ status, roteiros, onChanged, notify }) {
         <button className="bt" onClick={incluir} disabled={editando}>F2 Incluir</button>
         <button className="bt" onClick={alterar} disabled={editando}>F3 Alterar</button>
         <button className="bt" onClick={excluir} disabled={editando}>F4 Excluir</button>
-        <button className="bt larga" onClick={gravar} disabled={!editando || ocupado}><IcoDisco />&nbsp;Salvar</button>
-        <button className="bt larga" onClick={() => setDraft(null)} disabled={!editando}><IcoDesfazer />&nbsp;Desfazer</button>
+        <button className="bt larga" onClick={gravar} disabled={!editando || ocupado} title="F5"><IcoDisco />&nbsp;F5 Salvar</button>
+        <button className="bt larga" onClick={() => { setDraft(null); setPainel(false); }} disabled={!editando} title="Esc"><IcoDesfazer />&nbsp;Esc Cancelar</button>
         <button className="bt larga" onClick={ativarOuDesativar} disabled={!info.ativavel || editando}
           title={info.ativavel ? '' : 'Só vale quando o dia da semana é o mesmo da data do movimento'}><IcoAtivar />&nbsp;{info.ativada ? 'Desativar' : 'Ativar'}</button>
         <button className="bt larga" onClick={imprimirPasta}><IcoPasta />&nbsp;Pasta</button>
@@ -209,6 +214,7 @@ export default function FixaTab({ status, roteiros, onChanged, notify }) {
         <div className={`if if-fixa${novo ? ' novo' : ''}`} onKeyDown={enterComoTab}>
           <TopoItem novo={novo} sujo={editando} contexto={`Fixa · ${DIAS[(v.semana_dia ?? dia) - 1] ?? ''}`} />
           <div className="if-corpo">
+            <fieldset className="if-pn"><legend>Item</legend>
             <div className="if-linha if-l1">
               <HoraGrande refHora={ref('hora')} valor={v.hora} onChange={(h) => editar({ hora: h })} sugestoes={horasDoDia(info.itens)} />
               <Campo rotulo="Qtde" className="if-destaque if-qtde"><Num className="if-n centro" inputRef={ref('qtde')} casas={[0, 3]} value={v.produto_qtde} onChange={(n) => editar({ produto_qtde: n })} /></Campo>
@@ -219,11 +225,15 @@ export default function FixaTab({ status, roteiros, onChanged, notify }) {
             <div className="if-linha if-l2 if-so1">
               <Campo rotulo="Descrição para expedição" className="if-destaque"><input value={v.produto_descricao_expedicao ?? ''} onChange={set('produto_descricao_expedicao')} /></Campo>
             </div>
+            </fieldset>
             {producao && (
-              <div className="if-linha if-l4">
+              <div className="if-linha if-l4 if-l4p">
+                <fieldset className="if-pn"><legend>Acabamento do produto</legend>
                 <div className="if-pills">
                   {EXTRAS.map(([k, r]) => <Pilula key={k} marcado={bool(v[`extra_${k}`])} onChange={(e) => editar({ [`extra_${k}`]: e.target.checked ? 'True' : 'False' })}>{r}</Pilula>)}
                 </div>
+                </fieldset>
+                <fieldset className="if-pn"><legend>Produção e entrega</legend>
                 <div className="if-prodsel">
                   <Campo rotulo="Dia/horário de produção"><select value={v.producao_dias ?? 0} onChange={set('producao_dias')}><option value={0}>Mesmo dia</option><option value={1}>1 dia antes</option><option value={2}>2 dias antes</option></select></Campo>
                   <Campo rotulo="Turno"><select value={v.producao_turno ?? ''} onChange={set('producao_turno')}><option value="" />{[1, 2, 3].map((n) => <option key={n} value={n}>{n}º horário</option>)}</select></Campo>
@@ -231,6 +241,7 @@ export default function FixaTab({ status, roteiros, onChanged, notify }) {
                   <Campo rotulo="Embalagem da carga"><select value={v.acomodacao_carga ?? ''} onChange={set('acomodacao_carga')}>{ACOMODACOES.map(([k, r]) => <option key={k} value={k}>{r}</option>)}</select></Campo>
                   <Campo rotulo="Roteiro de entrega"><select value={v.id_roteiro ?? 0} onChange={set('id_roteiro')}><option value={0} />{roteiros.map((r) => <option key={r.id_roteiro} value={r.id_roteiro}>{r.horario} {r.nome}</option>)}</select></Campo>
                 </div>
+                </fieldset>
               </div>
             )}
           </div>

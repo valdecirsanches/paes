@@ -4,6 +4,7 @@ import App from './App.jsx';
 import './styles.css';
 import { aplicarTema } from './lib/tema.js';
 
+document.title = 'AppBakery';
 aplicarTema(); // cores salvas em Ferramentas › Aparência
 
 // Preview sem banco: `VITE_MOCK=1 npm run build` simula a API em memória.
