@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../api.js';
-import { EXTRAS, bool } from '../lib/rules.js';
+import { EXTRAS, bool, fmtMoeda } from '../lib/rules.js';
 
 export function Modal({ titulo, onFechar, children, largo }) {
   const ref = useRef(null);
@@ -50,7 +50,7 @@ export function Marca({ texto, termo }) {
 }
 
 /** Janela "Localizar produto": pesquisa ao digitar, setas navegam, Enter escolhe, Esc fecha. */
-export function BuscaProduto({ onEscolher, onFechar }) {
+export function BuscaProduto({ onEscolher, onFechar, cliente }) {
   const [q, setQ] = useState('');
   const [rows, setRows] = useState([]);
   const [estado, setEstado] = useState('ocioso'); // ocioso | buscando | ok | erro
@@ -66,12 +66,12 @@ export function BuscaProduto({ onEscolher, onFechar }) {
     setEstado('buscando');
     const n = ++seq.current;
     const t = setTimeout(() => {
-      api.get(`/produtos?q=${encodeURIComponent(termo)}`)
+      api.get(`/produtos?q=${encodeURIComponent(termo)}${cliente ? `&cliente=${encodeURIComponent(cliente)}` : ''}`)
         .then((r) => { if (n === seq.current) { setRows(r); setSel(0); setEstado('ok'); } })
         .catch(() => { if (n === seq.current) { setRows([]); setEstado('erro'); } });
     }, 200);
     return () => clearTimeout(t);
-  }, [q]);
+  }, [q, cliente]);
   useEffect(() => { lista.current?.querySelector('li.on')?.scrollIntoView({ block: 'nearest' }); }, [sel]);
   const tecla = (e) => {
     if (e.key === 'ArrowDown') { e.preventDefault(); setSel((i) => Math.min(rows.length - 1, i + 1)); }
@@ -79,7 +79,7 @@ export function BuscaProduto({ onEscolher, onFechar }) {
     else if (e.key === 'Enter' && rows[sel]) { e.preventDefault(); onEscolher(rows[sel].codigo); }
   };
   return (
-    <Modal titulo="Localizar produto" onFechar={onFechar}>
+    <Modal titulo={cliente ? 'Localizar produto do cliente' : 'Localizar produto'} onFechar={onFechar}>
       <div className="pq" onKeyDown={tecla}>
         <div className="pq-caixa">
           <span aria-hidden="true">🔍</span>
@@ -96,6 +96,7 @@ export function BuscaProduto({ onEscolher, onFechar }) {
           {rows.map((p, i) => (
             <li key={p.id} role="option" aria-selected={i === sel} className={i === sel ? 'on' : ''} onMouseMove={() => i !== sel && setSel(i)} onClick={() => onEscolher(p.codigo)}>
               <b className="pq-cod"><Marca texto={p.codigo} termo={q} /></b><span className="pq-desc"><Marca texto={p.descricao} termo={q} /></span>
+              <span className="pq-preco" title="Preço e quantidade que o preço cobre (Cada)">{fmtMoeda(p.preco)}{Number(p.divisor_basico) > 1 ? <small> / cada {Number(p.divisor_basico)}</small> : null}</span>
             </li>
           ))}
         </ul>

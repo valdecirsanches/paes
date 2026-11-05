@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { pool } from '../db.js';
 import { notFound } from '../errors.js';
 import { produtoPorCodigo } from '../services/produtos.js';
+import { idValido } from '../services/campos.js';
+import { SQL_ATIVO } from '../services/produtosAtivo.js';
 
 const router = Router();
 
@@ -9,15 +11,21 @@ const router = Router();
 router.get('/produtos/codigo/:codigo', async (req, res) => {
   const p = await produtoPorCodigo(pool, req.params.codigo);
   if (!p) throw notFound('Produto');
+  if (p.ativo === 'False') throw notFound('Produto ativo'); // inativo não é aceito nas telas
   res.json(p);
 });
 
 // Pesquisa simples para a janela "Localizar produto" (u_localiza_produto não foi enviada)
 router.get('/produtos', async (req, res) => {
-  const q = `%${String(req.query.q || '').trim()}%`;
+  const q = `%${String(req.query.q || '').trim().replace(/[\\%_]/g, '\\$&')}%`;
+  const args = [q, q];
+  // só produtos ATIVOS; com ?cliente= só os do cliente (e os sem cliente), como o filtro do Delphi
+  let cli = '';
+  if (req.query.cliente) { cli = ' and (p.id_cliente = ? or coalesce(p.id_cliente, 0) = 0)'; args.push(idValido(req.query.cliente, 'Cliente')); }
   const [rows] = await pool.query(
-    `select p.id, p.codigo, p.descricao, p.descricao_expedicao, p.preco, p.divisor_basico
-       from tb_produtos p where p.codigo like ? or p.descricao like ? order by p.descricao limit 50`, [q, q]);
+    `select p.id, p.codigo, p.descricao, p.descricao_expedicao, p.preco, p.divisor_basico, p.un,
+            (p.preco / if(p.divisor_basico = 0, 1, p.divisor_basico)) as preco_unitario
+       from tb_produtos p where (p.codigo like ? or p.descricao like ?) and ${SQL_ATIVO}${cli} order by p.descricao limit 50`, args);
   res.json(rows);
 });
 

@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { app } from './app.js';
 import { dbConfig, explicaErroDb, pool } from './db.js';
 import { garanteIndices } from './services/indices.js';
+import { garanteColunaAtivo } from './services/produtosAtivo.js';
 import { preaquece } from './services/mercCache.js';
 import { consultaLista } from './routes/mercadorias.js';
 
@@ -15,6 +16,7 @@ app.listen(port, async () => {
   try {
     const [[r]] = await pool.query('select version() as v, database() as d');
     console.log(`✓ MySQL ${r.v} em ${dbConfig.host}, banco "${r.d}".`);
+    garanteColunaAtivo(pool);
     garanteIndices(pool).catch((e) => console.warn(`[indices] ${e.message}`)).finally(() => {
       // Mercadorias de hoje/ontem/amanhã sempre quentes: a primeira abertura da tela não espera o banco
       const aquece = () => preaquece(consultaLista).catch(() => {});

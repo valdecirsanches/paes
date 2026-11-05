@@ -276,7 +276,7 @@ export default function FixaTab({ status, roteiros, onChanged, notify }) {
         </Modal>
       )}
       {modal?.tipo === 'busca' && (
-        <BuscaProduto onFechar={() => setModal(null)} onEscolher={(codigo) => { setModal(null); editar({ produto_codigo: codigo }); resolverCodigo(codigo); }} />
+        <BuscaProduto cliente={status?.id_cliente} onFechar={() => setModal(null)} onEscolher={(codigo) => { setModal(null); editar({ produto_codigo: codigo }); resolverCodigo(codigo); }} />
       )}
     </section>
   );

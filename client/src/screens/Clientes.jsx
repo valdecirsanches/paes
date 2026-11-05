@@ -14,7 +14,7 @@ const EXTRAS = [['extra_cortado', ' CORTADO'], ['extra_margarina', ' C/MARGARINA
 
 const COLS_CLI = [['codigo', 'Código'], ['razao_social', 'Nome do cliente'], ['nome_fantasia', 'Fantasia'], ['cidade', 'Cidade'], ['uf', 'UF'], ['fone', 'Telefone'], ['contato', 'Contato'], ['cnpj', 'CNPJ'], ['email', 'E-mail'], ['programacao_ativo', 'Prog.', 'chk'], ['ativo', 'Ativo', 'chk']];
 const COLS_UNI = [['codigo', 'Código'], ['nome', 'Unidade'], ['endereco', 'Endereço'], ['bairro', 'Bairro'], ['cidade', 'Cidade'], ['telefone', 'Telefone'], ['contato', 'Contato'], ['nutricionista_nome', 'Nutricionista'], ['regiao', 'Região'], ['emite_comanda_diaria', 'Comanda', 'chk'], ['ativo', 'Ativo', 'chk']];
-const COLS_PROD = [['codigo', 'Código'], ['descricao', 'Descrição do produto'], ['descricao_expedicao', 'Descrição expedição'], ['un', 'UN'], ['preco', 'Preço', 'm'], ['divisor_basico', 'Cada'], ['produto_producao', 'Prod.', 'chk']];
+const COLS_PROD = [['codigo', 'Código'], ['descricao', 'Descrição do produto'], ['descricao_expedicao', 'Descrição expedição'], ['un', 'UN'], ['preco', 'Preço', 'm'], ['divisor_basico', 'Cada'], ['produto_producao', 'Prod.', 'chk'], ['ativo', 'Ativo', 'chk']];
 const COLS_REFS = [['id', 'ID'], ['codigo_referencia', 'Referência'], ['descricao', 'Descrição'], ['produto_especial', 'ESP', 'chk'], ['produto_producao', 'PRÇ', 'chk']];
 const B_CLI = ['razao_social', 'nome_fantasia', 'codigo', 'cnpj', 'cidade', 'bairro', 'endereco', 'fone', 'contato', 'email'];
 const B_UNI = ['nome', 'codigo', 'cnpj', 'cidade', 'bairro', 'endereco', 'telefone', 'contato', 'nutricionista_nome', 'regiao'];
@@ -68,7 +68,7 @@ export default function Clientes({ onFechar }) {
   const uniPagina = useMemo(() => bUni.visiveis.slice(pagUniOk * POR_PAG, (pagUniOk + 1) * POR_PAG), [bUni.visiveis, pagUniOk]);
   useEffect(() => { setPagUni(0); }, [bUni.termo, conectar, esconder, idCli]); // nova pesquisa/filtro volta à 1ª página
   useEffect(() => { const i = bUni.visiveis.findIndex((x) => x.id === fUni); if (i >= 0) setPagUni(Math.floor(i / POR_PAG)); }, [fUni]); // eslint-disable-line react-hooks/exhaustive-deps -- navegador (◀ ▶) leva à página da unidade
-  const uni = useEdicao({ lista: bUni.visiveis, foco: fUni, setFoco: setFUni, caminho: `${CAM}/unidades`, recarregar: recUni, aviso: notificar, confirmar: setConfirma, padrao: () => ({ id_cliente: idCli, ativo: 'True' }), texto: (r) => `a unidade ${r?.nome ?? ''}` });
+  const uni = useEdicao({ lista: bUni.visiveis, foco: fUni, setFoco: setFUni, caminho: `${CAM}/unidades`, recarregar: recUni, aviso: notificar, confirmar: setConfirma, padrao: () => ({ ativo: 'True', id_cliente: idCli, ativo: 'True' }), texto: (r) => `a unidade ${r?.nome ?? ''}` });
 
   const recProd = useCallback(async (id) => {
     if (!idCli) { setProdutos([]); setFProd(null); return; }

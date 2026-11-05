@@ -11,7 +11,7 @@ const EXTRAS = ['cortado', 'margarina', 'coco', 'acucar', 'plastico', 'papel', '
 const SCHEMA = {
   codigo: 'txt', descricao: 'txt', descricao_expedicao: 'txt', un: 'txt', preco: 'num', divisor_basico: 'num', peso: 'num', peso_bruto: 'num', qtde_embalagem: 'num',
   classif_fiscal: 'txt', aliq_ipi: 'num', aliq_icms: 'num', sit_tributaria: 'txt', ncm: 'txt', ingredientes: 'memo', validade: 'txt', id_cliente: 'int', id_referencia: 'int',
-  id_tributos: 'int', produto_producao: 'bool', converter: 'bool', pm: 'txt', ...Object.fromEntries(EXTRAS.map((e) => [e, 'bool'])),
+  id_tributos: 'int', produto_producao: 'bool', ativo: 'bool', converter: 'bool', pm: 'txt', ...Object.fromEntries(EXTRAS.map((e) => [e, 'bool'])),
 };
 const ROT = { descricao: 'Descrição', peso: 'Peso líquido', aliq_ipi: 'IPI %', aliq_icms: 'ICMS %', divisor_basico: 'Cada', id_tributos: 'Tributação' };
 

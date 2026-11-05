@@ -8,7 +8,7 @@ import { Toast } from '../components/toast.jsx';
 
 const CAM = '/cadastros/produtos';
 const B_CLI = ['razao_social', 'codigo', 'cnpj', 'cidade', 'contato'];
-const COLS_LISTA = [['descricao', 'Descrição do item'], ['codigo', 'Código'], ['preco', 'Preço', 'm'], ['divisor_basico', 'Cada'], ['ncm', 'NCM']];
+const COLS_LISTA = [['descricao', 'Descrição do item'], ['codigo', 'Código'], ['preco', 'Preço', 'm'], ['divisor_basico', 'Cada'], ['ncm', 'NCM'], ['ativo', 'Ativo', 'chk']];
 const COLS_REFS = [['id', 'ID'], ['codigo_referencia', 'Referência'], ['descricao', 'Descrição'], ['produto_especial', 'ESP', 'chk'], ['produto_producao', 'PRÇ', 'chk']];
 const COLS_CLIS = [['razao_social', 'Cliente'], ['codigo', 'Código']];
 
@@ -47,7 +47,7 @@ export default function Produtos({ onFechar }) {
     api.get('/tributos').then(setTributos).catch(() => {});
   }, []);
 
-  const ed0 = useEdicao({ lista, foco, setFoco, caminho: CAM, recarregar, aviso: notificar, confirmar: setConfirma, padrao: () => ({ peso: '0.05', peso_bruto: '0.05', divisor_basico: 1, ...(clienteFiltro ? { id_cliente: clienteFiltro } : {}) }), texto: (r) => `o produto ${r?.descricao ?? ''}` });
+  const ed0 = useEdicao({ lista, foco, setFoco, caminho: CAM, recarregar, aviso: notificar, confirmar: setConfirma, padrao: () => ({ ativo: 'True', peso: '0.05', peso_bruto: '0.05', divisor_basico: 1, ...(clienteFiltro ? { id_cliente: clienteFiltro } : {}) }), texto: (r) => `o produto ${r?.descricao ?? ''}` });
   const codigoPara = useCallback(async (cli) => { try { const r = await api.get(`${CAM}/proximo-codigo?cliente=${cli}`); ed0.set('codigo', r.codigo); } catch (e) { notificar('erro', e.message); } }, [ed0.set, notificar]); // eslint-disable-line react-hooks/exhaustive-deps
   const ed = useMemo(() => ({ ...ed0, incluir: () => { if (ed0.sujo) { ed0.incluir(); return; } ed0.incluir(); if (clienteFiltro) codigoPara(clienteFiltro); } }), [ed0, clienteFiltro, codigoPara]);
   const campoCod = useRef(null);

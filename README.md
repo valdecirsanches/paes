@@ -852,3 +852,8 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ### Fase 168 — Comanda/Demonstrativo: "Texto puro"
 Novo destino de linguagem **Texto puro (cupom sem comandos)** no agente: envia só caracteres, quebras de linha e corte, sem ESC/GS (fonte, negrito, tamanho). Serve para impressora/driver que ignora os comandos e imprime "!" e "E" soltos. Exige atualizar o agente (reinstalar) e escolher essa linguagem no destino da comanda.
+
+### Fase 169 — Programação diária/fixa, pesquisa de produtos e produto ativo/inativo
+- **Topo da programação**: calendário, apresentação e "Clientes do dia" ficam numa faixa no topo (como no Delphi), com a lista bem mais ampla (várias colunas); a empresa selecionada, o status e as abas ficam abaixo.
+- **Pesquisa de produtos** (Programação diária e fixa): filtra pelo cliente da empresa selecionada (e produtos sem cliente) e mostra preço e "cada".
+- **Produto ativo/inativo**: nova coluna `tb_produtos.ativo` ('True'/'False'), criada sozinha pela API ao subir (todos os existentes ficam ativos). Checkbox "Produto ativo" no cadastro e coluna "Ativo" nas grades. Pesquisa e busca por código só aceitam ativos; o cadastro continua listando todos para poder reativar.

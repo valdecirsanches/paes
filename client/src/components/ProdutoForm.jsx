@@ -46,6 +46,7 @@ export default function ProdutoForm({ ed, layout = 'tela', clientes = [], refere
         {OPCOES.map(([k, r]) => <Chave key={k} ed={ed} k={k} rotulo={r} span={6} />)}
         <Chave ed={ed} k="converter" rotulo={tela ? 'Converter em outro produto' : 'Converter para outro produto'} span={6} />
         <Chave ed={ed} k="produto_producao" rotulo={tela ? 'Linha de produção' : 'Produzido'} span={6} />
+        <Chave ed={ed} k="ativo" rotulo="Produto ativo (aparece nas pesquisas)" span={12} />
       </Secao>
       {tela && (
         <Secao titulo="Ingredientes e validade" icone="📋">

@@ -483,7 +483,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
         </Modal>
       )}
       {modal?.tipo === 'busca' && (
-        <BuscaProduto onFechar={() => setModal(null)}
+        <BuscaProduto cliente={status?.id_cliente} onFechar={() => setModal(null)}
           onEscolher={(codigo) => { const alvo = modal.alvo; setModal(null); if (alvo === 'prod') editar({ produto_codigo: codigo }); else editar({ conversao_produto_codigo: codigo }); Promise.resolve(resolverCodigo(codigo, alvo)).then((ok) => { if (ok && alvo === 'prod') { foca('nf'); setTimeout(() => foca('nf'), 120); } }); }} />
       )}
       {modal?.tipo === 'recados' && (
