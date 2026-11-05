@@ -5,15 +5,15 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { caminhoConfig, carregaConfig, salvaConfig, validaDestino } from './config.js';
 import { estadoTunel, iniciaTunel } from './tunel.js';
-import { enviaCupsPng, enviaCupsRaw, enviaRede, enviaSerial, enviaWindowsPng, enviaWindowsRaw, listaImpressoras, papeisWindows } from './transportes.js';
+import { adicionaSmb, procuraSmb, enviaCupsPng, enviaCupsRaw, enviaRede, enviaSerial, enviaWindowsPng, enviaWindowsRaw, listaImpressoras, papeisWindows } from './transportes.js';
 import { paginaAdmin } from './admin.js';
 
-const VERSAO = '1.2.1'; // 1.2.1: corrige sozinho endereço https quando o sistema só fala http; 1.2.0: o agente CONECTA ao sistema (túnel reverso, sem porta/IP/firewall) e o "acesso pela rede" deixou de existir; 1.1.2: 1.1.2: impressão por imagem sempre em orientação retrato (Brother vinha em paisagem); 1.1.1: DANFE A4 encaixado na área imprimível (rodapé não corta); 1.1.0: gravação do XML da NF-e no N: (POST /gravar)
+const VERSAO = '1.2.2'; // 1.2.1: corrige sozinho endereço https quando o sistema só fala http; 1.2.0: o agente CONECTA ao sistema (túnel reverso, sem porta/IP/firewall) e o "acesso pela rede" deixou de existir; 1.1.2: 1.1.2: impressão por imagem sempre em orientação retrato (Brother vinha em paisagem); 1.1.1: DANFE A4 encaixado na área imprimível (rodapé não corta); 1.1.0: gravação do XML da NF-e no N: (POST /gravar)
 const MAX_CORPO = 4 * 1024 * 1024;
 
 /** Cria o servidor. `deps` permite trocar os transportes nos testes. */
 export function criaServidor({ cfg, arquivoCfg, deps = {} } = {}) {
-  const T = { rede: enviaRede, serial: enviaSerial, windowsRaw: enviaWindowsRaw, windowsPng: enviaWindowsPng, cupsRaw: enviaCupsRaw, cupsPng: enviaCupsPng, lista: listaImpressoras, papeis: papeisWindows, ...deps };
+  const T = { rede: enviaRede, serial: enviaSerial, windowsRaw: enviaWindowsRaw, windowsPng: enviaWindowsPng, cupsRaw: enviaCupsRaw, cupsPng: enviaCupsPng, procuraSmb, adicionaSmb, lista: listaImpressoras, papeis: papeisWindows, ...deps };
   const filas = new Map(); // um trabalho por vez em cada destino
   const naFila = (chave, fn) => { const p = (filas.get(chave) ?? Promise.resolve()).catch(() => {}).then(fn); filas.set(chave, p); return p; };
 
@@ -131,6 +131,9 @@ export function criaServidor({ cfg, arquivoCfg, deps = {} } = {}) {
           return r(200, { ok: true, pastas: lista });
         }
         if (req.method === 'GET' && url.pathname === '/api/impressoras') return r(200, await T.lista());
+        // impressoras compartilhadas por computadores Windows (SMB): procurar e adicionar à fila do CUPS (Linux)
+        if (req.method === 'POST' && url.pathname === '/api/smb/procurar') { try { return r(200, await T.procuraSmb(await lerJson(req))); } catch (e) { return r(422, { message: e.message }); } }
+        if (req.method === 'POST' && url.pathname === '/api/smb/adicionar') { try { return r(200, { ok: true, nome: await T.adicionaSmb(await lerJson(req)) }); } catch (e) { return r(422, { message: e.message }); } }
         // papéis que o driver oferece (diagnóstico de etiqueta: ex. /api/papeis?impressora=Brother%20QL-800)
         if (req.method === 'GET' && url.pathname === '/api/papeis') return r(200, await T.papeis(String(url.searchParams.get('impressora') ?? '')));
         if (req.method === 'POST' && url.pathname === '/api/destinos') {

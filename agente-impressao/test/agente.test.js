@@ -286,3 +286,22 @@ test('túnel: endereço https para um sistema que só fala http é corrigido soz
   const t = iniciaTunel({ cfg, fetchImpl, esperaErroMs: 10, aoCorrigirUrl: (u) => { salvou = u; } });
   try { await esperaAte(() => estadoTunel.conectado); assert.equal(cfg.sistema_url, 'http://127.0.0.1:5071'); assert.equal(salvou, 'http://127.0.0.1:5071'); } finally { t.para(); s.close(); }
 });
+
+test('SMB: procurar e adicionar impressora compartilhada (só pela página do agente, com validação)', async () => {
+  const visto = [];
+  const { s, cfg, call } = await monta({ deps: { procuraSmb: async (b) => { visto.push(['p', b.host]); return [{ compartilhamento: 'HP', comentario: '' }]; }, adicionaSmb: async (b) => { visto.push(['a', b.nome, b.compartilhamento]); return b.nome; } } });
+  const base = `http://127.0.0.1:${cfg.porta}`;
+  try {
+    assert.equal((await call('POST', '/api/smb/procurar', { host: '10.0.0.1' }, { origin: 'https://paes.exemplo.com' })).status, 403);
+    const r = await call('POST', '/api/smb/procurar', { host: '10.0.0.1' }, { origin: base }); assert.equal(r.status, 200); assert.equal(r.json[0].compartilhamento, 'HP');
+    assert.equal((await call('POST', '/api/smb/adicionar', { nome: 'hp', host: '10.0.0.1', compartilhamento: 'HP' }, { origin: base })).status, 200);
+    assert.deepEqual(visto, [['p', '10.0.0.1'], ['a', 'hp', 'HP']]);
+  } finally { s.close(); }
+});
+test('SMB: entradas perigosas são recusadas antes de chamar smbclient/lpadmin', async () => {
+  const { procuraSmb, adicionaSmb } = await import('../src/transportes.js');
+  await assert.rejects(() => procuraSmb({ host: '1.2.3.4; rm -rf /' }), /nome ou IP/);
+  await assert.rejects(() => procuraSmb({ host: '1.2.3.4', usuario: 'a b' }), /Usuário/);
+  await assert.rejects(() => adicionaSmb({ nome: '-x', host: '1.2.3.4', compartilhamento: 'HP' }), /Nome da fila/);
+  await assert.rejects(() => adicionaSmb({ nome: 'ok', host: '1.2.3.4', compartilhamento: 'a/b' }), /compartilhamento/);
+});

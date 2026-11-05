@@ -200,3 +200,31 @@ export async function listaCups() {
   } catch { return []; }
 }
 export const listaImpressoras = () => (process.platform === 'win32' ? listaWindows() : listaCups());
+
+// ---- Impressoras compartilhadas por computadores Windows (SMB) → fila do CUPS deste Linux ----
+const HOST_OK = /^[A-Za-z0-9._-]{1,253}$/; const COMPART_OK = /^[^\\/:*?"<>|\u0000-\u001f]{1,80}$/; const USUARIO_OK = /^[^\s:\\/@%]{0,60}$/;
+async function semFalha(bin, args, opc = {}) {
+  try { return await exec(bin, args, { timeout: 30000, ...opc }); } catch (e) {
+    throw new Error(e.code === 'ENOENT' ? `O comando "${bin}" não foi encontrado: instale com sudo apt install smbclient cups-client (ou rode o instalador de novo).` : String(e.stderr || e.stdout || e.message).split('\n').find((l) => l.trim()) ?? `Falha ao executar ${bin}.`);
+  }
+}
+/** Lista as impressoras compartilhadas de um computador Windows (smbclient -L). */
+export async function procuraSmb({ host, usuario = '', senha = '' }) {
+  if (!HOST_OK.test(host ?? '')) throw new Error('Informe o nome ou IP do computador (ex.: 192.168.10.47).');
+  if (!USUARIO_OK.test(usuario)) throw new Error('Usuário inválido.');
+  const cred = usuario ? ['-U', `${usuario}%${senha}`] : ['-N'];
+  const { stdout } = await semFalha('smbclient', ['-L', `//${host}`, '-g', ...cred], { timeout: 20000 });
+  return stdout.split('\n').map((l) => l.split('|')).filter((p) => p[0] === 'Printer' && p[1]).map((p) => ({ compartilhamento: p[1], comentario: p[2] ?? '' }));
+}
+/** Cria a fila no CUPS apontando para a impressora compartilhada (raw: o driver fica no Windows). Precisa do usuário no grupo lpadmin. */
+export async function adicionaSmb({ nome, host, compartilhamento, usuario = '', senha = '' }) {
+  if (!/^[A-Za-z0-9][A-Za-z0-9_-]{0,60}$/.test(nome ?? '')) throw new Error('Nome da fila inválido (letras, números, _ e -, sem espaços).');
+  if (!HOST_OK.test(host ?? '')) throw new Error('Computador inválido.');
+  if (!COMPART_OK.test(compartilhamento ?? '')) throw new Error('Nome do compartilhamento inválido.');
+  if (!USUARIO_OK.test(usuario)) throw new Error('Usuário inválido.');
+  const cred = usuario ? `${encodeURIComponent(usuario)}${senha ? `:${encodeURIComponent(senha)}` : ''}@` : '';
+  await semFalha('lpadmin', ['-p', nome, '-E', '-v', `smb://${cred}${host}/${encodeURIComponent(compartilhamento)}`, '-m', 'raw']).catch((e) => {
+    throw new Error(/not authorized|permission|Forbidden/i.test(e.message) ? 'Sem permissão no CUPS: o usuário do agente precisa estar no grupo lpadmin (rode o instalador Linux de novo e reinicie o serviço).' : e.message);
+  });
+  return nome;
+}

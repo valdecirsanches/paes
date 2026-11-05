@@ -26,6 +26,10 @@ if [ "$NV" -lt 20 ]; then
   apt-get install -y nodejs >/dev/null
 fi
 command -v lp >/dev/null 2>&1 || apt-get install -y cups cups-client >/dev/null
+# impressoras compartilhadas por Windows (SMB): smbclient + backend smb do CUPS; o usuario do servico precisa do grupo lpadmin para criar filas
+apt-get install -y smbclient >/dev/null 2>&1 || true
+[ -e /usr/lib/cups/backend/smb ] || { command -v smbspool >/dev/null 2>&1 && ln -s "$(command -v smbspool)" /usr/lib/cups/backend/smb || true; }
+[ "$USUARIO" != "root" ] && usermod -aG lpadmin "$USUARIO" 2>/dev/null || true
 ok "Node.js $(node -v) e CUPS ($(lp -v 2>&1 | head -1 || true))"
 passo 2 "Gravando o agente"
 systemctl stop paes-agente-impressao 2>/dev/null || true

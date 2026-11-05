@@ -886,3 +886,6 @@ Programação diária: campos do item nas posições do Delphi — bloco "Item" 
 
 ### Fase 177
 Agente 1.2.1: se o endereço do sistema foi gravado com `https` mas o sistema só fala `http` (ex.: servidor de desenvolvimento em 127.0.0.1:5071, erro `ERR_SSL_WRONG_VERSION_NUMBER`), o agente passa para `http` sozinho e grava o endereço corrigido.
+
+## Fase 178 — Impressoras compartilhadas do Windows no agente Linux
+Na página do agente (Ubuntu) há o bloco "Impressoras compartilhadas por computadores Windows": informe IP, usuário e senha do Windows, clique em Procurar e Adicionar; a fila é criada no CUPS (raw) e aparece em Tipo "Impressora do Linux (CUPS)". O instalador Linux agora instala smbclient, liga o backend smb do CUPS e coloca o usuário no grupo lpadmin. Agente 1.2.2.
