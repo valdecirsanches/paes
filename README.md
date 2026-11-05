@@ -896,3 +896,6 @@ Na página do agente (Ubuntu) há o bloco "Impressoras compartilhadas por comput
 
 ## Fase 180 — Programação diária: campo de horário maior
 O campo "Hora da entrega" do item ficou mais largo (150 px) para mostrar o horário completo; o campo Produto foi reduzido para compensar.
+
+## Fase 181 — Programação diária: Enter também grava no campo Cada
+Enter no campo **Extra** ou no campo **Cada** grava o item e fecha a edição (antes só o Extra).

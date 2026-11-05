@@ -310,7 +310,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
       t.dispatchEvent(new Event('input', { bubbles: true })); return;
     }
     const campos = [...e.currentTarget.querySelectorAll('input:not([disabled]):not([readonly]):not([tabindex="-1"]), select, textarea')];
-    if (e.currentTarget === painelRef.current && editando && e.target === refs.current.extra) { // Enter no campo Extra grava o item (e fecha a edição)
+    if (e.currentTarget === painelRef.current && editando && (e.target === refs.current.extra || e.target === refs.current.cada)) { // Enter no campo Extra ou Cada grava o item (e fecha a edição)
       e.target.blur(); setTimeout(() => gravarRef.current?.(), 60); return;
     }
     const prox = e.target.dataset.ultimo ? null : campos[campos.indexOf(e.target) + 1]; // "Informe p/ produção" é o último campo do fluxo: grava
@@ -364,7 +364,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
                 <Campo rotulo="Qtde fixa"><Num className="if-n" casas={[1, 3]} disabled={!bool(v.programacao_fixa)} value={v.qtde_original} onChange={(n) => editar({ qtde_original: n, preco_total: total({ ...v, qtde_original: n }) })} /></Campo>
                 <Campo rotulo="Extra" className="if-destaque"><Num className="if-n centro" inputRef={ref('extra')} casas={[0, 3]} value={v.qtde_alterada} onChange={(n) => editar({ qtde_alterada: n })} /></Campo>
                 <Campo rotulo="Preço"><Num className="if-n" casas={[2, 3]} value={v.produto_preco} onChange={(n) => editar({ produto_preco: n })} /></Campo>
-                <Campo rotulo="Cada"><Num className="if-n centro" casas={[0, 3]} value={v.produto_preco_cada} onChange={(n) => editar({ produto_preco_cada: n })} /></Campo>
+                <Campo rotulo="Cada"><Num className="if-n centro" inputRef={ref('cada')} casas={[0, 3]} value={v.produto_preco_cada} onChange={(n) => editar({ produto_preco_cada: n })} /></Campo>
                 <Campo rotulo="Valor total" className="if-total"><Num className="if-n" readOnly tabIndex={-1} casas={[2, 2]} value={v.preco_total} onChange={() => {}} /></Campo>
               </div>
             </fieldset>
