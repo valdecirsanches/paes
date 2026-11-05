@@ -62,7 +62,7 @@ export function BuscaProduto({ onEscolher, onFechar, cliente }) {
   useEffect(() => { const t = setTimeout(() => campo.current?.focus(), 40); return () => clearTimeout(t); }, []);
   useEffect(() => {
     const termo = q.trim();
-    if (termo.length < 2) { setRows([]); setEstado('ocioso'); return undefined; }
+    if (termo.length < (cliente ? 0 : 2)) { setRows([]); setEstado('ocioso'); return undefined; }
     setEstado('buscando');
     const n = ++seq.current;
     const t = setTimeout(() => {

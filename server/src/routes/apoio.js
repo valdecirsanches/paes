@@ -19,9 +19,9 @@ router.get('/produtos/codigo/:codigo', async (req, res) => {
 router.get('/produtos', async (req, res) => {
   const q = `%${String(req.query.q || '').trim().replace(/[\\%_]/g, '\\$&')}%`;
   const args = [q, q];
-  // só produtos ATIVOS; com ?cliente= só os do cliente (e os sem cliente), como o filtro do Delphi
+  // só produtos ATIVOS; com ?cliente= só os do cliente, como o filtro do Delphi (u_localiza_produto)
   let cli = '';
-  if (req.query.cliente) { cli = ' and (p.id_cliente = ? or coalesce(p.id_cliente, 0) = 0)'; args.push(idValido(req.query.cliente, 'Cliente')); }
+  if (req.query.cliente) { cli = ' and p.id_cliente = ?'; args.push(idValido(req.query.cliente, 'Cliente')); }
   const [rows] = await pool.query(
     `select p.id, p.codigo, p.descricao, p.descricao_expedicao, p.preco, p.divisor_basico, p.un,
             (p.preco / if(p.divisor_basico = 0, 1, p.divisor_basico)) as preco_unitario

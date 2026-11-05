@@ -860,3 +860,6 @@ Novo destino de linguagem **Texto puro (cupom sem comandos)** no agente: envia s
 
 ### Fase 170
 Corrige o erro de compilação (chave `ativo` duplicada em Clientes.jsx; o padrão de produto novo agora é ativo). Programação: lista de clientes em UMA coluna e empresa selecionada/status/itinerário ao lado dela, na faixa do topo (sem espaço em branco).
+
+### Fase 171
+Pesquisa de produto na programação: só os produtos do cliente selecionado (sem os "sem cliente"), e a janela já abre listando todos os dele, como no Delphi. Aba "Programação diária" renomeada para "AppBakery".

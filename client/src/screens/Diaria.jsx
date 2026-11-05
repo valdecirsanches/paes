@@ -79,7 +79,7 @@ export default function Diaria({ onFechar }) {
   const [menuAberto, setMenuAberto] = useState(false);
   const contagem = useMemo(() => { const c = [0, 0, 0, 0]; lista.forEach((r) => { c[r.status] = (c[r.status] || 0) + 1; }); return c; }, [lista]);
   const [diaSem, diaMes] = (() => { const d = new Date(`${data}T12:00:00`); return [d.toLocaleDateString('pt-BR', { weekday: 'long' }), d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })]; })();
-  const ABAS = [['diaria', '📋 Programação diária'], ['fixa', '📌 Programação fixa'], ['rcm', '💬 Reclamações'], ...(ehFabrica() ? [] : [['cfg', '⚙ Configurações']])];
+  const ABAS = [['diaria', '📋 AppBakery'], ['fixa', '📌 Programação fixa'], ['rcm', '💬 Reclamações'], ...(ehFabrica() ? [] : [['cfg', '⚙ Configurações']])];
 
   return (
     <div className="tela dr2">
