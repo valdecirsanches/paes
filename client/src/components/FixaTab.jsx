@@ -180,7 +180,7 @@ export default function FixaTab({ status, roteiros, onChanged, notify }) {
   const enterComoTab = (e) => {
     if (e.key !== 'Enter' || ['TEXTAREA', 'BUTTON'].includes(e.target.tagName)) return;
     e.preventDefault();
-    const campos = [...e.currentTarget.querySelectorAll('input:not([disabled]):not([readonly]), select')];
+    const campos = [...e.currentTarget.querySelectorAll('input:not([disabled]):not([readonly]):not([tabindex="-1"]), select')];
     // Enter na Qtde grava o item quando já está completo (hora, produto e qtde), como o Enter do campo Extra na diária
     if (editando && e.target === refs.current.qtde && draftRef.current?.hora && draftRef.current?.produto_codigo && Number(draftRef.current?.produto_qtde) > 0) { e.target.blur(); setTimeout(() => gravarRef.current?.(), 60); return; }
     const prox = campos[campos.indexOf(e.target) + 1]; e.target.blur();

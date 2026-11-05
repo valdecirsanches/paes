@@ -889,3 +889,7 @@ Agente 1.2.1: se o endereço do sistema foi gravado com `https` mas o sistema s�
 
 ## Fase 178 — Impressoras compartilhadas do Windows no agente Linux
 Na página do agente (Ubuntu) há o bloco "Impressoras compartilhadas por computadores Windows": informe IP, usuário e senha do Windows, clique em Procurar e Adicionar; a fila é criada no CUPS (raw) e aparece em Tipo "Impressora do Linux (CUPS)". O instalador Linux agora instala smbclient, liga o backend smb do CUPS e coloca o usuário no grupo lpadmin. Agente 1.2.2.
+
+## Fase 179 — Programação diária: Enter pula a data; versão visível
+- Ao editar o item, Tab/Enter vai do horário direto ao código do produto (a data não recebe foco; segue editável com o mouse). Na Fixa, Enter também ignora campos fora da ordem.
+- Versão do app agora muda a cada entrega: "Versão: 1.NNN" (NNN = fase) no rodapé e na tela de login, ao lado do build.

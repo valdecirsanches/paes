@@ -309,7 +309,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
       const t = e.target; t.setRangeText('\n', t.selectionStart, t.selectionEnd, 'end');
       t.dispatchEvent(new Event('input', { bubbles: true })); return;
     }
-    const campos = [...e.currentTarget.querySelectorAll('input:not([disabled]):not([readonly]), select, textarea')];
+    const campos = [...e.currentTarget.querySelectorAll('input:not([disabled]):not([readonly]):not([tabindex="-1"]), select, textarea')];
     if (e.currentTarget === painelRef.current && editando && e.target === refs.current.extra) { // Enter no campo Extra grava o item (e fecha a edição)
       e.target.blur(); setTimeout(() => gravarRef.current?.(), 60); return;
     }
@@ -353,7 +353,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
             <fieldset className="if-pn dp-a"><legend>Item</legend>
               <div className="dp-r1">
                 <HoraGrande refHora={ref('hora')} valor={v.hora} onChange={(h) => editar({ hora: h })} sugestoes={horasDoDia(itens)} />
-                <Campo rotulo="Data" className="if-data"><input type="date" ref={ref('data')} value={v.data ?? ''} onChange={set('data')} /></Campo>
+                <Campo rotulo="Data" className="if-data"><input type="date" tabIndex={-1} ref={ref('data')} value={v.data ?? ''} onChange={set('data')} /></Campo>
                 <Campo rotulo="Produto" className="if-cod"><input ref={ref('codigo')} value={v.produto_codigo ?? ''} onChange={set('produto_codigo')} placeholder="999.999 = mercadoria"
                   onBlur={(e) => resolverCodigo(e.target.value)} onDoubleClick={() => setModal({ tipo: 'busca', alvo: 'prod' })} title="Duplo clique pesquisa o produto" /></Campo>
               </div>
