@@ -205,7 +205,7 @@ export default function NFe({ onFechar }) {
   const [resposta, setResposta] = useState('');
   const [impDireta, setImpDireta] = useState(true);
   const [emailEnvio, setEmailEnvio] = useState(null);
-  const [progresso, setProgresso] = useState(4);
+  const [, setProgresso] = useState(4);
   const [ocupado, setOcupado] = useState(false);
   const [aviso, setAviso] = useState(null);
   const [dialogo, setDialogo] = useState(null);
@@ -630,6 +630,8 @@ export default function NFe({ onFechar }) {
               </>
             )}
           </div>
+          <button type="button" className={`nf2-b${aba === 'cfg' ? ' on' : ''}`} onClick={() => setAba(aba === 'cfg' ? 'nfe' : 'cfg')} title="Emitente, ambiente e certificado (clique de novo para voltar às notas)">⚙ Emitente</button>
+          <button type="button" className={`nf2-b${aba === 'resp' ? ' on' : ''}`} onClick={() => setAba(aba === 'resp' ? 'nfe' : 'resp')} title="Última requisição/resposta da API (clique de novo para voltar às notas)">📡 Resposta</button>
           <button type="button" className={`nf2-b${logAberto ? ' on' : ''}`} onClick={() => setLogAberto((x) => !x)} title="Log da NFe">📜 Log{log.length ? <i className="nf2-cnt">{log.length}</i> : null}</button>
           <button type="button" className="nf2-b" onClick={onFechar}>Fechar</button>
         </div>
@@ -734,13 +736,9 @@ export default function NFe({ onFechar }) {
             <div className="nf2-card-t">⚙ Opções</div>
             <label className="nf2-sw"><input type="checkbox" checked={impDireta} onChange={(e) => setImpDireta(e.target.checked)} />Impressão direta</label>
           </div>
-          <div className="nfe-bar" title="Progresso"><div style={{ width: `${progresso}%` }} /><span>{progresso}%</span></div>
         </aside>
 
         <div className="nfe-direita">
-          <div className="nfe-abas" role="tablist">
-            {[['nfe', 'NFe'], ['cfg', '⚙ Emitente e configurações'], ['resp', '📡 Envio/Resposta']].map(([k, r]) => <button key={k} role="tab" aria-selected={aba === k} className={aba === k ? 'on' : ''} onClick={() => setAba(k)}>{r}</button>)}
-          </div>
 
           {aba === 'nfe' && (
             <div className="nfe-centro">
