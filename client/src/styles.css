@@ -1888,3 +1888,5 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{filter:brightness(1.15)}
 .db-pilha{display:flex;height:22px;border-radius:6px;overflow:hidden;border:1px solid var(--borda)}.db-pilha i{display:block}
 .db-legenda{list-style:none;display:flex;gap:16px;flex-wrap:wrap;margin:8px 0 0;padding:0;font-size:13px}.db-legenda i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;border:1px solid #0003}
 .db-vazio{color:#777;margin:4px 0}.db-erro{background:#fde8e8;border:1px solid #e57373;color:#7a1010;padding:8px 12px;border-radius:8px}
+.nf2-volta{display:flex;align-items:center;gap:12px;padding:4px 10px}.nf2-volta b{color:var(--azul-barra-2)}
+.grade thead .nf2-colbt.on{background:#fff;color:var(--azul-barra-2)}.nf2-ic .nf2-colbt{margin-left:2px}

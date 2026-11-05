@@ -909,5 +909,5 @@ Nova tela **Programação › Dashboard** (primeira do menu) com os resumos do d
 ## Fase 183 — Dashboard abre ao entrar
 Depois do login (computadores de acesso completo) o Dashboard abre automaticamente como primeira tela; pode ser fechado como qualquer aba. A fábrica continua sem ele.
 
-## Fase 184 — Tela de NFe com mais espaço
-Removida a linha de abas ("NFe / Emitente e configurações / Envio/Resposta") e a barra de progresso do painel lateral. Os botões **⚙ Emitente** e **📡 Resposta** foram para a barra de botões do topo (clique de novo para voltar às notas); a grade e os itens ganham a altura liberada.
+## Fase 184/185 — Tela de NFe com mais espaço
+Removidas a linha de abas ("NFe / Emitente e configurações / Envio/Resposta") e a barra de progresso do painel lateral. Os botões **⚙** (Emitente) e **📡** (Envio/Resposta) ficam no cabeçalho da grade de notas, ao lado do ☰ de escolha de colunas. Dentro de Emitente/Resposta aparece **◀ Voltar às notas**.
