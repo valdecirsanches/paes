@@ -2,6 +2,9 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.jsx';
 import './styles.css';
+import { aplicarTema } from './lib/tema.js';
+
+aplicarTema(); // cores salvas em Ferramentas › Aparência
 
 // Preview sem banco: `VITE_MOCK=1 npm run build` simula a API em memória.
 const iniciar = () => createRoot(document.getElementById('root')).render(<App />);

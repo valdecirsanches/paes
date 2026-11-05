@@ -24,6 +24,7 @@ import Cargas from './screens/Cargas.jsx';
 import Login from './screens/Login.jsx';
 import FabricaApp from './fabrica/FabricaApp.jsx';
 import Auditoria from './screens/Auditoria.jsx';
+import Aparencia from './screens/Aparencia.jsx';
 import TelaPrincipal from './screens/TelaPrincipal.jsx';
 import Usuarios from './screens/Usuarios.jsx';
 import Dispositivos from './screens/Dispositivos.jsx';
@@ -51,6 +52,7 @@ const TELAS = {
   auditoria: { titulo: 'Auditoria', Tela: Auditoria },
   usuarios: { titulo: 'Cadastro de usuários', Tela: Usuarios },
   telaprincipal: { titulo: 'Imagem da tela principal', Tela: TelaPrincipal },
+  aparencia: { titulo: 'Aparência', Tela: Aparencia },
   funcionarios: { titulo: 'Cadastro de funcionários', Tela: Funcionarios },
   relnfes: { titulo: 'Relatório de NFEs', Tela: RelatorioNfes },
   nfsconf: { titulo: 'Leitura de NFs confirmadas', Tela: NfsConfirmadas },
@@ -61,7 +63,7 @@ const MENUS = [
   { id: 'fat', rotulo: 'Faturamento', icone: '💳', itens: [['faturamento', 'Faturamento', '💳'], ['comandas', 'Controle de comandas', '🧾'], ['nfe', 'NFe', '📑'], ['tributos', 'Tributos', '🏷️'], ['quitacao', 'Quitação', '💰']] },
   { id: 'cad', rotulo: 'Cadastros', icone: '👥', itens: [['clientes', 'Clientes', '🏢'], ['produtos', 'Produtos', '🍞'], ['funcionarios', 'Funcionários', '🧑‍🍳'], ['usuarios', 'Usuários', '🔑']] },
   { id: 'outros', rotulo: 'Outros', icone: '📦', itens: [['relnfes', 'Relatório de NFEs', '📊'], ['nfsconf', 'Leitura de NFs confirmadas', '📥']] },
-  { id: 'ferr', rotulo: 'Ferramentas', icone: '🛠️', itens: [['impressoras', 'Configurar impressoras', '🖨️'], ['instalar', 'Instalar agente de impressão', '⬇️'], ['dispositivos', 'Dispositivos autorizados', '🖥'], ['auditoria', 'Auditoria', '🕵️'], ['telaprincipal', 'Imagem da tela principal', '🖼']] },
+  { id: 'ferr', rotulo: 'Ferramentas', icone: '🛠️', itens: [['impressoras', 'Configurar impressoras', '🖨️'], ['instalar', 'Instalar agente de impressão', '⬇️'], ['dispositivos', 'Dispositivos autorizados', '🖥'], ['auditoria', 'Auditoria', '🕵️'], ['telaprincipal', 'Imagem da tela principal', '🖼'], ['aparencia', 'Aparência (cores)', '🎨']] },
 ];
 const MENUS_FUTUROS = [];
 // Dispositivo liberado só para a fábrica (menu do sistema da fábrica): Programação, Produção, Mercadorias, Cargas, Reclamações, Pedidos extras + impressoras.
