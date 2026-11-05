@@ -1,8 +1,7 @@
-import { ipsDaMaquina } from './config.js';
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 /** Página de administração do agente (aberta em http://127.0.0.1:PORTA nesta máquina). */
-export function paginaAdmin(cfg, arquivo, IPS = ipsDaMaquina()) {
+export function paginaAdmin(cfg, arquivo) {
   const linhas = Object.entries(cfg.destinos).map(([n, d]) => `<tr><td>${esc(n)}</td><td>${esc(d.tipo)}</td><td>${esc(d.impressora ?? (d.host ? `${d.host}:${d.porta}` : `${d.com} ${d.baud}`))}</td><td>${esc(d.linguagem)}</td><td>${esc(d.dpi ?? '')}</td><td>${esc(d.largura_mm ?? '')}×${esc(d.altura_mm ?? '')}</td>
     <td><button data-testar="${esc(n)}">Testar</button> <button data-edit="${esc(n)}">Editar</button> <button data-del="${esc(n)}">Excluir</button></td></tr>`).join('')
     + Object.entries(cfg.invalidos ?? {}).map(([n, v]) => `<tr class="inv"><td>${esc(n)}</td><td colspan="5">⚠ Destino inválido, guardado sem uso: ${esc(v.motivo)}</td><td><button data-edit="${esc(n)}">Corrigir</button> <button data-del="${esc(n)}">Excluir</button></td></tr>`).join('');
@@ -23,13 +22,11 @@ th{background:#e3eef9}fieldset{border:1px solid #b6d3ef;margin:16px 0;padding:12
 <label id="l-com">COM <input id="com" placeholder="COM3" size="6"></label><label id="l-baud">Baud <input id="baud" value="9600" size="6"></label><br>
 <label>DPI <input id="dpi" value="203" size="4"></label><label>Largura (mm) <input id="largura" value="62" size="4"></label><label>Altura (mm) <input id="altura" value="45" size="4"></label><label><input type="checkbox" id="cortar"> Cortar após imprimir (ESC/POS)</label><label><input type="checkbox" id="invertido" checked> TSPL: inverter bits (se a etiqueta sair em negativo, desmarque)</label><br>
 <button id="salvar">Salvar destino</button> <button id="cancela-edicao" hidden>Cancelar edição</button><div id="msg2" role="status"></div></fieldset>
-<fieldset><legend>Acesso pela rede — servidor do sistema em outro computador (ex.: Linux)</legend>
-<label><input type="checkbox" id="rede-on" ${cfg.escuta === '0.0.0.0' ? 'checked' : ''}> Permitir que o servidor do sistema imprima por este agente</label><br>
-<label>IP desta máquina <input id="rede-ip" size="34" readonly value="${esc(IPS.map((i) => `${i}:${cfg.porta}`).join('  ·  ') || '(não detectado)')}"></label><br>
-<label>Token <input id="rede-token" size="40" value="${esc(cfg.token)}" placeholder="(será gerado ao salvar)"></label> <button id="rede-gerar" type="button">Gerar novo</button> <button id="rede-copia" type="button">Copiar IP e token</button><br>
-<button id="rede-salvar" type="button">Salvar acesso pela rede</button><div id="rede-msg" role="status"></div>
-<label>Firewall (Prompt de Comando como Administrador) <input id="rede-fw" size="100" readonly value="netsh advfirewall firewall add rule name=&quot;Paes Agente de Impressao&quot; dir=in action=allow protocol=TCP localport=${cfg.porta} remoteip=localsubnet"></label> <button id="rede-fw-copia" type="button">Copiar comando</button><br>
-<small>No sistema web: Ferramentas › Configurar impressoras › “Servidor → agente”, informe o IP:porta e o token acima. Se o servidor não conseguir conectar, rode <b>liberar-rede.ps1</b> como Administrador (abre a porta ${cfg.porta} no firewall da rede local).</small></fieldset>
+<fieldset><legend>Conexão com o sistema (para os outros computadores imprimirem aqui)</legend>
+<small>Este agente conecta ao sistema web e busca os trabalhos de impressão — não precisa abrir porta, firewall nem IP fixo. O instalador baixado do sistema já preenche tudo; para conectar à mão, copie o token em <b>Ferramentas › Configurar impressoras</b>.</small><br>
+<label>Endereço do sistema <input id="sis-url" size="40" placeholder="https://paes.seudominio.com.br" value="${esc(cfg.sistema_url ?? '')}"></label>
+<label>Token <input id="sis-token" size="36" type="password" autocomplete="off" placeholder="${cfg.sistema_token ? '(gravado — deixe em branco para manter)' : 'cole o token do sistema'}"></label>
+<button id="sis-salvar" type="button">Salvar e conectar</button> <b id="sis-estado" role="status">verificando…</b><div id="sis-msg" role="status"></div></fieldset>
 <fieldset><legend>Gravação do XML da NF-e (compatibilidade com o sistema antigo)</legend>
 <small>O sistema web grava aqui, nesta máquina, o XML autorizado em <b>&lt;pasta&gt;/&lt;cnpj&gt;/NFe/&lt;ddmmaaaa&gt;/NFe/&lt;chave&gt;-nfe.xml</b>. Só estas pastas são liberadas (uma por linha):</small><br>
 <textarea id="pastas" rows="2" cols="70">${esc((Array.isArray(cfg.pastas_gravacao) && cfg.pastas_gravacao.length ? cfg.pastas_gravacao : ['N:/EDSMonitorPLUS/Arqs']).join('\n'))}</textarea><br>
@@ -45,11 +42,10 @@ fetch('/api/impressoras').then(r=>r.json()).then(l=>{$('impressora').innerHTML=l
 const mostra=()=>{/* todos os campos de conexão ficam visíveis e são gravados, qualquer que seja o tipo */};$('tipo').onchange=mostra;mostra();
 $('modelo').onchange=()=>{if($('modelo').value==='ql'){$('tipo').value='windows';mostra();$('linguagem').value='imagem-driver';$('dpi').value=300;$('largura').value=62;$('altura').value=45;$('cortar').checked=false;const o=[...$('impressora').options].find(x=>/QL-?8/i.test(x.text));if(o)$('impressora').value=o.value;if(!$('nome').value)$('nome').value='Etiqueta adesiva'}};
 $('salvar').onclick=async()=>{const bt=$('salvar');bt.disabled=true;try{await api('POST','/api/destinos',{edicao,nome:$('nome').value,tipo:$('tipo').value,linguagem:$('linguagem').value,impressora:$('impressora').value,host:$('host').value,porta:$('porta').value,com:$('com').value,baud:$('baud').value,dpi:$('dpi').value,largura_mm:$('largura').value,altura_mm:$('altura').value,cortar:$('cortar').checked,invertido:$('invertido').checked});msg('✔ Salvo.',true);setTimeout(()=>location.reload(),700)}catch(e){msg('NÃO SALVO: '+e.message,false);bt.disabled=false}};
-const rmsg=(t,ok)=>{$('rede-msg').textContent=t;$('rede-msg').className=ok?'ok':'er'};
-$('rede-gerar').onclick=()=>{const b=new Uint8Array(24);crypto.getRandomValues(b);$('rede-token').value=btoa(String.fromCharCode(...b)).replace(/[+/=]/g,c=>({'+':'a','/':'b','=':''}[c]))};
-$('rede-copia').onclick=()=>{const t=$('rede-ip').value.split(' ')[0]+'\\n'+$('rede-token').value;navigator.clipboard?.writeText(t).then(()=>rmsg('Copiado: IP:porta e token.',true)).catch(()=>rmsg('Não consegui copiar; selecione e copie manualmente.',false))};
-$('rede-fw-copia').onclick=()=>{$('rede-fw').select();navigator.clipboard?.writeText($('rede-fw').value).then(()=>rmsg('Comando copiado: cole no Prompt de Comando (Administrador).',true)).catch(()=>document.execCommand('copy'))};
-$('rede-salvar').onclick=async()=>{try{const j=await api('POST','/api/rede',{permitir:$('rede-on').checked,token:$('rede-token').value});$('rede-token').value=j.token;rmsg(j.escuta==='0.0.0.0'?'✔ Salvo e ativo. Use '+(j.ips[0]||'o IP desta máquina')+':'+j.porta+' e o token acima no sistema.':'✔ Salvo: acesso pela rede desligado (só este computador).',true)}catch(e){rmsg('NÃO SALVO: '+e.message,false)}};
+const smsg=(t,ok)=>{$('sis-msg').textContent=t;$('sis-msg').className=ok?'ok':'er'};
+const estadoSis=async()=>{try{const e=await (await fetch('/api/sistema')).json();$('sis-estado').textContent=e.conectado?'● conectado ao sistema':(e.url?'○ sem conexão'+(e.ultimoErro?': '+e.ultimoErro:''):'○ não configurado');$('sis-estado').className=e.conectado?'ok':'er'}catch(e){$('sis-estado').textContent=''}};
+estadoSis();setInterval(estadoSis,4000);
+$('sis-salvar').onclick=async()=>{try{await api('POST','/api/sistema',{url:$('sis-url').value,token:$('sis-token').value});$('sis-token').value='';smsg('✔ Salvo. Conectando…',true);setTimeout(estadoSis,1500)}catch(e){smsg(e.message,false)}};
 $('salvar-origens').onclick=async()=>{try{await api('POST','/api/origens',{origens:$('origens').value.split(',').map(s=>s.trim()).filter(Boolean)});msg('Origens salvas.',true)}catch(e){msg(e.message,false)}};
 document.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{if(confirm('Excluir o destino '+b.dataset.del+'?')){await api('DELETE','/api/destinos/'+encodeURIComponent(b.dataset.del));location.reload()}});
 const campo=(i,v)=>{if($(i)&&v!==undefined&&v!==null)$(i).value=v};

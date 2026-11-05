@@ -1,4 +1,3 @@
-import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -12,7 +11,7 @@ export function caminhoConfig() {
   return path.join(base, 'config.json');
 }
 
-const PADRAO = { porta: 9101, escuta: '127.0.0.1', token: '', origens: ['http://localhost:5072', 'http://127.0.0.1:5072', 'https://paes.x-star.com.br'], destinos: {} };
+const PADRAO = { porta: 9101, sistema_url: '', sistema_token: '', origens: ['http://localhost:5072', 'http://127.0.0.1:5072', 'https://paes.x-star.com.br'], destinos: {} };
 
 /** Valida um destino. Devolve o destino normalizado ou lança Error com mensagem em português. */
 export function validaDestino(nome, d) {
@@ -58,19 +57,6 @@ export function validaDestino(nome, d) {
   return o;
 }
 
-/** Acesso pela rede (servidor em outra máquina): { permitir, token } → { escuta, token }. Token novo é gerado se faltar. */
-export function validaRede({ permitir, token }, atual = '') {
-  if (!permitir) return { escuta: '127.0.0.1', token: typeof atual === 'string' ? atual : '' };
-  let t = String(token ?? '').trim() || String(atual ?? '').trim();
-  if (!t) t = crypto.randomBytes(24).toString('base64url');
-  if (t.length < 16 || /\s/.test(t)) throw new Error('O token deve ter ao menos 16 caracteres, sem espaços.');
-  return { escuta: '0.0.0.0', token: t };
-}
-/** IPv4 desta máquina na rede (para informar ao servidor). */
-export function ipsDaMaquina() {
-  return Object.values(os.networkInterfaces()).flat().filter((i) => i && i.family === 'IPv4' && !i.internal && !i.address.startsWith('169.254.')).map((i) => i.address);
-}
-
 /** Lê o JSON tolerando BOM (o PowerShell 5 grava UTF-8 com BOM: o instalador antigo fazia o agente "esquecer" tudo). */
 const leJson = (arq) => JSON.parse(fs.readFileSync(arq, 'utf8').replace(/^\uFEFF/, ''));
 
@@ -93,15 +79,16 @@ export function carregaConfig(arquivo = caminhoConfig()) {
     }
   }
   if (!Array.isArray(cfg.origens)) cfg.origens = PADRAO.origens;
-  cfg.token = typeof cfg.token === 'string' ? cfg.token.trim() : '';
-  // escutar na rede só faz sentido (e só é aceito) com token: sem ele o agente fica restrito a este computador
-  if (cfg.escuta !== '0.0.0.0' || cfg.token.length < 16) cfg.escuta = '127.0.0.1';
+  cfg.sistema_url = typeof cfg.sistema_url === 'string' ? cfg.sistema_url.trim().replace(/\/+$/, '') : '';
+  cfg.sistema_token = typeof cfg.sistema_token === 'string' ? cfg.sistema_token.trim() : '';
+  cfg.escuta = '127.0.0.1'; // o agente nunca abre porta para a rede: é ele quem conecta ao sistema (src/tunel.js)
+  delete cfg.token;
   return cfg;
 }
 export function salvaConfig(cfg, arquivo = caminhoConfig()) {
   fs.mkdirSync(path.dirname(arquivo), { recursive: true });
   const destinos = { ...Object.fromEntries(Object.entries(cfg.invalidos ?? {}).map(([n, v]) => [n, v.bruto])), ...cfg.destinos };
-  const texto = JSON.stringify({ porta: cfg.porta, escuta: cfg.escuta, token: cfg.token, origens: cfg.origens, ...(Array.isArray(cfg.pastas_gravacao) ? { pastas_gravacao: cfg.pastas_gravacao } : {}), destinos }, null, 2);
+  const texto = JSON.stringify({ porta: cfg.porta, sistema_url: cfg.sistema_url, sistema_token: cfg.sistema_token, origens: cfg.origens, ...(Array.isArray(cfg.pastas_gravacao) ? { pastas_gravacao: cfg.pastas_gravacao } : {}), destinos }, null, 2);
   try { if (fs.existsSync(arquivo)) { leJson(arquivo); fs.copyFileSync(arquivo, `${arquivo}.bak`); } } catch { /* o atual está ilegível: não sobrescreve um bom .bak */ }
   const tmp = `${arquivo}.tmp`;
   try {

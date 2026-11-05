@@ -872,3 +872,9 @@ Programação diária/fixa: formulário do item em painéis (Item, Quantidade e 
 
 ### Fase 174
 Programação diária: campos do item nas posições do Delphi — bloco "Item" à esquerda (Data, Hora, Produto; descrição original, da comanda e de expedição; Qtde fixa, Extra, Preço, Cada, Valor total), painéis "Anotações p/ faturamento" e "Informe p/ produção" empilhados no meio, e "Produção" (acabamentos + data, turno, embalagem, preparação, itinerário) à direita; tudo compactado na altura do original. A ordem do Enter continua Hora → Data → Produto → … → Extra.
+
+### Fase 175 — Agente simplificado: conecta ao sistema (sem IP, porta ou firewall)
+- **O agente (v1.2.0) agora CONECTA ao sistema** (túnel reverso por long-poll, `/api/agente-tunel/*`, autenticado por token de pareamento) e busca os pedidos de impressão. Funciona igual com o servidor na mesma rede, em outra rede ou na internet; não há mais IP do agente, "Acesso pela rede", firewall nem `liberar-rede.ps1`. O agente só escuta em 127.0.0.1.
+- **Duas instalações**: "Instalador do computador das impressoras" (embute endereço + token: atende todos os computadores) e "Instalador só para este computador" (imprime só para si, pelo 127.0.0.1, sem conectar). Use um agente conectado por sistema.
+- Configurar impressoras: o cartão "Servidor → agente" virou "Agente conectado ao sistema" (estado, versão, token do administrador, "Gerar novo"). Página do agente: "Conexão com o sistema" (endereço + token + estado).
+- Removidos: `AGENTE_URL` (o `AGENTE_TOKEN` do `.env` ainda vale como token), `PUT /api/impressao/config`, `POST /api/rede` do agente. Quem usava o modo antigo precisa reinstalar o agente do computador das impressoras com o novo instalador.

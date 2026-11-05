@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const DIR = process.env.AGENTE_DIR || path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../agente-impressao');
-const INCLUIR = ['package.json', 'src/config.js', 'src/transportes.js', 'src/png.js', 'src/server.js', 'src/admin.js'];
+const INCLUIR = ['package.json', 'src/config.js', 'src/transportes.js', 'src/png.js', 'src/server.js', 'src/tunel.js', 'src/admin.js'];
 
 /** { arquivos: { 'src/server.js': <base64>, ... } } — sem zip, o PowerShell recompõe os arquivos. */
 export function pacote(dir = DIR) {
@@ -17,6 +17,7 @@ const PS = String.raw`
 $ErrorActionPreference = 'Stop'
 try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 } catch { }
 $site = '@@SITE@@'
+$tokenSistema = '@@TOKEN@@'
 $dest = 'C:\PaesAgenteImpressao'
 $cfgDir = Join-Path $env:PROGRAMDATA 'PaesAgenteImpressao'
 $tarefa = 'PaesAgenteImpressao'
@@ -88,12 +89,18 @@ foreach ($p in $pac.arquivos.PSObject.Properties) {
 }
 Ok ('Versao ' + $pac.versao + ' em ' + $dest)
 
-Passo 3 'Liberando este sistema'
+Passo 3 'Conectando ao sistema'
 New-Item -ItemType Directory -Force $cfgDir | Out-Null
 $arqCfg = Join-Path $cfgDir 'config.json'
 if (Test-Path $arqCfg) { $cfg = (Get-Content $arqCfg -Raw -Encoding UTF8).TrimStart([char]0xFEFF) | ConvertFrom-Json } else { $cfg = [pscustomobject]@{ porta = 9101; origens = @(); destinos = [pscustomobject]@{} } }
 $origens = @($cfg.origens) + @($site, 'http://localhost:5072', 'http://127.0.0.1:5072') | Where-Object { $_ } | Select-Object -Unique
 $cfg | Add-Member -Force NoteProperty origens $origens
+# o agente CONECTA ao sistema (nao precisa de porta liberada nem IP): endereco + token de pareamento
+if ($tokenSistema) { # instalador "computador das impressoras": este agente atende todos os computadores pelo sistema
+  $cfg | Add-Member -Force NoteProperty sistema_url $site
+  $cfg | Add-Member -Force NoteProperty sistema_token $tokenSistema
+}
+foreach ($velha in 'escuta', 'token') { $cfg.PSObject.Properties.Remove($velha) } # acesso pela rede nao existe mais
 if (Test-Path $arqCfg) { Copy-Item -Force $arqCfg ($arqCfg + '.bak') }
 [IO.File]::WriteAllText($arqCfg, ($cfg | ConvertTo-Json -Depth 8), (New-Object Text.UTF8Encoding $false)) # sem BOM: o agente le JSON puro
 Ok ('Origem permitida: ' + $site)
@@ -131,12 +138,13 @@ Start-Process 'http://127.0.0.1:9101'
 `;
 
 /** .bat auto-elevável com o PowerShell embutido depois do marcador. modo: 'instalar' | 'remover'. */
-export function instaladorBat(site, modo = 'instalar', pac = pacote()) {
+export function instaladorBat(site, modo = 'instalar', pac = pacote(), token = '') {
+  if (token && !/^[A-Za-z0-9_-]{16,128}$/.test(token)) throw new Error('Token do agente inválido.');
   if (!/^https?:\/\/[A-Za-z0-9.:\-]+$/.test(site)) throw new Error('Endereço do sistema inválido.');
   // o pacote vai dentro do .bat (here-string em base64): a instalação não depende de rede até o sistema
   const pacB64 = Buffer.from(JSON.stringify(pac)).toString('base64');
   const pedacos = pacB64.match(/.{1,3000}/g).map((x) => `'${x}'`).join(',\r\n');
-  const ps = `$PACOTE = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String((@(${pedacos}) -join '')))\r\n${PS.replace('@@SITE@@', site).replace('@@MODO@@', modo)}`;
+  const ps = `$PACOTE = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String((@(${pedacos}) -join '')))\r\n${PS.replace('@@SITE@@', site).replace('@@TOKEN@@', token).replace('@@MODO@@', modo)}`;
   const bat = [
     '@echo off', 'chcp 65001 >nul',
     'net session >nul 2>&1 || (powershell -NoProfile -Command "Start-Process -FilePath \'%~f0\' -Verb RunAs" & exit /b)',

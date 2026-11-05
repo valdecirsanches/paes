@@ -21,6 +21,7 @@ import produtosRoutes from './routes/produtos.js';
 import authRoutes from './routes/auth.js';
 import agenteRoutes from './routes/agente.js';
 import impressaoRoutes from './routes/impressao.js';
+import agenteTunelRoutes from './routes/agenteTunel.js';
 import layoutEtiquetasRoutes from './routes/layoutEtiquetas.js';
 import nfsConfirmadasRoutes from './routes/nfsConfirmadas.js';
 import { invalidaMercadorias } from './services/mercCache.js';
@@ -38,6 +39,8 @@ const origens = (process.env.CORS_ORIGIN || '').split(',').map((s) => s.trim()).
 app.use(cors({ origin: origens.length ? origens : true }));
 app.use(express.json({ limit: '6mb' })); // etiquetas em PNG/base64 vão para a ponte de impressão
 
+// Agente de impressão (conecta de dentro para fora, autenticado pelo token do agente): antes de dispositivo/login/auditoria
+app.use('/api/agente-tunel', agenteTunelRoutes);
 // Auditoria: primeiro de tudo em /api, para registrar também logins, negações (dispositivo/login) e erros
 app.use('/api', auditoria);
 // Dispositivo habilitado: antes do login (a tela de bloqueio mostra o código). /api/dispositivo e /api/health são livres.

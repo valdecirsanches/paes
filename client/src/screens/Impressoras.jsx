@@ -6,8 +6,8 @@ import EditorEtiqueta from '../components/EditorEtiqueta.jsx';
 import { temAjuste } from '../lib/ajustes.js';
 
 const PASSOS = [
-  ['Baixe o instalador', 'Clique no botão abaixo e abra o arquivo baixado. Aceite o aviso de administrador do Windows.'],
-  ['Aguarde a instalação', 'Ele instala o Node.js (se faltar), o agente, a inicialização automática e libera este sistema.'],
+  ['Baixe o instalador', 'No computador das impressoras use o 1º botão (atende todos). Em um computador que imprime só para si, use o 2º. Aceite o aviso de administrador do Windows.'],
+  ['Aguarde a instalação', 'Ele instala o Node.js (se faltar), o agente e a inicialização automática, e, no 1º instalador, já conecta o agente a este sistema.'],
   ['Cadastre as impressoras', 'Na página que abrir, informe cada impressora (Windows, IP ou serial) e use Teste.'],
   ['Escolha o destino', 'Volte em Ferramentas › Configurar impressoras e associe cada documento a uma impressora.'],
 ];
@@ -21,7 +21,8 @@ export function CaixaInstalar() {
         {PASSOS.map(([t, d], i) => <li key={t}><span className="imp-n">{i + 1}</span><div><b>{t}</b><span>{d}</span></div></li>)}
       </ol>
       <div className="imp-acoes">
-        <a className="imp-btn principal" href="/api/agente/instalador.bat" download>⬇ Baixar instalador</a>
+        <a className="imp-btn principal" href="/api/agente/instalador.bat?conectar=1" download title="Use no computador onde ficam as impressoras: ele atende todos os computadores da loja">⬇ Instalador do computador das impressoras</a>
+        <a className="imp-btn" href="/api/agente/instalador.bat" download title="Use em um computador que imprime só para si (impressora ligada nele)">⬇ Instalador só para este computador</a>
         <a className="imp-btn" href="/api/agente/remover.bat" download>Remover agente</a>
       </div>
       <p className="imp-nota">Rodar o instalador de novo atualiza o agente e mantém as impressoras já cadastradas.</p>
@@ -30,38 +31,32 @@ export function CaixaInstalar() {
 }
 
 
-/** Endereço (IP:porta) e token do agente que o SERVIDOR usa (acesso pelo Linux). Gravado no servidor, vale para todas as estações. */
+/** Agente conectado ao sistema: o agente (no computador das impressoras) conecta aqui com o token; vale para todas as estações. */
 function PonteServidor({ onMudou }) {
   const [cfg, setCfg] = useState(null);
-  const [url, setUrl] = useState('');
-  const [token, setToken] = useState('');
-  const [ocupado, setOcupado] = useState('');
   const [res, setRes] = useState(null); // { ok, m }
-  useEffect(() => { api.get('/impressao/config').then((c) => { setCfg(c); setUrl(c.url ?? ''); }).catch((e) => setRes({ ok: false, m: e.message })); }, []);
-  const salvar = async (e) => {
-    e?.preventDefault(); setRes(null);
-    if (!url.trim()) { setRes({ ok: false, m: 'Informe o IP:porta do agente (ex.: 192.168.15.10:9101).' }); return; }
-    if (!cfg?.tem_token && !token.trim()) { setRes({ ok: false, m: 'Falta o token: na página do agente (127.0.0.1:9101 no Windows) marque “Permitir…”, clique em “Salvar acesso pela rede” e copie o token gerado.' }); return; }
-    setOcupado('s');
-    try {
-      const c = await api.put('/impressao/config', { url, token });
-      setCfg(c); setUrl(c.url ?? ''); setToken('');
-      try { const st = await api.get('/impressao/status'); setRes({ ok: true, m: `✔ Salvo e conectado ao agente (v${st.versao}, ${st.destinos} impressora(s)).` }); onMudou?.(); }
-      catch (er) { setRes({ ok: false, m: `Salvo, mas sem conexão com o agente: ${er.message}` }); }
-    } catch (er) { setRes({ ok: false, m: `NÃO SALVO: ${er.message}` }); } finally { setOcupado(''); }
+  const [ocupado, setOcupado] = useState(false);
+  const carrega = useCallback(() => api.get('/impressao/config').then((c) => { setCfg(c); return c; }).catch((e) => setRes({ ok: false, m: e.message })), []);
+  useEffect(() => { carrega(); const t = setInterval(carrega, 5000); return () => clearInterval(t); }, [carrega]);
+  const copiar = async () => { try { await navigator.clipboard.writeText(cfg.token); setRes({ ok: true, m: 'Token copiado.' }); } catch { setRes({ ok: false, m: 'Não consegui copiar; selecione o token e copie manualmente.' }); } };
+  const novo = async () => {
+    if (!window.confirm('Gerar um novo token desliga o agente atual até ele receber o novo (rode o instalador de novo ou cole o token na página do agente). Continuar?')) return;
+    setOcupado(true);
+    try { setCfg(await api.post('/impressao/config/novo-token', {})); setRes({ ok: true, m: 'Novo token gerado. Atualize o agente (rode o instalador de novo).' }); onMudou?.(); } catch (e) { setRes({ ok: false, m: e.message }); } finally { setOcupado(false); }
   };
   return (
     <section className="imp-card">
-      <header><span className="imp-ico" aria-hidden="true">🌐</span><div><h3>Servidor → agente (acesso pelo Linux)</h3>
-        <p>Quando o sistema roda no Linux e a impressora está no Windows: informe o IP do Windows e o token mostrado na página do agente (“Acesso pela rede”). Vale para todos os computadores.</p></div>
-        {cfg && <span className={`imp-selo ${cfg.url && cfg.tem_token ? 'ok' : 'off'}`}><i />{cfg.url && cfg.tem_token ? 'Configurado' : 'Não configurado'}</span>}</header>
-      <form className="imp-ponte" onSubmit={salvar}>
-        <label>IP:porta do agente<input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="192.168.15.10:9101" autoComplete="off" /></label>
-        <label>Token<input type="password" value={token} onChange={(e) => setToken(e.target.value)} placeholder={cfg?.tem_token ? '(gravado — deixe em branco para manter)' : 'cole o token do agente'} autoComplete="new-password" /></label>
-        <button type="submit" className="imp-btn principal" disabled={!!ocupado}>{ocupado ? 'Salvando…' : '💾 Salvar e testar'}</button>
-      </form>
-      {cfg?.origem === 'env' && <p className="imp-nota">Valores atuais vindos do <code>server/.env</code> (AGENTE_URL/AGENTE_TOKEN). Ao salvar aqui, passam a valer estes.</p>}
-      {/:9100\/?$/.test(url.trim()) && <p className="imp-nota er">A porta do agente é 9101 (9100 é a porta de impressoras de rede).</p>}
+      <header><span className="imp-ico" aria-hidden="true">🌐</span><div><h3>Agente conectado ao sistema</h3>
+        <p>O agente do computador das impressoras conecta aqui sozinho (não precisa de IP, porta nem firewall) e atende todos os computadores da loja. Baixe o 1º instalador abaixo no computador das impressoras (só em um computador por sistema).</p></div>
+        {cfg && <span className={`imp-selo ${cfg.conectado ? 'ok' : 'off'}`}><i />{cfg.conectado ? `Conectado${cfg.versao ? ` · v${cfg.versao}` : ''}` : 'Nenhum agente conectado'}</span>}</header>
+      {cfg?.token && (
+        <form className="imp-ponte" onSubmit={(e) => e.preventDefault()}>
+          <label>Token de pareamento (só o administrador vê)<input readOnly value={cfg.token} onFocus={(e) => e.target.select()} /></label>
+          <button type="button" className="imp-btn" onClick={copiar}>📋 Copiar</button>
+          <button type="button" className="imp-btn" onClick={novo} disabled={ocupado}>🔄 Gerar novo</button>
+        </form>
+      )}
+      {cfg && !cfg.conectado && <p className="imp-nota">O instalador já traz o endereço e o token. Se o agente já está instalado, abra <code>http://127.0.0.1:9101</code> no computador das impressoras, em “Conexão com o sistema”, e cole o endereço deste sistema e o token.</p>}
       {res && <p className={`imp-nota ${res.ok ? 'ok' : 'er'}`} role="status">{res.m}</p>}
     </section>
   );

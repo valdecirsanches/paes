@@ -535,8 +535,8 @@ window.fetch = async (url, opts = {}) => {
   else if (m === 'GET' && p === '/mercadorias') r = json(u.searchParams.get('data') === ISO ? mercs : []);
   else if (m === 'GET' && /^\/mercadorias\/\d+\/etiquetas$/.test(p)) r = json(logEtiq.filter((l) => l.id_diaria === Number(p.split('/')[2])));
   else if (m === 'POST' && p === '/mercadorias/etiquetas/dados') r = json(mercs.filter((x) => b.ids.includes(x.id)).map((x) => ({ ...x, qtde_pendente: x.qtde, unidade_nome: x.nome })));
-  else if (m === 'GET' && p === '/impressao/config') r = json({ url: 'http://192.168.15.8:9101', tem_token: true, origem: 'arquivo' });
-  else if (m === 'PUT' && p === '/impressao/config') r = json({ url: b.url ? (String(b.url).includes(':') ? b.url : b.url + ':9101') : '', tem_token: true, origem: 'arquivo' });
+  else if (m === 'GET' && p === '/impressao/config') r = json({ conectado: true, visto_ha_s: 3, versao: '1.2.0', token: 'TokenDeExemplo1234567890abcd' });
+  else if (m === 'POST' && p === '/impressao/config/novo-token') r = json({ conectado: false, versao: null, token: 'OutroTokenNovo1234567890abcd' });
   else if (m === 'GET' && p === '/impressao/status') r = json({ ok: true, versao: '1.0.0', plataforma: 'win32', destinos: 2 });
   else if (m === 'GET' && p === '/layout-etiquetas') r = json({});
   else if (m === 'PUT' && p.startsWith('/layout-etiquetas/')) r = json({});

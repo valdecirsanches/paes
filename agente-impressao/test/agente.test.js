@@ -123,46 +123,57 @@ test('teste de destino: liberado ao sistema web e gera PNG próprio para imagem-
   s.close();
 });
 
-// ---- acesso remoto (servidor do sistema em outra máquina) ----
+// ---- o agente só atende o próprio computador; o sistema o alcança pela conexão que o agente abre (túnel) ----
 import http from 'node:http';
-const remoto = (porta, caminho, { metodo = 'GET', token, corpo, host = '192.168.15.8:9101' } = {}) => new Promise((ok, falha) => {
-  const req = http.request({ host: '127.0.0.1', port: porta, path: caminho, method: metodo, headers: { Host: host, 'content-type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(corpo ? { 'x-agente': 'paes' } : {}) } }, (res) => {
-    let t = ''; res.on('data', (c) => { t += c; }); res.on('end', () => ok({ status: res.statusCode, corpo: t ? JSON.parse(t) : null }));
-  });
-  req.on('error', falha); if (corpo) req.write(JSON.stringify(corpo)); req.end();
+import { iniciaTunel } from '../src/tunel.js';
+const comHost = (porta, caminho, host) => new Promise((ok, falha) => {
+  const req = http.request({ host: '127.0.0.1', port: porta, path: caminho, headers: { Host: host } }, (res) => { res.resume(); res.on('end', () => ok(res.statusCode)); });
+  req.on('error', falha); req.end();
 });
-const TOKEN = 'segredo-bem-longo-123456';
-
-test('remoto: sem token ou com token errado é recusado', async () => {
-  const { s, cfg } = await monta(); cfg.token = TOKEN;
-  try {
-    assert.equal((await remoto(cfg.porta, '/status')).status, 421);
-    assert.equal((await remoto(cfg.porta, '/status', { token: 'errado-errado-errado' })).status, 401);
-  } finally { s.close(); }
-});
-test('remoto: sem token configurado nada passa, mesmo mandando um token', async () => {
+test('Host que não é do próprio computador é recusado (421)', async () => {
   const { s, cfg } = await monta();
-  try { assert.equal((await remoto(cfg.porta, '/status', { token: TOKEN })).status, 401); } finally { s.close(); }
+  try { assert.equal(await comHost(cfg.porta, '/status', '192.168.15.8:9101'), 421); assert.equal(await comHost(cfg.porta, '/status', `127.0.0.1:${cfg.porta}`), 200); } finally { s.close(); }
 });
-test('remoto: com token lista destinos e imprime; administração fica bloqueada', async () => {
-  const enviados = [];
-  const { s, cfg } = await monta({ destinos: { etq: { tipo: 'rede', linguagem: 'zpl', host: '10.0.0.9', porta: 9100 } }, deps: { rede: async (d, b) => { enviados.push(b.toString()); } } });
-  cfg.token = TOKEN;
+const esperaAte = async (fn, ms = 3000) => { const t0 = Date.now(); while (!fn() && Date.now() - t0 < ms) await new Promise((r) => setTimeout(r, 20)); };
+test('túnel: busca o pedido no sistema, executa no próprio agente e devolve o resultado', async () => {
+  const { s, cfg } = await monta({ destinos: { etq: { tipo: 'rede', linguagem: 'zpl', host: '10.0.0.9', porta: 9100 } } });
+  cfg.sistema_url = 'http://sistema.test'; cfg.sistema_token = 't'.repeat(20);
+  const pedidos = [{ id: 'a', metodo: 'GET', caminho: '/destinos' }, { id: 'b', metodo: 'POST', caminho: '/gravar', corpo: {} }]; const respostas = []; let auth;
+  const fetchImpl = async (url, opc = {}) => {
+    if (url.startsWith('http://sistema.test/api/agente-tunel/proximo')) { auth = opc.headers.Authorization; const j = pedidos.shift(); if (j) return new Response(JSON.stringify(j), { status: 200 }); await new Promise((r) => setTimeout(r, 30)); return new Response(null, { status: 204 }); }
+    if (url === 'http://sistema.test/api/agente-tunel/resposta') { respostas.push(JSON.parse(opc.body)); return new Response('{}'); }
+    return fetch(url, opc);
+  };
+  const t = iniciaTunel({ cfg, fetchImpl, esperaErroMs: 10 });
   try {
-    assert.equal((await remoto(cfg.porta, '/status', { token: TOKEN })).corpo.ok, true);
-    assert.equal((await remoto(cfg.porta, '/destinos', { token: TOKEN })).corpo[0].nome, 'etq');
-    const r = await remoto(cfg.porta, '/imprimir', { metodo: 'POST', token: TOKEN, corpo: { destino: 'etq', tipo: 'raw', dados_b64: Buffer.from('^XA^XZ').toString('base64') } });
-    assert.equal(r.status, 200); assert.deepEqual(enviados, ['^XA^XZ']);
-    assert.equal((await remoto(cfg.porta, '/', { token: TOKEN })).status, 403);
-    assert.equal((await remoto(cfg.porta, '/api/destinos', { metodo: 'POST', token: TOKEN, corpo: { nome: 'x' } })).status, 403);
+    await esperaAte(() => respostas.length === 2);
+    assert.equal(auth, `Bearer ${'t'.repeat(20)}`);
+    assert.equal(respostas[0].id, 'a'); assert.equal(respostas[0].status, 200); assert.equal(respostas[0].corpo[0].nome, 'etq');
+    assert.equal(respostas[1].id, 'b'); assert.equal(respostas[1].status, 403); // /gravar não é liberado pelo túnel
+  } finally { t.para(); s.close(); }
+});
+test('túnel: token recusado vira mensagem clara e o agente segue tentando', async () => {
+  const { s, cfg } = await monta();
+  cfg.sistema_url = 'http://sistema.test'; cfg.sistema_token = 'x'.repeat(20);
+  const { estadoTunel } = await import('../src/tunel.js');
+  const t = iniciaTunel({ cfg, fetchImpl: async () => new Response('{}', { status: 401 }), esperaErroMs: 10 });
+  try { await esperaAte(() => estadoTunel.ultimoErro); assert.match(estadoTunel.ultimoErro, /recusou o token/); assert.equal(estadoTunel.conectado, false); } finally { t.para(); s.close(); }
+});
+test('POST /api/sistema grava endereço e token (só pela página do agente) e a escuta continua local', async () => {
+  const { s, cfg, call } = await monta();
+  const base = `http://127.0.0.1:${cfg.porta}`;
+  try {
+    assert.equal((await call('POST', '/api/sistema', { url: 'https://paes.x.com', token: 'k'.repeat(24) }, { origin: 'https://paes.x.com' })).status, 403);
+    assert.equal((await call('POST', '/api/sistema', { url: 'ftp://x', token: 'k'.repeat(24) }, { origin: base })).status, 422);
+    assert.equal((await call('POST', '/api/sistema', { url: 'https://paes.x.com/', token: 'curto' }, { origin: base })).status, 422);
+    assert.equal((await call('POST', '/api/sistema', { url: 'https://paes.x.com/', token: 'k'.repeat(24) }, { origin: base })).status, 200);
+    assert.equal(cfg.sistema_url, 'https://paes.x.com'); assert.equal(cfg.sistema_token, 'k'.repeat(24));
   } finally { s.close(); }
 });
-test('config: escuta na rede só com token de 16+ caracteres', () => {
+test('config antiga com escuta 0.0.0.0/token volta a escutar só no próprio computador', () => {
   const arq = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'ag-')), 'c.json');
-  fs.writeFileSync(arq, JSON.stringify({ escuta: '0.0.0.0', token: 'curto' }));
-  assert.equal(carregaConfig(arq).escuta, '127.0.0.1');
-  fs.writeFileSync(arq, JSON.stringify({ escuta: '0.0.0.0', token: TOKEN }));
-  assert.equal(carregaConfig(arq).escuta, '0.0.0.0');
+  fs.writeFileSync(arq, JSON.stringify({ escuta: '0.0.0.0', token: 'segredo-bem-longo-123456' }));
+  const c = carregaConfig(arq); assert.equal(c.escuta, '127.0.0.1'); assert.equal(c.token, undefined);
 });
 
 // ---- não perder impressoras ----
@@ -206,15 +217,6 @@ test('png em várias páginas vai num único trabalho (uma etiqueta por página)
     assert.deepEqual(chamadas, [[3, { larguraMm: 62, alturaMm: 45, copias: 1 }]]);
     assert.equal((await call('POST', '/imprimir', { destino: 'ql', tipo: 'png', paginas_b64: [] }, H)).status, 422);
   } finally { s.close(); }
-});
-
-test('validaRede: liga com token gerado, mantém o atual e desliga', async () => {
-  const { validaRede } = await import('../src/config.js');
-  const a = validaRede({ permitir: true, token: '' }, '');
-  assert.equal(a.escuta, '0.0.0.0'); assert.ok(a.token.length >= 16);
-  assert.equal(validaRede({ permitir: true, token: '' }, a.token).token, a.token);
-  assert.deepEqual(validaRede({ permitir: false }, a.token), { escuta: '127.0.0.1', token: a.token });
-  assert.throws(() => validaRede({ permitir: true, token: 'curto' }, ''), /16/);
 });
 
 test('validaDestino guarda IP/host e COM informados mesmo para destino do Windows (Editar não volta em branco)', () => {

@@ -26,12 +26,14 @@ Só aceita `Host` 127.0.0.1/localhost, origens da lista, cabeçalho `X-Agente: p
 ## Teste
 `node --test` (10 testes). Windows (PowerShell/winspool), serial e impressoras reais **não** foram testados em hardware: faça uma impressão de teste (botão *Teste*) em cada destino.
 
-## Servidor em outra máquina (ex.: Linux) imprimindo no Windows
+## Outros computadores imprimindo por este agente (conexão de dentro para fora)
 
-O navegador só alcança o agente no próprio `127.0.0.1`. Quando o servidor roda no Linux e as impressoras estão no Windows, o servidor repassa a impressão ao agente pela rede (rota `/api/impressao/*`); o front usa essa ponte sozinho quando não encontra o agente local.
+O navegador só alcança o agente no próprio `127.0.0.1`. Para os **outros computadores** imprimirem nas impressoras deste, o agente **conecta ao sistema** (long-poll em `/api/agente-tunel/proximo`), recebe os pedidos (`/status`, `/destinos`, `/imprimir`, `/testar`), executa no próprio 127.0.0.1 e devolve o resultado. Como só o agente abre conexão, funciona com o sistema na mesma rede, em outra rede ou na internet — **sem IP fixo, porta liberada, firewall ou VPN**.
 
-1. No Windows das impressoras (como Administrador): `powershell -ExecutionPolicy Bypass -File liberar-rede.ps1`. Gera o token, coloca `"escuta": "0.0.0.0"` no `config.json`, libera a porta 9101 no firewall só para a rede local e reinicia o agente.
-2. No servidor, em `server/.env`: `AGENTE_URL=http://IP-DO-WINDOWS:9101` e `AGENTE_TOKEN=<token mostrado>`; reinicie a API.
-3. Cadastre as impressoras na página do agente **no Windows** (`http://127.0.0.1:9101`), como antes.
+1. No sistema, em Ferramentas › Configurar impressoras, baixe **"Instalador do computador das impressoras"** e execute-o nesse computador. Ele já grava o endereço do sistema e o token de pareamento.
+2. Cadastre as impressoras na página do agente (`http://127.0.0.1:9101`), como antes.
+3. Pronto: os demais computadores escolhem o destino de cada documento em Configurar impressoras.
 
-Segurança: com token o agente aceita de fora só `/status`, `/destinos`, `/imprimir` e `/testar`; a administração continua só no próprio Windows. Sem token (ou com menos de 16 caracteres) o agente escuta só em 127.0.0.1. Use rede confiável (o tráfego é HTTP puro).
+Computador que imprime só para si (impressora ligada nele): use **"Instalador só para este computador"**; ele não conecta ao sistema.
+
+Conectar à mão: na página do agente, em "Conexão com o sistema", informe o endereço do sistema e o token (que o administrador vê em Configurar impressoras). Use **um** agente conectado por sistema. Segurança: o agente só escuta em 127.0.0.1 e nunca abre porta para a rede; o túnel só aceita as 4 rotas acima e exige o token.

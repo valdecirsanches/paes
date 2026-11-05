@@ -2,13 +2,13 @@ import { pngTeste } from './png.js';
 import http from 'node:http';
 import { mkdir, writeFile, stat } from 'node:fs/promises';
 import path from 'node:path';
-import { timingSafeEqual } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { caminhoConfig, carregaConfig, ipsDaMaquina, salvaConfig, validaDestino, validaRede } from './config.js';
+import { caminhoConfig, carregaConfig, salvaConfig, validaDestino } from './config.js';
+import { estadoTunel, iniciaTunel } from './tunel.js';
 import { enviaRede, enviaSerial, enviaWindowsPng, enviaWindowsRaw, listaWindows, papeisWindows } from './transportes.js';
 import { paginaAdmin } from './admin.js';
 
-const VERSAO = '1.1.2'; // 1.1.2: impressão por imagem sempre em orientação retrato (Brother vinha em paisagem); 1.1.1: DANFE A4 encaixado na área imprimível (rodapé não corta); 1.1.0: gravação do XML da NF-e no N: (POST /gravar)
+const VERSAO = '1.2.0'; // 1.2.0: o agente CONECTA ao sistema (túnel reverso, sem porta/IP/firewall) e o "acesso pela rede" deixou de existir; 1.1.2: 1.1.2: impressão por imagem sempre em orientação retrato (Brother vinha em paisagem); 1.1.1: DANFE A4 encaixado na área imprimível (rodapé não corta); 1.1.0: gravação do XML da NF-e no N: (POST /gravar)
 const MAX_CORPO = 4 * 1024 * 1024;
 
 /** Cria o servidor. `deps` permite trocar os transportes nos testes. */
@@ -19,14 +19,6 @@ export function criaServidor({ cfg, arquivoCfg, deps = {} } = {}) {
 
   const hostOk = (req) => /^(127\.0\.0\.1|localhost|\[::1\])(:\d+)?$/i.test(req.headers.host ?? '');
   const proprio = (origem) => !!origem && new RegExp(`^http://(127\\.0\\.0\\.1|localhost):${cfg.porta}$`).test(origem);
-  // Acesso remoto (servidor do sistema em outra máquina): exige o token do config.json; só as 4 rotas de impressão.
-  const tokenOk = (req) => {
-    if (!cfg.token) return false;
-    const m = /^Bearer (.+)$/.exec(req.headers.authorization ?? ''); if (!m) return false;
-    const a = Buffer.from(m[1]); const b = Buffer.from(cfg.token);
-    return a.length === b.length && timingSafeEqual(a, b);
-  };
-  const ROTAS_REMOTAS = new Set(['GET /status', 'GET /destinos', 'POST /imprimir', 'POST /testar']);
   const permitida = (origem) => !origem || proprio(origem) || cfg.origens.includes(origem);
 
   const resp = (res, status, corpo, extra = {}) => {
@@ -96,12 +88,7 @@ export function criaServidor({ cfg, arquivoCfg, deps = {} } = {}) {
 
   const servidor = http.createServer(async (req, res) => {
     try {
-      const remoto = !hostOk(req);
-      if (remoto) {
-        if (!tokenOk(req)) return resp(res, req.headers.authorization ? 401 : 421, { message: req.headers.authorization ? 'Token inválido.' : 'Host não permitido.' });
-        if (!ROTAS_REMOTAS.has(`${req.method} ${new URL(req.url, 'http://x').pathname}`)) return resp(res, 403, { message: 'Rota não liberada para acesso remoto.' });
-        if (req.headers.origin) return resp(res, 403, { message: 'Acesso remoto não é para navegador.' });
-      }
+      if (!hostOk(req)) return resp(res, 421, { message: 'Host não permitido: o agente só atende o próprio computador (127.0.0.1); o sistema o alcança pela conexão que o agente abre.' });
       const origem = req.headers.origin;
       const cors = origem && permitida(origem) ? { 'Access-Control-Allow-Origin': origem, Vary: 'Origin', 'Access-Control-Allow-Private-Network': 'true' } : {};
       if (origem && !permitida(origem)) return resp(res, 403, { message: 'Origem não autorizada. Adicione-a em "origens" na configuração do agente.' });
@@ -154,13 +141,18 @@ export function criaServidor({ cfg, arquivoCfg, deps = {} } = {}) {
         const m = url.pathname.match(/^\/api\/destinos\/(.+)$/);
         if (req.method === 'DELETE' && m) { const n = decodeURIComponent(m[1]); delete cfg.destinos[n]; delete cfg.invalidos?.[n]; salvaConfig(cfg, arquivoCfg); return r(200, { ok: true }); }
         if (req.method === 'POST' && url.pathname === '/api/testar') { await testar((await lerJson(req)).destino); return r(200, { ok: true }); }
-        if (req.method === 'POST' && url.pathname === '/api/rede') {
+        // conexão do agente com o sistema (endereço + token de pareamento) e o estado dela
+        if (req.method === 'GET' && url.pathname === '/api/sistema') return r(200, { url: cfg.sistema_url, tem_token: Boolean(cfg.sistema_token), ...estadoTunel });
+        if (req.method === 'POST' && url.pathname === '/api/sistema') {
           const b = await lerJson(req);
-          let n; try { n = validaRede({ permitir: !!b.permitir, token: b.token }, cfg.token); } catch (e) { return r(422, { message: e.message }); }
-          cfg.escuta = n.escuta; cfg.token = n.token; salvaConfig(cfg, arquivoCfg);
-          // aplica agora, sem reiniciar o programa: fecha e volta a escutar no endereço novo
-          setTimeout(reescutar, 400);
-          return r(200, { ok: true, escuta: cfg.escuta, token: cfg.token, porta: cfg.porta, ips: ipsDaMaquina() });
+          const u = String(b.url ?? '').trim().replace(/\/+$/, '');
+          if (u && !/^https?:\/\/[A-Za-z0-9.-]+(:\d+)?$/.test(u)) return r(422, { message: 'Endereço inválido. Use o formato https://paes.seudominio.com.br' });
+          const t = String(b.token ?? '').trim();
+          if (t && (t.length < 16 || /\s/.test(t))) return r(422, { message: 'Token inválido (16 caracteres ou mais, sem espaços).' });
+          cfg.sistema_url = u; if (t) cfg.sistema_token = t;
+          if (u && !cfg.origens.includes(u)) cfg.origens.push(u); // o mesmo endereço também pode imprimir direto pelo navegador deste PC
+          salvaConfig(cfg, arquivoCfg); deps.aoMudarSistema?.();
+          return r(200, { ok: true, url: cfg.sistema_url, tem_token: Boolean(cfg.sistema_token) });
         }
         if (req.method === 'POST' && url.pathname === '/api/origens') {
           const b = await lerJson(req);
@@ -173,18 +165,6 @@ export function criaServidor({ cfg, arquivoCfg, deps = {} } = {}) {
       resp(res, e.status ?? 500, { message: e.message || 'Erro ao imprimir.' }, {});
     }
   });
-  // Volta a escutar no endereço do config (sem reiniciar o programa). Se a porta ainda estiver ocupada (Windows demora a liberar),
-  // tenta de novo; um erro de escuta nunca derruba o agente.
-  function reescutar() {
-    const tenta = (n) => {
-      const falhou = (e) => { servidor.off('listening', ok); if (n < 20) setTimeout(() => tenta(n + 1), 500); else console.error('Não foi possível voltar a escutar:', e.message); };
-      const ok = () => servidor.off('error', falhou);
-      servidor.once('error', falhou); servidor.once('listening', ok);
-      try { servidor.listen(cfg.porta, cfg.escuta); } catch (e) { falhou(e); }
-    };
-    try { servidor.closeAllConnections?.(); } catch { /* segue */ }
-    if (servidor.listening) servidor.close(() => tenta(0)); else tenta(0);
-  }
   servidor.on('error', (e) => console.error('Erro no servidor:', e.message));
   return servidor;
 }
@@ -194,5 +174,9 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   process.on('unhandledRejection', (e) => console.error('Promessa rejeitada (o agente continua):', e));
   const arquivoCfg = caminhoConfig();
   const cfg = carregaConfig(arquivoCfg);
-  criaServidor({ cfg, arquivoCfg }).listen(cfg.porta, cfg.escuta, () => console.log(`Agente de impressão ${VERSAO} em http://${cfg.escuta}:${cfg.porta} (config: ${arquivoCfg})`));
+  let tunel;
+  criaServidor({ cfg, arquivoCfg, deps: { aoMudarSistema: () => tunel?.reinicia() } }).listen(cfg.porta, '127.0.0.1', () => {
+    console.log(`Agente de impressão ${VERSAO} em http://127.0.0.1:${cfg.porta} (config: ${arquivoCfg})`);
+    cfg.versao = VERSAO; tunel = iniciaTunel({ cfg }); // conecta ao sistema (se já houver endereço e token)
+  });
 }
