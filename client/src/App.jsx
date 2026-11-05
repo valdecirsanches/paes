@@ -2,6 +2,7 @@ import { sincronizaLayout } from './lib/ajustes.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, imagemApi } from './api.js';
 import Diaria from './screens/Diaria.jsx';
+import Dashboard from './screens/Dashboard.jsx';
 import Mercadorias from './screens/Mercadorias.jsx';
 import Producao from './screens/Producao.jsx';
 import Reclamacoes from './screens/Reclamacoes.jsx';
@@ -33,6 +34,7 @@ import AlterarSenha from './screens/AlterarSenha.jsx';
 
 // Menu "Programação" do sistema antigo. `tela` = componente já convertido; sem tela = próxima fase.
 const TELAS = {
+  dashboard: { titulo: 'Dashboard', Tela: Dashboard },
   diaria: { titulo: 'Programação diária', Tela: Diaria },
   mercadorias: { titulo: 'Venda de mercadorias', Tela: Mercadorias },
   producao: { titulo: 'Produção', Tela: Producao },
@@ -59,7 +61,7 @@ const TELAS = {
 };
 // Menus do sistema antigo. Itens sem tela em TELAS ainda são de próximas fases (aparecem esmaecidos).
 const MENUS = [
-  { id: 'prog', rotulo: 'Programação', icone: '🗓️', itens: [['diaria', 'Fixa/Diária', '📋'], ['mercadorias', 'Mercadorias', '🛒'], ['producao', 'Produção', '🥖'], ['itinerario', 'Etinerário', '🧭'], ['cargas', 'Cargas', '🚚'], ['reclamacoes', 'Reclamações', '💬'], ['extras', 'Pedidos extras', '🛍']] },
+  { id: 'prog', rotulo: 'Programação', icone: '🗓️', itens: [['dashboard', 'Dashboard', '📊'], ['diaria', 'Fixa/Diária', '📋'], ['mercadorias', 'Mercadorias', '🛒'], ['producao', 'Produção', '🥖'], ['itinerario', 'Etinerário', '🧭'], ['cargas', 'Cargas', '🚚'], ['reclamacoes', 'Reclamações', '💬'], ['extras', 'Pedidos extras', '🛍']] },
   { id: 'fat', rotulo: 'Faturamento', icone: '💳', itens: [['faturamento', 'Faturamento', '💳'], ['comandas', 'Controle de comandas', '🧾'], ['nfe', 'NFe', '📑'], ['tributos', 'Tributos', '🏷️'], ['quitacao', 'Quitação', '💰']] },
   { id: 'cad', rotulo: 'Cadastros', icone: '👥', itens: [['clientes', 'Clientes', '🏢'], ['produtos', 'Produtos', '🍞'], ['funcionarios', 'Funcionários', '🧑‍🍳'], ['usuarios', 'Usuários', '🔑']] },
   { id: 'outros', rotulo: 'Outros', icone: '📦', itens: [['relnfes', 'Relatório de NFEs', '📊'], ['nfsconf', 'Leitura de NFs confirmadas', '📥']] },

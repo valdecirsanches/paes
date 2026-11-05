@@ -215,3 +215,7 @@ test('imagem da tela principal: só administrador troca (sem login de teste → 
   assert.equal((await call('PUT', '/api/tela-principal', { arquivoBase64: 'AAAA' })).status, 403);
   assert.equal((await call('DELETE', '/api/tela-principal')).status, 403);
 });
+test('dashboard: data inválida → 422', async () => {
+  assert.equal((await call('GET', '/api/dashboard?data=lixo')).status, 422);
+  assert.equal((await call('GET', '/api/dashboard')).status, 422);
+});

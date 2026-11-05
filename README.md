@@ -899,3 +899,9 @@ O campo "Hora da entrega" do item ficou mais largo (150 px) para mostrar o horá
 
 ## Fase 181 — Programação diária: Enter também grava no campo Cada
 Enter no campo **Extra** ou no campo **Cada** grava o item e fecha a edição (antes só o Extra).
+
+## Fase 182 — Dashboard
+Nova tela **Programação › Dashboard** (primeira do menu) com os resumos do dia, navegável por data (◀ ▶ Hoje Amanhã):
+- Cartões: valor programado, quantidade total, itens (clientes/cancelados), alterações do dia (avulsos + fixos com extra) e % cobrado/pendente; valor, quantidade e itens comparados com ontem e com o mesmo dia da semana passada.
+- Situação dos clientes (normal/alterado/cancelado/sem itens), entregas por hora, produção por turno, por acomodação, produtos e clientes de maior valor.
+- Servidor: `GET /api/dashboard?data=AAAA-MM-DD` (somente leitura; itens cancelados fora dos totais). Valor = (fixa + extra) × preço ÷ "cada".

@@ -1864,3 +1864,27 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{filter:brightness(1.15)}
 .dp-c .if-pills{gap:2px}.dp-c .if-prodsel{gap:2px}
 .if-corpo.dp{padding:6px 10px 8px}
 .imp-linux{margin-top:10px;font-size:13px}.imp-linux summary{cursor:pointer;font-weight:600}.imp-linux .imp-btn{margin:6px 6px 0 0;display:inline-block}
+
+/* ---- Dashboard (Fase 182) ---- */
+.db{padding:14px 18px;display:flex;flex-direction:column;gap:14px;max-width:1400px;margin:0 auto;width:100%;box-sizing:border-box}
+.db-topo{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px}
+.db-topo h2{margin:0;font-size:22px;color:var(--azul-barra-2)}.db-topo p{margin:2px 0 0;color:#555}
+.db-nav{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.db-nav input{height:30px}
+.db-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.db-card{background:#fff;border:1px solid var(--borda);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:3px;box-shadow:0 1px 2px #0001}
+.db-card.dest{background:linear-gradient(135deg,#fff8ee,#ffe9cc);border-color:var(--cor-btn)}
+.db-card h3{margin:0;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#555}
+.db-card strong{font-size:26px;line-height:1.1;color:#1f2d3d}.db-card small{color:#666}
+.db-deltas{display:flex;flex-direction:column;gap:1px;margin-top:4px}
+.db-delta{font-size:12px;font-weight:600}.db-delta.up{color:#1a7f37}.db-delta.down{color:#b00020}.db-delta.eq,.db-delta.nd{color:#777;font-weight:400}
+.db-painel{background:#fff;border:1px solid var(--borda);border-radius:10px;padding:10px 12px;min-width:0}
+.db-painel h3{margin:0 0 8px;font-size:14px;color:var(--azul-barra-2)}
+.db-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:10px}
+.db-barras{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.db-barras li{display:grid;grid-template-columns:minmax(70px,150px) 1fr auto;gap:8px;align-items:center;font-size:13px}
+.db-rot{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.db-trilho{display:block;height:14px;background:#eef3f8;border-radius:7px;overflow:hidden}.db-trilho.grande{height:10px;margin-top:6px}
+.db-trilho i{display:block;height:100%;background:var(--azul-barra);border-radius:7px}
+.db-pilha{display:flex;height:22px;border-radius:6px;overflow:hidden;border:1px solid var(--borda)}.db-pilha i{display:block}
+.db-legenda{list-style:none;display:flex;gap:16px;flex-wrap:wrap;margin:8px 0 0;padding:0;font-size:13px}.db-legenda i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;border:1px solid #0003}
+.db-vazio{color:#777;margin:4px 0}.db-erro{background:#fde8e8;border:1px solid #e57373;color:#7a1010;padding:8px 12px;border-radius:8px}
