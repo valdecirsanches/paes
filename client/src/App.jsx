@@ -33,7 +33,7 @@ import AlterarSenha from './screens/AlterarSenha.jsx';
 
 // Menu "Programação" do sistema antigo. `tela` = componente já convertido; sem tela = próxima fase.
 const TELAS = {
-  diaria: { titulo: 'Programação diária', Tela: Diaria },
+  diaria: { titulo: 'AppBakery', Tela: Diaria },
   mercadorias: { titulo: 'Venda de mercadorias', Tela: Mercadorias },
   producao: { titulo: 'Produção', Tela: Producao },
   itinerario: { titulo: 'Controle do etinerário', Tela: Itinerario },

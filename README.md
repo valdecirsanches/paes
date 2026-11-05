@@ -838,3 +838,8 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 164
 - **Ferramentas › Aparência (cores)**: escolha entre temas prontos (Padrão, Verde, Roxo, Vermelho, Grafite, Turquesa) ou ajuste duas cores — **botões de destaque** (laranja) e **barra, cabeçalhos e botões comuns** (azul). A mudança aparece **na hora** e fica salva **neste navegador** (cada computador pode ter o seu tema); "Voltar ao padrão" restaura. As cores agora são variáveis CSS (`--cor-btn`, `--azul-barra`, `--bt-*`) em `styles.css`; `lib/tema.js` deriva os tons de apoio.
+
+## Fase 165
+- Título da tela/aba/janela **Programação diária → AppBakery**.
+- **Tema aplicado a todo o app**: cerca de 180 linhas de `styles.css` com azuis fixos (barra de título, cabeçalhos de grade, abas, bordas, fundos claros) passaram a derivar de `--azul-barra` via `color-mix`; o laranja dos botões de destaque usa `--cor-btn`. Cores de significado (ex.: fixo, listas verde/amarelo, produção vermelha) não mudam.
+- Removido o aviso "Conflitos, etiquetas e relatórios: próximas fases" do menu **Ações do dia** (sobra da Fase 10).

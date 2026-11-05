@@ -97,7 +97,6 @@ export default function Diaria({ onFechar }) {
               <div className="nf2-veu" onClick={() => setMenuAberto(false)} />
               <div className="nf2-menu" role="menu" onClick={() => setMenuAberto(false)}>
                 {acoes.map(([rotulo, fn]) => <button key={rotulo} type="button" role="menuitem" onClick={fn}>{rotulo}</button>)}
-                <small>Conflitos, etiquetas e relatórios: próximas fases</small>
               </div>
             </>
           )}
