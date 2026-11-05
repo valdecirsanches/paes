@@ -1839,3 +1839,27 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{filter:brightness(1.15)}
 .if-l4p .if-prodsel{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
 @media (max-width:1100px){.if-l4p{grid-template-columns:1fr}}
 .if-pn>.if-linha+.if-linha{margin-top:8px}
+/* Fase 174: posições do formulário do Delphi — [item] [anotações] [acabamento | produção] numa faixa só */
+.if-corpo.dp{display:grid;grid-template-columns:minmax(380px,1.1fr) minmax(220px,.8fr) auto;gap:10px;align-items:stretch}
+.dp-a{display:flex;flex-direction:column;gap:6px}
+.dp-r1{display:flex;gap:8px;align-items:flex-end}
+.dp-r1 .if-data{order:-1;flex:0 0 140px}.dp-r1 .if-cod{flex:1;min-width:0}
+.dp-a .if-nums{grid-template-columns:repeat(5,1fr);gap:6px}
+.dp-b{display:flex;flex-direction:column;gap:8px;min-width:0}
+.dp-b .if-pn{flex:1;display:flex;flex-direction:column}.dp-b textarea{flex:1;min-height:60px;height:100%}
+.dp-c{display:grid;grid-template-columns:auto 230px;gap:6px 14px;align-items:start}
+.dp-c>legend{grid-column:1/-1}
+.dp-c .if-pills{flex-direction:column;flex-wrap:nowrap;gap:5px}
+.dp-c .if-prodsel{display:flex;flex-direction:column;gap:5px}
+@media (max-width:1100px){.if-corpo.dp{grid-template-columns:1fr}.dp-c{grid-template-columns:1fr}}
+/* compacto: o bloco do item ocupa a altura do Delphi (~190px) */
+.dp .if-chips{display:none}
+.dp .if-grande input{width:110px;height:32px;font-size:18px;border-width:1px;border-radius:8px}
+.dp .if input,.dp input,.dp select{height:30px;font-size:13px}
+.dp .if-campo{gap:1px;font-size:11px}
+.dp-a{gap:3px;padding-bottom:6px}
+.dp-a .if-orig input{height:28px}
+.dp-b textarea{min-height:44px}
+.dp .if-pn{padding:2px 8px 6px}
+.dp-c .if-pills{gap:2px}.dp-c .if-prodsel{gap:2px}
+.if-corpo.dp{padding:6px 10px 8px}

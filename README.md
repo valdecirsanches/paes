@@ -869,3 +869,6 @@ Programação diária: faixa do topo com calendário maior, lista de clientes ma
 
 ### Fase 173
 Programação diária/fixa: formulário do item em painéis (Item, Quantidade e preço, Anotações, Acabamento, Produção e entrega); **F5** grava, **Esc** cancela; gravar (F5/Salvar/Enter) fecha o painel de edição; Enter no campo **Extra** (diária) e na **Qtde** (fixa, quando o item está completo) grava automaticamente. Aba do app volta a "Programação diária"; título do navegador fixo em "AppBakery".
+
+### Fase 174
+Programação diária: campos do item nas posições do Delphi — bloco "Item" à esquerda (Data, Hora, Produto; descrição original, da comanda e de expedição; Qtde fixa, Extra, Preço, Cada, Valor total), painéis "Anotações p/ faturamento" e "Informe p/ produção" empilhados no meio, e "Produção" (acabamentos + data, turno, embalagem, preparação, itinerário) à direita; tudo compactado na altura do original. A ordem do Enter continua Hora → Data → Produto → … → Extra.
