@@ -272,3 +272,17 @@ test('CUPS: destino exige nome sem espaços; imagem pelo driver vale para cups; 
     assert.deepEqual(chamadas, [['png', 'Brother_QL-800', 2, { larguraMm: 62, alturaMm: 45, copias: 1 }], ['raw', 'termica', 3]]);
   } finally { s.close(); }
 });
+
+test('túnel: endereço https para um sistema que só fala http é corrigido sozinho', async () => {
+  const { s, cfg } = await monta();
+  cfg.sistema_url = 'https://127.0.0.1:5071'; cfg.sistema_token = 'x'.repeat(20);
+  let salvou = '';
+  const fetchImpl = async (url) => {
+    if (url.startsWith('https://')) { const e = new TypeError('fetch failed'); e.cause = { code: 'ERR_SSL_WRONG_VERSION_NUMBER' }; throw e; }
+    if (url.startsWith('http://127.0.0.1:5071')) { await new Promise((r) => setTimeout(r, 20)); return new Response(null, { status: 204 }); }
+    return fetch(url);
+  };
+  const { estadoTunel } = await import('../src/tunel.js');
+  const t = iniciaTunel({ cfg, fetchImpl, esperaErroMs: 10, aoCorrigirUrl: (u) => { salvou = u; } });
+  try { await esperaAte(() => estadoTunel.conectado); assert.equal(cfg.sistema_url, 'http://127.0.0.1:5071'); assert.equal(salvou, 'http://127.0.0.1:5071'); } finally { t.para(); s.close(); }
+});

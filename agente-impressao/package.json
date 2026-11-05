@@ -1,6 +1,6 @@
 {
   "name": "paes-agente-impressao",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "private": true,
   "type": "module",
   "description": "Serviço local de impressão (térmica, etiquetas, ESC/POS, ZPL, TSPL, driver do Windows) para o sistema web.",

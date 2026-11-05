@@ -7,7 +7,7 @@ const ESPERA_MS = 40_000; // o sistema segura o pedido por ~25 s; folga para a r
 /** Estado visível na página do agente. */
 export const estadoTunel = { ligado: false, conectado: false, ultimoErro: '', desde: 0 };
 
-export function iniciaTunel({ cfg, fetchImpl = fetch, esperaErroMs = 4000 } = {}) {
+export function iniciaTunel({ cfg, fetchImpl = fetch, esperaErroMs = 4000, aoCorrigirUrl } = {}) {
   let parar = false; let ciclo = 0;
   const base = () => String(cfg.sistema_url ?? '').trim().replace(/\/+$/, '');
   const auth = () => ({ Authorization: `Bearer ${String(cfg.sistema_token ?? '').trim()}` });
@@ -40,6 +40,8 @@ export function iniciaTunel({ cfg, fetchImpl = fetch, esperaErroMs = 4000 } = {}
         try { resp = await executa(job); } catch (e) { resp = { status: 500, corpo: { message: e.message || 'Erro ao executar no agente.' } }; }
         await fetchImpl(`${base()}/api/agente-tunel/resposta`, { method: 'POST', headers: { ...auth(), 'Content-Type': 'application/json' }, body: JSON.stringify({ id: job.id, ...resp }), signal: AbortSignal.timeout(15_000) }).catch(() => {});
       } catch (e) {
+        // endereço gravado com https, mas o sistema só fala http (ex.: servidor de desenvolvimento): corrige sozinho e tenta de novo
+        if (e.cause?.code === 'ERR_SSL_WRONG_VERSION_NUMBER' && /^https:/i.test(cfg.sistema_url ?? '')) { cfg.sistema_url = cfg.sistema_url.replace(/^https:/i, 'http:'); try { aoCorrigirUrl?.(cfg.sistema_url); } catch { /* segue */ } estadoTunel.ultimoErro = 'Endereço corrigido para http.'; continue; }
         estadoTunel.conectado = false; estadoTunel.desde = 0;
         estadoTunel.ultimoErro = e.name === 'TimeoutError' ? 'O sistema não respondeu.' : (e.cause?.code ? `Sem conexão com o sistema (${e.cause.code}).` : e.message);
         await dorme(esperaErroMs);

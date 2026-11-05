@@ -8,7 +8,7 @@ import { estadoTunel, iniciaTunel } from './tunel.js';
 import { enviaCupsPng, enviaCupsRaw, enviaRede, enviaSerial, enviaWindowsPng, enviaWindowsRaw, listaImpressoras, papeisWindows } from './transportes.js';
 import { paginaAdmin } from './admin.js';
 
-const VERSAO = '1.2.0'; // 1.2.0: o agente CONECTA ao sistema (túnel reverso, sem porta/IP/firewall) e o "acesso pela rede" deixou de existir; 1.1.2: 1.1.2: impressão por imagem sempre em orientação retrato (Brother vinha em paisagem); 1.1.1: DANFE A4 encaixado na área imprimível (rodapé não corta); 1.1.0: gravação do XML da NF-e no N: (POST /gravar)
+const VERSAO = '1.2.1'; // 1.2.1: corrige sozinho endereço https quando o sistema só fala http; 1.2.0: o agente CONECTA ao sistema (túnel reverso, sem porta/IP/firewall) e o "acesso pela rede" deixou de existir; 1.1.2: 1.1.2: impressão por imagem sempre em orientação retrato (Brother vinha em paisagem); 1.1.1: DANFE A4 encaixado na área imprimível (rodapé não corta); 1.1.0: gravação do XML da NF-e no N: (POST /gravar)
 const MAX_CORPO = 4 * 1024 * 1024;
 
 /** Cria o servidor. `deps` permite trocar os transportes nos testes. */
@@ -177,6 +177,6 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   let tunel;
   criaServidor({ cfg, arquivoCfg, deps: { aoMudarSistema: () => tunel?.reinicia() } }).listen(cfg.porta, '127.0.0.1', () => {
     console.log(`Agente de impressão ${VERSAO} em http://127.0.0.1:${cfg.porta} (config: ${arquivoCfg})`);
-    cfg.versao = VERSAO; tunel = iniciaTunel({ cfg }); // conecta ao sistema (se já houver endereço e token)
+    cfg.versao = VERSAO; tunel = iniciaTunel({ cfg, aoCorrigirUrl: () => salvaConfig(cfg, arquivoCfg) }); // conecta ao sistema (se já houver endereço e token)
   });
 }

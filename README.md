@@ -883,3 +883,6 @@ Programação diária: campos do item nas posições do Delphi — bloco "Item" 
 - **Instalador Ubuntu/Debian** (`/api/agente/instalador.sh[?conectar=1]`, `remover.sh`): instala Node.js 22 e CUPS (se faltarem), grava o agente em `/opt/paes-agente-impressao`, a configuração em `/etc/paes-agente-impressao/config.json` e cria o serviço systemd `paes-agente-impressao` (inicia sozinho). Rodar: `sudo bash instalar-agente-impressao.sh`. Mesmos dois modos do Windows (com `?conectar=1` o agente atende todos os computadores pelo sistema).
 - **Novo tipo de destino "Impressora do Linux (CUPS)"** (`lp`/`lpstat`): ESC/POS, ZPL e TSPL em `lp -o raw`; imagem (etiqueta, cupom, DANFE A4) como PNG com `media=Custom.LxAmm`/`A4` + `fit-to-page`, uma página por trabalho. A lista de impressoras da página do agente vem de `lpstat -e`.
 - Não testado em Ubuntu/impressora real: o instalador foi validado só por sintaxe (`bash -n`) e pela decodificação do pacote/config; o tamanho de papel de etiquetas (ex.: Brother QL) via CUPS pode exigir ajuste do `media`.
+
+### Fase 177
+Agente 1.2.1: se o endereço do sistema foi gravado com `https` mas o sistema só fala `http` (ex.: servidor de desenvolvimento em 127.0.0.1:5071, erro `ERR_SSL_WRONG_VERSION_NUMBER`), o agente passa para `http` sozinho e grava o endereço corrigido.
