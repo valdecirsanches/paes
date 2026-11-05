@@ -24,7 +24,7 @@ const novoItem = (dia) => ({
 });
 
 /** Programação fixa (aba cxTabSheet2): barra de botões, painel pnlFixa e grade gridPrf. */
-export default function FixaTab({ status, roteiros, onChanged, notify }) {
+export default function FixaTab({ status, roteiros, onChanged, notify, onEditando }) {
   const diaData = semanaDia(status.data);
   const [dia, setDia] = useState(diaData);
   const [info, setInfo] = useState({ itens: [], ativavel: false, ativada: false });
@@ -49,6 +49,7 @@ export default function FixaTab({ status, roteiros, onChanged, notify }) {
 
   const item = info.itens.find((i) => i.id === selId) || null;
   const editando = !!draft;
+  useEffect(() => { onEditando?.(editando); return () => onEditando?.(false); }, [editando]); // eslint-disable-line react-hooks/exhaustive-deps
   const novo = editando && !draft.id;
   const hidratar = (i) => ({ ...i, hora: hhmm(i.hora), produto_descricao_original: i.produto_descricao ?? '' });
   const v = draft ?? (item ? hidratar(item) : null);

@@ -914,3 +914,7 @@ Removidas a linha de abas ("NFe / Emitente e configurações / Envio/Resposta") 
 
 ## Fase 186 — Cadastro de produtos: filtro por cliente
 O filtro dependia de marcar a caixa "Só produtos de…" e o cliente vinha pré-selecionado (o primeiro da lista), o que dava a impressão de filtrar errado. Agora: nenhum cliente vem pré-selecionado; clicar num cliente na aba **Clientes** já marca o filtro e volta para os produtos; marcar a caixa sem cliente leva à aba Clientes; o rodapé diz "N produto(s) de <cliente>" ou "(todos os clientes)".
+
+## Fase 187 — Setas em todas as grades; edição de item enxuta
+- **Setas ↑ ↓ (e PageUp/PageDown/Home/End)** passeiam pelos registros de qualquer grade: vale para a última grade em que se clicou e age como um clique na linha vizinha (seleciona e carrega o registro). Telas com tratamento próprio (Produção, Cargas, itens da NFe) continuam como estavam; campos de formulário, janelas e calendário não são afetados. Código em `client/src/lib/setasGrade.js`.
+- **Edição do item (diária e fixa):** ao entrar em edição, a faixa de calendário/apresentação/clientes recolhe para o formulário e a lista do dia caberem na tela; espaçamentos reduzidos e a linha de dicas virou "F5 salva · Esc cancela". Ao salvar/cancelar a faixa volta.

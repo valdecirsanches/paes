@@ -74,7 +74,7 @@ function derivar(r, chaves) {
   return n;
 }
 
-export default function DiariaTab({ status, data, filtro, roteiros, onChanged, notify }) {
+export default function DiariaTab({ status, data, filtro, roteiros, onChanged, notify, onEditando }) {
   const [itens, setItens] = useState([]);
   const [selId, setSelId] = useState(null);
   const [draft, setDraft] = useState(null); // registro em edição/inclusão (state dsedit/dsinsert do Delphi)
@@ -98,6 +98,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
   const item = itens.find((i) => i.id === selId) || null;
   const novo = !!draft && !draft.id;
   const editando = !!draft;
+  useEffect(() => { onEditando?.(editando); return () => onEditando?.(false); }, [editando]); // eslint-disable-line react-hooks/exhaustive-deps
   const v = draft ?? (item ? hidratar(item) : null);
   const mostrarPainel = painel && (!!v);
   const mercadoria = v && !bool(v.produto_producao);

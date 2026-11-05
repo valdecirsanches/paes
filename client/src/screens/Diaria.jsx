@@ -26,6 +26,7 @@ export default function Diaria({ onFechar }) {
   const [selId, setSelId] = useState(null);
   const uniSel = useRef(null); // unidade selecionada (sobrevive à troca de data)
   const [aba, setAba] = useState('diaria');
+  const [editandoItem, setEditandoItem] = useState(false); // item em edição: a faixa de calendário/clientes recolhe para dar espaço ao formulário
   const [aviso, setAviso] = useState(null);
   const [roteiros, setRoteiros] = useState([]);
 
@@ -106,7 +107,7 @@ export default function Diaria({ onFechar }) {
 
       <Toast aviso={aviso} />
 
-      <div className="dr2-corpo">
+      <div className={`dr2-corpo${editandoItem ? ' editando' : ''}`}>
         <aside className="dr2-lado">
           <Calendario data={data} onChange={setData} />
           <div className="dr2-card">
@@ -161,10 +162,10 @@ export default function Diaria({ onFechar }) {
           <main className="conteudo dr2-conteudo">
             {sel?.verificar_pasta === 'True' && <div className="pasta">⚠ FAVOR VERIFICAR PASTA</div>}
             {aba === 'diaria'
-              ? <DiariaTab key={sel?.id ?? 'nenhuma'} status={sel} data={data} filtro={filtro} roteiros={roteiros} onChanged={carregarLista} notify={notify} />
+              ? <DiariaTab key={sel?.id ?? 'nenhuma'} status={sel} data={data} filtro={filtro} roteiros={roteiros} onChanged={carregarLista} notify={notify} onEditando={setEditandoItem} />
               : aba === 'rcm' ? <ReclamacoesTab key={sel?.id ?? 'nenhuma'} status={sel} notify={notify} />
               : aba === 'cfg' ? <ConfigTab key={sel?.id ?? 'nenhuma'} status={sel} onChanged={carregarLista} notify={notify} />
-              : sel ? <FixaTab key={sel.id} status={sel} roteiros={roteiros} onChanged={carregarLista} notify={notify} /> : <p className="vazio">Selecione uma empresa na lista.</p>}
+              : sel ? <FixaTab key={sel.id} status={sel} roteiros={roteiros} onChanged={carregarLista} notify={notify} onEditando={setEditandoItem} /> : <p className="vazio">Selecione uma empresa na lista.</p>}
           </main>
         </section>
       </div>

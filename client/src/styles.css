@@ -1890,3 +1890,12 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{filter:brightness(1.15)}
 .db-vazio{color:#777;margin:4px 0}.db-erro{background:#fde8e8;border:1px solid #e57373;color:#7a1010;padding:8px 12px;border-radius:8px}
 .nf2-volta{display:flex;align-items:center;gap:12px;padding:4px 10px}.nf2-volta b{color:var(--azul-barra-2)}
 .grade thead .nf2-colbt.on{background:#fff;color:var(--azul-barra-2)}.nf2-ic .nf2-colbt{margin-left:2px}
+
+/* ---- Edição de item enxuta (Fase 187): faixa superior recolhida e espaçamentos menores ---- */
+.dr2-corpo.editando .dr2-lado{display:none}
+.dr2-corpo.editando{padding-top:4px}
+.if-topo{padding:4px 12px}
+.dp .if-pn,.dp fieldset.if-pn{padding:4px 8px 6px;margin:0}
+.dp .if-pn legend{padding:0 4px;font-size:11px}
+.dp-a{gap:2px}.dp .if-nums{gap:4px}
+.dp textarea{min-height:0}

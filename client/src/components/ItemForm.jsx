@@ -11,7 +11,7 @@ export function TopoItem({ novo, contexto, sujo }) {
       <span className={`if-badge ${novo ? 'novo' : 'alt'}`}>{novo ? '＋ Novo item' : '✎ Alterando item'}</span>
       {contexto && <span className="if-ctx">{contexto}</span>}
       {sujo && <span className="if-sujo" title="Há alterações ainda não salvas">● não salvo</span>}
-      <span className="if-dicas"><kbd>Enter</kbd> próximo campo<span>·</span><kbd>Tab</kbd> avança<span>·</span>botão <b>Salvar</b> grava</span>
+      <span className="if-dicas"><kbd>F5</kbd> salva<span>·</span><kbd>Esc</kbd> cancela</span>
     </header>
   );
 }
