@@ -230,8 +230,10 @@ const padR = (s, n) => String(s).padStart(n); // xpadr: alinha à direita
 const padL = (s, n) => String(s).padEnd(n); // xpadl: alinha à esquerda
 const nf = (v, min, max, grupo) => Number(v ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: min, maximumFractionDigits: max, useGrouping: grupo });
 const dataExtensoMaiusculo = (iso) => semAcento(`${dow(iso)} ${brData(iso)}`).toUpperCase();
-const TRACO = '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -';
-const LINHA = '------------------------------------------------------------';
+// Largura útil do cupom: 48 colunas (fonte A de 80 mm). Linhas maiores quebravam e o item ocupava duas linhas.
+const COLS = 48;
+const TRACO = '- '.repeat(COLS / 2).trimEnd();
+const LINHA = '-'.repeat(COLS);
 
 /** Estilos: g = #14 (largo), n = #18 (normal), c = #15 (condensado). */
 function textoParaHtml(linhas) {
@@ -244,14 +246,14 @@ export function comandaTexto(comanda, itens, mercadorias, unidadeNome) {
   const L = [];
   L.push(['g', `COMANDA: ${comanda.id}`], ['n', `Responsavel: ${comanda.usuario ?? ''}`], ['n', 'Data de Emissao: '],
     ['g', dataExtensoMaiusculo(String(comanda.data_emissao).slice(0, 10))], ['c', TRACO], ['n', 'Cliente:'], ['g', unidadeNome ?? ''], ['c', LINHA],
-    ['c', '   Qtde Descricao do produto               Vr Un.  Vr total']);
+    ['c', `${padR('Qtde', 4)} ${padL('Descricao do produto', 24)} ${padR('Vr Un.', 6)} ${padR('Vr total', 9)}`]);
   let total = 0;
   for (const i of itens) {
-    L.push(['c', `${padR(nf(i.new_qtde, 0, 2, false), 7)} ${padL(semAcento(i.descricao_generica ?? '').slice(0, 34), 34)} ${padR(nf(i.preco, 3, 3, true), 6)} ${padR(nf(i.vr_item, 3, 3, true), 9)}`]);
+    L.push(['c', `${padR(nf(i.new_qtde, 0, 2, false), 4)} ${padL(semAcento(i.descricao_generica ?? '').slice(0, 24), 24)} ${padR(nf(i.preco, 3, 3, true), 6)} ${padR(nf(i.vr_item, 3, 3, true), 9)}`]); // uma linha por item (46 colunas)
     total += Number(i.vr_item) || 0;
   }
-  L.push(['c', `${TRACO} `], ['g', `Vr total ${padR(`R$ ${nf(total, 2, 2, true)}`, 12)}`], ['c', LINHA], ['p', ''],
-    ['c', '----------------------------  ------------------------------'], ['c', 'Assinatura e nome legivel do recebedor']);
+  L.push(['c', TRACO], ['g', `Vr total ${padR(`R$ ${nf(total, 2, 2, true)}`, 12)}`], ['c', LINHA], ['p', ''],
+    ['c', `${'-'.repeat(22)}  ${'-'.repeat(24)}`], ['c', 'Assinatura e nome legivel do recebedor']);
   if (mercadorias.length) {
     L.push(['p', ''], ['p', ''], ['c', LINHA]);
     for (const m of mercadorias) L.push(['p', `${padR(nf(m.qtde, 1, 1, false), 7)} ${m.descricao ?? ''}`]);
@@ -263,17 +265,17 @@ export function comandaTexto(comanda, itens, mercadorias, unidadeNome) {
 /** btnDemoClick: demonstrativo (não gera comanda) com as linhas visíveis na grade. */
 export function demonstrativoTexto(linhas, dataSaida, unidadeNome, usuario = '') {
   const L = [['g', 'DEMONSTRATIVO'], ['n', `Responsavel: ${usuario}`], ['n', 'Data de Emissao: '], ['g', dataExtensoMaiusculo(dataSaida)],
-    ['c', TRACO], ['n', 'Cliente:'], ['g', unidadeNome ?? ''], ['c', '-----------------------------------------------------------'],
-    ['c', 'Data     Qtde Descricao do produto         Vr Un.  Vr total']];
+    ['c', TRACO], ['n', 'Cliente:'], ['g', unidadeNome ?? ''], ['c', LINHA],
+    ['c', `${padL('Data', 5)} ${padR('Qtde', 4)} ${padL('Descricao do produto', 19)} ${padR('Vr Un.', 6)} ${padR('Vr total', 9)}`]];
   let total = 0;
   for (const r of linhas) {
     const xp = Number(r.xpreco) || 0;
     const q = Number(r.qtde) || 0;
-    L.push(['c', `${String(r.data).slice(8, 10)}/${String(r.data).slice(5, 7)} ${padR(nf(q, 1, 1, false), 7)} ${padL(semAcento(r.produto_descricao ?? '').slice(0, 27), 27)} ${padR(nf(Math.round(xp * 1000) / 1000, 3, 3, true), 7)} ${padR(nf(xp * q, 3, 3, true), 9)}`]);
+    L.push(['c', `${String(r.data).slice(8, 10)}/${String(r.data).slice(5, 7)} ${padR(nf(q, 1, 1, false), 4)} ${padL(semAcento(r.produto_descricao ?? '').slice(0, 19), 19)} ${padR(nf(Math.round(xp * 1000) / 1000, 3, 3, true), 6)} ${padR(nf(xp * q, 3, 3, true), 9)}`]); // uma linha por item (46 colunas)
     total += Math.round(xp * q * 100) / 100;
   }
-  L.push(['c', TRACO], ['g', `Vr total ${padR(`R$ ${nf(Math.round(total * 100) / 100, 2, 2, true)}`, 12)}`], ['c', '-----------------------------------------------------------'], ['p', ''],
-    ['c', '----------------------------  -----------------------------'], ['c', 'Assinatura e nome legivel do recebedor']);
+  L.push(['c', TRACO], ['g', `Vr total ${padR(`R$ ${nf(Math.round(total * 100) / 100, 2, 2, true)}`, 12)}`], ['c', LINHA], ['p', ''],
+    ['c', `${'-'.repeat(22)}  ${'-'.repeat(24)}`], ['c', 'Assinatura e nome legivel do recebedor']);
   return textoParaHtml(L);
 }
 

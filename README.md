@@ -846,3 +846,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 166
 - **NFe: filtro rápido por coluna** (como no Delphi): cada título da grade tem um botão **▾** que lista os valores existentes naquela coluna (com a contagem), busca, **(Todos)** e marcação individual; o filtro vale na hora e o botão fica amarelo quando ativo. **Limpar todos os filtros** fica no mesmo menu. Funciona sobre as notas já carregadas (o filtro do topo — período, situação etc. — continua sendo o do servidor) e vale também para a coluna opcional Nome do cliente. Notas escondidas pelo filtro deixam de estar marcadas, para as ações em lote não as atingirem.
+
+## Fase 167
+- **Comanda e Demonstrativo: cada item em uma única linha.** O cupom usava linhas de 59 colunas; a térmica imprime 48 (fonte A de 80 mm) e o item quebrava em duas (e os tracejados também). Agora tudo cabe em **48 colunas** (`COLS` em `print.js`): comanda `Qtde(4) Descrição(24) Vr Un.(6) Vr total(9)` e demonstrativo `Data Qtde Descrição(19) Vr Un. Vr total`; tracejados e linha de assinatura também. Na impressão como imagem (driver do Windows) a fonte ficou maior (48 colunas em vez de 60).
