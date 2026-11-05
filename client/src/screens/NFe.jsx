@@ -34,6 +34,14 @@ function ordenaLinhas(rows, ord, cols = colunasGrade(GRADE_OPCIONAIS.map((c) => 
   const f = ord.dir === 'desc' ? -1 : 1;
   return [...rows].sort((a, b) => f * cmp(a, b) || a.id - b.id);
 }
+/** Texto de uma célula (o que aparece na grade) — base do filtro rápido por coluna. */
+function textoCelula(r, [k, , t]) {
+  if (k === 'nfe_impresso') return foiMarcado(r[k]) ? 'Impresso' : 'Não impresso';
+  if (t === 'chk') return foiMarcado(r[k]) ? 'Sim' : 'Não';
+  if (t === 'd') return r[k] ? brData(r[k]) : '(vazio)';
+  if (t === 'm') return fmtBr(r[k], 2);
+  return String(r[k] ?? '').trim() || '(vazio)';
+}
 function celulaGrade(r, [k, , t]) {
   if (k === 'nfe_impresso') return foiMarcado(r[k]) ? <span className="nf2-imp on" title="Já impresso">🖨️</span> : <span className="nf2-imp" title="Não impresso">—</span>;
   if (t === 'chk') return <input type="checkbox" checked={foiMarcado(r[k])} readOnly tabIndex={-1} />;
@@ -148,7 +156,14 @@ export default function NFe({ onFechar }) {
   const [menuCols, setMenuCols] = useState(null); // { x, y } do menu de colunas (posição fixa, fora da rolagem)
   const cols = useMemo(() => colunasGrade(extras), [extras]);
   const alternaCol = (k) => setExtras((e) => { const n = e.includes(k) ? e.filter((x) => x !== k) : [...e, k]; try { localStorage.setItem('nfe_colunas_extras', JSON.stringify(n)); } catch { /* sem armazenamento */ } return n; });
-  const [linhas, setLinhas] = useState(null); // versão leve (colunas da grade)
+  const [linhasAll, setLinhas] = useState(null); // versão leve (colunas da grade), todas as notas do filtro do servidor
+  const [filtrosCol, setFiltrosCol] = useState({}); // filtro rápido por coluna (estilo Delphi): { coluna: Set de textos permitidos }
+  const [menuFiltro, setMenuFiltro] = useState(null); // { k, x, y, busca }
+  const linhas = useMemo(() => {
+    if (!linhasAll) return linhasAll;
+    const ativos = cols.filter(([k]) => filtrosCol[k]);
+    return ativos.length ? linhasAll.filter((r) => ativos.every((c) => filtrosCol[c[0]].has(textoCelula(r, c)))) : linhasAll;
+  }, [linhasAll, filtrosCol, cols]);
   const [ordem, setOrdem] = useState({ k: 'nfe_numero', dir: 'asc' }); // { k, dir } da coluna clicada no cabeçalho; null = ordem do banco
   const ordemRef = useRef({ k: 'nfe_numero', dir: 'asc' }); // ao abrir, a grade vem por nº da NFe
   const ordenaPor = (k) => { const n = ordemRef.current?.k === k ? (ordemRef.current.dir === 'asc' ? { k, dir: 'desc' } : null) : { k, dir: 'asc' }; ordemRef.current = n; setOrdem(n); setLinhas((ls) => (n ? ordenaLinhas(ls, n) : ordenaLinhas(ls, { k: 'id', dir: 'asc' }))); };
@@ -319,6 +334,7 @@ export default function NFe({ onFechar }) {
   }, [comandaSel]);
 
   const linhasRef = useRef(linhas); linhasRef.current = linhas;
+  useEffect(() => { const ids = new Set((linhas ?? []).map((r) => r.id)); setMarcados((m) => { const n = new Set([...m].filter((x) => ids.has(x))); return n.size === m.size ? m : n; }); }, [linhas]); // filtro por coluna: o que ficou escondido deixa de estar marcado
   const clicar = useCallback((e, r, i) => {
     setFoco(r.id);
     setMarcados((s) => {
@@ -732,10 +748,32 @@ export default function NFe({ onFechar }) {
               {(
                 <>
                   <div className="nf2-gwrap">
+                    {menuFiltro && (() => {
+                      const col = cols.find((c) => c[0] === menuFiltro.k); if (!col) return null;
+                      const k = col[0]; const contagem = new Map();
+                      for (const r of linhasAll ?? []) { const t = textoCelula(r, col); contagem.set(t, (contagem.get(t) ?? 0) + 1); }
+                      const bruto = col[2] === 'm' ? [...contagem.keys()].sort((a, b) => Number(a.replace(/\./g, '').replace(',', '.')) - Number(b.replace(/\./g, '').replace(',', '.'))) : [...contagem.keys()].sort((a, b) => a.localeCompare(b, 'pt-BR', { numeric: true }));
+                      const q = menuFiltro.busca.trim().toLowerCase(); const vals = q ? bruto.filter((t) => t.toLowerCase().includes(q)) : bruto;
+                      const marc = filtrosCol[k]; const todos = !marc;
+                      const aplica = (set) => setFiltrosCol((f) => { const n = { ...f }; if (!set || set.size === bruto.length) delete n[k]; else n[k] = set; return n; });
+                      return (
+                        <div className="nf2-fc-pop" style={{ position: 'fixed', left: menuFiltro.x, top: menuFiltro.y }}>
+                          <input autoFocus placeholder="Buscar valor…" value={menuFiltro.busca} onChange={(e) => setMenuFiltro((m) => ({ ...m, busca: e.target.value }))} />
+                          <label className="todos"><input type="checkbox" checked={todos} onChange={() => aplica(todos ? new Set() : null)} /> (Todos)</label>
+                          <div className="nf2-fc-lista">
+                            {vals.slice(0, 300).map((t) => <label key={t}><input type="checkbox" checked={todos || marc.has(t)} onChange={() => { const base = new Set(todos ? bruto : marc); if (base.has(t)) base.delete(t); else base.add(t); aplica(base); }} /> <span>{t}</span> <em>{contagem.get(t)}</em></label>)}
+                            {vals.length > 300 && <small>…mais {vals.length - 300}; use a busca</small>}
+                            {!vals.length && <small>Nenhum valor</small>}
+                          </div>
+                          <div className="nf2-fc-bt"><button type="button" onClick={() => { if (q) aplica(new Set(vals)); setMenuFiltro(null); }}>{q ? 'Só os encontrados' : 'Fechar'}</button><button type="button" onClick={() => { setFiltrosCol({}); setMenuFiltro(null); }} disabled={!Object.keys(filtrosCol).length}>Limpar todos os filtros</button></div>
+                        </div>
+                      );
+                    })()}
+                    {menuFiltro && <div className="nf2-veu" onClick={() => setMenuFiltro(null)} style={{ background: 'transparent' }} />}
                     {menuCols && <div className="nf2-cols-pop" style={{ position: 'fixed', left: menuCols.x, top: menuCols.y }} onMouseLeave={() => setMenuCols(null)}>{GRADE_OPCIONAIS.map(([k, r]) => <label key={k}><input type="checkbox" checked={extras.includes(k)} onChange={() => alternaCol(k)} /> {r}</label>)}</div>}
                   <div className="nfe-grade rolagem" ref={jn.ref} onScroll={jn.onScroll} style={{ height: altGrade }}>
                     <table className="grade">
-                      <thead><tr><th className="ind" /><th className="nf2-chk"><input type="checkbox" checked={todosMarcados} onChange={marcarTodas} disabled={!linhas?.length} aria-label="Marcar todas" title="Marcar / desmarcar todas" /></th><th className="nf2-ic"><button type="button" className="nf2-colbt" title="Escolher as colunas da grade" onClick={(e) => { const r = e.currentTarget.getBoundingClientRect(); setMenuCols((m) => (m ? null : { x: r.left, y: r.bottom + 2 })); }}>☰</button></th>{cols.map(([k, r, , w]) => <th key={k} style={{ minWidth: w }} className="ord" aria-sort={ordem?.k === k ? (ordem.dir === 'asc' ? 'ascending' : 'descending') : 'none'} title="Clique para ordenar (clique de novo inverte; terceiro clique volta à ordem original)" onClick={() => ordenaPor(k)}>{r}{ordem?.k === k ? (ordem.dir === 'asc' ? ' ▲' : ' ▼') : ''}</th>)}</tr></thead>
+                      <thead><tr><th className="ind" /><th className="nf2-chk"><input type="checkbox" checked={todosMarcados} onChange={marcarTodas} disabled={!linhas?.length} aria-label="Marcar todas" title="Marcar / desmarcar todas" /></th><th className="nf2-ic"><button type="button" className="nf2-colbt" title="Escolher as colunas da grade" onClick={(e) => { const r = e.currentTarget.getBoundingClientRect(); setMenuCols((m) => (m ? null : { x: r.left, y: r.bottom + 2 })); }}>☰</button></th>{cols.map(([k, r, , w]) => <th key={k} style={{ minWidth: w }} className="ord" aria-sort={ordem?.k === k ? (ordem.dir === 'asc' ? 'ascending' : 'descending') : 'none'} title="Clique para ordenar (clique de novo inverte; terceiro clique volta à ordem original)" onClick={() => ordenaPor(k)}>{r}{ordem?.k === k ? (ordem.dir === 'asc' ? ' ▲' : ' ▼') : ''}<button type="button" className={`nf2-fc${filtrosCol[k] ? ' on' : ''}`} title={filtrosCol[k] ? 'Filtro ativo nesta coluna' : 'Filtro rápido: escolher os valores desta coluna'} onClick={(e) => { e.stopPropagation(); const b = e.currentTarget.getBoundingClientRect(); setMenuFiltro((m) => (m?.k === k ? null : { k, x: Math.min(b.left, window.innerWidth - 260), y: b.bottom + 2, busca: '' })); }}>▾</button></th>)}</tr></thead>
                       <tbody>
                         {jn.acima > 0 && <tr className="cd-esp" style={{ height: jn.acima }}><td colSpan={cols.length + 2} /></tr>}
                         {(linhas ?? []).slice(jn.ini, jn.fim).map((r, k) => <LinhaNota key={r.id} cols={cols} r={r} i={jn.ini + k} sel={marcados.has(r.id) || foco === r.id} marc={marcados.has(r.id)} foco={foco === r.id} onClick={clicar} onMarcar={marcar} onModal={abreModal} onClonar={clonarLinha} onApagar={apagarLinha} onEmail={emailLinha} onDanfe={danfeLinha} />)}

@@ -843,3 +843,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 - Título da tela/aba/janela **Programação diária → AppBakery**.
 - **Tema aplicado a todo o app**: cerca de 180 linhas de `styles.css` com azuis fixos (barra de título, cabeçalhos de grade, abas, bordas, fundos claros) passaram a derivar de `--azul-barra` via `color-mix`; o laranja dos botões de destaque usa `--cor-btn`. Cores de significado (ex.: fixo, listas verde/amarelo, produção vermelha) não mudam.
 - Removido o aviso "Conflitos, etiquetas e relatórios: próximas fases" do menu **Ações do dia** (sobra da Fase 10).
+
+## Fase 166
+- **NFe: filtro rápido por coluna** (como no Delphi): cada título da grade tem um botão **▾** que lista os valores existentes naquela coluna (com a contagem), busca, **(Todos)** e marcação individual; o filtro vale na hora e o botão fica amarelo quando ativo. **Limpar todos os filtros** fica no mesmo menu. Funciona sobre as notas já carregadas (o filtro do topo — período, situação etc. — continua sendo o do servidor) e vale também para a coluna opcional Nome do cliente. Notas escondidas pelo filtro deixam de estar marcadas, para as ações em lote não as atingirem.
