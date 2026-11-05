@@ -171,3 +171,32 @@ export async function listaWindows() {
     return (Array.isArray(j) ? j : [j]).map((p) => ({ nome: p.Name, driver: p.DriverName, porta: p.PortName, padrao: !!p.Default }));
   } catch { return []; }
 }
+
+// ---- Linux (CUPS): `lp` imprime na fila instalada no computador; raw = bytes direto (ESC/POS, ZPL, TSPL), png = páginas de imagem ----
+async function lp(args) {
+  try { return await exec('lp', args, { timeout: 90000 }); } catch (e) {
+    throw new Error(e.code === 'ENOENT' ? 'O comando "lp" não foi encontrado: instale o CUPS (sudo apt install cups cups-client).' : String(e.stderr || e.message).split('\n').find((l) => l.trim()) ?? 'Falha ao imprimir pelo CUPS.');
+  }
+}
+export async function enviaCupsRaw({ impressora }, bytes) {
+  return comTemporarios(null, async (dir) => { const f = path.join(dir, 'dados.bin'); fs.writeFileSync(f, Buffer.from(bytes)); await lp(['-d', impressora, '-o', 'raw', f]); });
+}
+export async function enviaCupsPng({ impressora }, png, { larguraMm, alturaMm, copias = 1 }) {
+  const lista = Array.isArray(png) ? png : [png];
+  const media = larguraMm >= 150 ? 'A4' : `Custom.${Math.round(larguraMm)}x${Math.round(alturaMm)}mm`; // etiqueta/cupom com o tamanho do documento; DANFE em A4
+  return comTemporarios(null, async (dir) => {
+    for (let i = 0; i < lista.length; i += 1) {
+      const f = path.join(dir, `${String(i + 1).padStart(4, '0')}.png`); fs.writeFileSync(f, Buffer.from(lista[i]));
+      await lp(['-d', impressora, '-n', String(copias), '-o', `media=${media}`, '-o', 'fit-to-page', f]); // uma página por trabalho: a etiqueteira corta a cada página
+    }
+  });
+}
+export async function listaCups() {
+  if (process.platform === 'win32') return [];
+  try {
+    let padrao = ''; try { padrao = (await exec('lpstat', ['-d'], { timeout: 8000 })).stdout.split(':')[1]?.trim() ?? ''; } catch { /* sem padrão */ }
+    const { stdout } = await exec('lpstat', ['-e'], { timeout: 8000 });
+    return stdout.split('\n').map((x) => x.trim()).filter(Boolean).map((nome) => ({ nome, driver: '', porta: '', padrao: nome === padrao }));
+  } catch { return []; }
+}
+export const listaImpressoras = () => (process.platform === 'win32' ? listaWindows() : listaCups());

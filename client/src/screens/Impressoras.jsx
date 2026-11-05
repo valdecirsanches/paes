@@ -24,6 +24,12 @@ export function CaixaInstalar() {
         <a className="imp-btn principal" href="/api/agente/instalador.bat?conectar=1" download title="Use no computador onde ficam as impressoras: ele atende todos os computadores da loja">⬇ Instalador do computador das impressoras</a>
         <a className="imp-btn" href="/api/agente/instalador.bat" download title="Use em um computador que imprime só para si (impressora ligada nele)">⬇ Instalador só para este computador</a>
         <a className="imp-btn" href="/api/agente/remover.bat" download>Remover agente</a>
+        <details className="imp-linux"><summary>Ubuntu / Linux</summary>
+          <p>No computador Ubuntu: baixe, abra o terminal na pasta e rode <code>sudo bash instalar-agente-impressao.sh</code>. Instala Node.js, CUPS e o serviço que inicia sozinho. Depois cadastre a impressora com Tipo “Impressora do Linux (CUPS)”.</p>
+          <a className="imp-btn principal" href="/api/agente/instalador.sh?conectar=1" download>⬇ Instalador Linux do computador das impressoras</a>
+          <a className="imp-btn" href="/api/agente/instalador.sh" download>⬇ Instalador Linux só para este computador</a>
+          <a className="imp-btn" href="/api/agente/remover.sh" download>Remover</a>
+        </details>
       </div>
       <p className="imp-nota">Rodar o instalador de novo atualiza o agente e mantém as impressoras já cadastradas.</p>
     </section>

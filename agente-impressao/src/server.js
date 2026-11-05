@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { caminhoConfig, carregaConfig, salvaConfig, validaDestino } from './config.js';
 import { estadoTunel, iniciaTunel } from './tunel.js';
-import { enviaRede, enviaSerial, enviaWindowsPng, enviaWindowsRaw, listaWindows, papeisWindows } from './transportes.js';
+import { enviaCupsPng, enviaCupsRaw, enviaRede, enviaSerial, enviaWindowsPng, enviaWindowsRaw, listaImpressoras, papeisWindows } from './transportes.js';
 import { paginaAdmin } from './admin.js';
 
 const VERSAO = '1.2.0'; // 1.2.0: o agente CONECTA ao sistema (túnel reverso, sem porta/IP/firewall) e o "acesso pela rede" deixou de existir; 1.1.2: 1.1.2: impressão por imagem sempre em orientação retrato (Brother vinha em paisagem); 1.1.1: DANFE A4 encaixado na área imprimível (rodapé não corta); 1.1.0: gravação do XML da NF-e no N: (POST /gravar)
@@ -13,7 +13,7 @@ const MAX_CORPO = 4 * 1024 * 1024;
 
 /** Cria o servidor. `deps` permite trocar os transportes nos testes. */
 export function criaServidor({ cfg, arquivoCfg, deps = {} } = {}) {
-  const T = { rede: enviaRede, serial: enviaSerial, windowsRaw: enviaWindowsRaw, windowsPng: enviaWindowsPng, lista: listaWindows, papeis: papeisWindows, ...deps };
+  const T = { rede: enviaRede, serial: enviaSerial, windowsRaw: enviaWindowsRaw, windowsPng: enviaWindowsPng, cupsRaw: enviaCupsRaw, cupsPng: enviaCupsPng, lista: listaImpressoras, papeis: papeisWindows, ...deps };
   const filas = new Map(); // um trabalho por vez em cada destino
   const naFila = (chave, fn) => { const p = (filas.get(chave) ?? Promise.resolve()).catch(() => {}).then(fn); filas.set(chave, p); return p; };
 
@@ -55,7 +55,7 @@ export function criaServidor({ cfg, arquivoCfg, deps = {} } = {}) {
     const d = cfg.destinos[nome];
     if (!d) throw erro(404, `Destino "${nome}" não está configurado neste computador.`);
     if (corpo.tipo === 'png') {
-      if (d.tipo !== 'windows') throw erro(422, 'Impressão por imagem só no driver do Windows.');
+      if (d.tipo !== 'windows' && d.tipo !== 'cups') throw erro(422, 'Impressão por imagem só em impressora instalada no computador (Windows ou CUPS).');
       const brutas = Array.isArray(corpo.paginas_b64) ? corpo.paginas_b64 : [corpo.dados_b64];
       if (brutas.length < 1 || brutas.length > 60) throw erro(422, 'Envie de 1 a 60 páginas por trabalho.');
       const pngs = brutas.map((x) => b64(x, 'Imagem'));
@@ -64,11 +64,11 @@ export function criaServidor({ cfg, arquivoCfg, deps = {} } = {}) {
       const larguraMm = Number(corpo.largura_mm ?? d.largura_mm); const alturaMm = Number(corpo.altura_mm ?? d.altura_mm);
       if (!(larguraMm >= 10 && larguraMm <= 220 && alturaMm >= 5 && alturaMm <= 600)) throw erro(422, 'Informe largura_mm e altura_mm válidas.');
       const copias = Math.min(99, Math.max(1, Math.trunc(Number(corpo.copias) || 1)));
-      return naFila(nome, () => T.windowsPng(d, png, { larguraMm, alturaMm, copias }));
+      return naFila(nome, () => (d.tipo === 'cups' ? T.cupsPng : T.windowsPng)(d, png, { larguraMm, alturaMm, copias }));
     }
     if (corpo.tipo !== 'raw') throw erro(422, 'tipo deve ser "raw" ou "png".');
     const bytes = b64(corpo.dados_b64, 'Dados');
-    return naFila(nome, () => (d.tipo === 'rede' ? T.rede(d, bytes) : d.tipo === 'serial' ? T.serial(d, bytes) : T.windowsRaw(d, bytes)));
+    return naFila(nome, () => (d.tipo === 'rede' ? T.rede(d, bytes) : d.tipo === 'serial' ? T.serial(d, bytes) : d.tipo === 'cups' ? T.cupsRaw(d, bytes) : T.windowsRaw(d, bytes)));
   }
 
   /** Teste de impressão: comandos nativos para escpos/zpl/tspl; PNG gerado aqui para "imagem pelo driver". */

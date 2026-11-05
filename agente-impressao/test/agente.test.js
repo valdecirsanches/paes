@@ -258,3 +258,17 @@ test('/api/pastas: lista e grava as pastas liberadas; status informa a versão e
     assert.equal((await call('GET', '/api/pastas', undefined, origem)).json.length, 2);
   } finally { s.close(); }
 });
+
+test('CUPS: destino exige nome sem espaços; imagem pelo driver vale para cups; imprime raw e png via lp', async () => {
+  assert.throws(() => validaDestino('c', { tipo: 'cups', impressora: 'Brother QL 800' }), /CUPS/);
+  assert.throws(() => validaDestino('c', { tipo: 'cups', impressora: '-o raw' }), /CUPS/);
+  assert.equal(validaDestino('c', { tipo: 'cups', impressora: 'Brother_QL-800', linguagem: 'imagem-driver' }).tipo, 'cups');
+  const chamadas = [];
+  const { s, call } = await monta({ destinos: { q: { tipo: 'cups', impressora: 'Brother_QL-800', linguagem: 'imagem-driver', largura_mm: 62, altura_mm: 45 }, t: { tipo: 'cups', impressora: 'termica', linguagem: 'escpos' } },
+    deps: { cupsPng: async (d, png, o) => chamadas.push(['png', d.impressora, png.length, o]), cupsRaw: async (d, b) => chamadas.push(['raw', d.impressora, b.length]) } });
+  try {
+    assert.equal((await call('POST', '/imprimir', { destino: 'q', tipo: 'png', paginas_b64: [PNG, PNG] }, H)).status, 200);
+    assert.equal((await call('POST', '/imprimir', { destino: 't', tipo: 'raw', dados_b64: Buffer.from('ABC').toString('base64') }, H)).status, 200);
+    assert.deepEqual(chamadas, [['png', 'Brother_QL-800', 2, { larguraMm: 62, alturaMm: 45, copias: 1 }], ['raw', 'termica', 3]]);
+  } finally { s.close(); }
+});

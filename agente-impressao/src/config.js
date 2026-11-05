@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 export const LINGUAGENS = ['imagem-driver', 'escpos', 'texto', 'zpl', 'tspl'];
-export const TIPOS = ['windows', 'rede', 'serial'];
+export const TIPOS = ['windows', 'cups', 'rede', 'serial']; // cups = impressora instalada no Linux (CUPS)
 
 export function caminhoConfig() {
   if (process.env.AGENTE_CONFIG) return process.env.AGENTE_CONFIG;
@@ -18,8 +18,8 @@ export function validaDestino(nome, d) {
   if (typeof nome !== 'string' || !nome.trim() || nome.length > 60) throw new Error('Nome do destino inválido (1 a 60 caracteres).');
   if (!d || !TIPOS.includes(d.tipo)) throw new Error(`Tipo inválido. Use: ${TIPOS.join(', ')}.`);
   const o = { tipo: d.tipo, linguagem: LINGUAGENS.includes(d.linguagem) ? d.linguagem : 'imagem-driver' };
-  if (d.tipo === 'windows') {
-    if (!d.impressora || typeof d.impressora !== 'string' || d.impressora.length > 200) throw new Error('Informe o nome da impressora do Windows.');
+  if (d.tipo === 'windows' || d.tipo === 'cups') {
+    if (!d.impressora || typeof d.impressora !== 'string' || d.impressora.length > 200 || (d.tipo === 'cups' && !/^[A-Za-z0-9][A-Za-z0-9._@+-]*$/.test(d.impressora))) throw new Error(d.tipo === 'cups' ? 'Informe o nome da impressora do CUPS (lpstat -e), sem espaços.' : 'Informe o nome da impressora do Windows.');
     o.impressora = d.impressora;
   } else if (d.tipo === 'rede') {
     if (!/^[A-Za-z0-9._-]{1,253}$/.test(d.host ?? '')) throw new Error('Host/IP inválido.');
@@ -47,7 +47,7 @@ export function validaDestino(nome, d) {
     o.com = String(d.com).trim().toUpperCase(); o.baud = b;
   }
   if (o.impressora === undefined && typeof d.impressora === 'string' && d.impressora.trim() && d.impressora.length <= 200) o.impressora = d.impressora;
-  if (o.tipo !== 'windows' && o.linguagem === 'imagem-driver') throw new Error('"Imagem pelo driver" só existe para impressoras instaladas no Windows (ex.: Brother QL-800): escolha Tipo = Impressora do Windows e a impressora na lista; o IP não é usado. Para tipo rede/serial escolha ESC/POS, ZPL ou TSPL.');
+  if (o.tipo !== 'windows' && o.tipo !== 'cups' && o.linguagem === 'imagem-driver') throw new Error('"Imagem pelo driver" só existe para impressoras instaladas no computador (Windows ou CUPS no Linux, ex.: Brother QL-800): escolha Tipo = Impressora do Windows (ou do Linux) e a impressora na lista; o IP não é usado. Para tipo rede/serial escolha ESC/POS, ZPL ou TSPL.');
   const n = (v, min, max, rot) => { if (v === undefined || v === null || v === '') return undefined; const x = Number(v); if (!(x >= min && x <= max)) throw new Error(`${rot} fora do intervalo ${min}-${max}.`); return x; };
   const dpi = n(d.dpi, 100, 600, 'DPI'); if (dpi) o.dpi = dpi;
   const l = n(d.largura_mm, 10, 220, 'Largura (mm)'); if (l) o.largura_mm = l;

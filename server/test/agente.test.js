@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { enderecoSite, instaladorBat, pacote } from '../src/services/agente.js';
+import { enderecoSite, instaladorBat, instaladorSh, pacote } from '../src/services/agente.js';
 
 test('pacote traz os arquivos do agente em base64', () => {
   const p = pacote();
@@ -36,4 +36,17 @@ test('instalador sem token não conecta o agente ao sistema (só grava o token q
   const b = instaladorBat('https://paes.x-star.com.br', 'instalar', pacote());
   assert.match(b, /\$tokenSistema = ''/);
   assert.match(b, /if \(\$tokenSistema\)/);
+});
+
+test('instalador Linux: shell válido, pacote embutido, token só quando pedido', () => {
+  const tok = 'T'.repeat(32);
+  const sh = instaladorSh('https://paes.x-star.com.br', 'instalar', pacote(), tok);
+  assert.match(sh, /^#!\/usr\/bin\/env bash/);
+  assert.match(sh, new RegExp(`TOKEN='${tok}'`)); assert.match(sh, /SITE='https:\/\/paes\.x-star\.com\.br'/);
+  assert.match(sh, /systemctl enable --now paes-agente-impressao/);
+  assert.doesNotMatch(sh, /@@/);
+  assert.match(instaladorSh('https://a.com', 'instalar', pacote()), /TOKEN=''/);
+  assert.match(instaladorSh('https://a.com', 'remover', pacote()), /MODO='remover'/);
+  assert.throws(() => instaladorSh('https://a.com', 'instalar', pacote(), "x'; rm -rf /; '"), /Token/);
+  assert.throws(() => instaladorSh("https://a.com'; rm -rf /; '", 'instalar', pacote()), /Endereço/);
 });

@@ -194,7 +194,7 @@ export async function imprimirPdfDireto(buffer) {
   const destinos = await destinosAgente();
   const d = destinos.find((x) => x.nome === cfg.destino);
   if (!d) throw new Error(`o destino "${cfg.destino}" não existe mais no agente`);
-  if (d.tipo !== 'windows') throw new Error(`o destino "${cfg.destino}" não é uma impressora do Windows (rede/serial/etiqueta não imprimem página A4)`);
+  if (d.tipo !== 'windows' && d.tipo !== 'cups') throw new Error(`o destino "${cfg.destino}" não é uma impressora instalada no computador (rede/serial/etiqueta não imprimem página A4)`);
   const copias = Math.max(1, Number(cfg.copias ?? DOCS.danfe.copias)); // padrão: duas vias
   const pags = await pdfParaPngs(buffer);
   let lote = []; let bytes = 0;

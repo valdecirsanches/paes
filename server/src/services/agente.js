@@ -154,6 +154,16 @@ export function instaladorBat(site, modo = 'instalar', pac = pacote(), token = '
   return bat.join('\r\n').replace(/\r?\n/g, '\r\n');
 }
 
+const SH_ARQ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'instalador-linux.sh'); // modelo do instalador Ubuntu/Debian
+
+/** Instalador para Ubuntu/Debian (.sh): instala Node.js + CUPS, grava o agente e cria o serviço systemd. */
+export function instaladorSh(site, modo = 'instalar', pac = pacote(), token = '') {
+  if (!/^https?:\/\/[A-Za-z0-9.:\-]+$/.test(site)) throw new Error('Endereço do sistema inválido.');
+  if (token && !/^[A-Za-z0-9_-]{16,128}$/.test(token)) throw new Error('Token do agente inválido.');
+  const bloco = Buffer.from(JSON.stringify(pac)).toString('base64').match(/.{1,76}/g).join('\n'); // o script decodifica com "base64 -d" e grava os arquivos com o Node
+  return fs.readFileSync(SH_ARQ, 'utf8').replace('@@SITE@@', site).replace('@@TOKEN@@', token).replace('@@MODO@@', modo).replace('@@PACOTE@@', bloco);
+}
+
 /** Endereço público do sistema, como o navegador o vê (proxy/túnel incluídos). */
 export function enderecoSite(req) {
   const proto = String(req.headers['x-forwarded-proto'] ?? req.protocol).split(',')[0].trim();
