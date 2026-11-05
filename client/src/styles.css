@@ -1822,3 +1822,12 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{filter:brightness(1.15)}
 .dr2-lado>.dr2-card.dr2-cab:not(.dr2-lista){flex:1;width:auto;min-width:0;overflow:auto;display:flex;flex-direction:column;align-items:stretch;gap:12px;justify-content:flex-start}
 @media (max-width:900px){.dr2-lado .dr2-lista{width:auto}}
 .dr2-lado .dr2-seg{align-self:flex-start}.dr2-lado{height:236px}
+/* Fase 172: pesquisa (lista de clientes) mais larga, empresa selecionada mais estreita, calendário maior */
+.dr2-lado>.cal{width:280px}
+.dr2-lado>.cal td,.dr2-lado>.cal th{font-size:14px;height:26px}
+.dr2-lado>.cal .cal-topo{padding:5px 6px;font-size:14px}.dr2-lado>.cal .cal-topo button{font-size:12px}
+.dr2-lado .dr2-lista{flex:1;width:auto}
+.dr2-lado>.dr2-card.dr2-cab:not(.dr2-lista){flex:none;width:300px}
+.dr2-lado .dr2-sel b{font-size:14px}
+@media (max-width:900px){.dr2-lado>.cal,.dr2-lado>.dr2-card.dr2-cab:not(.dr2-lista){width:auto}}
+.dr2-lado .dr2-seg{align-self:stretch}.dr2-lado .dr2-seg button{flex:1;padding:7px 2px;font-size:11.5px}

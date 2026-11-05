@@ -863,3 +863,6 @@ Corrige o erro de compilação (chave `ativo` duplicada em Clientes.jsx; o padr�
 
 ### Fase 171
 Pesquisa de produto na programação: só os produtos do cliente selecionado (sem os "sem cliente"), e a janela já abre listando todos os dele, como no Delphi. Aba "Programação diária" renomeada para "AppBakery".
+
+### Fase 172
+Programação diária: faixa do topo com calendário maior, lista de clientes mais larga e "empresa selecionada" mais estreita; Enter no último campo do item grava e FECHA o painel de edição.

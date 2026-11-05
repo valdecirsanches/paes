@@ -311,7 +311,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
     const prox = e.target.dataset.ultimo ? null : campos[campos.indexOf(e.target) + 1]; // "Informe p/ produção" é o último campo do fluxo: grava
     e.target.blur();
     if (prox) setTimeout(() => prox.focus(), 0);
-    else if (e.currentTarget === painelRef.current && editando) setTimeout(() => gravarRef.current?.(), 60); // Enter no último campo grava o item
+    else if (e.currentTarget === painelRef.current && editando) setTimeout(async () => { if (await gravarRef.current?.()) setPainel(false); }, 60); // Enter no último campo grava o item e fecha a edição
   };
   const gravarRef = useRef(null); gravarRef.current = gravar;
 
