@@ -145,6 +145,8 @@ export default function App() {
     });
   };
   
+  useEffect(() => { if (usuario && !usuario.fabrica) abrir('dashboard'); }, [usuario?.usuario]); // ao entrar, o Dashboard é a primeira tela (some só se o usuário fechar a aba)
+
   if (usuario?.fabrica && !bloqueio) return <FabricaApp saude={saude} />; // máquina da fábrica: janela com o visual do sistema da fábrica
   const menus = usuario?.fabrica ? MENUS_FABRICA : MENUS; // máquina só da fábrica: usuário "fabrica" automático, só os menus da fábrica
   return (

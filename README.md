@@ -905,3 +905,6 @@ Nova tela **Programação › Dashboard** (primeira do menu) com os resumos do d
 - Cartões: valor programado, quantidade total, itens (clientes/cancelados), alterações do dia (avulsos + fixos com extra) e % cobrado/pendente; valor, quantidade e itens comparados com ontem e com o mesmo dia da semana passada.
 - Situação dos clientes (normal/alterado/cancelado/sem itens), entregas por hora, produção por turno, por acomodação, produtos e clientes de maior valor.
 - Servidor: `GET /api/dashboard?data=AAAA-MM-DD` (somente leitura; itens cancelados fora dos totais). Valor = (fixa + extra) × preço ÷ "cada".
+
+## Fase 183 — Dashboard abre ao entrar
+Depois do login (computadores de acesso completo) o Dashboard abre automaticamente como primeira tela; pode ser fechado como qualquer aba. A fábrica continua sem ele.
