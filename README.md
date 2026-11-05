@@ -849,3 +849,6 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 167
 - **Comanda e Demonstrativo: cada item em uma única linha.** O cupom usava linhas de 59 colunas; a térmica imprime 48 (fonte A de 80 mm) e o item quebrava em duas (e os tracejados também). Agora tudo cabe em **48 colunas** (`COLS` em `print.js`): comanda `Qtde(4) Descrição(24) Vr Un.(6) Vr total(9)` e demonstrativo `Data Qtde Descrição(19) Vr Un. Vr total`; tracejados e linha de assinatura também. Na impressão como imagem (driver do Windows) a fonte ficou maior (48 colunas em vez de 60).
+
+### Fase 168 — Comanda/Demonstrativo: "Texto puro"
+Novo destino de linguagem **Texto puro (cupom sem comandos)** no agente: envia só caracteres, quebras de linha e corte, sem ESC/GS (fonte, negrito, tamanho). Serve para impressora/driver que ignora os comandos e imprime "!" e "E" soltos. Exige atualizar o agente (reinstalar) e escolher essa linguagem no destino da comanda.

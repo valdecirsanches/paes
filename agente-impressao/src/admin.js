@@ -17,7 +17,7 @@ th{background:#e3eef9}fieldset{border:1px solid #b6d3ef;margin:16px 0;padding:12
 <label>Modelo pronto <select id="modelo"><option value="">(manual)</option><option value="ql">Brother QL-800 / QL-8xx (62 mm, driver do Windows)</option></select></label><br>
 <label>Nome <input id="nome" placeholder="Etiqueta expedição" maxlength="60"></label>
 <label>Tipo <select id="tipo"><option value="windows">Impressora do Windows</option><option value="rede">Rede (IP:9100)</option><option value="serial">Porta serial (COM)</option></select></label>
-<label>Linguagem <select id="linguagem"><option value="imagem-driver">Imagem pelo driver do Windows</option><option value="escpos">ESC/POS (cupom)</option><option value="zpl">ZPL (Zebra)</option><option value="tspl">TSPL (TSC/Elgin/Gprinter)</option></select></label><br>
+<label>Linguagem <select id="linguagem"><option value="imagem-driver">Imagem pelo driver do Windows</option><option value="escpos">ESC/POS (cupom)</option><option value="texto">Texto puro (cupom sem comandos)</option><option value="zpl">ZPL (Zebra)</option><option value="tspl">TSPL (TSC/Elgin/Gprinter)</option></select></label><br>
 <label id="l-imp">Impressora <select id="impressora"></select></label>
 <label id="l-host">IP/host <input id="host" placeholder="192.168.15.50"></label><label id="l-porta">Porta <input id="porta" value="9100" size="5"></label>
 <label id="l-com">COM <input id="com" placeholder="COM3" size="6"></label><label id="l-baud">Baud <input id="baud" value="9600" size="6"></label><br>

@@ -56,7 +56,12 @@ const CP1252_EXTRA = { '€': 0x80, '‚': 0x82, 'ƒ': 0x83, '„': 0x84, '…':
 export const cp1252 = (t) => Uint8Array.from(String(t ?? ''), (c) => { const n = c.charCodeAt(0); return n < 0x100 ? n : (CP1252_EXTRA[c] ?? 0x3f); });
 
 /** ESC/POS texto nativo (cupom): linhas monoespaçadas, negrito opcional, corte. */
-export function cupomEscPos(linhas, { cortar = true, colunas = 48, negrito = true, copias = 1 } = {}) {
+export function cupomEscPos(linhas, { cortar = true, colunas = 48, negrito = true, copias = 1, simples = false } = {}) {
+  if (simples) { // "texto puro": só caracteres e quebras de linha, para impressoras/drivers que não entendem (e imprimem como lixo) ESC/GS
+    const txt = linhas.map((l) => String((l && typeof l === 'object' ? l.t : l) ?? '').slice(0, colunas)).join('\n');
+    const um = concat(cp1252(`${txt}\n\n\n\n\n`), cortar ? new Uint8Array([0x1d, 0x56, 0x42, 0x00]) : new Uint8Array());
+    return concat(...Array.from({ length: Math.max(1, copias) }, () => um));
+  }
   // Linha = texto simples, ou { t, e } com estilo: g = largo/negrito (altura dupla), n = normal, c = condensado (fonte B, 64 colunas)
   const ESTILO = { g: [new Uint8Array([0x1b, 0x4d, 0, 0x1d, 0x21, 0x01, 0x1b, 0x45, 1]), 48], n: [new Uint8Array([0x1b, 0x4d, 0, 0x1d, 0x21, 0, 0x1b, 0x45, 0]), 48], c: [new Uint8Array([0x1b, 0x4d, 1, 0x1d, 0x21, 0, 0x1b, 0x45, 0]), 64] };
   const linha = (l) => {

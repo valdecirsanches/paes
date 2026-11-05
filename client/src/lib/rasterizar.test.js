@@ -57,3 +57,10 @@ test('cupomEscPos aceita linhas com estilo (g/n/c) e limita as colunas de cada e
   assert.ok(t.includes('COMANDA 1\n')); assert.ok(t.includes(`${'x'.repeat(64)}\n`)); assert.ok(!t.includes('x'.repeat(65)));
   assert.ok(Buffer.from(b).includes(Buffer.from([0x1b, 0x4d, 1]))); // fonte B no condensado
 });
+
+test('cupomEscPos em modo simples não emite ESC/GS (só texto, avanço e corte)', () => {
+  const b = Array.from(cupomEscPos([{ e: 'g', t: 'COMANDA' }, 'ITEM'], { simples: true, cortar: true }));
+  assert.ok(!b.includes(0x1b));
+  assert.deepEqual(b.slice(-4), [0x1d, 0x56, 0x42, 0x00]);
+  assert.equal(String.fromCharCode(...b.slice(0, 12)), 'COMANDA\nITEM');
+});

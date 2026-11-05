@@ -132,10 +132,10 @@ export async function imprimirDocumento(tipo, doc0, aviso = () => {}) {
     // altura da página (= passo entre etiquetas): ajuste do documento nesta estação > padrão do documento > altura do destino
     const [lmm, amm] = [d.largura_mm ?? def.mm?.[0] ?? 62, Number(cfg.altura) > 0 ? Number(cfg.altura) : def.mm?.[1] ?? d.altura_mm ?? 45];
     const dpi = d.dpi ?? 203;
-    const cupomImagem = def.cupom && !(d.linguagem === 'escpos' && doc.linhas);
+    const cupomImagem = def.cupom && !((d.linguagem === 'escpos' || d.linguagem === 'texto') && doc.linhas);
     if (cupomImagem && !doc.linhas) throw new Error('este documento não tem texto para a impressora');
     if (def.cupom && !cupomImagem) {
-      await enviar(cfg.destino, { tipo: 'raw', dados_b64: paraBase64(cupomEscPos(doc.linhas, { cortar: d.cortar !== false, copias })) });
+      await enviar(cfg.destino, { tipo: 'raw', dados_b64: paraBase64(cupomEscPos(doc.linhas, { cortar: d.cortar !== false, copias, simples: d.linguagem === 'texto' })) });
     } else {
       // Um único trabalho com várias etiquetas (antes: um trabalho por etiqueta, e cada trabalho puxava papel/corte
       // próprio da impressora — daí o espaço enorme entre as etiquetas). Etiquetas continuam separadas (uma página cada).

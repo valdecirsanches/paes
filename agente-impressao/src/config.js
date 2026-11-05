@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-export const LINGUAGENS = ['imagem-driver', 'escpos', 'zpl', 'tspl'];
+export const LINGUAGENS = ['imagem-driver', 'escpos', 'texto', 'zpl', 'tspl'];
 export const TIPOS = ['windows', 'rede', 'serial'];
 
 export function caminhoConfig() {

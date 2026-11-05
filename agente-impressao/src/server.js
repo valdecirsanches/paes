@@ -87,7 +87,8 @@ export function criaServidor({ cfg, arquivoCfg, deps = {} } = {}) {
       const l = d.largura_mm ?? 62; const a = d.altura_mm ?? 45;
       return imprimir({ destino: nome, tipo: 'png', dados_b64: pngTeste(l, a, d.dpi ?? 203).toString('base64'), largura_mm: l, altura_mm: a });
     }
-    const t = { escpos: Buffer.concat([Buffer.from([0x1b, 0x40]), Buffer.from('TESTE DE IMPRESSAO\nSistema Paes\n\n\n\n', 'latin1'), Buffer.from([0x1d, 0x56, 0x42, 0x00])]),
+    const t = { texto: Buffer.from('TESTE DE IMPRESSAO\nSistema Paes\n\n\n\n', 'latin1'),
+      escpos: Buffer.concat([Buffer.from([0x1b, 0x40]), Buffer.from('TESTE DE IMPRESSAO\nSistema Paes\n\n\n\n', 'latin1'), Buffer.from([0x1d, 0x56, 0x42, 0x00])]),
       zpl: Buffer.from('^XA^CI28^FO30,30^A0N,40,40^FDTESTE DE IMPRESSAO^FS^FO30,90^A0N,30,30^FDSistema Paes^FS^XZ'),
       tspl: Buffer.from('SIZE 62 mm,45 mm\r\nGAP 2 mm,0\r\nCLS\r\nTEXT 30,30,"3",0,1,1,"TESTE DE IMPRESSAO"\r\nPRINT 1,1\r\n') }[d.linguagem];
     return imprimir({ destino: nome, tipo: 'raw', dados_b64: t.toString('base64') });
