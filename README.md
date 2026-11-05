@@ -893,3 +893,6 @@ Na página do agente (Ubuntu) há o bloco "Impressoras compartilhadas por comput
 ## Fase 179 — Programação diária: Enter pula a data; versão visível
 - Ao editar o item, Tab/Enter vai do horário direto ao código do produto (a data não recebe foco; segue editável com o mouse). Na Fixa, Enter também ignora campos fora da ordem.
 - Versão do app agora muda a cada entrega: "Versão: 1.NNN" (NNN = fase) no rodapé e na tela de login, ao lado do build.
+
+## Fase 180 — Programação diária: campo de horário maior
+O campo "Hora da entrega" do item ficou mais largo (150 px) para mostrar o horário completo; o campo Produto foi reduzido para compensar.
