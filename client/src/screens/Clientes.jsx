@@ -68,7 +68,7 @@ export default function Clientes({ onFechar }) {
   const uniPagina = useMemo(() => bUni.visiveis.slice(pagUniOk * POR_PAG, (pagUniOk + 1) * POR_PAG), [bUni.visiveis, pagUniOk]);
   useEffect(() => { setPagUni(0); }, [bUni.termo, conectar, esconder, idCli]); // nova pesquisa/filtro volta à 1ª página
   useEffect(() => { const i = bUni.visiveis.findIndex((x) => x.id === fUni); if (i >= 0) setPagUni(Math.floor(i / POR_PAG)); }, [fUni]); // eslint-disable-line react-hooks/exhaustive-deps -- navegador (◀ ▶) leva à página da unidade
-  const uni = useEdicao({ lista: bUni.visiveis, foco: fUni, setFoco: setFUni, caminho: `${CAM}/unidades`, recarregar: recUni, aviso: notificar, confirmar: setConfirma, padrao: () => ({ ativo: 'True', id_cliente: idCli, ativo: 'True' }), texto: (r) => `a unidade ${r?.nome ?? ''}` });
+  const uni = useEdicao({ lista: bUni.visiveis, foco: fUni, setFoco: setFUni, caminho: `${CAM}/unidades`, recarregar: recUni, aviso: notificar, confirmar: setConfirma, padrao: () => ({ ativo: 'True', id_cliente: idCli }), texto: (r) => `a unidade ${r?.nome ?? ''}` });
 
   const recProd = useCallback(async (id) => {
     if (!idCli) { setProdutos([]); setFProd(null); return; }
@@ -77,7 +77,7 @@ export default function Clientes({ onFechar }) {
   useEffect(() => { recProd(); }, [recProd]);
   const bProd = useBusca(produtos, B_PROD);
   const prod0 = useEdicao({ lista: bProd.visiveis, foco: fProd, setFoco: setFProd, caminho: '/cadastros/produtos', recarregar: recProd, aviso: notificar, confirmar: setConfirma, texto: (r) => `o produto ${r?.descricao ?? ''}`,
-    padrao: () => ({ id_cliente: idCli, id_referencia: referencias[0]?.id ?? null, pm: 'PRODUTO', peso: '0.05', peso_bruto: '0.05', divisor_basico: 1 }) });
+    padrao: () => ({ ativo: 'True', id_cliente: idCli, id_referencia: referencias[0]?.id ?? null, pm: 'PRODUTO', peso: '0.05', peso_bruto: '0.05', divisor_basico: 1 }) });
   const refDesc = (id) => referencias.find((r) => r.id === Number(id))?.descricao ?? '';
   // cbCortadoClick: ao marcar/desmarcar uma opção, a descrição da expedição é remontada
   const prod = useMemo(() => ({

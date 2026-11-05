@@ -857,3 +857,6 @@ Novo destino de linguagem **Texto puro (cupom sem comandos)** no agente: envia s
 - **Topo da programação**: calendário, apresentação e "Clientes do dia" ficam numa faixa no topo (como no Delphi), com a lista bem mais ampla (várias colunas); a empresa selecionada, o status e as abas ficam abaixo.
 - **Pesquisa de produtos** (Programação diária e fixa): filtra pelo cliente da empresa selecionada (e produtos sem cliente) e mostra preço e "cada".
 - **Produto ativo/inativo**: nova coluna `tb_produtos.ativo` ('True'/'False'), criada sozinha pela API ao subir (todos os existentes ficam ativos). Checkbox "Produto ativo" no cadastro e coluna "Ativo" nas grades. Pesquisa e busca por código só aceitam ativos; o cadastro continua listando todos para poder reativar.
+
+### Fase 170
+Corrige o erro de compilação (chave `ativo` duplicada em Clientes.jsx; o padrão de produto novo agora é ativo). Programação: lista de clientes em UMA coluna e empresa selecionada/status/itinerário ao lado dela, na faixa do topo (sem espaço em branco).

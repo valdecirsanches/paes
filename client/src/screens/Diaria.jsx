@@ -131,10 +131,7 @@ export default function Diaria({ onFechar }) {
               {lista.length === 0 && <li className="vazio">Nenhuma empresa neste dia. Use ⚡ Ações do dia ▸ Ativar movimento do dia.</li>}
             </ul>
           </div>
-        </aside>
-
-        <section className="dr2-principal">
-          <div className="dr2-cab">
+          <div className="dr2-cab dr2-card">
             <div className="dr2-sel">
               <small>Empresa selecionada</small>
               <b>{sel ? sel.unidade_nome : '— nenhuma —'}</b>
@@ -155,6 +152,9 @@ export default function Diaria({ onFechar }) {
             </div>
           </div>
 
+        </aside>
+
+        <section className="dr2-principal">
           <nav className="dr2-abas" role="tablist" aria-label="Seções">
             {ABAS.map(([k, r]) => <button key={k} type="button" role="tab" aria-selected={aba === k} className={aba === k ? 'on' : ''} onClick={() => setAba(k)}>{r}</button>)}
           </nav>

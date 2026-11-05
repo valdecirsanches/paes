@@ -1816,3 +1816,9 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{filter:brightness(1.15)}
 .dr2-lado .dr2-cli{padding:5px 8px}
 @media (max-width:900px){.dr2-lado{flex-direction:column;height:auto}.dr2-lado>.cal,.dr2-lado>.dr2-card:not(.dr2-lista){width:auto}.dr2-lado .dr2-lista{max-height:260px}.dr2-lado .dr2-chips{flex-direction:row}}
 .dr2-lado .dr2-cli{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex}
+/* Fase 169b: lista em UMA coluna, e a empresa selecionada/status/itinerário ocupam o espaço que sobrava na faixa do topo */
+.dr2-lado .dr2-lista{flex:none;width:340px}
+.dr2-lado .dr2-clientes{display:flex;flex-direction:column;overflow-y:auto;flex:1}
+.dr2-lado>.dr2-card.dr2-cab:not(.dr2-lista){flex:1;width:auto;min-width:0;overflow:auto;display:flex;flex-direction:column;align-items:stretch;gap:12px;justify-content:flex-start}
+@media (max-width:900px){.dr2-lado .dr2-lista{width:auto}}
+.dr2-lado .dr2-seg{align-self:flex-start}.dr2-lado{height:236px}
