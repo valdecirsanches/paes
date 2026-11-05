@@ -911,3 +911,6 @@ Depois do login (computadores de acesso completo) o Dashboard abre automaticamen
 
 ## Fase 184/185 — Tela de NFe com mais espaço
 Removidas a linha de abas ("NFe / Emitente e configurações / Envio/Resposta") e a barra de progresso do painel lateral. Os botões **⚙** (Emitente) e **📡** (Envio/Resposta) ficam no cabeçalho da grade de notas, ao lado do ☰ de escolha de colunas. Dentro de Emitente/Resposta aparece **◀ Voltar às notas**.
+
+## Fase 186 — Cadastro de produtos: filtro por cliente
+O filtro dependia de marcar a caixa "Só produtos de…" e o cliente vinha pré-selecionado (o primeiro da lista), o que dava a impressão de filtrar errado. Agora: nenhum cliente vem pré-selecionado; clicar num cliente na aba **Clientes** já marca o filtro e volta para os produtos; marcar a caixa sem cliente leva à aba Clientes; o rodapé diz "N produto(s) de <cliente>" ou "(todos os clientes)".

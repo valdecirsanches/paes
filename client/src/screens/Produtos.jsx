@@ -42,7 +42,7 @@ export default function Produtos({ onFechar }) {
   }, [clienteFiltro, q, notificar]);
   useEffect(() => { const t = setTimeout(() => recarregar(), q ? 300 : 0); return () => clearTimeout(t); }, [recarregar, q]);
   useEffect(() => {
-    api.get('/cadastros/clientes').then((c) => { setClientes(c); setCliSel((x) => x ?? c[0]?.id ?? null); }).catch(() => {});
+    api.get('/cadastros/clientes').then((c) => { setClientes(c); }).catch(() => {});
     api.get(`${CAM}/referencias`).then(setReferencias).catch(() => {});
     api.get('/tributos').then(setTributos).catch(() => {});
   }, []);
@@ -52,6 +52,8 @@ export default function Produtos({ onFechar }) {
   const ed = useMemo(() => ({ ...ed0, incluir: () => { if (ed0.sujo) { ed0.incluir(); return; } ed0.incluir(); if (clienteFiltro) codigoPara(clienteFiltro); } }), [ed0, clienteFiltro, codigoPara]);
   const campoCod = useRef(null);
   const bClis = useBusca(clientes, B_CLI);
+  // escolher um cliente na aba Clientes já filtra: marca o filtro e volta para a lista de produtos
+  const escolheCliente = (id) => { setCliSel(id); setFiltrar(true); setAba('lista'); };
   const clienteNome = clientes.find((c) => c.id === cliSel)?.razao_social ?? '';
 
   const exportar = () => {
@@ -72,7 +74,7 @@ export default function Produtos({ onFechar }) {
         <Navegador ed={ed} onEditar={() => campoCod.current?.focus()} />
         <button type="button" className="cd-btn" onClick={imprimirTabela}>🖨 Tabela de preços</button>
         <button type="button" className="cd-btn" onClick={exportar}>⇩ Exportar</button>
-        <label className="cd-filtro"><input type="checkbox" checked={filtrar} onChange={(e) => setFiltrar(e.target.checked)} />Só produtos de <b>{clienteNome || 'um cliente'}</b></label>
+        <label className="cd-filtro"><input type="checkbox" checked={filtrar} onChange={(e) => { if (e.target.checked && !cliSel) { setAba('clis'); notificar('aviso', 'Escolha o cliente na aba Clientes.'); return; } setFiltrar(e.target.checked); }} />Só produtos de <b>{clienteNome || 'um cliente'}</b></label>
         <span className="cd-esp-barra" />
         <input type="search" className="cd-busca" placeholder="Pesquisar produto (descrição ou código)" aria-label="Pesquisar produto" value={q} onChange={(e) => setQ(e.target.value)} />
         <button type="button" className="cd-btn" title="Fechar esta tela" onClick={onFechar}>Fechar</button>
@@ -87,10 +89,10 @@ export default function Produtos({ onFechar }) {
           {aba === 'clis' && (
             <>
               <div className="cd-busca-linha"><Busca busca={bClis} total={clientes.length} placeholder="Pesquisar cliente…" /></div>
-              <GradeCad cols={COLS_CLIS} rows={bClis.visiveis} foco={cliSel} onSel={setCliSel} vazio="Nenhum cliente" />
+              <GradeCad cols={COLS_CLIS} rows={bClis.visiveis} foco={cliSel} onSel={escolheCliente} vazio="Nenhum cliente" />
             </>
           )}
-          <footer className="cd-rodape-lista">{aba === 'lista' ? `${lista.length} produto(s)${trunc ? ' — mostrando os primeiros 5000; refine a busca' : ''}` : aba === 'clis' ? 'Clique para escolher o cliente do filtro' : `${referencias.length} referência(s)`}</footer>
+          <footer className="cd-rodape-lista">{aba === 'lista' ? `${lista.length} produto(s)${clienteFiltro ? ` de ${clienteNome}` : ' (todos os clientes)'}${trunc ? ' — mostrando os primeiros 5000; refine a busca' : ''}` : aba === 'clis' ? 'Clique no cliente para ver só os produtos dele' : `${referencias.length} referência(s)`}</footer>
         </section>
         <main className="cd-rola">
           <ProdutoForm ed={ed} layout="tela" clientes={clientes} referencias={referencias} tributos={tributos} aoMudarCliente={(n) => { if (ed.novo && n && !ed.v('codigo')) codigoPara(n); }} />
