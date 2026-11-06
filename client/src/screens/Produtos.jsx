@@ -79,14 +79,17 @@ export default function Produtos({ onFechar }) {
   const marcaSemUso = async () => {
     const MESES = Math.max(1, Math.min(120, Math.floor(Number(mesesSemUso)) || 0));
     if (marcandoSemUso) return;
-    setMarcandoSemUso(true); notificar('ok', `Marcando produtos sem uso há mais de ${MESES} meses… aguarde, pode demorar.`);
+    setMarcandoSemUso(true); notificar('ok', `Conferindo ${lista.length} produto(s) da lista na programação dos últimos ${MESES} meses…`);
     try {
-      const r = await api.get(`${CAM}/sem-uso?meses=${MESES}`);
-      const sem = new Set(r.produtos.map((x) => x.id));
-      const ids = lista.filter((p) => sem.has(p.id)).map((p) => p.id);
+      const cand = lista.filter((p) => String(p.ativo ?? 'True') !== 'False').map((p) => p.id);
+      const r = await Promise.race([
+        api.post(`${CAM}/sem-uso`, { meses: MESES, ids: cand }),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('A consulta demorou demais (mais de 60 s). Tente um período menor ou filtre por cliente.')), 60000)),
+      ]);
+      const ids = r.ids;
       setMarcados(new Set(ids));
-      if (!ids.length) notificar('ok', r.total ? `Há ${r.total} produto(s) sem uso há mais de ${MESES} meses, mas nenhum aparece na lista atual (confira filtros e situação).` : `Nenhum produto ativo parado há mais de ${MESES} meses.`);
-      else notificar('ok', `${ids.length} produto(s) sem uso há mais de ${MESES} meses marcado(s). Confira e use "Inativar marcados".${r.total > ids.length ? ` (${r.total - ids.length} fora da lista atual)` : ''}`);
+      if (!ids.length) notificar('ok', r.total ? `Nenhum produto da lista atual está sem uso há mais de ${MESES} meses.` : `Nenhum produto da lista atual está sem uso há mais de ${MESES} meses.`);
+      else notificar('ok', `${ids.length} produto(s) sem uso há mais de ${MESES} meses marcado(s). Confira e use "Inativar marcados".`);
     } catch (e) { notificar('erro', e.message); } finally { setMarcandoSemUso(false); }
   };
   // escolher um cliente na aba Clientes já filtra: marca o filtro e volta para a lista de produtos

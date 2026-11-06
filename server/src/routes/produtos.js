@@ -47,11 +47,16 @@ router.post('/ativo', async (req, res) => {
 const mesesSemUso = (v) => { const m = Number(v ?? 6); if (!Number.isInteger(m) || m < 1 || m > 120) throw invalid('Informe os meses (1 a 120).'); return m; };
 // Uso = aparecer na programação diária no período. A fixa não entra: ela só gera diária quando ativada, e linhas esquecidas
 // na fixa (cliente parado, quantidade 0) fariam quase todo produto parecer "em uso".
-const SEM_USO = `${SQL_ATIVO} and not exists (select 1 from tb_diaria d where d.id_produto = p.id and d.data >= date_sub(curdate(), interval ? month))`;
-router.get('/sem-uso', async (req, res) => {
-  const m = mesesSemUso(req.query.meses);
-  const [rows] = await pool.query(`select p.id, p.codigo, p.descricao from tb_produtos p where ${SEM_USO} order by p.descricao limit ${MAX + 1}`, [m]);
-  res.json({ meses: m, total: rows.length, truncado: rows.length > MAX, produtos: rows.slice(0, MAX) });
+// A tela envia os ids que está listando; só eles são conferidos (uma consulta no período, sem subconsulta por produto).
+router.post('/sem-uso', async (req, res) => {
+  const m = mesesSemUso(req.body?.meses);
+  const ids = [...new Set((Array.isArray(req.body?.ids) ? req.body.ids : []).map((x) => idValido(x, 'Produto')))];
+  if (!ids.length) return res.json({ meses: m, total: 0, ids: [] });
+  if (ids.length > MAX) throw invalid(`Máximo de ${MAX} produtos por vez.`);
+  const [usados] = await pool.query('select distinct id_produto from tb_diaria where data >= date_sub(curdate(), interval ? month) and id_produto in (?)', [m, ids]);
+  const em = new Set(usados.map((x) => Number(x.id_produto)));
+  const sem = ids.filter((id) => !em.has(id));
+  res.json({ meses: m, total: sem.length, ids: sem });
 });
 router.get('/ncm', async (req, res) => res.json(await pesquisaNcm(req.query.q)));
 router.get('/ncm/:codigo', async (req, res) => res.json(await consultaNcm(req.params.codigo)));

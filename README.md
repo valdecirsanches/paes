@@ -953,8 +953,10 @@ Além da data e da empresa, **Abrir ▸** (ou clicar na linha) agora seleciona e
 - "Produtos com maior participação" agrupa pela **descrição** (antes por código, e produtos diferentes com a mesma descrição apareciam repetidos, ex.: vários "PAO FRANCES 50GR").
 
 ## Fase 198 — Cadastro de produtos: marcar os sem uso há N meses
-Botão **🕒 Marcar sem uso** com campo **Sem uso há [N] meses** (padrão 6, de 1 a 120). O botão **apenas marca** na lista os produtos ativos sem item na programação diária desde N meses atrás (a programação fixa não conta como uso); só marca os que aparecem na lista atual. Para inativar, o usuário confere e usa **Inativar marcados**. API: `GET /api/cadastros/produtos/sem-uso?meses=N`. Produto recém-criado e ainda não programado também entra no critério.
+Botão **🕒 Marcar sem uso** com campo **Sem uso há [N] meses** (padrão 6, de 1 a 120). O botão **apenas marca** na lista os produtos ativos sem item na programação diária desde N meses atrás (a programação fixa não conta como uso); só marca os que aparecem na lista atual. Para inativar, o usuário confere e usa **Inativar marcados**. API: `POST /api/cadastros/produtos/sem-uso {meses, ids}` (confere só os ids listados na tela, com uma consulta no período; timeout de 60 s na tela). Produto recém-criado e ainda não programado também entra no critério.
 
 Fase 200: o botão mostra "⏳ Marcando…" (desabilitado) e avisa enquanto busca.
 
 Fase 199 (correção): o critério ignora a programação fixa — com ela, quase todo produto tinha alguma linha e nada era marcado.
+
+Fase 201: a conferência de 'sem uso' ficou rápida — envia só os produtos da lista e consulta a diária uma vez (antes uma subconsulta por produto em toda a base travava), com limite de 60 s e mensagem de erro.
