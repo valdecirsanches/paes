@@ -229,7 +229,6 @@ function cadastros(m, p, u, b) {
     return json({ produtos: cadProd.filter((x) => (!c || x.id_cliente === c) && (sit === 'todos' || (sit === 'ativos') === (x.ativo !== 'False')) && ws.every((w) => x.descricao.includes(w) || x.codigo.includes(w))).map((x) => ({ ...x, preco_unitario: x.preco / (x.divisor_basico || 1) })), truncado: false });
   }
   if (m === 'GET' && p === '/cadastros/produtos/sem-uso') { const l = cadProd.filter((x) => x.ativo !== 'False').slice(0, 3); return json({ meses: 6, total: l.length, truncado: false, produtos: l.map((x) => ({ id: x.id, codigo: x.codigo, descricao: x.descricao })) }); }
-  if (m === 'POST' && p === '/cadastros/produtos/inativar-sem-uso') { cadProd.filter((x) => x.ativo !== 'False').slice(0, 3).forEach((x) => { x.ativo = 'False'; }); return json({ ok: true, meses: 6, alterados: 3 }); }
   if (m === 'POST' && p === '/cadastros/produtos/ativo') { cadProd.forEach((x) => { if (b.ids.includes(x.id)) x.ativo = b.ativo ? 'True' : 'False'; }); return json({ ok: true, alterados: b.ids.length }); }
   if (m === 'GET' && p === '/cadastros/produtos/referencias') return json(cadRefs);
   if (m === 'GET' && p === '/cadastros/produtos/proximo-codigo') { const c = u.searchParams.get('cliente'); const n = Math.max(0, ...cadProd.filter((x) => String(x.id_cliente) === c).map((x) => Number(x.codigo.split('.')[1]))) + 1; return json({ codigo: `${c}.${n}` }); }
