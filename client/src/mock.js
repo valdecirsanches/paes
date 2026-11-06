@@ -542,14 +542,14 @@ window.fetch = async (url, opts = {}) => {
   else if (m === 'GET' && p === '/impressao/status') r = json({ ok: true, versao: '1.0.0', plataforma: 'win32', destinos: 2 });
   else if (m === 'GET' && p === '/dashboard') {
     const x = (q, v) => ({ itens: q, qtde: v * 1.0, valor: v * 2.4 });
-    r = json({ data: u.searchParams.get('data'), itens: 38, cancelados: 2, qtde: 1240, valor: 2976, avulsos: 7, fixos_alterados: 4, qtde_cobrada: 310, pendente: 930, clientes: 14,
+    r = json({ data: u.searchParams.get('data'), itens: 38, cancelados: 2, qtde: 1240, notas: { emitidas: 11, canceladas: 1, devolvidas: 0, rejeitadas: 1, pendentes: 2, total: 15, comparativo: { ontem: 10, semana_passada: null } }, avulsos: 7, fixos_alterados: 4, qtde_cobrada: 310, pendente: 930, clientes: 14,
       status: { nada: 1, normal: 8, alterado: 5, cancelado: 1 },
-      comparativo: { ontem: { itens: 5.5, qtde: -3.2, valor: 8.1 }, semana_passada: { itens: null, qtde: 0, valor: -12.4 } },
+      comparativo: { ontem: { itens: 5.5, qtde: -3.2 }, semana_passada: { itens: null, qtde: 0 } },
       por_hora: [['04h', 120], ['05h', 380], ['06h', 410], ['07h', 210], ['09h', 120]].map(([hora, qtde]) => ({ hora, itens: 6, qtde })),
       por_turno: [{ turno: '1', itens: 20, qtde: 700 }, { turno: '2', itens: 14, qtde: 440 }, { turno: '—', itens: 4, qtde: 100 }],
       por_acomodacao: [{ acomodacao: 'SACARIA', itens: 25, qtde: 800 }, { acomodacao: 'CAIXA BRANCA', itens: 9, qtde: 300 }, { acomodacao: 'CAIXA AMARELINHA', itens: 4, qtde: 140 }],
-      top_produtos: [['Pão francês 50g', 820], ['Pão de forma', 410], ['Bisnaguinha', 300], ['Pão hot dog', 180]].map(([produto, valor]) => ({ produto, qtde: valor / 2, valor })),
-      top_clientes: [['Padaria Estrela', 900], ['Escola Aurora', 640], ['Mercado Central', 410]].map(([cliente, valor]) => ({ cliente, itens: 5, qtde: valor / 2, valor })) });
+      top_produtos: [['Pão francês 50g', 820], ['Pão de forma', 410], ['Bisnaguinha', 300], ['Pão hot dog', 180]].map(([produto, valor]) => ({ produto, qtde: valor / 2, pct: Math.round(valor / 22) / 10 })),
+      top_clientes: [['Padaria Estrela', 900], ['Escola Aurora', 640], ['Mercado Central', 410]].map(([cliente, valor]) => ({ cliente, itens: 5, qtde: valor / 2, pct: Math.round(valor / 22) / 10 })) });
   } else if (m === 'GET' && p === '/conflitos') {
     const d = u.searchParams.get('de'); const L = (tipo, gravidade, titulo, unidade, hora, produto, detalhe, id_unidade, id_item = null) => ({ tipo, gravidade, titulo, unidade, hora, produto, detalhe, data: d, id_unidade, id_status: id_unidade, id_item, destino: 'diaria' });
     const itM = (diaria.filter((x) => x.id_status === 2)[1] || {}).id;

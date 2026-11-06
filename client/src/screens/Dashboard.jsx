@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api.js';
-import { brData, fmtMoeda, fmtQtde, hoje, somaDias } from '../lib/rules.js';
+import { brData, fmtQtde, hoje, somaDias } from '../lib/rules.js';
 
 const DIAS = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+const fmtPct = (v) => `${Number(v || 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
 const diaSemana = (iso) => DIAS[new Date(`${iso}T12:00:00`).getDay()];
 
 /** Variação em relação a outro dia: seta, percentual e cor (sem base → traço). */
@@ -59,6 +60,7 @@ export default function Dashboard() {
   useEffect(() => { carregar(data); }, [data]);
 
   const totalSt = d ? STATUS.reduce((s, [k]) => s + (d.status[k] || 0), 0) : 0;
+  const pctNf = (v) => (d && d.notas.total > 0 ? Math.round((v / d.notas.total) * 100) : 0);
   const pctCobrado = d && d.qtde > 0 ? Math.min(100, Math.round((d.qtde_cobrada / d.qtde) * 100)) : 0;
 
   return (
@@ -84,8 +86,13 @@ export default function Dashboard() {
       {d && (
         <>
           <div className="db-cards">
-            <Cartao destaque titulo="Valor programado" valor={fmtMoeda(d.valor)} sub="sem itens cancelados" comp={d.comparativo} campo="valor" />
-            <Cartao titulo="Quantidade total" valor={fmtQtde(d.qtde)} sub="unidades programadas" comp={d.comparativo} campo="qtde" />
+            <Cartao destaque titulo="Quantidade total" valor={fmtQtde(d.qtde)} sub="unidades programadas" comp={d.comparativo} campo="qtde" />
+            <article className="db-card">
+              <h3>Notas emitidas</h3>
+              <strong>{fmtQtde(d.notas.emitidas)}</strong>
+              <small>{d.notas.total > 0 ? `${pctNf(d.notas.emitidas)}% autorizadas · ${d.notas.canceladas + d.notas.devolvidas} cancel./devolv. · ${d.notas.rejeitadas + d.notas.pendentes} pend./rejeit.` : 'nenhuma nota emitida no dia'}</small>
+              <div className="db-deltas"><Delta pct={d.notas.comparativo.ontem} rotulo="vs ontem" /><Delta pct={d.notas.comparativo.semana_passada} rotulo="vs sem. passada" /></div>
+            </article>
             <Cartao titulo="Itens" valor={fmtQtde(d.itens)} sub={`${d.clientes} cliente(s) · ${d.cancelados} cancelado(s)`} comp={d.comparativo} campo="itens" />
             <Cartao titulo="Alterações do dia" valor={fmtQtde(d.avulsos + d.fixos_alterados)} sub={`${d.avulsos} avulso(s) · ${d.fixos_alterados} fixo(s) com extra`} />
             <article className="db-card">
@@ -114,8 +121,8 @@ export default function Dashboard() {
             <Barras titulo="Entregas por hora" dados={d.por_hora} rotulo="hora" valor="qtde" />
             <Barras titulo="Produção por turno" dados={d.por_turno.map((t) => ({ ...t, turno: t.turno === '—' ? 'Sem turno' : `${t.turno}º turno` }))} rotulo="turno" valor="qtde" />
             <Barras titulo="Por acomodação" dados={d.por_acomodacao} rotulo="acomodacao" valor="qtde" />
-            <Barras titulo="Produtos de maior valor" dados={d.top_produtos} rotulo="produto" valor="valor" fmt={fmtMoeda} />
-            <Barras titulo="Clientes de maior valor" dados={d.top_clientes} rotulo="cliente" valor="valor" fmt={fmtMoeda} />
+            <Barras titulo="Produtos com maior participação" dados={d.top_produtos} rotulo="produto" valor="pct" fmt={fmtPct} />
+            <Barras titulo="Clientes com maior participação" dados={d.top_clientes} rotulo="cliente" valor="pct" fmt={fmtPct} />
           </div>
         </>
       )}

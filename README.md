@@ -943,3 +943,7 @@ Convertido de `u_prg_conflitos` / `Verificarconflitosdeproduca1Click` (u_prg_dia
 
 ## Fase 195 — Verificar problemas: "Abrir" posiciona no item
 Além da data e da empresa, **Abrir ▸** (ou clicar na linha) agora seleciona e rola até o **item** da programação do problema. O serviço devolve `id_item` e `destino` em cada problema: `diaria` (aba Diária) ou `fixa` (aba Programação fixa, para "fixa fora do dia de produção"). Problemas só da empresa/situação, ou "fixa ausente da diária" (o item não existe na diária), abrem apenas a data e a empresa.
+
+## Fase 196 — Dashboard sem valores em R$, com notas emitidas
+- Removidos do painel todos os valores monetários (cartão "Valor programado" e rankings por valor). Os rankings agora são **"Produtos/Clientes com maior participação"**, em % da quantidade total do dia.
+- Novo cartão **Notas emitidas** (`tb_nfe`, data de emissão = dia): quantidade de NF-e autorizadas, % autorizadas sobre as notas do dia, canceladas/devolvidas, pendentes/rejeitadas e variação vs ontem / semana passada. API: campo `notas` em `GET /api/dashboard`.

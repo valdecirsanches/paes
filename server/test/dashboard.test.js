@@ -16,8 +16,9 @@ test('montaDashboard: soma totais, status e comparativos a partir das consultas'
     if (/count\(distinct case/.test(sql)) { // totais do dia: hoje, ontem, semana passada
       datas.push(args[0]);
       const hoje = args[0] === '2026-11-05';
-      return [[{ itens: hoje ? 12 : 10, itens_validos: hoje ? 10 : 10, qtde: hoje ? '150.5' : '100', valor: hoje ? '300' : '200', avulsos: 2, fixos_alterados: 1, qtde_cobrada: '50', clientes: 4 }]];
+      return [[{ itens: hoje ? 12 : 10, itens_validos: hoje ? 10 : 10, qtde: hoje ? '150.5' : '100', avulsos: 2, fixos_alterados: 1, qtde_cobrada: '50', clientes: 4 }]];
     }
+    if (/from tb_nfe/.test(sql)) return [[{ s: 'AUTORIZADA', q: args[0] === '2026-11-05' ? 6 : 4 }, { s: 'CANCELADA', q: 1 }]];
     if (/from tb_status/.test(sql)) return [[{ status: 0, q: 1 }, { status: 1, q: 5 }, { status: 2, q: 3 }, { status: 3, q: 1 }]];
     if (/left\(p\.hora, 2\)/.test(sql)) return [[{ hora: '05', itens: 4, qtde: '60' }]];
     if (/producao_turno/.test(sql)) return [[{ turno: '1', itens: 6, qtde: '90' }]];
@@ -28,10 +29,10 @@ test('montaDashboard: soma totais, status e comparativos a partir das consultas'
   try {
     const d = await montaDashboard('2026-11-05');
     assert.deepEqual(datas.sort(), ['2026-10-29', '2026-11-04', '2026-11-05']);
-    assert.equal(d.itens, 10); assert.equal(d.cancelados, 2); assert.equal(d.qtde, 150.5); assert.equal(d.valor, 300);
+    assert.equal(d.itens, 10); assert.equal(d.cancelados, 2); assert.equal(d.qtde, 150.5); assert.equal(d.valor, undefined);
     assert.equal(d.pendente, 100.5); assert.deepEqual(d.status, { nada: 1, normal: 5, alterado: 3, cancelado: 1 });
-    assert.equal(d.comparativo.ontem.valor, 50); assert.equal(d.comparativo.semana_passada.qtde, 50.5);
-    assert.equal(d.por_hora[0].hora, '05h'); assert.equal(d.top_clientes[0].valor, 100);
+    assert.equal(d.comparativo.ontem.valor, undefined); assert.equal(d.notas.emitidas, 6); assert.equal(d.notas.canceladas, 1); assert.equal(d.notas.total, 7); assert.equal(d.notas.comparativo.ontem, 50); assert.equal(d.comparativo.semana_passada.qtde, 50.5);
+    assert.equal(d.por_hora[0].hora, '05h'); assert.equal(d.top_clientes[0].pct, 26.6); assert.equal(d.top_clientes[0].valor, undefined);
     assert.equal(d.top_produtos[0].produto, 'Pão francês');
   } finally { pool.query = orig; }
 });
