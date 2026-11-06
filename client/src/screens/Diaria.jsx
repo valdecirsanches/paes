@@ -50,6 +50,19 @@ export default function Diaria({ onFechar }) {
   useEffect(() => { carregarLista().catch((e) => { setLista([]); notify.erro(e.message); }); }, [carregarLista]);
 
   const sel = lista.find((r) => r.id === selId) || null;
+  // ↑ ↓ PageUp PageDown Home End trocam o cliente selecionado (também com o foco na pesquisa); não vale com o item em edição
+  const teclaLista = (e) => {
+    const passo = { ArrowDown: 1, ArrowUp: -1, PageDown: 8, PageUp: -8, Home: -Infinity, End: Infinity }[e.key];
+    if (passo === undefined || e.altKey || e.ctrlKey || e.metaKey || editandoItem) return;
+    if (e.target.tagName === 'INPUT' && (e.key === 'Home' || e.key === 'End')) return; // no campo de pesquisa, Home/End movem o cursor do texto
+    const v = busca.visiveis; if (!v.length) return;
+    e.preventDefault();
+    const i = v.findIndex((r) => r.id === selId);
+    const n = v[Math.min(v.length - 1, Math.max(0, i < 0 ? (passo > 0 ? 0 : v.length - 1) : i + passo))];
+    const dobotao = e.target.tagName === 'BUTTON';
+    setSelId(n.id);
+    requestAnimationFrame(() => { const b = document.querySelector('.dr2-cli.atual'); b?.scrollIntoView({ block: 'nearest' }); if (dobotao) b?.focus({ preventScroll: true }); });
+  };
   useEffect(() => { if (sel) uniSel.current = sel.id_unidade; }, [sel?.id_unidade]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!sel) { setRoteiros([]); return; }
@@ -118,7 +131,7 @@ export default function Diaria({ onFechar }) {
               ))}
             </div>
           </div>
-          <div className="dr2-card dr2-lista">
+          <div className="dr2-card dr2-lista" onKeyDown={teclaLista}>
             <div className="dr2-t">Clientes do dia <small>{lista.length}</small></div>
             <Busca busca={busca} total={lista.length} placeholder="Pesquisar cliente/unidade…" />
             <ul className="dr2-clientes" aria-label="Clientes do dia">
