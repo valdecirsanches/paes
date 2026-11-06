@@ -36,7 +36,7 @@ export default function Conflitos({ onFechar, abrirTela }) {
       && (!t || `${p.unidade} ${p.produto ?? ''} ${p.detalhe} ${p.titulo}`.toLowerCase().includes(t)));
   }, [r, grav, regra, busca]);
 
-  const abrir = (p) => { pedeAbrirDiaria({ data: p.data, id_unidade: p.id_unidade, id_status: p.id_status }); abrirTela?.('diaria'); };
+  const abrir = (p) => { pedeAbrirDiaria({ data: p.data, id_unidade: p.id_unidade, id_status: p.id_status, id_item: p.id_item, destino: p.destino }); abrirTela?.('diaria'); };
   const multiDia = r && r.periodo.dias > 1;
   const grupos = useMemo(() => {
     if (!agrupar) return null;
@@ -60,7 +60,7 @@ export default function Conflitos({ onFechar, abrirTela }) {
     imprimirHtml(corpo, 'body{font:12px Arial}table{border-collapse:collapse;width:100%}th,td{border:1px solid #999;padding:3px 5px;text-align:left;vertical-align:top}th{background:#eee}h2{font-size:15px}');
   };
   const linha = (p, i) => (
-    <tr key={`${p.tipo}-${p.id_item ?? p.id_status}-${p.id_unidade}-${p.data}-${i}`} className={`cf-l cf-${p.gravidade}`} onClick={() => abrir(p)} title="Clique para abrir esta empresa na Programação diária">
+    <tr key={`${p.tipo}-${p.id_item ?? p.id_status}-${p.id_unidade}-${p.data}-${i}`} className={`cf-l cf-${p.gravidade}`} onClick={() => abrir(p)} title="Clique para abrir esta empresa e o item na programação">
       <td className="g" title={GRAV[p.gravidade][0]}>{GRAV[p.gravidade][1]}</td>
       <td className="t">{p.titulo}</td>
       {multiDia && !agrupar && <td>{brData(p.data)}</td>}

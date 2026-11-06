@@ -26,6 +26,7 @@ export default function Diaria({ onFechar }) {
   const busca = useBusca(lista, B_DIA);
   const [selId, setSelId] = useState(null);
   const alvoAbrir = useRef(null); // { id_status, id_unidade } pedido por "Verificar problemas ▸ Abrir"
+  const alvoItem = useRef(null); // { tipo: 'diaria' | 'fixa', id } item a destacar depois de carregar
   const [recarga, setRecarga] = useState(0);
   const uniSel = useRef(null); // unidade selecionada (sobrevive à troca de data)
   const [aba, setAba] = useState('diaria');
@@ -61,8 +62,10 @@ export default function Diaria({ onFechar }) {
     const aplica = () => {
       const p = pegaPedidoDiaria(); if (!p) return;
       alvoAbrir.current = { id_status: p.id_status ?? null, id_unidade: p.id_unidade ?? null };
+      const fixa = p.destino === 'fixa';
+      alvoItem.current = p.id_item != null ? { tipo: fixa ? 'fixa' : 'diaria', id: p.id_item } : null;
       if (p.id_unidade != null) uniSel.current = p.id_unidade;
-      setFiltro('todas'); busca.setTermo(''); setAba('diaria'); setEditandoItem(false);
+      setFiltro('todas'); busca.setTermo(''); setAba(fixa ? 'fixa' : 'diaria'); setEditandoItem(false);
       if (p.data) setData(String(p.data).slice(0, 10));
       setRecarga((x) => x + 1); // mesma data/filtro: força recarregar a lista para posicionar
     };
@@ -209,10 +212,10 @@ export default function Diaria({ onFechar }) {
           <main className="conteudo dr2-conteudo">
             {sel?.verificar_pasta === 'True' && <div className="pasta">⚠ FAVOR VERIFICAR PASTA</div>}
             {aba === 'diaria'
-              ? <DiariaTab key={sel?.id ?? 'nenhuma'} status={sel} data={data} filtro={filtro} roteiros={roteiros} onChanged={carregarLista} notify={notify} onEditando={setEditandoItem} />
+              ? <DiariaTab key={sel?.id ?? 'nenhuma'} status={sel} data={data} filtro={filtro} roteiros={roteiros} onChanged={carregarLista} notify={notify} alvo={alvoItem} recarga={recarga} onEditando={setEditandoItem} />
               : aba === 'rcm' ? <ReclamacoesTab key={sel?.id ?? 'nenhuma'} status={sel} notify={notify} />
               : aba === 'cfg' ? <ConfigTab key={sel?.id ?? 'nenhuma'} status={sel} onChanged={carregarLista} notify={notify} />
-              : sel ? <FixaTab key={sel.id} status={sel} roteiros={roteiros} onChanged={carregarLista} notify={notify} onEditando={setEditandoItem} /> : <p className="vazio">Selecione uma empresa na lista.</p>}
+              : sel ? <FixaTab key={sel.id} status={sel} roteiros={roteiros} onChanged={carregarLista} notify={notify} onEditando={setEditandoItem} alvo={alvoItem} recarga={recarga} /> : <p className="vazio">Selecione uma empresa na lista.</p>}
           </main>
         </section>
       </div>

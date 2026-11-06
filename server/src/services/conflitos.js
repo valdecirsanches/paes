@@ -58,7 +58,9 @@ export function periodo(de, ate) {
 const reg = (tipo, linha, detalhe) => ({
   tipo, gravidade: REGRAS[tipo][0], titulo: REGRAS[tipo][1], detalhe,
   data: String(linha.data).slice(0, 10), id_status: linha.id_status ?? null, id_unidade: linha.id_unidade ?? null, unidade: linha.unidade ?? '—',
-  id_item: linha.id_item ?? null, produto: linha.produto ?? null, hora: linha.hora ?? null,
+  // destino ao clicar em Abrir: item da diária; no problema da fixa, o item cadastrado na Programação fixa; "não consta na diária" abre só a empresa
+  destino: tipo === 'fixa_fora_producao' ? 'fixa' : 'diaria', id_item: tipo === 'fixa_ausente' ? null : linha.id_item ?? null,
+  produto: linha.produto ?? null, hora: linha.hora ?? null,
 });
 
 export async function verificaProgramacao(de, ate, db = pool, opcoes = {}) {
@@ -131,7 +133,7 @@ export async function verificaProgramacao(de, ate, db = pool, opcoes = {}) {
       left join tb_produtos pr on pr.id = f.id_produto
       left join tb_referencias rf on rf.id = pr.id_referencia
      where ps.data between ? and ? and ps.status <> 3`;
-  const FCOLS = `ps.id as id_status, ps.id_unidade, ps.data, un.nome as unidade, left(f.hora, 5) as hora,
+  const FCOLS = `f.id as id_item, ps.id as id_status, ps.id_unidade, ps.data, un.nome as unidade, left(f.hora, 5) as hora,
       coalesce(nullif(f.produto_descricao_expedicao, ''), pr.descricao) as produto, f.produto_qtde as qtde, f.producao_dias as dias_prod,
       coalesce(rf.produto_especial, 'False') as especial`;
   const fixaFora = await q(`select ${FCOLS} ${FIXA} and pr.produto_producao = 'True'

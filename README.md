@@ -940,3 +940,6 @@ Convertido de `u_prg_conflitos` / `Verificarconflitosdeproduca1Click` (u_prg_dia
 ## Fase 194 — Verificar problemas: sem roteiro opcional; "Abrir" posiciona exatamente
 - "Item sem roteiro/motorista" deixou de ser conferido por padrão; marque **Incluir itens sem roteiro/motorista** na tela para ligar (a escolha fica salva no navegador). API: `&sem_roteiro=1`.
 - **Abrir ▸** (ou clicar na linha) leva à Programação diária **na data e na empresa do problema** (pelo id do status), limpando o filtro de apresentação e a pesquisa de clientes e rolando a lista até a empresa; funciona também quando a tela já estava na mesma data.
+
+## Fase 195 — Verificar problemas: "Abrir" posiciona no item
+Além da data e da empresa, **Abrir ▸** (ou clicar na linha) agora seleciona e rola até o **item** da programação do problema. O serviço devolve `id_item` e `destino` em cada problema: `diaria` (aba Diária) ou `fixa` (aba Programação fixa, para "fixa fora do dia de produção"). Problemas só da empresa/situação, ou "fixa ausente da diária" (o item não existe na diária), abrem apenas a data e a empresa.

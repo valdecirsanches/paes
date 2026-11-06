@@ -74,7 +74,7 @@ function derivar(r, chaves) {
   return n;
 }
 
-export default function DiariaTab({ status, data, filtro, roteiros, onChanged, notify, onEditando }) {
+export default function DiariaTab({ status, data, filtro, roteiros, onChanged, notify, onEditando, alvo, recarga }) {
   const [itens, setItens] = useState([]);
   const [selId, setSelId] = useState(null);
   const [draft, setDraft] = useState(null); // registro em edição/inclusão (state dsedit/dsinsert do Delphi)
@@ -91,9 +91,15 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
     if (!status) { setItens([]); return; }
     const rows = await api.get(`/status/${status.id}/diaria`);
     setItens(rows);
+    const a = alvo?.current; // veio de "Verificar problemas": seleciona o item do problema
+    if (a?.tipo === 'diaria' && rows.some((r) => r.id === a.id)) {
+      alvo.current = null; setSelId(a.id);
+      requestAnimationFrame(() => document.querySelector('.dr2-conteudo tr.sel')?.scrollIntoView({ block: 'center' }));
+      return;
+    }
     setSelId((id) => (rows.some((r) => r.id === id) ? id : rows[0]?.id ?? null));
   }, [status?.id]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { carregar().catch((e) => notify.erro(e.message)); }, [carregar]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { carregar().catch((e) => notify.erro(e.message)); }, [carregar, recarga]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const item = itens.find((i) => i.id === selId) || null;
   const novo = !!draft && !draft.id;

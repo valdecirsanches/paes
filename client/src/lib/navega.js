@@ -1,4 +1,4 @@
-// Pedido de navegação entre telas (ex.: "Verificar problemas" → abrir a Programação diária na data/empresa do problema).
+// Pedido de navegação entre telas ({ data, id_unidade, id_status, id_item, destino: 'diaria' | 'fixa' }) (ex.: "Verificar problemas" → abrir a Programação diária na data/empresa do problema).
 let pendente = null;
 const EVENTO = 'abrir-diaria';
 export const pedeAbrirDiaria = (alvo) => { pendente = alvo; window.dispatchEvent(new CustomEvent(EVENTO)); };

@@ -24,7 +24,7 @@ const novoItem = (dia) => ({
 });
 
 /** Programação fixa (aba cxTabSheet2): barra de botões, painel pnlFixa e grade gridPrf. */
-export default function FixaTab({ status, roteiros, onChanged, notify, onEditando }) {
+export default function FixaTab({ status, roteiros, onChanged, notify, onEditando, alvo, recarga }) {
   const diaData = semanaDia(status.data);
   const [dia, setDia] = useState(diaData);
   const [info, setInfo] = useState({ itens: [], ativavel: false, ativada: false });
@@ -43,9 +43,15 @@ export default function FixaTab({ status, roteiros, onChanged, notify, onEditand
   const carregar = useCallback(async () => {
     const r = await api.get(`/status/${status.id}/fixa?dia=${dia}`);
     setInfo(r);
+    const a = alvo?.current; // veio de "Verificar problemas": seleciona o item fixo do problema
+    if (a?.tipo === 'fixa' && r.itens.some((i) => i.id === a.id)) {
+      alvo.current = null; setSelId(a.id);
+      requestAnimationFrame(() => document.querySelector('.dr2-conteudo tr.sel')?.scrollIntoView({ block: 'center' }));
+      return;
+    }
     setSelId((id) => (r.itens.some((i) => i.id === id) ? id : r.itens[0]?.id ?? null));
   }, [status.id, dia]);
-  useEffect(() => { carregar().catch((e) => notify.erro(e.message)); }, [carregar]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { carregar().catch((e) => notify.erro(e.message)); }, [carregar, recarga]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const item = info.itens.find((i) => i.id === selId) || null;
   const editando = !!draft;
