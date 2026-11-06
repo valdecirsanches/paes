@@ -37,7 +37,10 @@ export function marcaCaminho(de, ate, sobe) {
 
 export function instalaSetasGrade(doc = document) {
   let ativa = null; // última linha clicada
-  const aoClicar = (e) => { const tr = e.target.closest?.('tbody > tr'); if (tr && ehLinhaDeDado(tr) && !tr.closest('.cal, .calendario')) ativa = tr; };
+  const aoClicar = (e) => { // clicar fora de uma linha de grade solta a grade ativa (as setas voltam à tela onde o usuário está)
+    const tr = e.target.closest?.('tbody > tr');
+    ativa = tr && ehLinhaDeDado(tr) && !tr.closest('.cal, .calendario') ? tr : null;
+  };
   const aoTeclar = (e) => {
     const passo = PASSOS[e.key];
     if (passo === undefined || e.defaultPrevented || e.altKey || e.metaKey) return;

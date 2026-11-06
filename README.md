@@ -929,5 +929,5 @@ A edição do produto passou a usar a largura: seção "Produto" (ID, código, c
 ## Fase 190 — Shift/Ctrl + seta marca os produtos
 Nas grades com coluna de marcação (lista de produtos), **Shift** ou **Ctrl** + ↑/↓ (e PageUp/PageDown) passeia pelos registros marcando a linha de onde saiu, as intermediárias e a de chegada. Em grades sem marcação, Shift/Ctrl continuam com o comportamento da própria tela.
 
-## Fase 191 — Programação: setas trocam o cliente
-Na lista "Clientes do dia", ↑ ↓ (e PageUp/PageDown/Home/End) trocam o cliente selecionado, inclusive com o foco no campo de pesquisa (lá, Home/End continuam movendo o cursor do texto). Não age enquanto um item está em edição.
+## Fase 191/192 — Programação: setas trocam o cliente
+↑ ↓ (e PageUp/PageDown/Home/End) trocam o cliente selecionado em qualquer ponto da tela de Programação — sem precisar clicar antes na lista; também com o foco na pesquisa (lá, Home/End movem o cursor). Não age com item em edição nem dentro de outros campos/menus. Clicar fora de uma grade solta a "grade ativa" das setas (Fase 187), para as setas não ficarem presas na última grade clicada.
