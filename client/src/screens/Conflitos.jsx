@@ -16,12 +16,13 @@ export default function Conflitos({ onFechar, abrirTela }) {
   const [grav, setGrav] = useState({ erro: true, aviso: true, info: false });
   const [regra, setRegra] = useState('');
   const [busca, setBusca] = useState('');
+  const [semRoteiro, setSemRoteiro] = useState(() => { try { return localStorage.getItem('cf-sem-roteiro') === '1'; } catch { return false; } }); // conferência opcional
   const [agrupar, setAgrupar] = useState(false); // agrupa por empresa, como a lista do sistema antigo
 
-  const verificar = useCallback(async (d = de, a = ate) => {
+  const verificar = useCallback(async (d = de, a = ate, sr = semRoteiro) => {
     setCarregando(true); setErro('');
-    try { setR(await api.get(`/conflitos?de=${d}&ate=${a}`)); } catch (e) { setR(null); setErro(e.message || 'Não foi possível verificar.'); } finally { setCarregando(false); }
-  }, [de, ate]);
+    try { setR(await api.get(`/conflitos?de=${d}&ate=${a}${sr ? '&sem_roteiro=1' : ''}`)); } catch (e) { setR(null); setErro(e.message || 'Não foi possível verificar.'); } finally { setCarregando(false); }
+  }, [de, ate, semRoteiro]);
   useEffect(() => { // pode ser aberta já numa data (Programação ▸ Ações do dia ▸ Verificar problemas)
     const aplica = () => { const p = pegaPedidoConflitos(); if (p?.data) { setDe(p.data); setAte(p.data); verificar(p.data, p.data); return true; } return false; };
     if (!aplica()) verificar();
@@ -35,7 +36,7 @@ export default function Conflitos({ onFechar, abrirTela }) {
       && (!t || `${p.unidade} ${p.produto ?? ''} ${p.detalhe} ${p.titulo}`.toLowerCase().includes(t)));
   }, [r, grav, regra, busca]);
 
-  const abrir = (p) => { pedeAbrirDiaria({ data: p.data, id_unidade: p.id_unidade }); abrirTela?.('diaria'); };
+  const abrir = (p) => { pedeAbrirDiaria({ data: p.data, id_unidade: p.id_unidade, id_status: p.id_status }); abrirTela?.('diaria'); };
   const multiDia = r && r.periodo.dias > 1;
   const grupos = useMemo(() => {
     if (!agrupar) return null;
@@ -104,6 +105,7 @@ export default function Conflitos({ onFechar, abrirTela }) {
               {r.por_regra.filter((x) => x.qtde > 0).map((x) => <option key={x.tipo} value={x.tipo}>{x.titulo} ({x.qtde})</option>)}
             </select>
             <input type="search" placeholder="Filtrar por empresa, produto ou texto…" value={busca} onChange={(e) => setBusca(e.target.value)} />
+            <label className="cf-chip on" title="Opcional: lista itens sem roteiro/motorista (muitos itens não usam)"><input type="checkbox" checked={semRoteiro} onChange={(e) => { setSemRoteiro(e.target.checked); try { localStorage.setItem('cf-sem-roteiro', e.target.checked ? '1' : '0'); } catch { /* sem armazenamento */ } verificar(de, ate, e.target.checked); }} /><span>Incluir itens sem roteiro/motorista</span></label>
             <label className="cf-chip on"><input type="checkbox" checked={agrupar} onChange={(e) => setAgrupar(e.target.checked)} /><span>Agrupar por empresa</span></label>
             <button type="button" className="bt" onClick={exportar} disabled={!lista.length}>⇩ Exportar</button>
             <button type="button" className="bt" onClick={imprimir} disabled={!lista.length}>🖨 Imprimir</button>

@@ -25,6 +25,8 @@ export default function Diaria({ onFechar }) {
   const [lista, setLista] = useState([]);
   const busca = useBusca(lista, B_DIA);
   const [selId, setSelId] = useState(null);
+  const alvoAbrir = useRef(null); // { id_status, id_unidade } pedido por "Verificar problemas ▸ Abrir"
+  const [recarga, setRecarga] = useState(0);
   const uniSel = useRef(null); // unidade selecionada (sobrevive à troca de data)
   const [aba, setAba] = useState('diaria');
   const [editandoItem, setEditandoItem] = useState(false); // item em edição: a faixa de calendário/clientes recolhe para dar espaço ao formulário
@@ -44,17 +46,30 @@ export default function Diaria({ onFechar }) {
   const carregarLista = useCallback(async () => {
     const rows = await api.get(`/status?data=${data}&filtro=${filtro}`);
     setLista(rows);
+    const a = alvoAbrir.current;
+    if (a) { // veio de "Verificar problemas": posiciona exatamente na empresa do problema (pelo id do status; senão pela unidade)
+      alvoAbrir.current = null;
+      const hit = rows.find((r) => (a.id_status != null && r.id === a.id_status) || (a.id_status == null && r.id_unidade === a.id_unidade));
+      if (hit) { uniSel.current = hit.id_unidade; setSelId(hit.id); requestAnimationFrame(() => document.querySelector('.dr2-cli.atual')?.scrollIntoView({ block: 'center' })); return; }
+    }
     // ao trocar a data os ids de status mudam: mantém a MESMA unidade/cliente selecionada (se ela existir no novo dia)
     setSelId((id) => (rows.some((r) => r.id === id) ? id : (rows.find((r) => uniSel.current != null && r.id_unidade === uniSel.current) ?? rows[0])?.id ?? null));
   }, [data, filtro]);
 
   // "Verificar problemas" pede para abrir esta tela numa data/empresa (também se a tela acabou de ser aberta)
   useEffect(() => {
-    const aplica = () => { const p = pegaPedidoDiaria(); if (!p) return; if (p.id_unidade != null) uniSel.current = p.id_unidade; if (p.data) setData(String(p.data).slice(0, 10)); setAba('diaria'); };
+    const aplica = () => {
+      const p = pegaPedidoDiaria(); if (!p) return;
+      alvoAbrir.current = { id_status: p.id_status ?? null, id_unidade: p.id_unidade ?? null };
+      if (p.id_unidade != null) uniSel.current = p.id_unidade;
+      setFiltro('todas'); busca.setTermo(''); setAba('diaria'); setEditandoItem(false);
+      if (p.data) setData(String(p.data).slice(0, 10));
+      setRecarga((x) => x + 1); // mesma data/filtro: força recarregar a lista para posicionar
+    };
     aplica();
     return aoPedirDiaria(aplica);
   }, []);
-  useEffect(() => { carregarLista().catch((e) => { setLista([]); notify.erro(e.message); }); }, [carregarLista]);
+  useEffect(() => { carregarLista().catch((e) => { setLista([]); notify.erro(e.message); }); }, [carregarLista, recarga]);
 
   const sel = lista.find((r) => r.id === selId) || null;
   // ↑ ↓ PageUp PageDown Home End trocam o cliente selecionado: com o foco na lista/pesquisa OU em qualquer ponto da tela

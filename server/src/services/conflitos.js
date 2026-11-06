@@ -18,7 +18,7 @@ export const REGRAS = {
   duplicado: ['erro', 'Item duplicado (mesmo produto e hora)'],
   status_incoerente: ['erro', 'Situação da empresa não bate com os itens'],
   cancelada_com_itens: ['erro', 'Empresa cancelada, mas ainda com itens'],
-  sem_roteiro: ['aviso', 'Item sem roteiro/motorista'],
+  sem_roteiro: ['aviso', 'Item sem roteiro/motorista (opcional)'],
   sem_turno: ['aviso', 'Produto de produção sem turno ou data de produção'],
   qtde_atipica: ['aviso', 'Quantidade muito diferente do costume'],
   sem_itens: ['aviso', 'Empresa ativa sem nenhum item'],
@@ -61,7 +61,7 @@ const reg = (tipo, linha, detalhe) => ({
   id_item: linha.id_item ?? null, produto: linha.produto ?? null, hora: linha.hora ?? null,
 });
 
-export async function verificaProgramacao(de, ate, db = pool) {
+export async function verificaProgramacao(de, ate, db = pool, opcoes = {}) {
   const per = periodo(de, ate);
   const q = async (sql, args) => (await db.query(sql, args))[0];
   const itens = (extra) => q(`select ${COLS} ${BASE} where p.data between ? and ? and ${VALIDO} and ${extra} order by p.data, un.nome, p.hora limit ${LIMITE}`, [per.de, per.ate]);
@@ -78,7 +78,8 @@ export async function verificaProgramacao(de, ate, db = pool) {
   add('qtde_zero', await itens(`${QTDE} <= 0`), () => 'A quantidade total (fixa + extra) é zero ou negativa; cancele o item ou corrija.');
   add('preco_zero', await itens('coalesce(p.produto_preco, 0) <= 0'), () => 'O item será faturado a R$ 0,00.');
   add('produto_inativo', await itens("(pr.id is null or coalesce(pr.ativo, 'True') = 'False')"), (l) => (l.produto ? 'O produto foi inativado ou removido do cadastro depois de programado.' : 'Produto não encontrado no cadastro.'));
-  add('sem_roteiro', await itens('coalesce(p.id_roteiro, 0) = 0'), () => 'Sem roteiro, o item não entra na lista de entregas/itinerário.');
+  // OPCIONAL (desligada por padrão): muitos itens não usam roteiro/motorista
+  if (opcoes.semRoteiro) add('sem_roteiro', await itens('coalesce(p.id_roteiro, 0) = 0'), () => 'Sem roteiro, o item não entra na lista de entregas/itinerário.');
   add('sem_turno', await itens("pr.produto_producao = 'True' and (coalesce(p.producao_turno, 0) = 0 or p.producao_data is null)"), () => 'A produção não sabe quando fazer este item.');
   add('preco_diferente', await itens('pr.id is not null and coalesce(p.produto_preco, 0) > 0 and abs(p.produto_preco - pr.preco) > 0.0001'), () => 'Confira se foi desconto/ajuste proposital (Ajustar preços traz o do cadastro).');
 

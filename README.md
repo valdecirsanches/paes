@@ -936,3 +936,7 @@ Convertido de `u_prg_conflitos` / `Verificarconflitosdeproduca1Click` (u_prg_dia
 - **Regras do sistema antigo:** produto de produção *comum* tem que ser produzido no **mesmo dia** da entrega e o *especial* **1 dia antes** (diária: `data − producao_data`; fixa: `producao_dias`); item da fixa que **não consta na diária** (mesmo produto, hora e quantidade).
 - **Conferências novas:** item sem hora, quantidade zero, sem preço, produto inativo/excluído, item duplicado, sem roteiro, produção sem turno/data, quantidade atípica (≥3× ou ≤⅓ da média dos últimos mesmos dias da semana), situação da empresa que não bate com os itens, empresa cancelada com itens, empresa ativa sem itens, fixa do dia não ativada, preço diferente do cadastro (informativo).
 - Tela: período, filtros por gravidade/tipo/texto, **agrupar por empresa**, exportar CSV, imprimir; clicar na linha (ou **Abrir ▸**) abre a Programação diária na data e empresa do problema (como o clique da lista antiga).
+
+## Fase 194 — Verificar problemas: sem roteiro opcional; "Abrir" posiciona exatamente
+- "Item sem roteiro/motorista" deixou de ser conferido por padrão; marque **Incluir itens sem roteiro/motorista** na tela para ligar (a escolha fica salva no navegador). API: `&sem_roteiro=1`.
+- **Abrir ▸** (ou clicar na linha) leva à Programação diária **na data e na empresa do problema** (pelo id do status), limpando o filtro de apresentação e a pesquisa de clientes e rolando a lista até a empresa; funciona também quando a tela já estava na mesma data.

@@ -35,7 +35,10 @@ test('verificaProgramacao: classifica, ordena por gravidade e conta por regra', 
   };
   const r = await verificaProgramacao('2026-11-05', '', db);
   const tipos = r.problemas.map((p) => p.tipo);
-  for (const t of ['fora_producao', 'fixa_fora_producao', 'fixa_ausente', 'sem_hora', 'preco_zero', 'sem_roteiro', 'duplicado', 'qtde_atipica', 'cancelada_com_itens', 'sem_itens', 'status_incoerente', 'fixa_nao_ativada']) assert.ok(tipos.includes(t), t);
+  assert.ok(!tipos.includes('sem_roteiro'), 'sem roteiro é opcional: desligado por padrão');
+  const r2 = await verificaProgramacao('2026-11-05', '', db, { semRoteiro: true });
+  assert.ok(r2.problemas.some((p) => p.tipo === 'sem_roteiro'));
+  for (const t of ['fora_producao', 'fixa_fora_producao', 'fixa_ausente', 'sem_hora', 'preco_zero', 'duplicado', 'qtde_atipica', 'cancelada_com_itens', 'sem_itens', 'status_incoerente', 'fixa_nao_ativada']) assert.ok(tipos.includes(t), t);
   assert.ok(!tipos.includes('qtde_zero'));
   assert.equal(tipos.filter((t) => t === 'status_incoerente').length, 1); // só a empresa C (D está coerente: alterada)
   const g = r.problemas.map((p) => p.gravidade);
