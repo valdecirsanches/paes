@@ -960,3 +960,5 @@ Fase 200: o botão mostra "⏳ Marcando…" (desabilitado) e avisa enquanto busc
 Fase 199 (correção): o critério ignora a programação fixa — com ela, quase todo produto tinha alguma linha e nada era marcado.
 
 Fase 201: a conferência de 'sem uso' ficou rápida — envia só os produtos da lista e consulta a diária uma vez (antes uma subconsulta por produto em toda a base travava), com limite de 60 s e mensagem de erro.
+
+Fase 202: botão **↩ Reativar todos os inativos (N)** (aparece em Inativos/Todos): reativa de uma vez os inativos da lista atual, com confirmação — desfaz uma inativação em massa. Também dá para marcar e usar "Ativar marcados".

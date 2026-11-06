@@ -75,6 +75,22 @@ export default function Produtos({ onFechar }) {
       },
     });
   };
+  // reativa de uma vez todos os produtos inativos da lista atual (desfaz a inativação em massa), com confirmação
+  const inativosDaLista = lista.filter((p) => String(p.ativo ?? 'True') === 'False');
+  const reativaTodos = () => {
+    const ids = inativosDaLista.map((p) => p.id);
+    if (!ids.length) return;
+    setConfirma({
+      texto: `Reativar os ${ids.length} produto(s) inativo(s) desta lista?`,
+      sim: async () => {
+        try {
+          const r = await api.post(`${CAM}/ativo`, { ids, ativo: true });
+          notificar('ok', `${r.alterados} produto(s) reativado(s).`);
+          setMarcados(new Set()); await recarregar();
+        } catch (e) { notificar('erro', e.message); }
+      },
+    });
+  };
   // marca (só marca) os produtos ativos sem uso há N meses que aparecem na lista; a inativação é pelo botão "Inativar marcados"
   const marcaSemUso = async () => {
     const MESES = Math.max(1, Math.min(120, Math.floor(Number(mesesSemUso)) || 0));
@@ -120,6 +136,7 @@ export default function Produtos({ onFechar }) {
         <button type="button" className="cd-btn" disabled={!marcados.size} title="Inativa todos os produtos marcados na lista" onClick={() => mudaAtivo(false)}>⛔ Inativar marcados{marcados.size ? ` (${marcados.size})` : ''}</button>
         <label className="cd-sem-uso" title="Quantidade de meses sem uso">Sem uso há <input type="number" min="1" max="120" value={mesesSemUso} onChange={(e) => setMesesSemUso(e.target.value)} aria-label="Meses sem utilização" /> meses</label>
         <button type="button" className="cd-btn" title="Marca os produtos da lista que não aparecem na programação diária no período informado. Depois use Inativar marcados." disabled={marcandoSemUso} aria-busy={marcandoSemUso} onClick={marcaSemUso}>{marcandoSemUso ? '⏳ Marcando…' : '🕒 Marcar sem uso'}</button>
+        {situacao !== 'ativos' && <button type="button" className="cd-btn" disabled={!inativosDaLista.length} title="Reativa todos os produtos inativos que aparecem na lista (use o filtro de cliente/pesquisa para limitar)" onClick={reativaTodos}>↩ Reativar todos os inativos{inativosDaLista.length ? ` (${inativosDaLista.length})` : ''}</button>}
         <button type="button" className="cd-btn" disabled={!marcados.size} title="Ativa todos os produtos marcados na lista" onClick={() => mudaAtivo(true)}>✔ Ativar marcados</button>
         <span className="cd-esp-barra" />
         <input type="search" className="cd-busca" placeholder="Pesquisar produto (descrição ou código)" aria-label="Pesquisar produto" value={q} onChange={(e) => setQ(e.target.value)} />
