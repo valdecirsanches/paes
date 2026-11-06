@@ -45,8 +45,9 @@ router.post('/ativo', async (req, res) => {
 });
 // Produtos ativos sem uso há N meses (a tela só marca; inativar é por /ativo): não aparecem na programação diária desde a data de corte nem em nenhuma programação fixa.
 const mesesSemUso = (v) => { const m = Number(v ?? 6); if (!Number.isInteger(m) || m < 1 || m > 120) throw invalid('Informe os meses (1 a 120).'); return m; };
-const SEM_USO = `${SQL_ATIVO} and not exists (select 1 from tb_diaria d where d.id_produto = p.id and d.data >= date_sub(curdate(), interval ? month))
-  and not exists (select 1 from tb_fixa f where f.id_produto = p.id)`;
+// Uso = aparecer na programação diária no período. A fixa não entra: ela só gera diária quando ativada, e linhas esquecidas
+// na fixa (cliente parado, quantidade 0) fariam quase todo produto parecer "em uso".
+const SEM_USO = `${SQL_ATIVO} and not exists (select 1 from tb_diaria d where d.id_produto = p.id and d.data >= date_sub(curdate(), interval ? month))`;
 router.get('/sem-uso', async (req, res) => {
   const m = mesesSemUso(req.query.meses);
   const [rows] = await pool.query(`select p.id, p.codigo, p.descricao from tb_produtos p where ${SEM_USO} order by p.descricao limit ${MAX + 1}`, [m]);

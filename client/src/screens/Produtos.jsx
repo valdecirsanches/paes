@@ -25,6 +25,7 @@ export default function Produtos({ onFechar }) {
   const [q, setQ] = useState('');
   const [situacao, setSituacao] = useState('ativos'); // inativos só aparecem se o usuário escolher Inativos/Todos
   const [mesesSemUso, setMesesSemUso] = useState(6);
+  const [marcandoSemUso, setMarcandoSemUso] = useState(false);
   const [marcados, setMarcados] = useState(() => new Set());
   const [foco, setFoco] = useState(null);
   const [aviso, setAviso] = useState(null);
@@ -77,6 +78,8 @@ export default function Produtos({ onFechar }) {
   // marca (só marca) os produtos ativos sem uso há N meses que aparecem na lista; a inativação é pelo botão "Inativar marcados"
   const marcaSemUso = async () => {
     const MESES = Math.max(1, Math.min(120, Math.floor(Number(mesesSemUso)) || 0));
+    if (marcandoSemUso) return;
+    setMarcandoSemUso(true); notificar('ok', `Marcando produtos sem uso há mais de ${MESES} meses… aguarde, pode demorar.`);
     try {
       const r = await api.get(`${CAM}/sem-uso?meses=${MESES}`);
       const sem = new Set(r.produtos.map((x) => x.id));
@@ -84,7 +87,7 @@ export default function Produtos({ onFechar }) {
       setMarcados(new Set(ids));
       if (!ids.length) notificar('ok', r.total ? `Há ${r.total} produto(s) sem uso há mais de ${MESES} meses, mas nenhum aparece na lista atual (confira filtros e situação).` : `Nenhum produto ativo parado há mais de ${MESES} meses.`);
       else notificar('ok', `${ids.length} produto(s) sem uso há mais de ${MESES} meses marcado(s). Confira e use "Inativar marcados".${r.total > ids.length ? ` (${r.total - ids.length} fora da lista atual)` : ''}`);
-    } catch (e) { notificar('erro', e.message); }
+    } catch (e) { notificar('erro', e.message); } finally { setMarcandoSemUso(false); }
   };
   // escolher um cliente na aba Clientes já filtra: marca o filtro e volta para a lista de produtos
   const escolheCliente = (id) => { setCliSel(id); setFiltrar(true); setAba('lista'); };
@@ -113,7 +116,7 @@ export default function Produtos({ onFechar }) {
           <select value={situacao} onChange={(e) => setSituacao(e.target.value)} aria-label="Situação dos produtos"><option value="ativos">Ativos</option><option value="inativos">Inativos</option><option value="todos">Todos</option></select></label>
         <button type="button" className="cd-btn" disabled={!marcados.size} title="Inativa todos os produtos marcados na lista" onClick={() => mudaAtivo(false)}>⛔ Inativar marcados{marcados.size ? ` (${marcados.size})` : ''}</button>
         <label className="cd-sem-uso" title="Quantidade de meses sem uso">Sem uso há <input type="number" min="1" max="120" value={mesesSemUso} onChange={(e) => setMesesSemUso(e.target.value)} aria-label="Meses sem utilização" /> meses</label>
-        <button type="button" className="cd-btn" title="Marca os produtos da lista que não aparecem na programação diária no período informado nem em programação fixa. Depois use Inativar marcados." onClick={marcaSemUso}>🕒 Marcar sem uso</button>
+        <button type="button" className="cd-btn" title="Marca os produtos da lista que não aparecem na programação diária no período informado. Depois use Inativar marcados." disabled={marcandoSemUso} aria-busy={marcandoSemUso} onClick={marcaSemUso}>{marcandoSemUso ? '⏳ Marcando…' : '🕒 Marcar sem uso'}</button>
         <button type="button" className="cd-btn" disabled={!marcados.size} title="Ativa todos os produtos marcados na lista" onClick={() => mudaAtivo(true)}>✔ Ativar marcados</button>
         <span className="cd-esp-barra" />
         <input type="search" className="cd-busca" placeholder="Pesquisar produto (descrição ou código)" aria-label="Pesquisar produto" value={q} onChange={(e) => setQ(e.target.value)} />
