@@ -925,3 +925,6 @@ A edição do produto passou a usar a largura: seção "Produto" (ID, código, c
 ## Fase 189 — Produtos: situação (ativos/inativos/todos) e inativar em lote
 - A lista do cadastro abre só com **Ativos**; o seletor **Mostrar** (Ativos / Inativos / Todos) traz os inativos quando o usuário escolhe. O rodapé informa o que está listado.
 - Nova coluna de caixas de seleção na lista (cabeçalho marca/desmarca todos os da lista) e botões **⛔ Inativar marcados (N)** e **✔ Ativar marcados**, com confirmação. Servidor: `POST /api/cadastros/produtos/ativo {ids, ativo}` e `GET /api/cadastros/produtos?situacao=ativos|inativos|todos`.
+
+## Fase 190 — Shift/Ctrl + seta marca os produtos
+Nas grades com coluna de marcação (lista de produtos), **Shift** ou **Ctrl** + ↑/↓ (e PageUp/PageDown) passeia pelos registros marcando a linha de onde saiu, as intermediárias e a de chegada. Em grades sem marcação, Shift/Ctrl continuam com o comportamento da própria tela.
