@@ -4,6 +4,8 @@ import Mercadorias from '../screens/Mercadorias.jsx';
 import Cargas from '../screens/Cargas.jsx';
 import Reclamacoes from '../screens/Reclamacoes.jsx';
 import Extras from '../screens/Extras.jsx';
+import Conflitos from '../screens/Conflitos.jsx';
+import { aoPedirConflitos } from '../lib/navega.js';
 import FabricaProducao from './FabricaProducao.jsx';
 import { setFabrica } from '../lib/perfil.js';
 import './fabrica.css';
@@ -19,6 +21,7 @@ const TELAS = {
   cargas: { t: 'Cargas', Tela: Cargas, claro: true },
   reclamacoes: { t: 'Reclamações', Tela: Reclamacoes, claro: true },
   extras: { t: 'Pedidos extras', Tela: Extras, claro: true },
+  conflitos: { t: 'Problemas da programação', Tela: Conflitos, claro: true }, // aberta por Programação ▸ Ações do dia (não tem botão)
 };
 const BOTOES = [['diaria', 'Programação', 'programacao'], ['producao', 'Produção', 'producao'], ['mercadorias', 'Mercadorias', 'mercadorias'], ['cargas', 'Cargas', 'cargas'], ['reclamacoes', 'Reclamações', 'reclamacoes'], ['extras', 'Pedidos Extras', 'extras']];
 const VERSAO = typeof __BUILD__ === 'string' ? __BUILD__.replace(/ · build.*/, '').replace('fase ', '3.0.') : '3.0';
@@ -30,6 +33,7 @@ export default function FabricaApp({ saude }) {
   const [menuAba, setMenuAba] = useState(null);
   const abrir = (k) => { setAbertas((a) => (a.includes(k) ? a : [...a, k])); setAtiva(k); };
   const fechar = (k) => setAbertas((a) => { const n = a.filter((x) => x !== k); if (ativa === k) setAtiva(n[n.length - 1] ?? null); return n; });
+  useEffect(() => aoPedirConflitos(() => abrir('conflitos')), []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { abrir('producao'); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (!menuAba) return undefined; const f = () => setMenuAba(null); window.addEventListener('click', f); return () => window.removeEventListener('click', f); }, [menuAba]);
   useEffect(() => { if (!msg) return undefined; const t = setTimeout(() => setMsg(''), 6000); return () => clearTimeout(t); }, [msg]);
@@ -51,7 +55,7 @@ export default function FabricaApp({ saude }) {
       <div className="fb-area">
         {abertas.map((k) => {
           const { Tela, claro } = TELAS[k];
-          return <div key={k} className={`fb-slot${claro ? ' claro' : ''}`} hidden={ativa !== k}><Tela onFechar={() => fechar(k)} /></div>;
+          return <div key={k} className={`fb-slot${claro ? ' claro' : ''}`} hidden={ativa !== k}><Tela onFechar={() => fechar(k)} abrirTela={abrir} /></div>;
         })}
       </div>
       <div className="fb-status">

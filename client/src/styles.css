@@ -1909,3 +1909,24 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{filter:brightness(1.15)}
 .pf2 .cd-campo input,.pf2 .cd-campo select,.pf2 .cd-campo textarea{padding:4px 7px}
 .pf2 .cd-chave{min-height:24px}
 .cd-prod{grid-template-columns:minmax(300px,.6fr) minmax(520px,1.4fr)}
+
+/* ---- Verificar problemas de programação (Fase 193) ---- */
+.cf{padding:14px 18px;display:flex;flex-direction:column;gap:10px;max-width:1500px;margin:0 auto;width:100%;box-sizing:border-box;min-height:0}
+.cf-topo{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px}
+.cf-topo h2{margin:0;font-size:20px;color:var(--azul-barra-2)}.cf-topo p{margin:2px 0 0;color:#555}
+.cf-filtro{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.cf-filtro label{display:flex;gap:4px;align-items:center;font-size:12.5px}
+.cf-resumo{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.cf-chip{display:inline-flex;gap:6px;align-items:center;padding:3px 10px;border-radius:99px;border:1px solid var(--borda);background:#fff;font-size:12.5px;cursor:pointer;user-select:none}
+.cf-chip input{display:none}.cf-chip b{background:#eee;border-radius:99px;padding:0 7px}
+.cf-chip.erro.on{background:#fde8e8;border-color:#e57373}.cf-chip.aviso.on{background:#fff4d6;border-color:#e9b949}.cf-chip.info.on{background:#e8f1fb;border-color:#7fa8d8}.cf-chip.on:not(.erro):not(.aviso):not(.info){background:#f1ece0}
+.cf-resumo select,.cf-resumo input[type=search]{height:28px}.cf-resumo input[type=search]{min-width:240px}
+.cf-per{margin-left:auto;color:#666;font-size:12px}
+.cf-tab{overflow:auto;background:#fff;border:1px solid var(--borda);border-radius:10px;min-height:0;max-height:calc(100vh - 290px)}
+.cf-tab table{width:100%;border-collapse:collapse;font-size:12.5px}
+.cf-tab th{position:sticky;top:0;background:#f1ece0;text-align:left;padding:6px 8px;border-bottom:1px solid var(--borda);z-index:1}
+.cf-tab td{padding:5px 8px;border-bottom:1px solid #f0ebe0;vertical-align:top}
+.cf-tab tr.cf-l{cursor:pointer;font-weight:400}.cf-tab tr.cf-l:hover{background:#fff8ee}
+.cf-tab td.g{width:26px;text-align:center}.cf-tab td.t{font-weight:600;white-space:nowrap}.cf-tab td.d{color:#444;min-width:260px}
+.cf-grupo td{background:#f6efe0;font-weight:700;color:#6f4a00;padding:6px 8px}.cf-grupo small{font-weight:400;color:#8a7a5a;margin-left:8px}
+.cf-ok{background:#e9f7ec;border:1px solid #8fd19e;color:#1a6b2b;padding:14px 16px;border-radius:10px;font-weight:600}
+.cf-rodape{color:#777;font-size:12px}

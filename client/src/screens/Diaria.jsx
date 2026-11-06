@@ -1,6 +1,7 @@
 import { ehFabrica } from '../lib/perfil.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../api.js';
+import { aoPedirDiaria, pedeAbrirConflitos, pegaPedidoDiaria } from '../lib/navega.js';
 import { FILTROS, STATUS, diaExtenso, hoje } from '../lib/rules.js';
 import Calendario from '../components/Calendario.jsx';
 import DiariaTab from '../components/DiariaTab.jsx';
@@ -47,6 +48,12 @@ export default function Diaria({ onFechar }) {
     setSelId((id) => (rows.some((r) => r.id === id) ? id : (rows.find((r) => uniSel.current != null && r.id_unidade === uniSel.current) ?? rows[0])?.id ?? null));
   }, [data, filtro]);
 
+  // "Verificar problemas" pede para abrir esta tela numa data/empresa (também se a tela acabou de ser aberta)
+  useEffect(() => {
+    const aplica = () => { const p = pegaPedidoDiaria(); if (!p) return; if (p.id_unidade != null) uniSel.current = p.id_unidade; if (p.data) setData(String(p.data).slice(0, 10)); setAba('diaria'); };
+    aplica();
+    return aoPedirDiaria(aplica);
+  }, []);
   useEffect(() => { carregarLista().catch((e) => { setLista([]); notify.erro(e.message); }); }, [carregarLista]);
 
   const sel = lista.find((r) => r.id === selId) || null;
@@ -97,6 +104,7 @@ export default function Diaria({ onFechar }) {
     ['Ativar programação FIXA para todas as empresas', async () => (await confirmar(`Ativar todas as empresas que possuem programação fixa, para ${diaExtenso(data)}?`))
       && executar(() => api.post('/status/fixa-todas', { data }), (r) => (r.falhas.length
         ? `${r.criados} itens criados. Falhou em ${r.falhas.length} empresa(s).` : `Programação fixa ativada (${r.criados} itens).`))],
+    ['Verificar possíveis problemas de programação', () => pedeAbrirConflitos({ data })],
     ['Verificar integridade de status', () => executar(() => api.post('/status/recalcular', { data }), (r) => `${r.verificados} status verificados.`)],
     ...(ehFabrica() ? [] : [['Ajustar preços de todos os itens do dia', async () => (await confirmar('Trazer o preço atual do cadastro para todos os itens do dia?'))
       && executar(() => api.post('/diaria/ajusta-preco-lote', { data }), (r) => `${r.atualizados} itens atualizados.`)]]),

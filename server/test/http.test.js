@@ -225,3 +225,7 @@ test('produtos: situação inválida e inativar em lote exigem dados válidos �
   assert.equal((await call('POST', '/api/cadastros/produtos/ativo', { ids: [1], ativo: 'nao' })).status, 422);
   assert.equal((await call('POST', '/api/cadastros/produtos/ativo', { ids: ['a'], ativo: false })).status, 422);
 });
+test('conflitos: período inválido → 422', async () => {
+  assert.equal((await call('GET', '/api/conflitos')).status, 422);
+  assert.equal((await call('GET', '/api/conflitos?de=2026-01-01&ate=2026-06-01')).status, 422);
+});

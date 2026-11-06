@@ -550,6 +550,14 @@ window.fetch = async (url, opts = {}) => {
       por_acomodacao: [{ acomodacao: 'SACARIA', itens: 25, qtde: 800 }, { acomodacao: 'CAIXA BRANCA', itens: 9, qtde: 300 }, { acomodacao: 'CAIXA AMARELINHA', itens: 4, qtde: 140 }],
       top_produtos: [['Pão francês 50g', 820], ['Pão de forma', 410], ['Bisnaguinha', 300], ['Pão hot dog', 180]].map(([produto, valor]) => ({ produto, qtde: valor / 2, valor })),
       top_clientes: [['Padaria Estrela', 900], ['Escola Aurora', 640], ['Mercado Central', 410]].map(([cliente, valor]) => ({ cliente, itens: 5, qtde: valor / 2, valor })) });
+  } else if (m === 'GET' && p === '/conflitos') {
+    const d = u.searchParams.get('de'); const L = (tipo, gravidade, titulo, unidade, hora, produto, detalhe, id_unidade) => ({ tipo, gravidade, titulo, unidade, hora, produto, detalhe, data: d, id_unidade, id_status: id_unidade, id_item: 1 });
+    const pr = [L('fora_producao', 'erro', 'Fora da produção (programação diária)', 'Padaria Estrela 1/1', '06:30', 'PAO DE FORMA', 'Produto comum deve ser produzido no mesmo dia da entrega. Produção marcada para 1 dia(s) antes da entrega.', 1),
+      L('fixa_ausente', 'aviso', 'Item da programação fixa não consta na diária', 'Mercado São Jorge 2/2', '05:00', 'PAO FRANCES', 'Pela programação fixa deveria ter 120 às 05:00, mas não há esse item na diária (foi excluído ou alterado?).', 2),
+      L('qtde_atipica', 'aviso', 'Quantidade muito diferente do costume', 'Mercado São Jorge 2/2', '06:00', 'BOLO CENOURA', 'Quantidade 90 contra média de 20 nos últimos 4 mesmos dias da semana — possível erro de digitação.', 2),
+      L('preco_diferente', 'info', 'Preço do item diferente do cadastro', 'Lanchonete do Zé 3/3', '07:00', 'BISNAGUINHA', 'Confira se foi desconto/ajuste proposital.', 3)];
+    r = json({ periodo: { de: d, ate: d, dias: 1, rotulo: String(d).split('-').reverse().join('/') }, totais: { erro: 1, aviso: 2, info: 1 }, problemas: pr,
+      por_regra: pr.map((x) => ({ tipo: x.tipo, gravidade: x.gravidade, titulo: x.titulo, qtde: 1 })) });
   } else if (m === 'GET' && p === '/layout-etiquetas') r = json({});
   else if (m === 'PUT' && p.startsWith('/layout-etiquetas/')) r = json({});
   else if (m === 'POST' && p === '/mercadorias/etiquetas') {

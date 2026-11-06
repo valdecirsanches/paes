@@ -158,7 +158,6 @@ Todas as impressões abrem o diálogo de impressão do navegador do PC onde o us
 
 - Relatórios ReportBuilder: conferência, alterações, lista de entregas/itinerários, pasta, reclamações, etiquetas (adesiva, validade) e o designer de layout.
 - "Imprimir na expedição" (escreve direto em `\\producao\producao` com códigos de impressora): precisa de um serviço de impressão no servidor.
-- "Verificar possíveis problemas de programação" (`u_conflitos`).
 - Utilitários de manutenção (`LMDButton1`, `LMDButton4`, `LMDButton6`, `LMDButton7`: ajuste em lote de motorista/descrição).
 - Telas auxiliares que não foram enviadas: `u_localiza_produto` (substituída por uma busca simples), `u_diaria_cobranca`, `u_recados`, `u_monitor`.
 - Login: hoje o usuário vem do header `x-user-id` (ponto marcado com `TODO(auth)`).
@@ -931,3 +930,9 @@ Nas grades com coluna de marcação (lista de produtos), **Shift** ou **Ctrl** +
 
 ## Fase 191/192 — Programação: setas trocam o cliente
 ↑ ↓ (e PageUp/PageDown/Home/End) trocam o cliente selecionado em qualquer ponto da tela de Programação — sem precisar clicar antes na lista; também com o foco na pesquisa (lá, Home/End movem o cursor). Não age com item em edição nem dentro de outros campos/menus. Clicar fora de uma grade solta a "grade ativa" das setas (Fase 187), para as setas não ficarem presas na última grade clicada.
+
+## Fase 193 — Verificar possíveis problemas de programação
+Convertido de `u_prg_conflitos` / `Verificarconflitosdeproduca1Click` (u_prg_diaria): menu **Programação › Verificar problemas de programação** e **Ações do dia ▸ Verificar possíveis problemas de programação** (também na janela da fábrica). Serviço `server/src/services/conflitos.js`, rota `GET /api/conflitos?de=&ate=` (até 31 dias, somente leitura), tela `client/src/screens/Conflitos.jsx`.
+- **Regras do sistema antigo:** produto de produção *comum* tem que ser produzido no **mesmo dia** da entrega e o *especial* **1 dia antes** (diária: `data − producao_data`; fixa: `producao_dias`); item da fixa que **não consta na diária** (mesmo produto, hora e quantidade).
+- **Conferências novas:** item sem hora, quantidade zero, sem preço, produto inativo/excluído, item duplicado, sem roteiro, produção sem turno/data, quantidade atípica (≥3× ou ≤⅓ da média dos últimos mesmos dias da semana), situação da empresa que não bate com os itens, empresa cancelada com itens, empresa ativa sem itens, fixa do dia não ativada, preço diferente do cadastro (informativo).
+- Tela: período, filtros por gravidade/tipo/texto, **agrupar por empresa**, exportar CSV, imprimir; clicar na linha (ou **Abrir ▸**) abre a Programação diária na data e empresa do problema (como o clique da lista antiga).
