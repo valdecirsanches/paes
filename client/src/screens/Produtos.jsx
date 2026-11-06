@@ -23,6 +23,8 @@ export default function Produtos({ onFechar }) {
   const [filtrar, setFiltrar] = useState(false);
   const [cliSel, setCliSel] = useState(null);
   const [q, setQ] = useState('');
+  const [situacao, setSituacao] = useState('ativos'); // inativos só aparecem se o usuário escolher Inativos/Todos
+  const [marcados, setMarcados] = useState(() => new Set());
   const [foco, setFoco] = useState(null);
   const [aviso, setAviso] = useState(null);
   const [confirma, setConfirma] = useState(null);
@@ -35,11 +37,13 @@ export default function Produtos({ onFechar }) {
       const par = new URLSearchParams();
       if (clienteFiltro) par.set('cliente', clienteFiltro);
       if (q.trim()) par.set('q', q.trim());
+      par.set('situacao', situacao);
       const r = await api.get(`${CAM}?${par}`);
       setLista(r.produtos); setTrunc(r.truncado);
+      setMarcados((m) => { const ids = new Set(r.produtos.map((x) => x.id)); return new Set([...m].filter((i) => ids.has(i))); });
       setFoco((f) => { const alvo = idFoco ?? f; return r.produtos.some((x) => x.id === alvo) ? alvo : r.produtos[0]?.id ?? null; });
     } catch (e) { notificar('erro', e.message); }
-  }, [clienteFiltro, q, notificar]);
+  }, [clienteFiltro, q, situacao, notificar]);
   useEffect(() => { const t = setTimeout(() => recarregar(), q ? 300 : 0); return () => clearTimeout(t); }, [recarregar, q]);
   useEffect(() => {
     api.get('/cadastros/clientes').then((c) => { setClientes(c); }).catch(() => {});
@@ -52,6 +56,23 @@ export default function Produtos({ onFechar }) {
   const ed = useMemo(() => ({ ...ed0, incluir: () => { if (ed0.sujo) { ed0.incluir(); return; } ed0.incluir(); if (clienteFiltro) codigoPara(clienteFiltro); } }), [ed0, clienteFiltro, codigoPara]);
   const campoCod = useRef(null);
   const bClis = useBusca(clientes, B_CLI);
+  const marca = (id, on) => setMarcados((m) => { const n = new Set(m); if (on) n.add(id); else n.delete(id); return n; });
+  const marcaTodos = (on) => setMarcados(on ? new Set(lista.map((p) => p.id)) : new Set());
+  // ativa/inativa de uma vez todos os produtos marcados (com confirmação)
+  const mudaAtivo = (ativo) => {
+    const ids = [...marcados];
+    if (!ids.length) return;
+    setConfirma({
+      texto: `${ativo ? 'Ativar' : 'Inativar'} ${ids.length} produto(s) marcado(s)?${ativo ? '' : '\nEles deixam de aparecer nas pesquisas.'}`,
+      sim: async () => {
+        try {
+          const r = await api.post(`${CAM}/ativo`, { ids, ativo });
+          notificar('ok', `${r.alterados} produto(s) ${ativo ? 'ativado(s)' : 'inativado(s)'}.`);
+          setMarcados(new Set()); await recarregar();
+        } catch (e) { notificar('erro', e.message); }
+      },
+    });
+  };
   // escolher um cliente na aba Clientes já filtra: marca o filtro e volta para a lista de produtos
   const escolheCliente = (id) => { setCliSel(id); setFiltrar(true); setAba('lista'); };
   const clienteNome = clientes.find((c) => c.id === cliSel)?.razao_social ?? '';
@@ -75,6 +96,10 @@ export default function Produtos({ onFechar }) {
         <button type="button" className="cd-btn" onClick={imprimirTabela}>🖨 Tabela de preços</button>
         <button type="button" className="cd-btn" onClick={exportar}>⇩ Exportar</button>
         <label className="cd-filtro"><input type="checkbox" checked={filtrar} onChange={(e) => { if (e.target.checked && !cliSel) { setAba('clis'); notificar('aviso', 'Escolha o cliente na aba Clientes.'); return; } setFiltrar(e.target.checked); }} />Só produtos de <b>{clienteNome || 'um cliente'}</b></label>
+        <label className="cd-filtro" title="Quais produtos listar"><span>Mostrar</span>
+          <select value={situacao} onChange={(e) => setSituacao(e.target.value)} aria-label="Situação dos produtos"><option value="ativos">Ativos</option><option value="inativos">Inativos</option><option value="todos">Todos</option></select></label>
+        <button type="button" className="cd-btn" disabled={!marcados.size} title="Inativa todos os produtos marcados na lista" onClick={() => mudaAtivo(false)}>⛔ Inativar marcados{marcados.size ? ` (${marcados.size})` : ''}</button>
+        <button type="button" className="cd-btn" disabled={!marcados.size} title="Ativa todos os produtos marcados na lista" onClick={() => mudaAtivo(true)}>✔ Ativar marcados</button>
         <span className="cd-esp-barra" />
         <input type="search" className="cd-busca" placeholder="Pesquisar produto (descrição ou código)" aria-label="Pesquisar produto" value={q} onChange={(e) => setQ(e.target.value)} />
         <button type="button" className="cd-btn" title="Fechar esta tela" onClick={onFechar}>Fechar</button>
@@ -84,7 +109,7 @@ export default function Produtos({ onFechar }) {
           <div className="cd-abas" role="tablist">
             {[['lista', 'Produtos'], ['refs', 'Referências da produção'], ['clis', 'Clientes']].map(([k, r]) => <button key={k} type="button" role="tab" aria-selected={aba === k} className={aba === k ? 'on' : ''} onClick={() => setAba(k)}>{r}</button>)}
           </div>
-          {aba === 'lista' && <GradeCad cols={COLS_LISTA} rows={lista} foco={foco} onSel={ed.selecionar} vazio="Nenhum produto" />}
+          {aba === 'lista' && <GradeCad cols={COLS_LISTA} rows={lista} foco={foco} onSel={ed.selecionar} vazio={situacao === 'inativos' ? 'Nenhum produto inativo' : 'Nenhum produto'} marcados={marcados} onMarcar={marca} onMarcarTodos={marcaTodos} />}
           {aba === 'refs' && <GradeCad cols={COLS_REFS} rows={referencias} foco={null} onSel={() => {}} vazio="Nenhuma referência" />}
           {aba === 'clis' && (
             <>
@@ -92,7 +117,7 @@ export default function Produtos({ onFechar }) {
               <GradeCad cols={COLS_CLIS} rows={bClis.visiveis} foco={cliSel} onSel={escolheCliente} vazio="Nenhum cliente" />
             </>
           )}
-          <footer className="cd-rodape-lista">{aba === 'lista' ? `${lista.length} produto(s)${clienteFiltro ? ` de ${clienteNome}` : ' (todos os clientes)'}${trunc ? ' — mostrando os primeiros 5000; refine a busca' : ''}` : aba === 'clis' ? 'Clique no cliente para ver só os produtos dele' : `${referencias.length} referência(s)`}</footer>
+          <footer className="cd-rodape-lista">{aba === 'lista' ? `${lista.length} produto(s) ${situacao === 'todos' ? '(ativos e inativos)' : situacao === 'inativos' ? 'inativo(s)' : 'ativo(s)'}${marcados.size ? ` · ${marcados.size} marcado(s)` : ''}${clienteFiltro ? ` de ${clienteNome}` : ' (todos os clientes)'}${trunc ? ' — mostrando os primeiros 5000; refine a busca' : ''}` : aba === 'clis' ? 'Clique no cliente para ver só os produtos dele' : `${referencias.length} referência(s)`}</footer>
         </section>
         <main className="cd-rola">
           <ProdutoForm ed={ed} layout="tela" clientes={clientes} referencias={referencias} tributos={tributos} aoMudarCliente={(n) => { if (ed.novo && n && !ed.v('codigo')) codigoPara(n); }} />

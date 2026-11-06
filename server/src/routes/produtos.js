@@ -3,6 +3,7 @@ import { pool } from '../db.js';
 import { invalid, notFound } from '../errors.js';
 import { consultaNcm, pesquisaNcm } from '../services/ncm.js';
 import { emUso, idValido, limpaCampos } from '../services/campos.js';
+import { SQL_ATIVO } from '../services/produtosAtivo.js';
 
 // Cadastro de produtos (u_produtos / produtos do cliente em u_clientes).
 const router = Router();
@@ -18,16 +19,29 @@ const ROT = { descricao: 'Descrição', peso: 'Peso líquido', aliq_ipi: 'IPI %'
 const SQL_LISTA = `select p.*, (p.preco / if(p.divisor_basico = 0, 1, p.divisor_basico)) as preco_unitario, r.produto_especial, r.descricao as referencia_descricao
   from tb_produtos p left join tb_referencias r on r.id = p.id_referencia`;
 
-// ?cliente= (cbFiltrar) e ?q= (palavras na descrição/código)
+// ?cliente= (cbFiltrar), ?q= (palavras na descrição/código) e ?situacao=ativos|inativos|todos (padrão: todos)
 router.get('/', async (req, res) => {
   const onde = [];
   const args = [];
+  const sit = String(req.query.situacao ?? 'todos');
+  if (!['todos', 'ativos', 'inativos'].includes(sit)) throw invalid('Situação inválida (todos, ativos ou inativos).');
+  if (sit === 'ativos') onde.push(SQL_ATIVO);
+  if (sit === 'inativos') onde.push(`not (${SQL_ATIVO})`);
   if (req.query.cliente) { onde.push('p.id_cliente = ?'); args.push(idValido(req.query.cliente, 'Cliente')); }
   for (const w of String(req.query.q ?? '').trim().split(/\s+/).filter(Boolean).slice(0, 10)) {
     onde.push('(p.descricao like ? or p.codigo like ?)'); const l = `%${w.replace(/[\\%_]/g, '\\$&')}%`; args.push(l, l);
   }
   const [rows] = await pool.query(`${SQL_LISTA} ${onde.length ? `where ${onde.join(' and ')}` : ''} order by p.descricao limit ${MAX + 1}`, args);
   res.json({ produtos: rows.slice(0, MAX), truncado: rows.length > MAX });
+});
+// Marcar vários e ativar/inativar de uma vez: { ids: [..], ativo: true|false }
+router.post('/ativo', async (req, res) => {
+  const ids = [...new Set((Array.isArray(req.body?.ids) ? req.body.ids : []).map((x) => idValido(x, 'Produto')))];
+  if (!ids.length) throw invalid('Marque ao menos um produto.');
+  if (ids.length > MAX) throw invalid(`Marque no máximo ${MAX} produtos por vez.`);
+  if (typeof req.body?.ativo !== 'boolean') throw invalid('Informe se é para ativar ou inativar.');
+  const [r] = await pool.query('update tb_produtos set ativo = ? where id in (?)', [req.body.ativo ? 'True' : 'False', ids]);
+  res.json({ ok: true, alterados: r.affectedRows ?? ids.length });
 });
 router.get('/ncm', async (req, res) => res.json(await pesquisaNcm(req.query.q)));
 router.get('/ncm/:codigo', async (req, res) => res.json(await consultaNcm(req.params.codigo)));

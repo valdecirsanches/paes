@@ -921,3 +921,7 @@ O filtro dependia de marcar a caixa "Só produtos de…" e o cliente vinha pré-
 
 ## Fase 188 — Cadastro de produtos remodelado
 A edição do produto passou a usar a largura: seção "Produto" (ID, código, cliente, referência e as duas descrições em 2 linhas), "Preço e medidas", "Fiscal" e "Opções" lado a lado, e "Ingredientes e validade" em uma linha; a lista à esquerda ficou mais estreita. A aba Produtos do cliente mantém o formato enxuto. As setas ↑ ↓ passeiam pelos registros desta e de todas as grades (Fase 187).
+
+## Fase 189 — Produtos: situação (ativos/inativos/todos) e inativar em lote
+- A lista do cadastro abre só com **Ativos**; o seletor **Mostrar** (Ativos / Inativos / Todos) traz os inativos quando o usuário escolhe. O rodapé informa o que está listado.
+- Nova coluna de caixas de seleção na lista (cabeçalho marca/desmarca todos os da lista) e botões **⛔ Inativar marcados (N)** e **✔ Ativar marcados**, com confirmação. Servidor: `POST /api/cadastros/produtos/ativo {ids, ativo}` e `GET /api/cadastros/produtos?situacao=ativos|inativos|todos`.

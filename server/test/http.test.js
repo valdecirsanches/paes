@@ -219,3 +219,9 @@ test('dashboard: data inválida → 422', async () => {
   assert.equal((await call('GET', '/api/dashboard?data=lixo')).status, 422);
   assert.equal((await call('GET', '/api/dashboard')).status, 422);
 });
+test('produtos: situação inválida e inativar em lote exigem dados válidos → 422', async () => {
+  assert.equal((await call('GET', '/api/cadastros/produtos?situacao=xx')).status, 422);
+  assert.equal((await call('POST', '/api/cadastros/produtos/ativo', { ids: [], ativo: false })).status, 422);
+  assert.equal((await call('POST', '/api/cadastros/produtos/ativo', { ids: [1], ativo: 'nao' })).status, 422);
+  assert.equal((await call('POST', '/api/cadastros/produtos/ativo', { ids: ['a'], ativo: false })).status, 422);
+});
