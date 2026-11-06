@@ -951,3 +951,6 @@ Além da data e da empresa, **Abrir ▸** (ou clicar na linha) agora seleciona e
 ## Fase 197 — Dashboard: rolagem própria e produtos agrupados pelo nome
 - O painel agora rola **dentro da área da tela** (`.db` com `overflow-y:auto`); antes crescia além da janela, a página inteira rolava e o rodapé (Host/Versão/Usuário) ficava no meio do conteúdo.
 - "Produtos com maior participação" agrupa pela **descrição** (antes por código, e produtos diferentes com a mesma descrição apareciam repetidos, ex.: vários "PAO FRANCES 50GR").
+
+## Fase 198 — Cadastro de produtos: inativar os sem uso há N meses
+Botão **🕒 Inativar sem uso** com campo **Sem uso há [N] meses** (padrão 6, de 1 a 120) na barra do cadastro. Mostra a quantidade e os primeiros produtos para confirmar. Critério: produto **ativo** sem nenhum item na programação diária desde N meses atrás e **fora de qualquer programação fixa**. API: `GET /api/cadastros/produtos/sem-uso?meses=N` (prévia) e `POST /api/cadastros/produtos/inativar-sem-uso {meses}`. Não apaga nada: dá para reativar marcando e usando "Ativar marcados". Observação: produto recém-criado e ainda não programado também entra no critério.

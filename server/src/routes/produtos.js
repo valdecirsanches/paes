@@ -43,6 +43,20 @@ router.post('/ativo', async (req, res) => {
   const [r] = await pool.query('update tb_produtos set ativo = ? where id in (?)', [req.body.ativo ? 'True' : 'False', ids]);
   res.json({ ok: true, alterados: r.affectedRows ?? ids.length });
 });
+// Produtos ativos sem uso há N meses: não aparecem na programação diária desde a data de corte nem em nenhuma programação fixa.
+const mesesSemUso = (v) => { const m = Number(v ?? 6); if (!Number.isInteger(m) || m < 1 || m > 120) throw invalid('Informe os meses (1 a 120).'); return m; };
+const SEM_USO = `${SQL_ATIVO} and not exists (select 1 from tb_diaria d where d.id_produto = p.id and d.data >= date_sub(curdate(), interval ? month))
+  and not exists (select 1 from tb_fixa f where f.id_produto = p.id)`;
+router.get('/sem-uso', async (req, res) => {
+  const m = mesesSemUso(req.query.meses);
+  const [rows] = await pool.query(`select p.id, p.codigo, p.descricao from tb_produtos p where ${SEM_USO} order by p.descricao limit ${MAX + 1}`, [m]);
+  res.json({ meses: m, total: rows.length, truncado: rows.length > MAX, produtos: rows.slice(0, MAX) });
+});
+router.post('/inativar-sem-uso', async (req, res) => {
+  const m = mesesSemUso(req.body?.meses);
+  const [r] = await pool.query(`update tb_produtos p set p.ativo = 'False' where ${SEM_USO}`, [m]);
+  res.json({ ok: true, meses: m, alterados: r.affectedRows ?? 0 });
+});
 router.get('/ncm', async (req, res) => res.json(await pesquisaNcm(req.query.q)));
 router.get('/ncm/:codigo', async (req, res) => res.json(await consultaNcm(req.params.codigo)));
 router.get('/referencias', async (_req, res) => { const [r] = await pool.query('select * from tb_referencias order by descricao'); res.json(r); });

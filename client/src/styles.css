@@ -1930,3 +1930,6 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{filter:brightness(1.15)}
 .cf-grupo td{background:#f6efe0;font-weight:700;color:#6f4a00;padding:6px 8px}.cf-grupo small{font-weight:400;color:#8a7a5a;margin-left:8px}
 .cf-ok{background:#e9f7ec;border:1px solid #8fd19e;color:#1a6b2b;padding:14px 16px;border-radius:10px;font-weight:600}
 .cf-rodape{color:#777;font-size:12px}
+
+.cd-sem-uso{display:inline-flex;align-items:center;gap:4px;font-size:12px}
+.cd-sem-uso input{width:52px}
