@@ -1866,7 +1866,7 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{filter:brightness(1.15)}
 .imp-linux{margin-top:10px;font-size:13px}.imp-linux summary{cursor:pointer;font-weight:600}.imp-linux .imp-btn{margin:6px 6px 0 0;display:inline-block}
 
 /* ---- Dashboard (Fase 182) ---- */
-.db{padding:14px 18px;display:flex;flex-direction:column;gap:14px;max-width:1400px;margin:0 auto;width:100%;box-sizing:border-box}
+.db{padding:14px 18px;display:flex;flex-direction:column;gap:14px;max-width:1400px;margin:0 auto;width:100%;box-sizing:border-box;flex:1;min-height:0;overflow-y:auto}
 .db-topo{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px}
 .db-topo h2{margin:0;font-size:22px;color:var(--azul-barra-2)}.db-topo p{margin:2px 0 0;color:#555}
 .db-nav{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.db-nav input{height:30px}

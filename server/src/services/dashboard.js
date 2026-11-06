@@ -48,7 +48,7 @@ export async function montaDashboard(data) {
     q(`select left(p.hora, 2) as hora, count(*) as itens, sum(${QTDE}) as qtde from tb_diaria p where p.data = ? and ${VALIDO} group by left(p.hora, 2) order by 1`),
     q(`select coalesce(nullif(p.producao_turno, ''), '—') as turno, count(*) as itens, sum(${QTDE}) as qtde from tb_diaria p where p.data = ? and ${VALIDO} group by 1 order by 1`),
     q(`select coalesce(nullif(p.acomodacao_carga, ''), '—') as acomodacao, count(*) as itens, sum(${QTDE}) as qtde from tb_diaria p where p.data = ? and ${VALIDO} group by 1 order by qtde desc`),
-    q(`select p.produto_descricao_expedicao as produto, sum(${QTDE}) as qtde from tb_diaria p where p.data = ? and ${VALIDO} group by p.id_produto, p.produto_descricao_expedicao order by qtde desc limit 8`),
+    q(`select p.produto_descricao_expedicao as produto, sum(${QTDE}) as qtde from tb_diaria p where p.data = ? and ${VALIDO} group by p.produto_descricao_expedicao order by qtde desc limit 8`),
     q(`select coalesce(u.nome, '—') as cliente, count(*) as itens, sum(${QTDE}) as qtde from tb_diaria p left join tb_unidades u on u.id = p.id_unidade where p.data = ? and ${VALIDO} group by p.id_unidade, u.nome order by qtde desc limit 8`),
   ]);
   const st = { nada: 0, normal: 0, alterado: 0, cancelado: 0 };

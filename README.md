@@ -947,3 +947,7 @@ Além da data e da empresa, **Abrir ▸** (ou clicar na linha) agora seleciona e
 ## Fase 196 — Dashboard sem valores em R$, com notas emitidas
 - Removidos do painel todos os valores monetários (cartão "Valor programado" e rankings por valor). Os rankings agora são **"Produtos/Clientes com maior participação"**, em % da quantidade total do dia.
 - Novo cartão **Notas emitidas** (`tb_nfe`, data de emissão = dia): quantidade de NF-e autorizadas, % autorizadas sobre as notas do dia, canceladas/devolvidas, pendentes/rejeitadas e variação vs ontem / semana passada. API: campo `notas` em `GET /api/dashboard`.
+
+## Fase 197 — Dashboard: rolagem própria e produtos agrupados pelo nome
+- O painel agora rola **dentro da área da tela** (`.db` com `overflow-y:auto`); antes crescia além da janela, a página inteira rolava e o rodapé (Host/Versão/Usuário) ficava no meio do conteúdo.
+- "Produtos com maior participação" agrupa pela **descrição** (antes por código, e produtos diferentes com a mesma descrição apareciam repetidos, ex.: vários "PAO FRANCES 50GR").
