@@ -22,6 +22,8 @@ const B_DIA = ['unidade_nome', 'cliente_razao_social'];
 export default function Diaria({ onFechar }) {
   const [data, setData] = useState(hoje());
   const [filtro, setFiltro] = useState('todas');
+  const [ordem, setOrdem] = useState(() => { try { return localStorage.getItem('paes_ordem_diaria') === 'nome' ? 'nome' : 'entrega'; } catch { return 'entrega'; } }); // clientes por ordem de entrega (padrão) ou por nome
+  const mudaOrdem = (o) => { setOrdem(o); try { localStorage.setItem('paes_ordem_diaria', o); } catch { /* ok */ } };
   const [lista, setLista] = useState([]);
   const busca = useBusca(lista, B_DIA);
   const [selId, setSelId] = useState(null);
@@ -45,7 +47,7 @@ export default function Diaria({ onFechar }) {
   }, [aviso]);
 
   const carregarLista = useCallback(async () => {
-    const rows = await api.get(`/status?data=${data}&filtro=${filtro}`);
+    const rows = await api.get(`/status?data=${data}&filtro=${filtro}&ordem=${ordem}`);
     setLista(rows);
     const a = alvoAbrir.current;
     if (a) { // veio de "Verificar problemas": posiciona exatamente na empresa do problema (pelo id do status; senão pela unidade)
@@ -55,7 +57,7 @@ export default function Diaria({ onFechar }) {
     }
     // ao trocar a data os ids de status mudam: mantém a MESMA unidade/cliente selecionada (se ela existir no novo dia)
     setSelId((id) => (rows.some((r) => r.id === id) ? id : (rows.find((r) => uniSel.current != null && r.id_unidade === uniSel.current) ?? rows[0])?.id ?? null));
-  }, [data, filtro]);
+  }, [data, filtro, ordem]);
 
   // "Verificar problemas" pede para abrir esta tela numa data/empresa (também se a tela acabou de ser aberta)
   useEffect(() => {
@@ -169,13 +171,18 @@ export default function Diaria({ onFechar }) {
             </div>
           </div>
           <div className="dr2-card dr2-lista">
-            <div className="dr2-t">Clientes do dia <small>{lista.length}</small></div>
+            <div className="dr2-t">Clientes do dia <small>{lista.length}</small>
+              <span className="dr2-ordem" role="group" aria-label="Ordem dos clientes">
+                <button type="button" className={ordem === 'entrega' ? 'on' : ''} aria-pressed={ordem === 'entrega'} onClick={() => mudaOrdem('entrega')} title="Pelo primeiro horário de entrega do dia">🕒 Entrega</button>
+                <button type="button" className={ordem === 'nome' ? 'on' : ''} aria-pressed={ordem === 'nome'} onClick={() => mudaOrdem('nome')} title="Em ordem alfabética">A–Z</button>
+              </span>
+            </div>
             <Busca busca={busca} total={lista.length} placeholder="Pesquisar cliente/unidade…" />
             <ul className="dr2-clientes" aria-label="Clientes do dia">
               {busca.visiveis.map((r) => (
                 <li key={r.id}>
                   <button type="button" className={`dr2-cli s${r.status}${r.id === selId ? ' atual' : ''}`} onClick={() => setSelId(r.id)} title={STATUS[r.status]}>
-                    <i className="dr2-dot" />{r.unidade_nome}
+                    <i className="dr2-dot" />{ordem === 'entrega' && r.primeira_entrega && <b className="dr2-hr">{String(r.primeira_entrega).slice(0, 5)}</b>}{r.unidade_nome}
                   </button>
                 </li>
               ))}

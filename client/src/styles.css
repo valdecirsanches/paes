@@ -1946,3 +1946,6 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{filter:brightness(1.15)}
 html.escuro{filter:invert(.92) hue-rotate(180deg);background:#fff}
 html.escuro img,html.escuro video,html.escuro canvas,html.escuro iframe,html.escuro .fundo-paes,html.escuro input[type=color]{filter:invert(1) hue-rotate(180deg)}
 @media print{html.escuro{filter:none}html.escuro img,html.escuro .fundo-paes{filter:none}}
+
+.dr2-ordem{float:right;display:inline-flex;gap:0}.dr2-ordem button{border:1px solid var(--bt-borda);background:#fff;padding:1px 8px;font:inherit;font-size:11px;cursor:pointer}.dr2-ordem button:first-child{border-radius:6px 0 0 6px}.dr2-ordem button:last-child{border-radius:0 6px 6px 0;border-left:0}.dr2-ordem button.on{background:var(--azul-barra);color:#fff}
+.dr2-hr{font-variant-numeric:tabular-nums;font-size:11px;margin-right:6px;opacity:.75}

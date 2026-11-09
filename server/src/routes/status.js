@@ -23,13 +23,15 @@ const exigeData = (data) => {
 
 // Lista de clientes/unidades do dia (tbprs)
 router.get('/', async (req, res) => {
-  const { data, filtro = 'todas' } = req.query;
+  const { data, filtro = 'todas', ordem = 'nome' } = req.query;
   exigeData(data);
   if (!FILTROS[filtro]) throw invalid('Filtro inválido.');
+  if (!['nome', 'entrega'].includes(ordem)) throw invalid('Ordem inválida (nome ou entrega).');
   const [rows] = await pool.query(
     `select distinct ps.id, ps.data, ps.id_cliente, ps.id_unidade, ps.status, ps.id_comanda,
             u.nome, u.verificar_pasta, u.imprimir_toda_programacao,
             c.razao_social as cliente_nome,
+            (select min(d.hora) from tb_diaria d where d.id_status = ps.id and coalesce(d.cancelado, 'False') <> 'True' and d.hora is not null) as primeira_entrega,
             concat(u.nome, ' ', c.id, '/', u.id,
                    if(u.telefone is null, '', concat('    ***     ', u.telefone)),
                    if(u.contato is null, '', concat('  ** ', u.contato))) as unidade_nome
@@ -37,7 +39,7 @@ router.get('/', async (req, res) => {
        left join tb_unidades u on u.id = ps.id_unidade
        left join tb_clientes c on c.id = ps.id_cliente
       where ps.data = ? and u.ativo = 'True' and ${FILTROS[filtro]}
-      order by u.nome`, [data]);
+      order by ${ordem === 'entrega' ? 'primeira_entrega is null, primeira_entrega, u.nome' : 'u.nome'}`, [data]);
   res.json(rows.map((r) => ({ ...r, status_descricao: STATUS[r.status] ?? 'NADA' })));
 });
 

@@ -569,7 +569,10 @@ window.fetch = async (url, opts = {}) => {
   } else if (m === 'GET' && p === '/status') {
     const f = u.searchParams.get('filtro');
     const ok = { todas: () => true, normal: (s) => s === 1, normal_alt: (s) => s === 1 || s === 2, alt_canc: (s) => s >= 2 && s <= 3, canc: (s) => s === 3, nada: (s) => s === 0 }[f];
-    r = json(u.searchParams.get('data') === ISO ? status.filter((s) => ok(s.status)) : []);
+    const prim = (id) => diaria.filter((x) => x.id_status === id && x.cancelado !== 'True').map((x) => x.hora).sort()[0] || null;
+    let ls = (u.searchParams.get('data') === ISO ? status.filter((s) => ok(s.status)) : []).map((s) => ({ ...s, primeira_entrega: prim(s.id) }));
+    if (u.searchParams.get('ordem') === 'entrega') ls = [...ls].sort((a, b) => (a.primeira_entrega === null) - (b.primeira_entrega === null) || String(a.primeira_entrega).localeCompare(String(b.primeira_entrega)) || String(a.nome).localeCompare(String(b.nome)));
+    r = json(ls);
   } else if (m === 'GET' && /\/status\/\d+\/roteiros/.test(p)) r = json(roteiros);
   else if (m === 'GET' && /\/status\/\d+\/diaria/.test(p)) {
     const id = Number(p.split('/')[2]); const st = status.find((s) => s.id === id).status;

@@ -35,7 +35,7 @@ select p.*, left(p.hora, 5) as xhora,
   left join tb_funcionarios f on f.id = rt.id_funcionario
   left join tb_unidades un on un.id = p.id_unidade
  where p.id_status = ?
- order by p.id`;
+ order by p.hora, p.id`; // ordem de entrega (horário) e, no mesmo horário, a ordem de lançamento
 
 const CAMPOS_EDITAVEIS = [
   'hora', 'data', 'produto_descricao_expedicao', 'qtde_alterada', 'obs', 'obs_producao', 'id_roteiro',

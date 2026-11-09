@@ -973,3 +973,7 @@ Fase 204: o botão Aparência saiu da barra e foi para o menu do nome do usuári
 
 ## Fase 205 — Diária: quantidade fixa não é alterável
 Na edição do item da diária o campo **Qtde fixa** fica sempre bloqueado e o servidor ignora `qtde_original` no `PUT /diaria/:id` (antes era editável em item vindo da programação fixa). Para mudar a quantidade do dia use **Extra** (`qtde_alterada`); a quantidade fixa só se altera na aba/tela da **Programação fixa**.
+
+## Fase 206 — Programação diária por ordem de entrega
+- **Clientes do dia** passam a vir por **ordem de entrega** (primeiro horário de entrega do dia, ignorando itens cancelados; quem não tem horário vai ao final), com o horário mostrado antes do nome. O botão **A–Z** volta à ordem alfabética (a escolha fica salva no navegador). API: `GET /api/status?data=&filtro=&ordem=entrega|nome`.
+- **Itens do cliente** (aba Diária) ordenados por **horário** e, no mesmo horário, pela ordem de lançamento. As setas ↑↓ seguem a ordem exibida.
