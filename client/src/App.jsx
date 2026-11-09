@@ -28,6 +28,8 @@ import Login from './screens/Login.jsx';
 import FabricaApp from './fabrica/FabricaApp.jsx';
 import Auditoria from './screens/Auditoria.jsx';
 import Aparencia from './screens/Aparencia.jsx';
+import TemaControles from './components/TemaControles.jsx';
+import { carregarTemaDoUsuario } from './lib/tema.js';
 import TelaPrincipal from './screens/TelaPrincipal.jsx';
 import Usuarios from './screens/Usuarios.jsx';
 import Dispositivos from './screens/Dispositivos.jsx';
@@ -105,6 +107,9 @@ export default function App() {
     return () => window.removeEventListener('dispositivo-bloqueado', f);
   }, []);
   useEffect(() => { api.get('/health').then(setSaude).catch((e) => setSaude({ ok: false, message: e.message })); }, []);
+  const [popTema, setPopTema] = useState(false);
+  const [versaoTema, setVersaoTema] = useState(0);
+  useEffect(() => { if (usuario) carregarTemaDoUsuario(api).then(() => setVersaoTema((v) => v + 1)); }, [usuario?.usuario]); // eslint-disable-line react-hooks/exhaustive-deps -- tema do usuário vem do servidor ao entrar
   useEffect(() => { if (usuario) sincronizaLayout({ forcar: true }); }, [usuario]); // layout de etiquetas compartilhado entre estações
   useEffect(() => { if (usuario) preaquece(); }, [usuario]); // Mercadorias de hoje já na memória quando a tela for aberta
   useEffect(() => { // ao atualizar a página: só volta ao login se o servidor disser "sem sessão"; se a API ainda está subindo (rede/5xx), tenta de novo
@@ -191,7 +196,14 @@ export default function App() {
         {usuario && impr?.on && impr.via === 'local' && ( // esta é a máquina do agente: atalho para a página de administração dele
           <a className="imp-selo-topo adm" href={AGENTE} target="_blank" rel="noreferrer" title="Abrir a página de administração do agente de impressão desta máquina (impressoras, pastas de gravação, status)">⚙ Agente</a>
         )}
-        {usuario && (
+        {usuario && (<>
+          <span className="menu-tema" style={{ position: 'relative' }}>
+            <button type="button" className="menu-bt" title="Aparência: tema, modo claro/escuro e tamanho da letra" aria-haspopup="dialog" aria-expanded={popTema} onClick={() => setPopTema((x) => !x)}><span className="mi" aria-hidden="true">🎨</span></button>
+            {popTema && (<>
+              <div className="nf2-veu" onClick={() => setPopTema(false)} />
+              <div className="menu-tema-pop" role="dialog" aria-label="Aparência"><TemaControles key={versaoTema} compacto /><button type="button" className="bt" onClick={() => { setPopTema(false); abrir('aparencia'); }}>Mais opções…</button></div>
+            </>)}
+          </span>
           <span className="menu-usuario" style={{ position: 'relative' }}>
             <button type="button" className="menu-usuario-bt" title={usuario.fabrica ? 'Usuário conectado' : 'Usuário conectado — clique para trocar a senha'} aria-haspopup="menu" aria-expanded={popUsuario} onClick={() => { if (!usuario.fabrica) setPopUsuario((x) => !x); }}>👤 {usuario.nome || usuario.usuario}</button>
             {popUsuario && (<>
@@ -199,7 +211,7 @@ export default function App() {
               <div className="menu-usuario-pop" role="menu"><button type="button" role="menuitem" onClick={() => { setPopUsuario(false); setTrocaSenha(true); }}>🔒 Trocar senha</button></div>
             </>)}
           </span>
-        )}
+        </>)}
         {usuario && !usuario.fabrica && <button type="button" className="menu-bt menu-sair" title="Sair e voltar ao logon (troca de usuário)" onClick={sair}><span className="mi" aria-hidden="true">🚪</span>Sair</button>}
       </nav>
 

@@ -228,6 +228,7 @@ function cadastros(m, p, u, b) {
     const sit = u.searchParams.get('situacao') || 'todos';
     return json({ produtos: cadProd.filter((x) => (!c || x.id_cliente === c) && (sit === 'todos' || (sit === 'ativos') === (x.ativo !== 'False')) && ws.every((w) => x.descricao.includes(w) || x.codigo.includes(w))).map((x) => ({ ...x, preco_unitario: x.preco / (x.divisor_basico || 1) })), truncado: false });
   }
+  if (p === '/tema') { if (m === 'PUT') { window.__tema = b; return json({ tema: b }); } if (m === 'DELETE') { window.__tema = null; return json({ tema: null }); } return json({ tema: window.__tema ?? null }); }
   if (m === 'POST' && p === '/cadastros/produtos/sem-uso') { const l = (b.ids || []).slice(0, 3); return json({ meses: 6, total: l.length, ids: l }); }
   if (m === 'POST' && p === '/cadastros/produtos/ativo') { cadProd.forEach((x) => { if (b.ids.includes(x.id)) x.ativo = b.ativo ? 'True' : 'False'; }); return json({ ok: true, alterados: b.ids.length }); }
   if (m === 'GET' && p === '/cadastros/produtos/referencias') return json(cadRefs);

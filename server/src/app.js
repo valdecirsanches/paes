@@ -30,6 +30,7 @@ import { invalidaMercadorias } from './services/mercCache.js';
 import { exigeLogin } from './services/auth.js';
 import { exigeDispositivo } from './services/dispositivos.js';
 import auditoriaRoutes from './routes/auditoria.js';
+import temaRoutes from './routes/tema.js';
 import { auditoria } from './services/auditoria.js';
 import usuariosRoutes from './routes/usuarios.js';
 import telaPrincipalRoutes from './routes/telaPrincipal.js';
@@ -55,6 +56,7 @@ app.use('/api', (req, res, next) => { if (req.method !== 'GET') res.on('finish',
 app.use('/api/auth', authRoutes);
 app.use('/api/dispositivos', dispositivosAdmin);
 app.use('/api/auditoria', auditoriaRoutes);
+app.use('/api/tema', temaRoutes);
 app.use('/api/tela-principal', telaPrincipalRoutes);
 app.use('/api/agente', agenteRoutes);
 app.use('/api/impressao', impressaoRoutes);

@@ -1933,3 +1933,16 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{filter:brightness(1.15)}
 
 .cd-sem-uso{display:inline-flex;align-items:center;gap:4px;font-size:12px}
 .cd-sem-uso input{width:52px}
+
+/* ---------- Aparência por usuário (Fase 203) ---------- */
+.tc{display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.tc-linha{display:flex;align-items:center;gap:10px}.tc-rot{min-width:42px;font-size:13px}
+.tc-seg{display:inline-flex;align-items:center;border:1px solid var(--bt-borda);border-radius:8px;overflow:hidden;background:#fff}
+.tc-seg button{border:0;background:#fff;padding:5px 12px;cursor:pointer;font:inherit}.tc-seg button.on{background:var(--azul-barra);color:#fff;font-weight:700}.tc-seg button:disabled{opacity:.4;cursor:default}
+.tc-val{padding:0 8px;font-size:13px;min-width:44px;text-align:center}
+.tc.compacto .ap-pre{margin:0;max-width:260px;gap:6px}.tc.compacto .ap-p{padding:4px 6px}
+.menu-tema-pop{position:absolute;right:0;top:100%;z-index:60;background:#fff;border:1px solid color-mix(in srgb, var(--azul-barra) 22%, #fff);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:12px;min-width:290px;display:flex;flex-direction:column;gap:10px;color:#222}
+/* modo escuro: inverte a página inteira e devolve a cor original a imagens/vídeos/seletores de cor (vale para todas as telas, sem reescrever o CSS) */
+html.escuro{filter:invert(.92) hue-rotate(180deg);background:#fff}
+html.escuro img,html.escuro video,html.escuro canvas,html.escuro iframe,html.escuro .fundo-paes,html.escuro input[type=color]{filter:invert(1) hue-rotate(180deg)}
+@media print{html.escuro{filter:none}html.escuro img,html.escuro .fundo-paes{filter:none}}

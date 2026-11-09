@@ -962,3 +962,9 @@ Fase 199 (correção): o critério ignora a programação fixa — com ela, quas
 Fase 201: a conferência de 'sem uso' ficou rápida — envia só os produtos da lista e consulta a diária uma vez (antes uma subconsulta por produto em toda a base travava), com limite de 60 s e mensagem de erro.
 
 Fase 202: botão **↩ Reativar todos os inativos (N)** (aparece em Inativos/Todos): reativa de uma vez os inativos da lista atual, com confirmação — desfaz uma inativação em massa. Também dá para marcar e usar "Ativar marcados".
+
+## Fase 203 — Aparência por usuário: modo escuro, tamanho da letra, mais temas e atalho na barra
+- **Por usuário:** o tema fica em `tb_usuario_tema` (criada sozinha na primeira vez; `GET/PUT/DELETE /api/tema`) e é aplicado ao entrar, em qualquer computador. O navegador mantém uma cópia local para abrir já com as cores certas.
+- **Modo claro/escuro** (inverte a página inteira; imagens, fundo e seletor de cor mantêm a cor original; na impressão sempre claro), **tamanho da letra** 90–130 % e **12 temas prontos** + cores livres (Ferramentas › Aparência).
+- **Atalho 🎨** na barra do topo (antes do nome do usuário): modo, letra e temas sem abrir a tela; "Mais opções…" abre a tela completa.
+- A janela da fábrica (sem login de usuário) continua com o tema local do navegador.
