@@ -149,10 +149,9 @@ router.put('/diaria/:id', async (req, res) => {
     if (!atual) throw notFound('Item');
 
     const b = pick(req.body, CAMPOS_EDITAVEIS);
-    // A quantidade "fixa" só é editável em item vindo da programação fixa.
-    if (bool(atual.programacao_fixa) && req.body.qtde_original !== undefined) {
-      b.qtde_original = Number(req.body.qtde_original) || 0;
-    }
+    // A quantidade "fixa" (qtde_original) vem da programação fixa e NÃO é alterada na diária: qualquer valor enviado é ignorado.
+    // Mudanças de quantidade do dia vão em "Extra" (qtde_alterada); a quantidade fixa se altera só na Programação fixa.
+    delete b.qtde_original;
     if (b.hora) b.hora = hhmmss(b.hora);
 
     let novo = { ...b };

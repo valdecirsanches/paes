@@ -209,7 +209,6 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
       ...(r.producao_turno ? { producao_turno: Number(r.producao_turno) } : {}),
       ...(r.producao_data ? { producao_data: String(r.producao_data).slice(0, 10) } : {}),
       ...Object.fromEntries(EXTRAS.map(([k]) => [`extra_${k}`, r[`extra_${k}`] ?? 'False'])),
-      ...(bool(r.programacao_fixa) ? { qtde_original: Number(r.qtde_original) || 0 } : {}),
       ...(r.conversao_produto_codigo ? {
         conversao_id_produto: r.conversao_id_produto, conversao_produto_codigo: r.conversao_produto_codigo,
         conversao_produto_descricao: r.conversao_produto_descricao, conversao_produto_preco: Number(r.conversao_produto_preco) || 0,
@@ -368,7 +367,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
               <Campo rotulo="Descrição da comanda / nota fiscal"><input ref={ref('nf')} value={v.produto_descricao ?? ''} onChange={set('produto_descricao')} /></Campo>
               <Campo rotulo="Descrição para expedição" className="if-destaque"><input value={v.produto_descricao_expedicao ?? ''} onChange={set('produto_descricao_expedicao')} /></Campo>
               <div className="if-nums">
-                <Campo rotulo="Qtde fixa"><Num className="if-n" casas={[1, 3]} disabled={!bool(v.programacao_fixa)} value={v.qtde_original} onChange={(n) => editar({ qtde_original: n, preco_total: total({ ...v, qtde_original: n }) })} /></Campo>
+                <Campo rotulo="Qtde fixa"><Num className="if-n" casas={[1, 3]} disabled title="A quantidade fixa vem da Programação fixa e não pode ser alterada na diária; use Extra" value={v.qtde_original} onChange={() => {}} /></Campo>
                 <Campo rotulo="Extra" className="if-destaque"><Num className="if-n centro" inputRef={ref('extra')} casas={[0, 3]} value={v.qtde_alterada} onChange={(n) => editar({ qtde_alterada: n })} /></Campo>
                 <Campo rotulo="Preço"><Num className="if-n" casas={[2, 3]} value={v.produto_preco} onChange={(n) => editar({ produto_preco: n })} /></Campo>
                 <Campo rotulo="Cada"><Num className="if-n centro" inputRef={ref('cada')} casas={[0, 3]} value={v.produto_preco_cada} onChange={(n) => editar({ produto_preco_cada: n })} /></Campo>

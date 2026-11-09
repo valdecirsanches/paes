@@ -970,3 +970,6 @@ Fase 202: botão **↩ Reativar todos os inativos (N)** (aparece em Inativos/Tod
 - A janela da fábrica (sem login de usuário) continua com o tema local do navegador.
 
 Fase 204: o botão Aparência saiu da barra e foi para o menu do nome do usuário, abaixo de "Trocar senha".
+
+## Fase 205 — Diária: quantidade fixa não é alterável
+Na edição do item da diária o campo **Qtde fixa** fica sempre bloqueado e o servidor ignora `qtde_original` no `PUT /diaria/:id` (antes era editável em item vindo da programação fixa). Para mudar a quantidade do dia use **Extra** (`qtde_alterada`); a quantidade fixa só se altera na aba/tela da **Programação fixa**.
