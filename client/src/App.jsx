@@ -196,22 +196,19 @@ export default function App() {
         {usuario && impr?.on && impr.via === 'local' && ( // esta é a máquina do agente: atalho para a página de administração dele
           <a className="imp-selo-topo adm" href={AGENTE} target="_blank" rel="noreferrer" title="Abrir a página de administração do agente de impressão desta máquina (impressoras, pastas de gravação, status)">⚙ Agente</a>
         )}
-        {usuario && (<>
-          <span className="menu-tema" style={{ position: 'relative' }}>
-            <button type="button" className="menu-bt" title="Aparência: tema, modo claro/escuro e tamanho da letra" aria-haspopup="dialog" aria-expanded={popTema} onClick={() => setPopTema((x) => !x)}><span className="mi" aria-hidden="true">🎨</span></button>
+        {usuario && (
+          <span className="menu-usuario" style={{ position: 'relative' }}>
+            <button type="button" className="menu-usuario-bt" title={usuario.fabrica ? 'Usuário conectado' : 'Usuário conectado — clique para trocar a senha'} aria-haspopup="menu" aria-expanded={popUsuario} onClick={() => { if (!usuario.fabrica) setPopUsuario((x) => !x); }}>👤 {usuario.nome || usuario.usuario}</button>
+            {popUsuario && (<>
+              <div className="nf2-veu" onClick={() => setPopUsuario(false)} />
+              <div className="menu-usuario-pop" role="menu"><button type="button" role="menuitem" onClick={() => { setPopUsuario(false); setTrocaSenha(true); }}>🔒 Trocar senha</button><button type="button" role="menuitem" onClick={() => { setPopUsuario(false); setPopTema(true); }}>🎨 Aparência</button></div>
+            </>)}
             {popTema && (<>
               <div className="nf2-veu" onClick={() => setPopTema(false)} />
               <div className="menu-tema-pop" role="dialog" aria-label="Aparência"><TemaControles key={versaoTema} compacto /><button type="button" className="bt" onClick={() => { setPopTema(false); abrir('aparencia'); }}>Mais opções…</button></div>
             </>)}
           </span>
-          <span className="menu-usuario" style={{ position: 'relative' }}>
-            <button type="button" className="menu-usuario-bt" title={usuario.fabrica ? 'Usuário conectado' : 'Usuário conectado — clique para trocar a senha'} aria-haspopup="menu" aria-expanded={popUsuario} onClick={() => { if (!usuario.fabrica) setPopUsuario((x) => !x); }}>👤 {usuario.nome || usuario.usuario}</button>
-            {popUsuario && (<>
-              <div className="nf2-veu" onClick={() => setPopUsuario(false)} />
-              <div className="menu-usuario-pop" role="menu"><button type="button" role="menuitem" onClick={() => { setPopUsuario(false); setTrocaSenha(true); }}>🔒 Trocar senha</button></div>
-            </>)}
-          </span>
-        </>)}
+        )}
         {usuario && !usuario.fabrica && <button type="button" className="menu-bt menu-sair" title="Sair e voltar ao logon (troca de usuário)" onClick={sair}><span className="mi" aria-hidden="true">🚪</span>Sair</button>}
       </nav>
 
