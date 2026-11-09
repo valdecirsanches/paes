@@ -978,3 +978,6 @@ Na edição do item da diária o campo **Qtde fixa** fica sempre bloqueado e o s
 - **Clientes do dia:** botões **🕒 Entrega** (primeiro horário de entrega do dia, sem contar itens cancelados) e **Nome**; clicar de novo no botão ativo inverte (▲ crescente / ▼ decrescente). Horário mostrado antes do nome na ordem por entrega.
 - **Itens do cliente:** clicar no cabeçalho **Entrega** (horário) ou **Descrição para expedição** ordena; clicar de novo inverte. Linha em edição não pula de lugar até gravar.
 - Valores vazios (sem horário) ficam sempre no fim. A escolha fica salva no navegador (`lib/ordena.js`); padrão: entrega crescente. A ordenação é feita na tela, a API só entrega os dados.
+
+## Fase 208 — NF-e à vista não envia duplicatas/fatura
+Ao emitir, se **todas as duplicatas da nota vencem no dia da emissão** (cliente com 0 dia de vencimento — venda à vista), o JSON enviado à API **não leva `duplicatas`** (nem fatura); segue só a forma de pagamento. Isso evita rejeição da SEFAZ por cobrança em venda à vista. Qualquer parcela com vencimento posterior mantém a nota como a prazo (envia todas as duplicatas, como antes). As duplicatas continuam gravadas em `tb_receita` (financeiro interno). Regra em `ehAVista()` (`services/nfeJson.js`).

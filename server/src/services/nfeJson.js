@@ -134,12 +134,18 @@ export function cfopDoItem(it, nfe) {
 /** Telefone para o XML: só dígitos, 6 a 14 (schema da SEFAZ). Fora disso (ex.: dois números juntos no cadastro) é omitido para não dar "Falha no Schema XML". */
 export const fone = (v) => { const d = String(v ?? '').replace(/\D/g, '').replace(/^0+/, ''); return d.length >= 6 && d.length <= 14 ? d : undefined; };
 /** Linhas de tb_receita ({ vencto, valor }) → [{ vencimento: 'aaaa-mm-dd', valor }] (ignora linhas sem data válida ou sem valor). */
+const iso = (v) => {
+  if (v instanceof Date) return Number.isNaN(v.getTime()) ? '' : `${v.getFullYear()}-${String(v.getMonth() + 1).padStart(2, '0')}-${String(v.getDate()).padStart(2, '0')}`;
+  const m = /^(\d{4}-\d{2}-\d{2})/.exec(String(v ?? '')) ?? /^(\d{2})\/(\d{2})\/(\d{4})/.exec(String(v ?? ''));
+  return !m ? '' : m.length === 2 ? m[1] : `${m[3]}-${m[2]}-${m[1]}`;
+};
+/** Venda à vista: todas as duplicatas vencem no dia da emissão (ou antes). Nesse caso a NF-e vai SEM cobrança (duplicatas/fatura) — evita rejeição da SEFAZ. */
+export function ehAVista(nfe, linhas = []) {
+  const emissao = iso(nfe?.data_emissao);
+  const venc = linhas.map((d) => iso(d.vencto)).filter(Boolean);
+  return Boolean(emissao) && venc.length > 0 && venc.every((v) => v <= emissao);
+}
 export function duplicatasJson(linhas = []) {
-  const iso = (v) => {
-    if (v instanceof Date) return Number.isNaN(v.getTime()) ? '' : `${v.getFullYear()}-${String(v.getMonth() + 1).padStart(2, '0')}-${String(v.getDate()).padStart(2, '0')}`;
-    const m = /^(\d{4}-\d{2}-\d{2})/.exec(String(v ?? '')) ?? /^(\d{2})\/(\d{2})\/(\d{4})/.exec(String(v ?? ''));
-    return !m ? '' : m.length === 2 ? m[1] : `${m[3]}-${m[2]}-${m[1]}`;
-  };
   return linhas.map((d) => ({ vencimento: iso(d.vencto), valor: Math.round((Number(String(d.valor ?? 0).replace(',', '.')) || 0) * 100) / 100 }))
     .filter((d) => d.vencimento && d.valor > 0).sort((a, b) => a.vencimento.localeCompare(b.vencimento));
 }
@@ -227,7 +233,8 @@ export function montaJsonNfe(nfe, itens, cfg, { numero, ibsCbs = true, agora = n
     informacoesComplementares: txt(nfe.texto_corpo) || undefined,
   };
   // duplicatas (tb_receita da nota): [{ vencimento: 'aaaa-mm-dd', valor }], em ordem de vencimento
-  const dupJson = duplicatasJson(duplicatas);
+  // à vista (vencimento no dia da emissão): não envia duplicatas/fatura; só a forma de pagamento
+  const dupJson = ehAVista(nfe, duplicatas) ? [] : duplicatasJson(duplicatas);
   if (dupJson.length) json.duplicatas = dupJson;
   const chaves = chavesDe(referencias);
   if (chaves.length) json.documentosReferenciados = chaves.map((chaveNfe) => ({ chaveNfe })); // chave da NF-e original (devolução)

@@ -200,3 +200,14 @@ test('duplicatas vão no JSON da API: vencimento aaaa-mm-dd e valor, em ordem', 
   assert.equal(montaJsonNfe(nfe, itens, cfg, { numero: 5 }).duplicatas, undefined);
   assert.deepEqual(duplicatasJson([{ vencto: '29/11/2026', valor: '1,5' }]), [{ vencimento: '2026-11-29', valor: 1.5 }]);
 });
+
+import { ehAVista } from '../src/services/nfeJson.js';
+test('venda à vista (vencimento no dia da emissão): NF-e sem duplicatas/fatura; a prazo continua enviando', () => {
+  const vista = { ...nfe, data_emissao: new Date(2026, 10, 9) };
+  assert.equal(ehAVista(vista, [{ vencto: '2026-11-09', valor: 100 }]), true);
+  assert.equal(ehAVista(vista, [{ vencto: new Date(2026, 10, 9), valor: 100 }]), true);
+  assert.equal(ehAVista(vista, [{ vencto: '2026-11-09', valor: 50 }, { vencto: '2026-12-09', valor: 50 }]), false); // uma parcela a prazo → a prazo
+  assert.equal(ehAVista(vista, []), false);
+  assert.equal(montaJsonNfe(vista, itens, cfg, { numero: 5, duplicatas: [{ vencto: '2026-11-09', valor: 100 }] }).duplicatas, undefined);
+  assert.equal(montaJsonNfe(vista, itens, cfg, { numero: 5, duplicatas: [{ vencto: '2026-12-09', valor: 100 }] }).duplicatas.length, 1);
+});
