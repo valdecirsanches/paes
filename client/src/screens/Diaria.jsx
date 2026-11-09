@@ -1,6 +1,7 @@
 import { ehFabrica } from '../lib/perfil.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../api.js';
+import { lerOrdem, gravaOrdem, ordenaPor } from '../lib/ordena.js';
 import { aoPedirDiaria, pedeAbrirConflitos, pegaPedidoDiaria } from '../lib/navega.js';
 import { FILTROS, STATUS, diaExtenso, hoje } from '../lib/rules.js';
 import Calendario from '../components/Calendario.jsx';
@@ -22,8 +23,9 @@ const B_DIA = ['unidade_nome', 'cliente_razao_social'];
 export default function Diaria({ onFechar }) {
   const [data, setData] = useState(hoje());
   const [filtro, setFiltro] = useState('todas');
-  const [ordem, setOrdem] = useState(() => { try { return localStorage.getItem('paes_ordem_diaria') === 'nome' ? 'nome' : 'entrega'; } catch { return 'entrega'; } }); // clientes por ordem de entrega (padrão) ou por nome
-  const mudaOrdem = (o) => { setOrdem(o); try { localStorage.setItem('paes_ordem_diaria', o); } catch { /* ok */ } };
+  const [ord, setOrd] = useState(() => lerOrdem('clientes', { campo: 'entrega', dir: 1 })); // campo: entrega | nome; dir: 1 crescente, -1 decrescente
+  const mudaOrdem = (campo) => setOrd((o) => { const n = { campo, dir: o.campo === campo ? -o.dir : 1 }; gravaOrdem('clientes', n); return n; });
+  const ordem = ord.campo;
   const [lista, setLista] = useState([]);
   const busca = useBusca(lista, B_DIA);
   const [selId, setSelId] = useState(null);
@@ -47,7 +49,7 @@ export default function Diaria({ onFechar }) {
   }, [aviso]);
 
   const carregarLista = useCallback(async () => {
-    const rows = await api.get(`/status?data=${data}&filtro=${filtro}&ordem=${ordem}`);
+    const rows = ordenaPor(await api.get(`/status?data=${data}&filtro=${filtro}`), ord.campo === 'nome' ? (r) => r.nome : (r) => r.primeira_entrega, ord.dir);
     setLista(rows);
     const a = alvoAbrir.current;
     if (a) { // veio de "Verificar problemas": posiciona exatamente na empresa do problema (pelo id do status; senão pela unidade)
@@ -57,7 +59,7 @@ export default function Diaria({ onFechar }) {
     }
     // ao trocar a data os ids de status mudam: mantém a MESMA unidade/cliente selecionada (se ela existir no novo dia)
     setSelId((id) => (rows.some((r) => r.id === id) ? id : (rows.find((r) => uniSel.current != null && r.id_unidade === uniSel.current) ?? rows[0])?.id ?? null));
-  }, [data, filtro, ordem]);
+  }, [data, filtro, ord]);
 
   // "Verificar problemas" pede para abrir esta tela numa data/empresa (também se a tela acabou de ser aberta)
   useEffect(() => {
@@ -173,8 +175,8 @@ export default function Diaria({ onFechar }) {
           <div className="dr2-card dr2-lista">
             <div className="dr2-t">Clientes do dia <small>{lista.length}</small>
               <span className="dr2-ordem" role="group" aria-label="Ordem dos clientes">
-                <button type="button" className={ordem === 'entrega' ? 'on' : ''} aria-pressed={ordem === 'entrega'} onClick={() => mudaOrdem('entrega')} title="Pelo primeiro horário de entrega do dia">🕒 Entrega</button>
-                <button type="button" className={ordem === 'nome' ? 'on' : ''} aria-pressed={ordem === 'nome'} onClick={() => mudaOrdem('nome')} title="Em ordem alfabética">A–Z</button>
+                <button type="button" className={ordem === 'entrega' ? 'on' : ''} aria-pressed={ordem === 'entrega'} onClick={() => mudaOrdem('entrega')} title="Pelo primeiro horário de entrega do dia (clique de novo para inverter)">🕒 Entrega{ord.campo === 'entrega' ? (ord.dir > 0 ? ' ▲' : ' ▼') : ''}</button>
+                <button type="button" className={ordem === 'nome' ? 'on' : ''} aria-pressed={ordem === 'nome'} onClick={() => mudaOrdem('nome')} title="Por nome (clique de novo para inverter)">Nome{ord.campo === 'nome' ? (ord.dir > 0 ? ' ▲' : ' ▼') : ''}</button>
               </span>
             </div>
             <Busca busca={busca} total={lista.length} placeholder="Pesquisar cliente/unidade…" />

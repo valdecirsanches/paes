@@ -974,6 +974,7 @@ Fase 204: o botão Aparência saiu da barra e foi para o menu do nome do usuári
 ## Fase 205 — Diária: quantidade fixa não é alterável
 Na edição do item da diária o campo **Qtde fixa** fica sempre bloqueado e o servidor ignora `qtde_original` no `PUT /diaria/:id` (antes era editável em item vindo da programação fixa). Para mudar a quantidade do dia use **Extra** (`qtde_alterada`); a quantidade fixa só se altera na aba/tela da **Programação fixa**.
 
-## Fase 206 — Programação diária por ordem de entrega
-- **Clientes do dia** passam a vir por **ordem de entrega** (primeiro horário de entrega do dia, ignorando itens cancelados; quem não tem horário vai ao final), com o horário mostrado antes do nome. O botão **A–Z** volta à ordem alfabética (a escolha fica salva no navegador). API: `GET /api/status?data=&filtro=&ordem=entrega|nome`.
-- **Itens do cliente** (aba Diária) ordenados por **horário** e, no mesmo horário, pela ordem de lançamento. As setas ↑↓ seguem a ordem exibida.
+## Fase 206/207 — Programação diária: ordem escolhida pelo usuário (crescente/decrescente)
+- **Clientes do dia:** botões **🕒 Entrega** (primeiro horário de entrega do dia, sem contar itens cancelados) e **Nome**; clicar de novo no botão ativo inverte (▲ crescente / ▼ decrescente). Horário mostrado antes do nome na ordem por entrega.
+- **Itens do cliente:** clicar no cabeçalho **Entrega** (horário) ou **Descrição para expedição** ordena; clicar de novo inverte. Linha em edição não pula de lugar até gravar.
+- Valores vazios (sem horário) ficam sempre no fim. A escolha fica salva no navegador (`lib/ordena.js`); padrão: entrega crescente. A ordenação é feita na tela, a API só entrega os dados.

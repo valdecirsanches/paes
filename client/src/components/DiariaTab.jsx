@@ -1,5 +1,6 @@
 import { ehFabrica } from '../lib/perfil.js';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { gravaOrdem, lerOrdem, ordenaPor } from '../lib/ordena.js';
 import { api } from '../api.js';
 import {
   ACOMODACOES, EXTRAS, bool, brData, cargaPorHora, descricaoExpedicao, fmtQtde, hhmm, hoje, somaDias, turnoPorHora,
@@ -75,7 +76,11 @@ function derivar(r, chaves) {
 }
 
 export default function DiariaTab({ status, data, filtro, roteiros, onChanged, notify, onEditando, alvo, recarga }) {
-  const [itens, setItens] = useState([]);
+  const [itensRaw, setItens] = useState([]);
+  const [ordItem, setOrdItem] = useState(() => lerOrdem('itens', { campo: 'hora', dir: 1 })); // o usuário escolhe horário ou descrição, crescente ou decrescente
+  const itens = useMemo(() => ordenaPor(itensRaw, ordItem.campo === 'descricao' ? (x) => x.produto_descricao_expedicao : (x) => x.hora, ordItem.dir), [itensRaw, ordItem]);
+  const ordenar = (campo) => setOrdItem((o) => { const n = { campo, dir: o.campo === campo ? -o.dir : 1 }; gravaOrdem('itens', n); return n; });
+  const seta = (campo) => (ordItem.campo === campo ? (ordItem.dir > 0 ? ' ▲' : ' ▼') : '');
   const [selId, setSelId] = useState(null);
   const [draft, setDraft] = useState(null); // registro em edição/inclusão (state dsedit/dsinsert do Delphi)
   const [painel, setPainel] = useState(false); // pnlDiaria
@@ -404,7 +409,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
         <table className="grade">
           <thead>
             <tr><th className="ind" /><th className="c" title="Registro alterado">A</th><th className="c" title="Programação fixa">Fx</th>
-              <th>Entrega</th><th>Fixo + Extra = Total</th><th>Descrição para expedição</th><th>Anotações</th>
+              <th className="ord" onClick={() => ordenar('hora')} title="Ordenar por horário de entrega (clique de novo para inverter)">Entrega{seta('hora')}</th><th>Fixo + Extra = Total</th><th className="ord" onClick={() => ordenar('descricao')} title="Ordenar por descrição (clique de novo para inverter)">Descrição para expedição{seta('descricao')}</th><th>Anotações</th>
               <th>Produção</th><th>Comandas</th><th className="c" />
             </tr>
           </thead>
