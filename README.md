@@ -981,3 +981,6 @@ Na edição do item da diária o campo **Qtde fixa** fica sempre bloqueado e o s
 
 ## Fase 208 — NF-e à vista não envia duplicatas/fatura
 Ao emitir, se **todas as duplicatas da nota vencem no dia da emissão** (cliente com 0 dia de vencimento — venda à vista), o JSON enviado à API **não leva `duplicatas`** (nem fatura); segue só a forma de pagamento. Isso evita rejeição da SEFAZ por cobrança em venda à vista. Qualquer parcela com vencimento posterior mantém a nota como a prazo (envia todas as duplicatas, como antes). As duplicatas continuam gravadas em `tb_receita` (financeiro interno). Regra em `ehAVista()` (`services/nfeJson.js`).
+
+## Fase 209 — Demonstrativo/comanda impressos como no sistema antigo
+Comanda e demonstrativo seguem o desenho da comanda do Delphi: título grande, `Responsavel:`, data por extenso grande (sem a linha "Data de Emissao:"), `Cliente:` com o nome grande, cabeçalho `Qtde / Descricao do produto / Vr Un. / Vr total` **com traço embaixo**, itens com quantidade inteira (`40`, não `40,0`) e descrição em 24 colunas (sem cortar). A coluna **Data** do demonstrativo só aparece quando as linhas são de dias diferentes. Vale para a impressão comum e para a térmica (mesmas linhas de texto).
