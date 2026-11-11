@@ -35,6 +35,7 @@ export default function Clientes({ onFechar }) {
   const [abaProd, setAbaProd] = useState('lista');
   const [conectar, setConectar] = useState(false);
   const [esconder, setEsconder] = useState(false);
+  const [sitCli, setSitCli] = useState('ATIVO'); // filtro da lista de clientes: ATIVO (padrão) | INATIVO | TODOS
   const [aviso, setAviso] = useState(null);
   const [confirma, setConfirma] = useState(null);
   const notificar = useCallback((tipo, m) => setAviso({ tipo, m }), []);
@@ -47,7 +48,9 @@ export default function Clientes({ onFechar }) {
   }, [notificar]);
   useEffect(() => { recCli(); api.get('/cadastros/produtos/referencias').then(setReferencias).catch(() => {}); }, [recCli]);
 
-  const bCli = useBusca(clientes, B_CLI);
+  const clientesFiltrados = useMemo(() => (sitCli === 'TODOS' ? clientes : clientes.filter((c) => (String(c.ativo ?? 'ATIVO').toUpperCase() === 'INATIVO') === (sitCli === 'INATIVO'))), [clientes, sitCli]);
+  const bCli = useBusca(clientesFiltrados, B_CLI);
+  useEffect(() => { if (clientesFiltrados.length && !clientesFiltrados.some((c) => c.id === fCli)) setFCli(clientesFiltrados[0].id); }, [clientesFiltrados]); // eslint-disable-line react-hooks/exhaustive-deps
   const cli = useEdicao({ lista: bCli.visiveis, foco: fCli, setFoco: setFCli, caminho: CAM, recarregar: recCli, aviso: notificar, confirmar: setConfirma, padrao: () => ({ ativo: 'ATIVO', programacao_ativo: 'True', pessoa: 'JURIDICA', comanda_nf: '1' }), texto: (r) => `o cliente ${r?.razao_social ?? ''}` });
 
   const idCli = cli.atual?.id ?? null;
@@ -135,7 +138,8 @@ export default function Clientes({ onFechar }) {
         <label className="cd-filtro" title="Ligado: a aba Unidades mostra só as unidades do cliente selecionado. Desligado: todas as unidades (paginadas)."><input type="checkbox" checked={conectar} onChange={(e) => setConectar(e.target.checked)} />Só unidades deste cliente</label>
         <button type="button" className="cd-btn" onClick={tabela}>🖨 Tabela de preços</button>
         <span className="cd-esp-barra" />
-        <Busca busca={bCli} total={clientes.length} placeholder="Pesquisar cliente (nome, código, CNPJ, cidade…)" className="larga" />
+        <span className="cd-sit" role="group" aria-label="Situação dos clientes">{[['ATIVO', 'Ativos'], ['INATIVO', 'Inativos'], ['TODOS', 'Todos']].map(([k, t]) => <button type="button" key={k} className={`cd-btn${sitCli === k ? ' on' : ''}`} aria-pressed={sitCli === k} onClick={() => setSitCli(k)}>{t}</button>)}</span>
+        <Busca busca={bCli} total={clientesFiltrados.length} placeholder="Pesquisar cliente (nome, código, CNPJ, cidade…)" className="larga" />
         <button type="button" className="cd-btn" title="Fechar tela de clientes" onClick={onFechar}>Fechar</button>
       </div>
 

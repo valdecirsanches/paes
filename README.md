@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 223 — Cadastro de clientes: filtro por situação
+
+- A lista abre só com clientes **ativos**; botões **Ativos / Inativos / Todos** na barra. Trocar o filtro leva o foco ao primeiro cliente da lista filtrada. Filtro no cliente (a rota não mudou). Não testado em tela real.
+
 ## Fase 222 — Devolução: acesso e conferência da NF-e referenciada
 
 - Na seção "NFe referenciada" da devolução: para cada chave, resumo da nota original (nº/série, emissão, cliente, situação), botão **🔍 Ver nota original** (janela somente leitura com itens e total) e sugestão das notas do mesmo cliente.
