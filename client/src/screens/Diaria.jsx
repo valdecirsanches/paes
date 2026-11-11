@@ -23,6 +23,13 @@ const B_DIA = ['unidade_nome', 'cliente_razao_social'];
 export default function Diaria({ onFechar }) {
   const [data, setData] = useState(hoje());
   const [filtro, setFiltro] = useState('todas');
+  const gravaItem = useRef(null); // o item em edição se registra aqui; ao trocar de cliente a alteração pendente é gravada antes (nada se perde)
+  const trocaClienteClique = async (id) => {
+    if (id === selId) return;
+    if (editandoItem && gravaItem.current && !(await gravaItem.current())) return; // falhou a gravação (ex.: campo inválido): fica no cliente atual
+    setSelId(id);
+  };
+  const painelAberto = useRef(false); // painel de edição do item: continua aberto ao passar de um cliente para outro
   const [ord, setOrd] = useState(() => lerOrdem('clientes', { campo: 'entrega', dir: 1 })); // campo: entrega | nome; dir: 1 crescente, -1 decrescente
   const mudaOrdem = (campo) => setOrd((o) => { const n = { campo, dir: o.campo === campo ? -o.dir : 1 }; gravaOrdem('clientes', n); return n; });
   const ordem = ord.campo;
@@ -163,7 +170,7 @@ export default function Diaria({ onFechar }) {
             <ul className="dr2-clientes" aria-label="Clientes do dia">
               {busca.visiveis.map((r) => (
                 <li key={r.id}>
-                  <button type="button" className={`dr2-cli s${r.status}${r.id === selId ? ' atual' : ''}`} onClick={() => setSelId(r.id)} title={STATUS[r.status]}>
+                  <button type="button" className={`dr2-cli s${r.status}${r.id === selId ? ' atual' : ''}`} onClick={() => trocaClienteClique(r.id)} title={STATUS[r.status]}>
                     <i className="dr2-dot" />{ordem === 'entrega' && r.primeira_entrega && <b className="dr2-hr">{String(r.primeira_entrega).slice(0, 5)}</b>}{r.unidade_nome}
                   </button>
                 </li>
@@ -220,7 +227,7 @@ export default function Diaria({ onFechar }) {
           <main className="conteudo dr2-conteudo">
             {sel?.verificar_pasta === 'True' && <div className="pasta">⚠ FAVOR VERIFICAR PASTA</div>}
             {aba === 'diaria'
-              ? <DiariaTab key={sel?.id ?? 'nenhuma'} status={sel} data={data} filtro={filtro} roteiros={roteiros} onChanged={carregarLista} notify={notify} alvo={alvoItem} recarga={recarga} onEditando={setEditandoItem} />
+              ? <DiariaTab key={sel?.id ?? 'nenhuma'} registraGravar={(f) => { gravaItem.current = f; }} painelInicial={painelAberto.current} onPainel={(v) => { painelAberto.current = v; }} status={sel} data={data} filtro={filtro} roteiros={roteiros} onChanged={carregarLista} notify={notify} alvo={alvoItem} recarga={recarga} onEditando={setEditandoItem} />
               : aba === 'rcm' ? <ReclamacoesTab key={sel?.id ?? 'nenhuma'} status={sel} notify={notify} />
               : aba === 'cfg' ? <ConfigTab key={sel?.id ?? 'nenhuma'} status={sel} onChanged={carregarLista} notify={notify} />
               : sel ? <FixaTab key={sel.id} status={sel} roteiros={roteiros} onChanged={carregarLista} notify={notify} onEditando={setEditandoItem} alvo={alvoItem} recarga={recarga} /> : <p className="vazio">Selecione uma empresa na lista.</p>}

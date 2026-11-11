@@ -77,7 +77,7 @@ function derivar(r, chaves) {
   return n;
 }
 
-export default function DiariaTab({ status, data, filtro, roteiros, onChanged, notify, onEditando, alvo, recarga }) {
+export default function DiariaTab({ status, data, filtro, roteiros, onChanged, notify, onEditando, alvo, recarga, painelInicial = false, onPainel, registraGravar }) {
   const [itensRaw, setItens] = useState([]);
   const [ordItem, setOrdItem] = useState(() => lerOrdem('itens', { campo: 'hora', dir: 1 })); // o usuário escolhe horário ou descrição, crescente ou decrescente
   const itens = useMemo(() => ordenaPor(itensRaw, ordItem.campo === 'descricao' ? (x) => x.produto_descricao_expedicao : (x) => x.hora, ordItem.dir), [itensRaw, ordItem]);
@@ -85,7 +85,8 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
   const seta = (campo) => (ordItem.campo === campo ? (ordItem.dir > 0 ? ' ▲' : ' ▼') : '');
   const [selId, setSelId] = useState(null);
   const [draft, setDraft] = useState(null); // registro em edição/inclusão (state dsedit/dsinsert do Delphi)
-  const [painel, setPainel] = useState(false); // pnlDiaria
+  const [painel, setPainel] = useState(painelInicial); // pnlDiaria — herda o estado ao trocar de cliente (a tela de edição continua aberta; o usuário esconde quando quiser)
+  useEffect(() => { onPainel?.(painel); }, [painel]); // eslint-disable-line react-hooks/exhaustive-deps
   const [completa, setCompleta] = useState(false);
   const [menu, setMenu] = useState(null);
   const [modal, setModal] = useState(null); // {tipo, ...}
@@ -121,8 +122,9 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
   // A lista de clientes (à esquerda) é pesada e não precisa estar pronta para o usuário seguir digitando: atualiza em segundo plano e junta
   // várias gravações seguidas (ex.: passeando com as setas) numa única recarga.
   const tempoLista = useRef(null);
-  const atualizaLista = () => { clearTimeout(tempoLista.current); tempoLista.current = setTimeout(() => { Promise.resolve(onChanged?.()).catch(() => {}); }, 500); };
-  useEffect(() => () => clearTimeout(tempoLista.current), []);
+  const atualizaLista = () => { clearTimeout(tempoLista.current); tempoLista.current = setTimeout(() => { tempoLista.current = null; Promise.resolve(onChanged?.()).catch(() => {}); }, 500); };
+  // saiu da tela (trocou de cliente) com a atualização da lista pendente: faz agora
+  useEffect(() => () => { if (tempoLista.current) { clearTimeout(tempoLista.current); Promise.resolve(onChanged?.()).catch(() => {}); } }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const atualizar = async () => { await carregar(); atualizaLista(); };
   const rodar = async (fn, ok) => {
     try { await fn(); await atualizar(); if (ok) notify.ok(ok); } catch (e) { notify.erro(e.message); }
@@ -362,6 +364,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
     else if (e.currentTarget === painelRef.current && editando) setTimeout(() => gravarRef.current?.(), 60); // Enter no último campo grava o item
   };
   const gravarRef = useRef(null); gravarRef.current = gravar;
+  useEffect(() => { registraGravar?.(() => gravarRef.current?.(true)); return () => registraGravar?.(null); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const ref = (nome) => (el) => { refs.current[nome] = el; };
   const set = (k) => (e) => editar({ [k]: e.target.value });

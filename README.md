@@ -1012,3 +1012,7 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 218 — Diária: cabeçalho do dia em painel lateral; calendário e clientes sempre visíveis
 - Data, relógio, situação do dia (normal/alterado/nada/cancelado), **Ações do dia** e **Fechar** saíram da faixa do topo e foram para um **painel ao lado** (entre a lista de clientes e "Empresa selecionada"): ganha-se uma linha inteira para a grade e o painel de edição. A lista de clientes ficou mais estreita para isso.
 - Calendário, Apresentação e Clientes **não somem mais** durante a edição do item (antes ficavam escondidos assim que se mexia em um campo).
+
+## Fase 219 — Diária: a edição do item continua aberta ao trocar de cliente
+- O painel de edição do item **permanece aberto** ao passar de um cliente para o outro (clique ou setas), com o foco no Extra do item do novo cliente; o usuário esconde quando quiser em **Mostrar/Esconder item** (a escolha vale para os próximos clientes).
+- Com alteração pendente, clicar em outro cliente **grava** o item antes de trocar (se a gravação falhar por validação, fica no cliente atual). A atualização pendente da lista é feita ao sair do cliente.
