@@ -299,7 +299,7 @@ export default function Clientes({ onFechar }) {
         <Modal titulo="Mudar a unidade de cliente" onFechar={() => setTrocaCli(null)}>
           <div style={{ display: 'grid', gap: 10, minWidth: 340 }}>
             <p><b>{uni.atual?.nome}</b> hoje é de <b>{nomeCli(clientes.find((c) => c.id === Number(uni.v('id_cliente'))))}</b>.</p>
-            <select value={trocaCli.id_cliente} onChange={(e) => setTrocaCli({ id_cliente: e.target.value })} aria-label="Novo cliente"><option value="">Escolha o novo cliente…</option>{[...clientes].filter((c) => c.id !== Number(uni.v('id_cliente'))).sort((a, b) => String(a.razao_social).localeCompare(String(b.razao_social))).map((c) => <option key={c.id} value={c.id}>{c.razao_social}</option>)}</select>
+            <select value={trocaCli.id_cliente} onChange={(e) => setTrocaCli({ id_cliente: e.target.value })} aria-label="Novo cliente"><option value="">Escolha o novo cliente…</option>{[...clientes].filter((c) => c.id !== Number(uni.v('id_cliente'))).sort((a, b) => String(a.razao_social).localeCompare(String(b.razao_social))).map((c) => <option key={c.id} value={c.id}>{nomeCli(c)}</option>)}</select>
             <small>Passam para o novo cliente: a unidade, a programação fixa e a programação de hoje em diante. Dias passados, comandas e notas já emitidas ficam com o cliente antigo.</small>
             <div><button type="button" className="cd-btn" disabled={!trocaCli.id_cliente} onClick={mudarCliente}>Confirmar mudança</button> <button type="button" className="cd-btn" onClick={() => setTrocaCli(null)}>Cancelar</button></div>
           </div>
