@@ -437,6 +437,31 @@ export default function NFe({ onFechar }) {
       const w = aba ?? window.open('', '_blank');
       if (w) w.location.href = url; else window.open(url, '_blank');
     };
+    if (direto && lote) { // várias notas: uma por vez, com as duas vias juntas (70238, 70238, depois a próxima) — não o PDF único intercalado
+      const feitas = []; const ign = [];
+      try {
+        for (const id of ids) {
+          const r = await fetch(`/api/nfe/${id}/danfe`, { credentials: 'same-origin' });
+          if (!r.ok) { const j = await r.json().catch(() => ({})); ign.push(`${lin(id)?.nfe_numero ?? id}: ${j.message || `HTTP ${r.status}`}`); continue; }
+          await imprimirPdfDireto(await (await r.blob()).arrayBuffer());
+          feitas.push(id);
+        }
+        fimProc();
+        if (feitas.length) {
+          audita('DANFE impresso no agente', { entidade: 'nfe', idRegistro: feitas.join(','), tela: 'NFe', detalhes: { notas: `${feitas.length} notas, uma a uma`, destino: lerMapa().danfe?.destino, copias: lerMapa().danfe?.copias ?? 2 } });
+          setLinhas((ls) => ls?.map((x) => (feitas.includes(x.id) ? { ...x, nfe_impresso: 'True' } : x)));
+          api.post('/nfe/impresso', { ids: feitas }).catch((e) => registraLog(`Não consegui marcar como impresso: ${e.message}`));
+          cacheDet.current.clear();
+          notificar('ok', `DANFE enviado à impressora (${feitas.length} nota${feitas.length > 1 ? 's' : ''}, cada uma com suas vias juntas).`);
+        }
+        if (ign.length) { registraLog(`DANFE não impresso: ${ign.join('; ')}`); if (!feitas.length) notificar('aviso', 'Nenhuma DANFE impressa — o motivo está no Log.'); }
+      } catch (e) {
+        fimProc(); audita('DANFE: impressão direta falhou', { entidade: 'nfe', idRegistro: ids.join(','), ok: false, erro: e.message, tela: 'NFe' });
+        if (feitas.length) { setLinhas((ls) => ls?.map((x) => (feitas.includes(x.id) ? { ...x, nfe_impresso: 'True' } : x))); api.post('/nfe/impresso', { ids: feitas }).catch(() => {}); }
+        notificar('erro', `Impressão direta do DANFE falhou: ${e.message}.${feitas.length ? ` Já impressas: ${feitas.length}.` : ''}`);
+      }
+      return;
+    }
     try {
       const r = lote
         ? await fetch('/api/nfe/danfe-lote', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids }) })
