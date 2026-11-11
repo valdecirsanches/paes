@@ -35,8 +35,11 @@ export function garanteColunasApp() {
   return colunasApp;
 }
 router.use(async (_req, _res, next) => { try { await garanteColunasApp(); } catch (e) { console.warn(`[nfe] colunas nfe_xml_app/nfe_pdf_app: ${e.message}`); } next(); });
-/** Arquivo do sistema novo; para notas antigas cai no campo legado, se ele NÃO for caminho N:/. */
-const arqApp = (n, campo) => txt(n[APP_COL[campo]]) || (ehCaminhoLegado(n[campo]) ? '' : txt(n[campo]));
+/** Caminho para ler o arquivo da nota: campo do sistema novo, senão o do sistema antigo. */
+const arqApp = (n, campo) => { // para LEITURA: o do app; se não existir em disco, o do sistema antigo (N:/… vira pasta local por paraLocal)
+  const cand = [txt(n[APP_COL[campo]]), txt(n[campo])].filter(Boolean);
+  return cand.find((c) => existsSync(paraLocal(c))) ?? cand[0] ?? '';
+};
 /** Grava o caminho no campo do app; o legado só é preenchido se estiver vazio (nunca sobrescreve o do sistema antigo). */
 const gravaCaminhoApp = (id, campo, p) => pool.query(`update tb_nfe set ${APP_COL[campo]} = ?, ${campo} = if(${campo} is null or ${campo} = '', ?, ${campo}) where id = ?`, [p, p, id]);
 const idValido = (v, rotulo = 'Nota') => {
@@ -1164,7 +1167,7 @@ async function buscaArquivo(nfe, cfg, campo, nomeExt, baixa, orientacao) {
   const guarda = async (buf) => {
     try {
       const p = await gravaArquivo(cfg.cnpj, ambiente, `${nfe.nfe_chave}${nomeExt === 'xml' ? '-procNFe.xml' : '.pdf'}`, buf);
-      if (p !== f) { await gravaCaminhoApp(nfe.id, campo, p); nfe[APP_COL[campo]] = p; } // campo próprio do app; o N:/ do sistema antigo não é tocado
+      if (p !== txt(nfe[APP_COL[campo]])) { await gravaCaminhoApp(nfe.id, campo, p); nfe[APP_COL[campo]] = p; } // campo próprio do app; o N:/ do sistema antigo não é tocado
     } catch { /* guardar é melhor esforço */ }
   };
   let erro = null;

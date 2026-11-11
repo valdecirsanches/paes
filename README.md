@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 239 — Correção: DANFE de nota do sistema antigo (XML em N:/)
+
+- Regressão da fase 238: ao ler o arquivo, o app ignorava o caminho N:/ do sistema antigo (que `paraLocal` converte para a pasta local) e, com a API devolvendo 404, não achava o XML. Agora a leitura tenta o campo do app e, se o arquivo não existir em disco, o campo do sistema antigo; a gravação continua só nos campos do app.
+
 ## Fase 238 — NFe: campos próprios do sistema novo para XML/DANFE
 
 - Novas colunas `tb_nfe.nfe_xml_app` e `nfe_pdf_app` (criadas sozinhas, `varchar(500)`). O app novo lê/grava **só nelas**; `nfe_xml_file`/`nfe_pdf_file` ficam para o sistema antigo (N:/…) — "Ajustar", o agente do N: e quem editar o caminho antigo não afetam mais o DANFE do app. Notas antigas: sem valor em `_app`, o app usa o campo antigo se **não** for N:/, senão baixa da API e preenche o campo novo.
