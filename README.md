@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 236 — Ícone "impresso" atualiza entre terminais
+
+- O app grava `nfe_impresso` no servidor, mas outro terminal só via o ícone ao recarregar a lista. Agora a tela de NFe consulta `GET /api/nfe/impressos?ids=…` a cada 12 s (janela visível) e atualiza o 🖨️ das notas da lista (também desmarca se alguém desmarcar). Pode levar até ~12 s.
+
 ## Fase 235 — DANFE de várias notas: vias juntas, nota por nota
 
 - Na impressão direta (agente) de notas marcadas, cada nota sai com as suas vias seguidas (70238, 70238, depois a próxima), em vez de um PDF único com todas as notas. Cada nota é baixada e enviada ao agente uma a uma; notas que não têm DANFE (não autorizadas) são puladas e anotadas no Log. Sem impressão direta (pré-visualização), continua o PDF único. Não testado com impressora real: depende de o agente repetir o job `copias` vezes de forma agrupada (uma nota de 1 página sai A, A).

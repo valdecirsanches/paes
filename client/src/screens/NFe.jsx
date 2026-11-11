@@ -566,6 +566,18 @@ export default function NFe({ onFechar }) {
   const apagarRef = () => acao(async () => { await api.del(`/nfe/referencias/${ref.id}`); await carregarRefs(nota.id); notificar('ok', 'Referência excluída.'); });
   const salvarRef = () => acao(async () => { const r = await api.put(`/nfe/referencias/${ref.id}`, refDraft); setRefs((rs) => rs.map((x) => (x.id === r.id ? r : x))); setRefDraft({}); notificar('ok', 'Referência gravada.'); });
 
+  // outro terminal pode ter impresso o DANFE: confere o ícone 🖨️ das notas da lista a cada 12 s (só com a janela visível)
+  useEffect(() => {
+    const t = setInterval(async () => {
+      const ls = linhasRef.current; if (!ls?.length || document.visibilityState !== 'visible') return;
+      try {
+        const { impressos } = await api.get(`/nfe/impressos?ids=${ls.slice(0, 500).map((r) => r.id).join(',')}`);
+        const on = new Set(impressos);
+        if (ls.slice(0, 500).some((r) => foiMarcado(r.nfe_impresso) !== on.has(r.id))) setLinhas((x) => x?.map((r) => (foiMarcado(r.nfe_impresso) === on.has(r.id) ? r : { ...r, nfe_impresso: on.has(r.id) ? 'True' : null })));
+      } catch { /* sem rede: tenta no próximo ciclo */ }
+    }, 12000);
+    return () => clearInterval(t);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const carregarCert = useCallback(() => api.get('/nfe/certificado').then(setCert).catch((e) => setCert({ situacao: 'erro', mensagem: e.message })), []);
   useEffect(() => {
     if (aba !== 'cfg' || cfgTab !== CFG_CERT) return undefined;

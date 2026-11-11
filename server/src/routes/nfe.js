@@ -645,6 +645,13 @@ router.post('/config/email-teste', async (req, res) => {
   res.json({ ok: true, enviado: para.length > 0 });
 });
 
+// Quais destas notas já foram impressas (em qualquer terminal): o app consulta de tempos em tempos para atualizar o ícone 🖨️
+router.get('/impressos', async (req, res) => {
+  const ids = [...new Set(String(req.query.ids ?? '').split(',').map((x) => Number(x)).filter((n) => Number.isInteger(n) && n > 0))].slice(0, 500);
+  if (!ids.length) return res.json({ impressos: [] });
+  const [r] = await pool.query("select id from tb_nfe where id in (?) and nfe_impresso in ('True', '1', 'true')", [ids]);
+  res.json({ impressos: r.map((x) => x.id) });
+});
 router.get('/:id', async (req, res) => res.json(await getNfe(idValido(req.params.id))));
 /**
  * Tudo da nota em foco numa única chamada (antes eram 6–8 chamadas em sequência a cada clique na grade, cada uma
