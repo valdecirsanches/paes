@@ -991,3 +991,8 @@ As telas abertas ficam montadas (só escondidas); por isso a Auditoria mostrava 
 ## Fase 211/212 — Diária: alterar item vai direto no Extra e as setas passeiam gravando
 - Ao **alterar** um item já incluído (F3 / duplo clique / botão Alterar) o foco vai direto para **Extra** (item novo continua no horário).
 - Com a edição aberta, **↑ ↓** passam para o item vizinho **mantendo o painel aberto**, com o foco no Extra do novo item. Se houve alteração, ela é **gravada automaticamente** antes de passar (sem perguntar); se a gravação falhar (validação), fica no item atual. Com alteração pendente as setas só passeiam a partir dos campos Extra/Cada (nos demais campos ficam com o campo). Clicar em outro item com alteração pendente continua perguntando.
+
+## Fase 213/214 — Diária: itens mais ágeis (e correção das setas que não gravavam)
+- **Gravar sem esperar:** ao gravar um item existente a tela já mostra o resultado e libera para continuar; a confirmação do servidor e a atualização da lista de clientes (pesada) acontecem em **segundo plano**, e várias gravações seguidas (passeando com as setas) são juntadas em **uma única** recarga da lista (500 ms). Item novo continua esperando o servidor (precisa do id e dos cálculos). Ações do menu (cancelar, ajustar preço…) agora recarregam itens e lista **em paralelo** em vez de uma depois da outra.
+- **Correção (Fase 212):** passando de item com ↑ ↓ logo depois de digitar no Extra, o valor digitado **não era gravado** (o campo numérico só entrega o valor ao perder o foco). Agora o campo perde o foco, grava e então passa ao vizinho.
+- Visual da grade/painel mantido, sem mudanças.

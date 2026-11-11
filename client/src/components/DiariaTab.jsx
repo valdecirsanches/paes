@@ -116,7 +116,12 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
 
   useEffect(() => { ultimoCodigo.current = draft ? draft.produto_codigo ?? '' : item?.produto_codigo ?? ''; }, [draft?.id, novo, item?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const atualizar = async () => { await carregar(); await onChanged(); };
+  // A lista de clientes (à esquerda) é pesada e não precisa estar pronta para o usuário seguir digitando: atualiza em segundo plano e junta
+  // várias gravações seguidas (ex.: passeando com as setas) numa única recarga.
+  const tempoLista = useRef(null);
+  const atualizaLista = () => { clearTimeout(tempoLista.current); tempoLista.current = setTimeout(() => { Promise.resolve(onChanged?.()).catch(() => {}); }, 500); };
+  useEffect(() => () => clearTimeout(tempoLista.current), []);
+  const atualizar = async () => { await carregar(); atualizaLista(); };
   const rodar = async (fn, ok) => {
     try { await fn(); await atualizar(); if (ok) notify.ok(ok); } catch (e) { notify.erro(e.message); }
   };
@@ -227,8 +232,13 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
       if (novo) ({ id } = await api.post(`/status/${status.id}/diaria`, corpo));
       else await api.put(`/diaria/${r.id}`, corpo);
       setDraft(null); if (!manterPainel) setPainel(false);
-      await atualizar();
-      setSelId(id);
+      if (novo) { // item novo: precisa do que o servidor calculou (id, preços, produção)
+        await carregar(); setSelId(id);
+      } else { // item existente: a tela já mostra o resultado na hora; o servidor confirma em segundo plano
+        setItens((rows) => rows.map((x) => (x.id === id ? { ...x, ...corpo, qtde_alterada: corpo.qtde_alterada, registro_alterado: 1 } : x)));
+        carregar().catch((e) => notify.erro(e.message));
+      }
+      atualizaLista();
       notify.ok('Item gravado.');
       return true;
     } catch (e) { notify.erro(e.message); return false; } finally { setOcupado(false); }
@@ -305,7 +315,10 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
           const i = itens.findIndex((x) => x.id === selId);
           const v = itens[i + (e.key === 'ArrowDown' ? 1 : -1)];
           e.preventDefault();
-          if (i >= 0 && v) (async () => { if (editando && !(await gravar(true))) return; setSelId(v.id); })();
+          if (i >= 0 && v) { // tira o foco antes (o campo numérico só entrega o valor digitado ao sair dele), grava e então passa
+            t.blur?.();
+            setTimeout(async () => { if (!(await gravarRef.current?.(true))) return; setSelId(v.id); }, 60);
+          }
           return;
         }
       }
