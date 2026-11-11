@@ -1974,3 +1974,9 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{text-decoration:underline}
 .dr2-dia .dr2-mais .dr2-b{height:28px;padding:0 8px;font-size:11.5px;white-space:nowrap}
 .dr2-dia .dr2-mais .dr2-b.prim{flex:1}
 .dr2-dia .nf2-menu{right:0;left:auto;top:100%}
+
+/* Fase 220: as abas (Programação diária / fixa / Reclamações) ficam na lateral esquerda, na vertical como no sistema antigo — ganha-se uma linha */
+.dr2-principal{flex-direction:row;gap:6px}
+.dr2-abas{flex-direction:column;flex-wrap:nowrap;flex:none;gap:4px;align-self:stretch}
+.dr2-abas button{writing-mode:vertical-rl;transform:rotate(180deg);border-radius:0 10px 10px 0;padding:14px 5px;font-size:12px;letter-spacing:.02em;white-space:nowrap}
+.dr2-principal>.dr2-conteudo{flex:1;min-width:0}

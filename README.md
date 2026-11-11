@@ -1016,3 +1016,6 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 219 — Diária: a edição do item continua aberta ao trocar de cliente
 - O painel de edição do item **permanece aberto** ao passar de um cliente para o outro (clique ou setas), com o foco no Extra do item do novo cliente; o usuário esconde quando quiser em **Mostrar/Esconder item** (a escolha vale para os próximos clientes).
 - Com alteração pendente, clicar em outro cliente **grava** o item antes de trocar (se a gravação falhar por validação, fica no cliente atual). A atualização pendente da lista é feita ao sair do cliente.
+
+## Fase 220 — Diária: abas na lateral esquerda, na vertical
+As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
