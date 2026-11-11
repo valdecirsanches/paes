@@ -33,7 +33,7 @@ th{background:#e3eef9}fieldset{border:1px solid #b6d3ef;margin:16px 0;padding:12
 <label>Token <input id="sis-token" size="36" type="password" autocomplete="off" placeholder="${cfg.sistema_token ? '(gravado — deixe em branco para manter)' : 'cole o token do sistema'}"></label>
 <button id="sis-salvar" type="button">Salvar e conectar</button> <b id="sis-estado" role="status">verificando…</b><div id="sis-msg" role="status"></div></fieldset>
 <fieldset><legend>Gravação do XML da NF-e (compatibilidade com o sistema antigo)</legend>
-<small>O sistema web grava aqui, nesta máquina, o XML autorizado em <b>&lt;pasta&gt;/&lt;cnpj&gt;/NFe/&lt;ddmmaaaa&gt;/NFe/&lt;chave&gt;-nfe.xml</b>. Só estas pastas são liberadas (uma por linha):</small><br>
+<small>O sistema web grava aqui, nesta máquina, o XML autorizado em <b>&lt;pasta&gt;/&lt;cnpj&gt;/NFe/&lt;aaaamm&gt;/NFe/&lt;chave&gt;-nfe.xml</b>. Só estas pastas são liberadas (uma por linha):</small><br>
 <textarea id="pastas" rows="2" cols="70">${esc((Array.isArray(cfg.pastas_gravacao) && cfg.pastas_gravacao.length ? cfg.pastas_gravacao : ['N:/EDSMonitorPLUS/Arqs']).join('\n'))}</textarea><br>
 <button id="pastas-salvar" type="button">Salvar pastas</button> <span id="pastas-estado"></span><div id="pastas-msg" role="status"></div></fieldset>
 <fieldset><legend>Endereços do sistema web autorizados a imprimir aqui</legend><input id="origens" size="80" value="${esc(cfg.origens.join(', '))}"> <button id="salvar-origens">Salvar</button><br><small>Ex.: https://paes.seudominio.com.br, http://localhost:5072</small></fieldset>

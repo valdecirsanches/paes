@@ -17,6 +17,7 @@ import { baseGravacao, paraBanco, paraLocal, caminhoXmlLegado, ehCaminhoLegado }
 import { acharArquivoNota, lerArquivoNota, baseArquivos } from '../services/arquivosApi.js';
 import { aplicaReducaoIbs, montaJsonNfe, validaParaAutorizar, dataHoraBr, regimeDoCrt, ehDevolucao } from '../services/nfeJson.js';
 import { registra } from '../services/auditoria.js';
+import { migraPastasXml } from '../services/migraXmlPastas.js';
 import { analisaReferencias, candidatasOriginal, devolucoesDe, errosDaAnalise } from '../services/devolucaoRef.js';
 
 const router = Router();
@@ -718,6 +719,14 @@ const NFE_EDITAVEIS = ['cliente_uf_icms', 'substituicao_tributaria_ie', 'substit
   'entrega_endereco', 'entrega_numero', 'entrega_complemento', 'entrega_bairro', 'entrega_cidade', 'entrega_cidade_ibge', 'entrega_uf', 'entrega_uf_ibge', 'entrega_cep', 'entrega_cnpj', 'entrega_ie', 'entrega_ddd', 'entrega_fone',
   'transportadora_nome', 'transportadora_endereco', 'transportadora_cidade', 'transportadora_uf', 'transportadora_ie', 'transportadora_cnpj', 'transportadora_veiculo_placa', 'transportadora_veiculo_uf', 'transportadora_rntc',
   'volume_qtde', 'volume_numero', 'volume_especie', 'volume_marca', 'peso_bruto', 'peso_liquido', 'texto_corpo', 'csosn', 'nfe_modelo', 'nfe_serie', 'movimento_es'];
+/** Corrige XML gravado em pasta com dia (11112026) para a pasta do mês (202611). ?simular=1 só conta; sem isso move os arquivos e acerta o banco. */
+router.post('/migrar-pastas-xml', async (req, res) => {
+  const executar = req.query.simular !== '1';
+  const r = await migraPastasXml(pool, { executar });
+  registra({ idUsuario: req.user?.id, usuario: req.user?.usuario ?? '', metodo: 'POST', rota: req.originalUrl, entidade: 'nfe', acao: executar ? 'Pastas de XML do dia movidas para a pasta do mês' : 'Simulação: pastas de XML do dia → mês', status: 200, detalhes: r, origem: 'api' });
+  res.json({ executou: executar, ...r });
+});
+
 /** Refaz os arquivos do SISTEMA NOVO (XML/DANFE) a partir da API, sem tocar no caminho N:/ do sistema antigo. Se não conseguir, devolve o que havia. */
 router.post('/:id/refazer-arquivos', async (req, res) => {
   const nfe = await getNfe(idValido(req.params.id)); const cfg = await getCfg();

@@ -36,7 +36,7 @@ export function criaServidor({ cfg, arquivoCfg, deps = {} } = {}) {
   const b64 = (v, rot) => { if (typeof v !== 'string' || !v || !/^[A-Za-z0-9+/=\r\n]+$/.test(v)) throw erro(422, `${rot} ausente ou inválido.`); const b = Buffer.from(v, 'base64'); if (!b.length) throw erro(422, `${rot} vazio.`); return b; };
 
   const pastas = () => (Array.isArray(cfg.pastas_gravacao) && cfg.pastas_gravacao.length ? cfg.pastas_gravacao : ['N:/EDSMonitorPLUS/Arqs']).map((x) => String(x).replaceAll('\\', '/').replace(/\/+$/, ''));
-  /** Grava o XML da NF-e numa pasta liberada (padrão do sistema antigo, ex.: N:/EDSMonitorPLUS/Arqs/<cnpj>/NFe/<ddmmaaaa>/NFe/<chave>-nfe.xml). */
+  /** Grava o XML da NF-e numa pasta liberada (padrão do sistema antigo, ex.: N:/EDSMonitorPLUS/Arqs/<cnpj>/NFe/<aaaamm>/NFe/<chave>-nfe.xml). */
   async function gravar(corpo) {
     const raizes = pastas();
     const cam = String(corpo.caminho ?? '').replaceAll('\\', '/');

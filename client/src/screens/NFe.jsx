@@ -376,6 +376,17 @@ export default function NFe({ onFechar }) {
     }
     if (avisar) notificar(ok === ids.length ? 'ok' : 'aviso', `XML gravado no N: (${ok} de ${ids.length}).${ok < ids.length ? ' Veja o Log.' : ''}`);
   };
+  /** Corrige XML gravado em pasta com dia (11112026) → pasta do mês (202611): simula, mostra o resultado e só então move. */
+  const migrarPastas = () => acao(async () => {
+    const sim = await api.post('/nfe/migrar-pastas-xml?simular=1', {});
+    const resumo = `${sim.aMover} para mover, ${sim.soBanco} só acertar no banco, ${sim.invisiveis} fora deste servidor (ficam como estão).`;
+    if (!sim.aMover && !sim.soBanco) { notificar('ok', `Nada a corrigir neste servidor. ${resumo}`); return; }
+    setConfirma({ texto: `Pastas de XML por dia → por mês (ex.: 11112026 → 202611): ${resumo} Executar agora?`, ok: () => acao(async () => {
+      const r = await api.post('/nfe/migrar-pastas-xml', {});
+      registraLog(`Pastas de XML: ${r.movidos} movidos, ${r.soBanco} acertados no banco, ${r.invisiveis} fora do servidor${r.erros?.length ? `; erros: ${r.erros.join(' | ')}` : ''}.`);
+      notificar(r.erros?.length ? 'aviso' : 'ok', `Pastas de XML corrigidas: ${r.movidos} movidos, ${r.soBanco} só no banco.${r.erros?.length ? ` ${r.erros.length} erro(s): veja o Log.` : ''}`);
+    }) });
+  });
   /** Ajustar NFe: busca na API (status, chave, protocolo, XML, DANFE), atualiza a nota e grava o XML no N: (sistema antigo) por esta máquina. */
   const ajustarNfe = async () => {
     const ids = [...alvo].filter((id) => ['AUTORIZADA', 'CANCELADA', 'PENDENTE'].includes(statusDe(id)));
@@ -653,6 +664,7 @@ export default function NFe({ onFechar }) {
         <div className="nf2-acoes">
           <button type="button" className="nf2-b novo" onClick={criar} disabled={ocupado}>＋ Criar</button>
           <button type="button" className="nf2-b prim" onClick={autorizar} disabled={ocupado || nPendentes === 0} title={nPendentes === 0 ? 'Nada a autorizar: só notas PENDENTES' : 'Autorizar NFe'}>✔ Autorizar{marcados.size > 0 ? ` (${nPendentes})` : ''}</button>
+          <button type="button" className="nf2-b" onClick={migrarPastas} disabled={ocupado} title="XML gravado em pasta com dia (11112026) passa para a pasta do mês (202611), e o caminho é corrigido na nota">📁 Pastas XML</button>
           <button type="button" className="nf2-b" onClick={ajustarNfe} disabled={ocupado || (!nota && marcados.size === 0)} title="Busca a nota na API, atualiza o cadastro e grava o XML no N: para o sistema antigo">🛠 Ajustar NFe</button>
           <button type="button" className="nf2-b" onClick={danfe} disabled={nComDanfe === 0} title={nComDanfe === 0 ? 'Danfe só de notas AUTORIZADAS' : 'Imprimir o DANFE'}>🖨 Danfe{marcados.size > 0 ? ` (${nComDanfe})` : ''}</button>
           <button type="button" className={`nf2-b${todosMarcados ? ' on' : ''}`} onClick={marcarTodas} disabled={!linhas?.length} title="Marcar / desmarcar todas as notas da lista">{todosMarcados ? '☐ Desmarcar' : '☑ Marcar todas'}</button>

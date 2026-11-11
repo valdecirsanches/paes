@@ -31,13 +31,13 @@ export function paraLocal(valor) {
 
 /**
  * Padrão do sistema antigo (EDSMonitorPLUS) para o XML autorizado:
- *   <Arqs>/<cnpj>/NFe/<ddmmaaaa da emissão>/NFe/<chave>-nfe.xml   (banco: N:/EDSMonitorPLUS/Arqs/…)
+ *   <Arqs>/<cnpj>/NFe/<aaaamm da emissão>/NFe/<chave>-nfe.xml   (pasta do MÊS, ex.: 202611; até a fase 239 era por dia — ver services/migraXmlPastas.js)   (banco: N:/EDSMonitorPLUS/Arqs/…)
  * Localmente grava em baseArquivos() (NFE_ARQUIVOS_DIR); no banco vai o prefixo de rede NFE_ARQUIVOS_DB_PREFIXO (padrão N:/EDSMonitorPLUS/Arqs).
  */
 export const prefixoArqs = () => String(process.env.NFE_ARQUIVOS_DB_PREFIXO || 'N:/EDSMonitorPLUS/Arqs').trim().replace(/[\\/]+$/, '');
 export function caminhoXmlLegado({ cnpj, dataEmissao, chave }) {
   const p = partesData(dataEmissao); if (!p) throw new Error('Nota sem data de emissão.');
-  const rel = [String(cnpj).replace(/\D/g, ''), 'NFe', `${p.d}${p.m}${p.a}`, 'NFe', `${String(chave).replace(/\D/g, '')}-nfe.xml`];
+  const rel = [String(cnpj).replace(/\D/g, ''), 'NFe', `${p.a}${p.m}`, 'NFe', `${String(chave).replace(/\D/g, '')}-nfe.xml`];
   return { local: path.join(baseArquivos(), ...rel), banco: `${prefixoArqs().replaceAll('\\', '/')}/${rel.join('/')}` };
 }
 

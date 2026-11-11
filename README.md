@@ -1020,6 +1020,11 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 240 — XML: pasta do mês (aaaamm), não do dia
+
+- O XML no padrão do sistema antigo passa a ir para `…/<cnpj>/NFe/<aaaamm>/NFe/<chave>-nfe.xml` (ex.: 202611), e não mais `<ddmmaaaa>` (11112026). Notas já gravadas com dia continuam sendo lidas pelo caminho que está no banco.
+- Botão **📁 Pastas XML** (NFe): simula, pergunta e então move os arquivos que ESTE servidor enxerga para a pasta do mês e corrige `nfe_xml_file`/`nfe_xml_app` (rota `POST /api/nfe/migrar-pastas-xml`, `?simular=1` só conta). Arquivos que só existem no N: da máquina do cliente (gravados pelo agente) não são vistos pelo servidor: ficam como estão (aparecem como "fora deste servidor"); para esses, use Ajustar NFe, que regrava pelo agente na pasta nova. O agente antigo não precisa mudar (grava no caminho que recebe).
+
 ## Fase 239 — Correção: DANFE de nota do sistema antigo (XML em N:/)
 
 - Regressão da fase 238: ao ler o arquivo, o app ignorava o caminho N:/ do sistema antigo (que `paraLocal` converte para a pasta local) e, com a API devolvendo 404, não achava o XML. Agora a leitura tenta o campo do app e, se o arquivo não existir em disco, o campo do sistema antigo; a gravação continua só nos campos do app.
