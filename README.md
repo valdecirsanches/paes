@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 226 — Aviso de nova versão
+
+- O build publica `/version.json`; o app confere a cada 2 min e ao voltar para a aba. Se mudou, mostra a faixa "Nova versão disponível" com **Atualizar agora** (recarrega) e **Depois**. Não recarrega sozinho, para não perder digitação (ex.: Programação diária). Vale a partir desta versão: quem estiver numa versão anterior precisa de um Ctrl+F5 uma vez. O servidor web precisa servir `version.json` sem cache longo (o app pede com `no-store`).
+
 ## Fase 225 — Listagem de unidades com quadros para anotações
 
 - A impressão "Listagem das unidades" ganhou 4 quadros em branco por unidade (cabeçalho cinza, linhas mais altas para escrever). Não conferido em impressora.
