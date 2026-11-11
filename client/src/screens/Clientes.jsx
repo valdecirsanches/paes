@@ -121,6 +121,7 @@ export default function Clientes({ onFechar }) {
   const offU = !uni.atual && !uni.novo;
   const offC = !cli.atual && !cli.novo;
   const tiposU = TIPOS.includes(uni.v('tipo_faturamento')) || !uni.v('tipo_faturamento') ? TIPOS : [uni.v('tipo_faturamento'), ...TIPOS];
+  const nomeCli = (c) => (c ? `${c.codigo ? `${c.codigo} · ` : ''}${c.razao_social ?? ''}` : '—'); // "código · razão social"
   const mudarCliente = async () => {
     try {
       const r = await api.post(`${CAM}/unidades/${fUni}/mudar-cliente`, { id_cliente: Number(trocaCli.id_cliente) });
@@ -210,7 +211,7 @@ export default function Clientes({ onFechar }) {
               <Secao titulo="Unidade" icone="🏪">
                 <Campo rotulo="Cliente dono da unidade" span={12}>
                   <span className="cd-dono">
-                    <b>{clientes.find((c) => c.id === Number(uni.v('id_cliente')))?.razao_social || '—'}</b>
+                    <b>{nomeCli(clientes.find((c) => c.id === Number(uni.v('id_cliente'))))}</b>
                     <button type="button" className="cd-btn" disabled={!uni.v('id_cliente') || uni.novo} onClick={irCliente} title="Abre o cadastro do cliente dono desta unidade">👤 Ir para o cliente</button>
                     <button type="button" className="cd-btn" disabled={!uni.v('id_cliente') || uni.novo || uni.sujo} onClick={() => setTrocaCli({ id_cliente: '' })} title="Passa a unidade para outro cliente (o histórico fica com o cliente antigo)">🔁 Mudar de cliente</button>
                   </span>
@@ -247,7 +248,7 @@ export default function Clientes({ onFechar }) {
               <Secao titulo="Emitir comandas para outro destino" icone="🔀">
                 <Campo rotulo="Cliente (código)" span={3}><Txt ed={uni} k="id_cliente_comandas" inputMode="numeric" /></Campo>
                 <Campo rotulo="Cliente" span={9}>
-                  <select disabled={offU} value={uni.v('id_cliente_comandas') ?? ''} onChange={(e) => uni.set('id_cliente_comandas', e.target.value === '' ? null : Number(e.target.value))}><option value="" />{clientes.map((c) => <option key={c.id} value={c.id}>{c.razao_social}</option>)}</select>
+                  <select disabled={offU} value={uni.v('id_cliente_comandas') ?? ''} onChange={(e) => uni.set('id_cliente_comandas', e.target.value === '' ? null : Number(e.target.value))}><option value="" />{clientes.map((c) => <option key={c.id} value={c.id}>{nomeCli(c)}</option>)}</select>
                 </Campo>
                 <Campo rotulo="Unidade (código)" span={3}><Txt ed={uni} k="id_unidade_comandas" inputMode="numeric" /></Campo>
                 <Campo rotulo="Unidade" span={9}>
@@ -297,7 +298,7 @@ export default function Clientes({ onFechar }) {
       {trocaCli && (
         <Modal titulo="Mudar a unidade de cliente" onFechar={() => setTrocaCli(null)}>
           <div style={{ display: 'grid', gap: 10, minWidth: 340 }}>
-            <p><b>{uni.atual?.nome}</b> hoje é de <b>{clientes.find((c) => c.id === Number(uni.v('id_cliente')))?.razao_social || '—'}</b>.</p>
+            <p><b>{uni.atual?.nome}</b> hoje é de <b>{nomeCli(clientes.find((c) => c.id === Number(uni.v('id_cliente'))))}</b>.</p>
             <select value={trocaCli.id_cliente} onChange={(e) => setTrocaCli({ id_cliente: e.target.value })} aria-label="Novo cliente"><option value="">Escolha o novo cliente…</option>{[...clientes].filter((c) => c.id !== Number(uni.v('id_cliente'))).sort((a, b) => String(a.razao_social).localeCompare(String(b.razao_social))).map((c) => <option key={c.id} value={c.id}>{c.razao_social}</option>)}</select>
             <small>Passam para o novo cliente: a unidade, a programação fixa e a programação de hoje em diante. Dias passados, comandas e notas já emitidas ficam com o cliente antigo.</small>
             <div><button type="button" className="cd-btn" disabled={!trocaCli.id_cliente} onClick={mudarCliente}>Confirmar mudança</button> <button type="button" className="cd-btn" onClick={() => setTrocaCli(null)}>Cancelar</button></div>
