@@ -393,22 +393,22 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
           <TopoItem novo={novo} sujo={editando} contexto={`${status?.unidade_nome ?? ''}${v.data ? ` · ${diaDaSemana(v.data)}, ${brData(v.data)}` : ''}`} />
           <div className="if-corpo dp">
             {/* posições do formulário do Delphi: bloco do item | anotações | acabamento | produção */}
-            <fieldset className="if-pn dp-a"><legend>Item</legend>
+            <fieldset className="if-pn dp-a leg"><legend>Item</legend>
               <div className="dp-r1">
                 <HoraGrande refHora={ref('hora')} valor={v.hora} onChange={(h) => editar({ hora: h })} sugestoes={horasDoDia(itens)} />
-                <Campo rotulo="Data" className="if-data"><input type="date" tabIndex={-1} ref={ref('data')} value={v.data ?? ''} onChange={set('data')} /></Campo>
-                <Campo rotulo="Produto" className="if-cod"><input ref={ref('codigo')} value={v.produto_codigo ?? ''} onChange={set('produto_codigo')} placeholder="999.999 = mercadoria"
+                <Campo rotulo="Data" className="if-data leg-v"><input type="date" tabIndex={-1} ref={ref('data')} value={v.data ?? ''} onChange={set('data')} /></Campo>
+                <Campo rotulo="Produto" className="if-cod leg-v"><input ref={ref('codigo')} value={v.produto_codigo ?? ''} onChange={set('produto_codigo')} placeholder="999.999 = mercadoria"
                   onBlur={(e) => resolverCodigo(e.target.value)} onDoubleClick={() => setModal({ tipo: 'busca', alvo: 'prod' })} title="Duplo clique pesquisa o produto" /></Campo>
               </div>
-              <Campo rotulo="Descrição original do produto" className="if-orig"><input readOnly tabIndex={-1} value={v.produto_descricao_original ?? ''} /></Campo>
-              <Campo rotulo="Descrição da comanda / nota fiscal"><input ref={ref('nf')} value={v.produto_descricao ?? ''} onChange={set('produto_descricao')} /></Campo>
-              <Campo rotulo="Descrição para expedição" className="if-destaque"><input value={v.produto_descricao_expedicao ?? ''} onChange={set('produto_descricao_expedicao')} /></Campo>
+              <Campo rotulo="Descrição original do produto" className="if-orig leg-a"><input readOnly tabIndex={-1} value={v.produto_descricao_original ?? ''} /></Campo>
+              <Campo rotulo="Descrição da comanda / nota fiscal" className="leg-a"><input ref={ref('nf')} value={v.produto_descricao ?? ''} onChange={set('produto_descricao')} /></Campo>
+              <Campo rotulo="Descrição para expedição" className="if-destaque leg-v"><input value={v.produto_descricao_expedicao ?? ''} onChange={set('produto_descricao_expedicao')} /></Campo>
               <div className="if-nums">
-                <Campo rotulo="Qtde fixa"><Num className="if-n" casas={[1, 3]} disabled title="A quantidade fixa vem da Programação fixa e não pode ser alterada na diária; use Extra" value={v.qtde_original} onChange={() => {}} /></Campo>
-                <Campo rotulo="Extra" className="if-destaque"><Num className="if-n centro" inputRef={ref('extra')} casas={[0, 3]} value={v.qtde_alterada} onChange={(n) => editar({ qtde_alterada: n })} /></Campo>
-                <Campo rotulo="Preço"><Num className="if-n" casas={[2, 3]} value={v.produto_preco} onChange={(n) => editar({ produto_preco: n })} /></Campo>
-                <Campo rotulo="Cada"><Num className="if-n centro" inputRef={ref('cada')} casas={[0, 3]} value={v.produto_preco_cada} onChange={(n) => editar({ produto_preco_cada: n })} /></Campo>
-                <Campo rotulo="Valor total" className="if-total"><Num className="if-n" readOnly tabIndex={-1} casas={[2, 2]} value={v.preco_total} onChange={() => {}} /></Campo>
+                <Campo rotulo="Qtde fixa" className="leg-a"><Num className="if-n" casas={[1, 3]} disabled title="A quantidade fixa vem da Programação fixa e não pode ser alterada na diária; use Extra" value={v.qtde_original} onChange={() => {}} /></Campo>
+                <Campo rotulo="Extra" className="if-destaque leg-v"><Num className="if-n centro" inputRef={ref('extra')} casas={[0, 3]} value={v.qtde_alterada} onChange={(n) => editar({ qtde_alterada: n })} /></Campo>
+                <Campo rotulo="Preço" className="leg-a"><Num className="if-n" casas={[2, 3]} value={v.produto_preco} onChange={(n) => editar({ produto_preco: n })} /></Campo>
+                <Campo rotulo="Cada" className="leg-a"><Num className="if-n centro" inputRef={ref('cada')} casas={[0, 3]} value={v.produto_preco_cada} onChange={(n) => editar({ produto_preco_cada: n })} /></Campo>
+                <Campo rotulo="Valor total" className="if-total leg-a"><Num className="if-n" readOnly tabIndex={-1} casas={[2, 2]} value={v.preco_total} onChange={() => {}} /></Campo>
               </div>
             </fieldset>
             <div className="dp-b">
@@ -424,11 +424,11 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
                   ))}
                 </div>
                 <div className="if-prodsel">
-                  <Campo rotulo="Produção data"><input type="date" value={String(v.producao_data ?? '').slice(0, 10)} onChange={set('producao_data')} /></Campo>
+                  <Campo rotulo="Produção data" className="leg-a"><input type="date" value={String(v.producao_data ?? '').slice(0, 10)} onChange={set('producao_data')} /></Campo>
                   <Campo rotulo="Turno"><select value={v.producao_turno ?? ''} onChange={set('producao_turno')}><option value="" />{[1, 2, 3].map((n) => <option key={n} value={n}>{n}º horário</option>)}</select></Campo>
                   <Campo rotulo="Embalagem da carga"><select value={v.acomodacao_carga ?? ''} onChange={set('acomodacao_carga')}>{ACOMODACOES.map(([k, r]) => <option key={k} value={k}>{r}</option>)}</select></Campo>
                   <Campo rotulo="Preparação da carga"><select value={v.carga ?? ''} onChange={set('carga')}><option value="" />{[1, 2, 3].map((n) => <option key={n} value={n}>{n}ª carga</option>)}</select></Campo>
-                  <Campo rotulo="Itinerário"><select value={v.id_roteiro ?? 0} onChange={set('id_roteiro')}><option value={0} />{roteiroOpcoes}</select></Campo>
+                  <Campo rotulo="Itinerário" className="leg-a"><select value={v.id_roteiro ?? 0} onChange={set('id_roteiro')}><option value={0} />{roteiroOpcoes}</select></Campo>
                 </div>
               </fieldset>
             )}

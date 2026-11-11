@@ -999,3 +999,7 @@ As telas abertas ficam montadas (só escondidas); por isso a Auditoria mostrava 
 
 ## Fase 215 — Campos numéricos recalculam a cada tecla
 O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) passa o valor ao formulário **enquanto se digita** (antes só ao sair do campo). Total do item, valor total e a linha da grade mudam imediatamente; o texto digitado não é mexido até sair do campo.
+
+## Fase 216 — Diária (edição) com as cores do sistema antigo + zoom sem faixa vazia
+- Painel de edição da Diária no padrão do Delphi: **vermelho** em Data, Hora, Produto, Descrição para expedição e Extra; **amarelo** em Descrição original, Descrição da comanda, Qtde fixa, Preço, Cada, Valor total, Produção data e Itinerário; texto preto em **negrito** (descrições 15 px, números 14 px). Classes `leg`, `leg-v`, `leg-a`.
+- **Tamanho da letra** (Aparência): a altura da janela compensa o zoom (`--zoom`); antes, com 90 %, sobrava uma faixa vazia embaixo e o rodapé subia.

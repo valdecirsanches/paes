@@ -23,7 +23,7 @@ body { margin: 0; background: #ece9d8 linear-gradient(color-mix(in srgb, var(--a
 button, input, select, textarea { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid #ff8c00; outline-offset: 1px; }
 
-.win { display: flex; position: relative; flex-direction: column; height: 100vh; min-height: 560px; }
+.win { display: flex; position: relative; flex-direction: column; height: calc(100vh / var(--zoom, 1)); min-height: 560px; }
 .titulo-janela { background: linear-gradient(color-mix(in srgb, var(--azul-barra) 89%, #fff), color-mix(in srgb, var(--azul-barra) 78%, #000)); color: #fff; font-weight: 700; padding: 3px 8px; }
 .menubar { display: flex; align-items: center; gap: 14px; padding: 2px 6px; background: linear-gradient(#fff, color-mix(in srgb, var(--azul-barra) 12%, #fff)); border-bottom: 1px solid var(--borda); }
 .extenso { margin-left: auto; text-transform: capitalize; color: var(--bt-texto); font-weight: 700; }
@@ -1951,3 +1951,13 @@ html.escuro img,html.escuro video,html.escuro canvas,html.escuro iframe,html.esc
 .dr2-hr{font-variant-numeric:tabular-nums;font-size:11px;margin-right:6px;opacity:.75}
 
 th.ord{cursor:pointer;user-select:none}th.ord:hover{text-decoration:underline}
+
+/* ---------- Diária (edição): cores e fontes do sistema antigo — vermelho nos campos de identificação/quantidade, amarelo nos demais (Fase 216) ---------- */
+.leg-v input,.leg-v select,.leg .if-grande input{background:#ff1a1a;color:#000;border-color:#9b0000;font-weight:700}
+.leg-a input,.leg-a select{background:#ffff99;color:#000;border-color:#b5a800;font-weight:700}
+.leg-a input:disabled,.leg-a input[readonly]{background:#ffff99;color:#000;opacity:1}
+.leg-v input::placeholder{color:#400}
+.leg .if-pn input,.leg .if-grande input{font-size:15px}
+.leg .if-n{font-size:14px}
+.leg .if-grande input{font-size:16px}
+.leg-a select,.leg-a input[type=date]{font-size:13px}

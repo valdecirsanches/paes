@@ -31,6 +31,7 @@ export function aplicarTema(t = lerTema()) {
   const r = document.documentElement.style;
   document.documentElement.classList.toggle('escuro', t.modo === 'escuro');
   r.zoom = t.fonte === 100 ? '' : String(t.fonte / 100); // tamanho da letra/da tela
+  r.setProperty('--zoom', String(t.fonte / 100)); // a altura da janela compensa o zoom (senão sobra faixa vazia embaixo)
   r.setProperty('--cor-btn', t.btn); r.setProperty('--cor-btn-esc', mistura(t.btn, -0.18));
   r.setProperty('--azul-barra', t.barra); r.setProperty('--azul-barra-2', mistura(t.barra, -0.3));
   r.setProperty('--bt-1', mistura(t.barra, 0.93)); r.setProperty('--bt-2', mistura(t.barra, 0.62));
