@@ -719,6 +719,27 @@ const NFE_EDITAVEIS = ['cliente_uf_icms', 'substituicao_tributaria_ie', 'substit
   'entrega_endereco', 'entrega_numero', 'entrega_complemento', 'entrega_bairro', 'entrega_cidade', 'entrega_cidade_ibge', 'entrega_uf', 'entrega_uf_ibge', 'entrega_cep', 'entrega_cnpj', 'entrega_ie', 'entrega_ddd', 'entrega_fone',
   'transportadora_nome', 'transportadora_endereco', 'transportadora_cidade', 'transportadora_uf', 'transportadora_ie', 'transportadora_cnpj', 'transportadora_veiculo_placa', 'transportadora_veiculo_uf', 'transportadora_rntc',
   'volume_qtde', 'volume_numero', 'volume_especie', 'volume_marca', 'peso_bruto', 'peso_liquido', 'texto_corpo', 'csosn', 'nfe_modelo', 'nfe_serie', 'movimento_es'];
+/** Anexa à nota o XML autorizado (arquivo do PC do usuário): vale quando a API não tem a nota (404) e o XML só existe no sistema antigo. Guarda no campo do app e o DANFE passa a sair dele. */
+router.post('/:id/xml-upload', async (req, res) => {
+  const nfe = await getNfe(idValido(req.params.id)); const cfg = await getCfg();
+  const b64 = String(req.body?.xml_b64 ?? '');
+  if (!b64 || !/^[A-Za-z0-9+/=\r\n]+$/.test(b64)) throw invalid('Arquivo XML ausente ou inválido.');
+  const buf = Buffer.from(b64, 'base64'); const t = buf.toString('utf8');
+  const chave = /Id="NFe(\d{44})"/.exec(t)?.[1] ?? /<chNFe>(\d{44})<\/chNFe>/.exec(t)?.[1];
+  if (!chave) throw invalid('Este XML não é de NF-e (não achei a chave de acesso).');
+  if (!/<protNFe[\s>]/.test(t)) throw invalid('Este XML não tem o protocolo de autorização (<protNFe>): envie o XML autorizado (…-nfe.xml / procNFe).');
+  if (chave.slice(6, 20) !== String(cfg.cnpj ?? '').replace(/\D/g, '')) throw invalid('O emitente deste XML não é o CNPJ da empresa configurada.');
+  const minha = String(nfe.nfe_chave ?? '').replace(/\D/g, '');
+  if (minha.length === 44 && minha !== chave) throw invalid(`A chave do XML (…${chave.slice(-9)}) é diferente da chave desta nota (…${minha.slice(-9)}).`);
+  if (!minha && Number(chave.slice(25, 34)) !== Number(nfe.nfe_numero)) throw invalid('O número da NF-e do XML não é o desta nota.');
+  const ambiente = Number(cfg.nfe_configuracoes_webservice_ambiente) === 1 ? 1 : 2;
+  const p = await gravaArquivo(cfg.cnpj, ambiente, `${chave}-procNFe.xml`, buf);
+  await gravaCaminhoApp(nfe.id, 'nfe_xml_file', p);
+  await pool.query("update tb_nfe set nfe_pdf_app = '', nfe_chave = if(nfe_chave is null or nfe_chave = '', ?, nfe_chave) where id = ?", [chave, nfe.id]); // o DANFE é refeito do XML na próxima impressão
+  registra({ idUsuario: req.user?.id, usuario: req.user?.usuario ?? '', metodo: 'POST', rota: req.originalUrl, entidade: 'nfe', acao: 'XML anexado manualmente à NFe', idRegistro: nfe.id, status: 200, detalhes: { chave, arquivo: p, antes: { nfe_xml_app: nfe.nfe_xml_app, nfe_xml_file: nfe.nfe_xml_file } }, origem: 'api' });
+  res.json({ ok: true, chave, arquivo: p, nota: await getNfe(nfe.id) });
+});
+
 /** Corrige XML gravado em pasta com dia (11112026) para a pasta do mês (202611). ?simular=1 só conta; sem isso move os arquivos e acerta o banco. */
 router.post('/migrar-pastas-xml', async (req, res) => {
   const executar = req.query.simular !== '1';
