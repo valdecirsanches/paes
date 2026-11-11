@@ -14,6 +14,7 @@ const REGIOES = ['OSASCO', 'RAPOSO TAVARES', 'PINHEIROS', 'JAGUARE', 'LAPA', 'AN
 const EXTRAS = [['extra_cortado', ' CORTADO'], ['extra_margarina', ' C/MARGARINA'], ['extra_coco', ' C/COCO'], ['extra_acucar', ' C/ACUCAR'], ['extra_plastico', ' EMB/IND/PLASTICO'], ['extra_papel', ' EMB/IND/PAPEL'], ['extra_pacote', ' EMB/PCT/PLASTICO']];
 
 const COLS_CLI = [['codigo', 'Código'], ['razao_social', 'Nome do cliente'], ['nome_fantasia', 'Fantasia'], ['cidade', 'Cidade'], ['uf', 'UF'], ['fone', 'Telefone'], ['contato', 'Contato'], ['cnpj', 'CNPJ'], ['email', 'E-mail'], ['programacao_ativo', 'Prog.', 'chk'], ['ativo', 'Ativo', 'chk']];
+const COLS_CLI_LADO = [['codigo', 'Cód.'], ['razao_social', 'Cliente']];
 const COLS_UNI = [['codigo', 'Código'], ['nome', 'Unidade'], ['endereco', 'Endereço'], ['bairro', 'Bairro'], ['cidade', 'Cidade'], ['telefone', 'Telefone'], ['contato', 'Contato'], ['nutricionista_nome', 'Nutricionista'], ['regiao', 'Região'], ['emite_comanda_diaria', 'Comanda', 'chk'], ['ativo', 'Ativo', 'chk']];
 const COLS_PROD = [['codigo', 'Código'], ['descricao', 'Descrição do produto'], ['descricao_expedicao', 'Descrição expedição'], ['un', 'UN'], ['preco', 'Preço', 'm'], ['divisor_basico', 'Cada'], ['produto_producao', 'Prod.', 'chk'], ['ativo', 'Ativo', 'chk']];
 const COLS_REFS = [['id', 'ID'], ['codigo_referencia', 'Referência'], ['descricao', 'Descrição'], ['produto_especial', 'ESP', 'chk'], ['produto_producao', 'PRÇ', 'chk']];
@@ -34,6 +35,8 @@ export default function Clientes({ onFechar }) {
   const [aba, setAba] = useState('lista');
   const [abertoCli, setAbertoCli] = useState(true); // dados do cliente: abertos na lista, recolhidos ao editar unidades/produtos (mais espaço)
   const [abaProd, setAbaProd] = useState('lista');
+  const [clienteAoLado, setClienteAoLado] = useState(() => { try { return localStorage.getItem('paes_cad_cli_lado') !== '0'; } catch { return true; } }); // lista de clientes ao lado de Unidades/Produtos
+  const alternaLado = () => setClienteAoLado((v) => { try { localStorage.setItem('paes_cad_cli_lado', v ? '0' : '1'); } catch { /* ok */ } return !v; });
   const [conectar, setConectar] = useState(false);
   const [sitUni, setSitUni] = useState('ATIVO'); // filtro das unidades: ATIVO (padrão) | INATIVO | TODOS
   const [sitCli, setSitCli] = useState('ATIVO'); // filtro da lista de clientes: ATIVO (padrão) | INATIVO | TODOS
@@ -195,10 +198,19 @@ export default function Clientes({ onFechar }) {
 
       <div className="cd-abas" role="tablist">
         {ABAS.map(([k, r]) => <button key={k} type="button" role="tab" aria-selected={aba === k} className={aba === k ? 'on' : ''} onClick={() => { setAba(k); setAbertoCli(k === 'lista'); }}>{r}</button>)}
+        {aba !== 'lista' && <button type="button" className={`cd-lado-bt${clienteAoLado ? ' on' : ''}`} aria-pressed={clienteAoLado} onClick={alternaLado} title="Mostra a lista de clientes ao lado, para trocar de cliente sem voltar à aba Clientes">⬌ Clientes ao lado</button>}
       </div>
 
       {aba === 'lista' && <div className="cd-corpo cd-unico"><GradeCad cols={COLS_CLI} rows={bCli.visiveis} ordem={bCli.ordem} onOrdenar={bCli.ordenar} foco={fCli} onSel={cli.selecionar} vazio="Nenhum cliente" /></div>}
 
+      {aba !== 'lista' && <div className={`cd-split${clienteAoLado ? ' com-cli' : ''}`}>
+        {clienteAoLado && (
+          <aside className="cd-cli-lado" aria-label="Clientes">
+            <Busca busca={bCli} total={clientesFiltrados.length} placeholder="Pesquisar cliente…" className="larga" />
+            <GradeCad cols={COLS_CLI_LADO} rows={bCli.visiveis} ordem={bCli.ordem} onOrdenar={bCli.ordenar} foco={fCli} onSel={cli.selecionar} vazio="Nenhum cliente" />
+          </aside>
+        )}
+        <div className="cd-split-corpo">
       {aba === 'uni' && (
         <div className="cd-corpo cd-uni">
           <main className="cd-rola">
@@ -295,6 +307,8 @@ export default function Clientes({ onFechar }) {
           </section>
         </div>
       )}
+        </div>
+      </div>}
       {trocaCli && (
         <Modal titulo="Mudar a unidade de cliente" onFechar={() => setTrocaCli(null)}>
           <div style={{ display: 'grid', gap: 10, minWidth: 340 }}>
