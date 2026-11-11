@@ -53,7 +53,7 @@ export function Num({ value, onChange, casas = [0, 3], className = '', disabled,
 
 const hidratar = (i) => ({
   ...i, hora: hhmm(i.hora), data: String(i.data).slice(0, 10), producao_data: String(i.producao_data ?? '').slice(0, 10),
-  preco_total: i.preco_total ?? 0,
+  preco_total: Math.round((((Number(i.qtde_original) || 0) + (Number(i.qtde_alterada) || 0)) * ((Number(i.produto_preco) || 0) / (Number(i.produto_preco_cada) || 1))) * 100) / 100, // sempre calculado: não depende de ter mexido em algum campo
 });
 const total = (r) => ((Number(r.qtde_original) || 0) + (Number(r.qtde_alterada) || 0)) * ((Number(r.produto_preco) || 0) / (Number(r.produto_preco_cada) || 1));
 const novoItem = (status) => ({
@@ -446,7 +446,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
             </tr>
           </thead>
           <tbody>
-            {status && (
+            {status && novo && ( // a linha amarela de "novo item" só aparece enquanto se inclui um item (F2)
               <tr className={`l-novo${novo ? ' sel edit' : ''}`} onClick={() => !editando && status && incluir()} title="Clique para incluir um item (F2)">
                 <td className="ind">*</td><td className="c"><input type="checkbox" readOnly disabled /></td><td className="c"><input type="checkbox" readOnly disabled /></td>
                 <td className="num">{linhaNova.hora}</td>

@@ -1003,3 +1003,8 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 216 — Diária (edição) com as cores do sistema antigo + zoom sem faixa vazia
 - Painel de edição da Diária no padrão do Delphi: **vermelho** em Data, Hora, Produto, Descrição para expedição e Extra; **amarelo** em Descrição original, Descrição da comanda, Qtde fixa, Preço, Cada, Valor total, Produção data e Itinerário; texto preto em **negrito** (descrições 15 px, números 14 px). Classes `leg`, `leg-v`, `leg-a`.
 - **Tamanho da letra** (Aparência): a altura da janela compensa o zoom (`--zoom`); antes, com 90 %, sobrava uma faixa vazia embaixo e o rodapé subia.
+
+## Fase 217 — Diária: total ao abrir, fonte do Delphi e sem linha amarela de "novo item"
+- **Valor total** do item aparece ao abrir (é sempre calculado de Qtde fixa + Extra × Preço ÷ Cada; antes ficava 0,00 até mexer em algum campo).
+- Fonte dos campos do item no tamanho do sistema antigo (**14 pt negrito ≈ 18,7 px**); o painel cresce junto (campos de 34 px).
+- A linha amarela de "novo item" (`*`) na grade só aparece enquanto se inclui um item (F2); fora disso some.
