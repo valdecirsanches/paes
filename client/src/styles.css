@@ -2016,3 +2016,7 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{text-decoration:underline}
 .nova-versao{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:100000;display:flex;align-items:center;gap:10px;flex-wrap:wrap;max-width:94vw;padding:9px 14px;background:#1f5fa8;color:#fff;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.35);font-size:14px}
 .nova-versao button{border:0;border-radius:6px;padding:6px 12px;font-weight:700;cursor:pointer;background:#ffd23f;color:#222}
 .nova-versao button.sec{background:transparent;color:#fff;border:1px solid #ffffff88;font-weight:400}
+
+/* Fase 228: nome do cliente no painel lateral do item; busca de produto com "todos os produtos" */
+.if-cli{display:block;font-weight:800;font-size:14px;color:#7a1a1a;text-transform:uppercase;overflow-wrap:anywhere;line-height:1.2}
+.pq-todos{display:flex;align-items:center;gap:6px;font-size:13px;margin:4px 2px}

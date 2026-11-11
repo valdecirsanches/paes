@@ -437,7 +437,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
                 </div>
               </fieldset>
             )}
-            <TopoItem lateral novo={novo} sujo={editando} contexto={status?.unidade_nome ?? ''} data={v.data ? `${diaDaSemana(v.data)}, ${brData(v.data)}` : ''} />
+            <TopoItem lateral novo={novo} sujo={editando} cliente={status?.cliente_nome ?? ''} contexto={status?.unidade_nome ?? ''} data={v.data ? `${diaDaSemana(v.data)}, ${brData(v.data)}` : ''} />
           </div>
         </div>
       )}

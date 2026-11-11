@@ -9,7 +9,7 @@ const unidades = [
   [4, 'Hotel Bela Vista', 3, 'False'], [5, 'Escola Pequeno Príncipe', 0, 'False'], [6, 'Restaurante Sabor & Cia', 2, 'False'],
 ];
 let status = unidades.map(([id, nome, st, pasta]) => ({
-  id, data: ISO, id_cliente: id, id_unidade: id, status: st, nome, verificar_pasta: pasta,
+  id, data: ISO, id_cliente: id, cliente_nome: `Cliente ${nome} Ltda`, id_unidade: id, status: st, nome, verificar_pasta: pasta,
   unidade_nome: `${nome} ${id}/${id}    ***     (11) 4000-${1000 + id}`,
 }));
 

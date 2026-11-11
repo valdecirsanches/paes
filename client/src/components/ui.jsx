@@ -55,6 +55,7 @@ export function BuscaProduto({ onEscolher, onFechar, cliente }) {
   const [rows, setRows] = useState([]);
   const [estado, setEstado] = useState('ocioso'); // ocioso | buscando | ok | erro
   const [sel, setSel] = useState(0);
+  const [todos, setTodos] = useState(false); // ignora o filtro de cliente (produtos de qualquer cliente)
   const lista = useRef(null);
   const campo = useRef(null);
   const seq = useRef(0);
@@ -62,16 +63,16 @@ export function BuscaProduto({ onEscolher, onFechar, cliente }) {
   useEffect(() => { const t = setTimeout(() => campo.current?.focus(), 40); return () => clearTimeout(t); }, []);
   useEffect(() => {
     const termo = q.trim();
-    if (termo.length < (cliente ? 0 : 2)) { setRows([]); setEstado('ocioso'); return undefined; }
+    if (termo.length < (cliente && !todos ? 0 : 2)) { setRows([]); setEstado('ocioso'); return undefined; }
     setEstado('buscando');
     const n = ++seq.current;
     const t = setTimeout(() => {
-      api.get(`/produtos?q=${encodeURIComponent(termo)}${cliente ? `&cliente=${encodeURIComponent(cliente)}` : ''}`)
+      api.get(`/produtos?q=${encodeURIComponent(termo)}${cliente && !todos ? `&cliente=${encodeURIComponent(cliente)}` : ''}`)
         .then((r) => { if (n === seq.current) { setRows(r); setSel(0); setEstado('ok'); } })
         .catch(() => { if (n === seq.current) { setRows([]); setEstado('erro'); } });
     }, 200);
     return () => clearTimeout(t);
-  }, [q, cliente]);
+  }, [q, cliente, todos]);
   useEffect(() => { lista.current?.querySelector('li.on')?.scrollIntoView({ block: 'nearest' }); }, [sel]);
   const tecla = (e) => {
     if (e.key === 'ArrowDown') { e.preventDefault(); setSel((i) => Math.min(rows.length - 1, i + 1)); }
@@ -86,11 +87,12 @@ export function BuscaProduto({ onEscolher, onFechar, cliente }) {
           <input ref={campo} type="search" placeholder="Digite parte do código ou da descrição…" aria-label="Pesquisar produto" value={q} onChange={(e) => setQ(e.target.value)} />
           {q && <button type="button" className="pq-limpa" aria-label="Limpar pesquisa" onClick={() => setQ('')}>×</button>}
         </div>
+        {cliente && <label className="pq-todos"><input type="checkbox" checked={todos} onChange={(e) => setTodos(e.target.checked)} />Pesquisar em todos os produtos (não só os deste cliente)</label>}
         <div className="pq-estado" aria-live="polite">
           {estado === 'ocioso' && 'Digite ao menos 2 letras para pesquisar.'}
           {estado === 'buscando' && 'Pesquisando…'}
           {estado === 'erro' && 'Não foi possível pesquisar agora. Tente de novo.'}
-          {estado === 'ok' && (rows.length ? `${rows.length} produto${rows.length > 1 ? 's' : ''} encontrado${rows.length > 1 ? 's' : ''}` : 'Nenhum produto encontrado.')}
+          {estado === 'ok' && (rows.length ? `${rows.length} produto${rows.length > 1 ? 's' : ''} encontrado${rows.length > 1 ? 's' : ''}` : (cliente && !todos ? 'Nenhum produto ativo cadastrado para este cliente. Marque "Pesquisar em todos os produtos" ou confira em Cadastros › Produtos.' : 'Nenhum produto encontrado.'))}
         </div>
         <ul className="pq-lista" role="listbox" ref={lista}>
           {rows.map((p, i) => (

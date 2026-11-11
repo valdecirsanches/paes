@@ -1020,6 +1020,11 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 228 — Diária: cliente no painel do item; busca de produto com "todos os produtos"
+
+- O painel lateral do item mostra o **nome do cliente** (razão social) acima da unidade (o texto que já aparecia é o da unidade).
+- A janela "Localizar produto do cliente" ganhou a opção **Pesquisar em todos os produtos** e, quando o cliente não tem produto ativo, explica o motivo em vez de só "Nenhum produto encontrado". A causa de o cliente BENASSI vir vazio (produtos com `id_cliente` diferente, ou inativos) não foi confirmada: depende dos dados reais.
+
 ## Fase 227 — Diária: F2 Incluir não fica mais "morto"
 
 - O botão/atalho **F2 Incluir** ficava desabilitado (sem aviso) enquanto houvesse alteração pendente em outro item. Agora grava a alteração pendente e abre o item novo; se não der para gravar, mostra o motivo. Sem cliente selecionado, avisa. Testado no preview (mock); a causa relatada pelo usuário em produção não foi reproduzida — se persistir, anotar a mensagem exibida.
