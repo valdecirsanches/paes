@@ -44,7 +44,9 @@ export function Num({ value, onChange, casas = [0, 3], className = '', disabled,
   return (
     <input ref={inputRef} inputMode="decimal" className={className} disabled={disabled} readOnly={readOnly} value={txt} {...rest}
       onFocus={(e) => { foco.current = true; e.target.select(); }}
-      onChange={(e) => setTxt(e.target.value)}
+      onChange={(e) => { // recalcula a cada tecla (total, valor, grade) sem mexer no texto que o usuário está digitando
+        setTxt(e.target.value); const n = parseBR(e.target.value); if (n !== null && n !== Number(value)) onChange(n);
+      }}
       onBlur={() => { foco.current = false; const n = parseBR(txt); setTxt(fmt(n ?? value, casas)); if (n !== null && n !== Number(value)) onChange(n); }} />
   );
 }

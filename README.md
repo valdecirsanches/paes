@@ -996,3 +996,6 @@ As telas abertas ficam montadas (só escondidas); por isso a Auditoria mostrava 
 - **Gravar sem esperar:** ao gravar um item existente a tela já mostra o resultado e libera para continuar; a confirmação do servidor e a atualização da lista de clientes (pesada) acontecem em **segundo plano**, e várias gravações seguidas (passeando com as setas) são juntadas em **uma única** recarga da lista (500 ms). Item novo continua esperando o servidor (precisa do id e dos cálculos). Ações do menu (cancelar, ajustar preço…) agora recarregam itens e lista **em paralelo** em vez de uma depois da outra.
 - **Correção (Fase 212):** passando de item com ↑ ↓ logo depois de digitar no Extra, o valor digitado **não era gravado** (o campo numérico só entrega o valor ao perder o foco). Agora o campo perde o foco, grava e então passa ao vizinho.
 - Visual da grade/painel mantido, sem mudanças.
+
+## Fase 215 — Campos numéricos recalculam a cada tecla
+O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) passa o valor ao formulário **enquanto se digita** (antes só ao sair do campo). Total do item, valor total e a linha da grade mudam imediatamente; o texto digitado não é mexido até sair do campo.
