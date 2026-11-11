@@ -16,6 +16,7 @@ import { enriquece, arquivoDoEvento } from '../services/eventosNfe.js';
 import { baseGravacao, paraBanco, paraLocal, caminhoXmlLegado, ehCaminhoLegado } from '../services/caminhosNfe.js';
 import { acharArquivoNota, lerArquivoNota, baseArquivos } from '../services/arquivosApi.js';
 import { aplicaReducaoIbs, montaJsonNfe, validaParaAutorizar, dataHoraBr, regimeDoCrt, ehDevolucao } from '../services/nfeJson.js';
+import { analisaReferencias, candidatasOriginal, errosDaAnalise } from '../services/devolucaoRef.js';
 
 const router = Router();
 const idValido = (v, rotulo = 'Nota') => {
@@ -800,6 +801,17 @@ router.put('/tributos/:tribId', async (req, res) => {
 });
 
 // ------------------------------------------------------------------ NFe referenciada (tb_nfe_referencia / tbNRef)
+// Segurança da devolução: confere a(s) chave(s) referenciada(s) e sugere as notas do mesmo cliente que podem ser a original
+router.get('/:id/referencia-analise', async (req, res) => {
+  const id = idValido(req.params.id);
+  const [[nfe]] = await pool.query('select * from tb_nfe where id = ?', [id]);
+  if (!nfe) throw notFound('Nota');
+  const devolucao = ehDevolucao(nfe);
+  const [referencias] = await pool.query('select refNFe from tb_nfe_referencia where id_nfe = ?', [id]);
+  const [itens] = await pool.query('select produto_codigo, qtde from tb_nfe_itens where id_nfe = ?', [id]);
+  const analises = await analisaReferencias(nfe, referencias, itens);
+  res.json({ devolucao, analises, candidatas: devolucao ? await candidatasOriginal(nfe) : [] });
+});
 const REF_CAMPOS = ['refNFE', 'tipo', 'cUF', 'AAMM', 'cnpj', 'fld_mod', 'serie', 'nNF', 'cnpjcpf', 'IE', 'refCTe', 'modECF', 'nECF', 'nCOO'];
 router.get('/:id/referencias', async (req, res) => { const [r] = await pool.query('select * from tb_nfe_referencia where id_nfe = ? order by id', [idValido(req.params.id)]); res.json(r); });
 router.post('/:id/referencias', async (req, res) => {
@@ -924,6 +936,7 @@ async function autorizaUma(id, usuario, ibsCbs) {
   let [referencias] = await pool.query('select refNFe from tb_nfe_referencia where id_nfe = ? order by id', [id]);
   referencias = await completaReferenciaDevolucao(id, nfe, referencias);
   const erros = validaParaAutorizar(nfe, itens, cfg, { vencimentos: dup.map((d) => d.vencto), referencias });
+  if (ehDevolucao(nfe)) erros.push(...errosDaAnalise(await analisaReferencias(nfe, referencias, itens))); // devolução: a referência precisa ser coerente (chave válida, mesmo cliente, original não cancelada)
   if (erros.length) return { id, ok: false, log: erros };
 
   const empId = await api.empresaId(cfg.cnpj);

@@ -183,6 +183,8 @@ export default function NFe({ onFechar }) {
   const [dupIdx, setDupIdx] = useState(0);
   const [dupDraft, setDupDraft] = useState({});
   const [refs, setRefs] = useState([]);
+  const [origem, setOrigem] = useState(null); // NF-e original aberta para consulta (somente leitura)
+  const [analise, setAnalise] = useState(null); // conferência da(s) NF-e referenciada(s) (devolução)
   const [refIdx, setRefIdx] = useState(0);
   const [refDraft, setRefDraft] = useState({});
   const [comandas, setComandas] = useState([]);
@@ -515,6 +517,23 @@ export default function NFe({ onFechar }) {
   const salvarDup = () => acao(async () => { const d = await api.put(`/nfe/duplicatas/${dup.id}`, dupDraft); setDups((ds) => ds.map((x) => (x.id === d.id ? d : x))); setDupDraft({}); notificar('ok', 'Duplicata gravada.'); });
 
   // ----- NFe referência (tbNRef)
+  // segurança da devolução: confere a referência (chave válida, mesmo cliente, original não cancelada…) e sugere as notas do cliente
+  useEffect(() => {
+    if (!nota?.id) { setAnalise(null); return undefined; }
+    let vivo = true;
+    api.get(`/nfe/${nota.id}/referencia-analise`).then((a) => { if (vivo) setAnalise(a); }).catch(() => { if (vivo) setAnalise(null); });
+    return () => { vivo = false; };
+  }, [nota?.id, nota?.cfop_codigo, refs]); // eslint-disable-line react-hooks/exhaustive-deps
+  const chaveRef = (r) => String(r?.refNFE ?? r?.refNFe ?? '').replace(/\D/g, '');
+  const devSemRef = !!analise?.devolucao && !refs.some((r) => chaveRef(r).length === 44);
+  const devComErro = !!analise?.analises?.some((a) => a.erros.length);
+  const verOriginal = (id) => acao(async () => { setOrigem(await api.get(`/nfe/${id}/detalhe`)); });
+  const usarCandidata = (c) => acao(async () => {
+    const vazia = refs.find((r) => !chaveRef(r));
+    if (vazia) await api.put(`/nfe/referencias/${vazia.id}`, { refNFE: c.chave });
+    else await api.post(`/nfe/${nota.id}/referencias`, { refNFE: c.chave });
+    await carregarRefs(nota.id); notificar('ok', `Referência definida: NF ${c.numero}.`);
+  });
   const ref = refs[refIdx];
   const rv = { ...(ref ?? {}), ...refDraft };
   const refEditando = Object.keys(refDraft).length > 0;
@@ -895,7 +914,7 @@ export default function NFe({ onFechar }) {
                           <button type="button" className="nc-b" disabled={!sujo} onClick={() => setDraft({})}>↩ Desfazer</button>
                           {sujo && <span className="nc-sujo">● alterações não salvas</span>}
                         </div>
-                        {nota && <nav className="nc-nav" aria-label="Seções">{[...gruposCorpo, { id: 'ref', icone: '🔗', titulo: `NFe referenciada${refs.length ? ` (${refs.length})` : ''}` }].map((g) => <button type="button" key={g.id} onClick={(e) => { const c = e.currentTarget.closest('.nc').querySelector('.nc-corpo'); const el = c.querySelector(`#nc-${g.id}`); if (el) c.scrollTo({ top: el.offsetTop - c.offsetTop - 6, behavior: 'smooth' }); }}>{g.icone} {g.titulo}</button>)}</nav>}
+                        {nota && <nav className="nc-nav" aria-label="Seções">{[...gruposCorpo, { id: 'ref', icone: '🔗', titulo: `${devSemRef || devComErro ? '⚠ ' : ''}NFe referenciada${refs.length ? ` (${refs.length})` : ''}` }].map((g) => <button type="button" key={g.id} onClick={(e) => { const c = e.currentTarget.closest('.nc').querySelector('.nc-corpo'); const el = c.querySelector(`#nc-${g.id}`); if (el) c.scrollTo({ top: el.offsetTop - c.offsetTop - 6, behavior: 'smooth' }); }}>{g.icone} {g.titulo}</button>)}</nav>}
                       </div>
                       <div className="nc-corpo">
                         {!nota && <p className="vazio">Selecione uma nota.</p>}
@@ -933,6 +952,30 @@ export default function NFe({ onFechar }) {
                                 {ref && !refEditando && <button type="button" className="nc-b perigo" disabled={!pendente || ocupado} onClick={apagarRef}>🗑 Excluir</button>}
                               </span>
                             </h4>
+                            {analise?.devolucao && (
+                              <div className="nc-dev" role="group" aria-label="Conferência da NF-e original">
+                                {devSemRef && <p className="nc-dev-erro">⛔ Devolução sem NFe referenciada: a SEFAZ rejeita. Escolha abaixo a nota original do cliente (ou use ＋ Nova e digite a chave).</p>}
+                                {analise.analises.map((a) => (
+                                  <div key={a.chave} className={`nc-dev-card ${a.erros.length ? 'erro' : a.avisos.length ? 'aviso' : 'ok'}`}>
+                                    <b>{a.erros.length ? '✖' : a.avisos.length ? '⚠' : '✔'} …{a.chave.slice(-9)}</b>
+                                    {a.original ? <span> NF {a.original.numero}{a.original.serie ? `/${a.original.serie}` : ''} · {a.original.emissao} · {a.original.cliente} · {a.original.status}</span> : <span> não localizada na base</span>}
+                                    {a.original && <button type="button" className="nc-b" style={{ marginLeft: 8 }} disabled={ocupado} onClick={() => verOriginal(a.original.id)}>🔍 Ver nota original</button>}
+                                    {a.erros.map((e) => <div key={e} className="nc-dev-erro">⛔ {e}</div>)}
+                                    {a.avisos.map((e) => <div key={e} className="nc-dev-aviso">⚠ {e}</div>)}
+                                  </div>
+                                ))}
+                                {pendente && analise.candidatas.length > 0 && (
+                                  <details className="nc-outros" open={devSemRef}><summary>Notas do mesmo cliente ({analise.candidatas.length}) — escolher a original</summary>
+                                    <ul className="nc-dev-cand">
+                                      {analise.candidatas.map((c) => (
+                                        <li key={c.id}><span>NF {c.numero}{c.serie ? `/${c.serie}` : ''} · {c.emissao} · {c.status}</span>
+                                          <button type="button" className="nc-b" disabled={ocupado || refs.some((r) => chaveRef(r) === c.chave)} onClick={() => usarCandidata(c)}>{refs.some((r) => chaveRef(r) === c.chave) ? '✔ em uso' : 'Usar como referência'}</button></li>
+                                      ))}
+                                    </ul>
+                                  </details>
+                                )}
+                              </div>
+                            )}
                             {!ref ? <p className="nc-vazio">Nenhuma NFe referenciada. Use <b>＋ Nova</b> quando a nota referenciar outra (devolução, complementar, ajuste).</p> : (
                               <>
                                 {refs.length > 1 && <div className="nc-refchips" role="tablist">{refs.map((r, i) => <button key={r.id} type="button" role="tab" aria-selected={i === refIdx} className={i === refIdx ? 'on' : ''} disabled={refEditando} onClick={() => setRefIdx(i)}>{r.refNFE ? `…${String(r.refNFE).slice(-9)}` : `Referência ${i + 1}`}</button>)}</div>}
@@ -954,6 +997,15 @@ export default function NFe({ onFechar }) {
                     </Modal>
                   )}
 
+                  {origem && <Modal titulo={`NFe original ${origem.nota?.nfe_numero || ''} (somente leitura)`} onFechar={() => setOrigem(null)} largo>
+                    <div className="rolagem">
+                      <p><b>{origem.nota?.cliente_razao_social}</b> · {origem.nota?.cliente_cnpj} · {origem.nota?.status_e} · CFOP {origem.nota?.cfop_codigo}</p>
+                      <p style={{ wordBreak: 'break-all' }}>Chave: {origem.nota?.nfe_chave || '—'}</p>
+                      <table className="tabela"><thead><tr><th>Produto</th><th>Descrição</th><th>Qtde</th><th>Preço</th></tr></thead>
+                        <tbody>{(origem.itens || []).map((i) => <tr key={i.id}><td>{i.produto_codigo}</td><td>{i.produto_descricao}</td><td>{i.qtde}</td><td>{i.preco ?? i.valor_unitario}</td></tr>)}</tbody></table>
+                      <p><b>Total: {origem.nota?.nf_valor_total}</b></p>
+                    </div>
+                  </Modal>}
                   {modalNota === 'eventos' && nota && <Modal titulo={`Eventos da NFe ${nota.nfe_numero || ''}`} onFechar={() => setModalNota(null)} largo><div className="nfe-eventos rolagem"><EventosTabela eventos={eventos} nota={nota} onArquivo={(url) => abrirArquivo(url).catch((e) => notificar('erro', e.message))} /></div></Modal>}
                 </>
               )}
