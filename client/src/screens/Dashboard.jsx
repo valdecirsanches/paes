@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useAoFicarVisivel } from '../lib/useVisivel.js';
 import { api } from '../api.js';
 import { brData, fmtQtde, hoje, somaDias } from '../lib/rules.js';
 
@@ -58,13 +59,14 @@ export default function Dashboard() {
     try { setD(await api.get(`/dashboard?data=${dia}`)); } catch (e) { setErro(e.message || 'Não foi possível carregar o painel.'); } finally { setCarregando(false); }
   };
   useEffect(() => { carregar(data); }, [data]);
+  const raiz = useAoFicarVisivel(() => carregar(data)); // volta para a aba → números atualizados
 
   const totalSt = d ? STATUS.reduce((s, [k]) => s + (d.status[k] || 0), 0) : 0;
   const pctNf = (v) => (d && d.notas.total > 0 ? Math.round((v / d.notas.total) * 100) : 0);
   const pctCobrado = d && d.qtde > 0 ? Math.min(100, Math.round((d.qtde_cobrada / d.qtde) * 100)) : 0;
 
   return (
-    <div className="db">
+    <div className="db" ref={raiz}>
       <header className="db-topo">
         <div>
           <h2>Dashboard</h2>

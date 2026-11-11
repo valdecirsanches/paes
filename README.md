@@ -984,3 +984,6 @@ Ao emitir, se **todas as duplicatas da nota vencem no dia da emissão** (cliente
 
 ## Fase 209 — Demonstrativo/comanda impressos como no sistema antigo
 Comanda e demonstrativo seguem o desenho da comanda do Delphi: título grande, `Responsavel:`, data por extenso grande (sem a linha "Data de Emissao:"), `Cliente:` com o nome grande, cabeçalho `Qtde / Descricao do produto / Vr Un. / Vr total` **com traço embaixo**, itens com quantidade inteira (`40`, não `40,0`) e descrição em 24 colunas (sem cortar). A coluna **Data** do demonstrativo só aparece quando as linhas são de dias diferentes. Vale para a impressão comum e para a térmica (mesmas linhas de texto).
+
+## Fase 210 — Telas atualizam ao voltar para a aba (Auditoria e Dashboard)
+As telas abertas ficam montadas (só escondidas); por isso a Auditoria mostrava o que carregou na 1ª abertura e só atualizava saindo e entrando. Agora `lib/useVisivel.js` avisa quando a aba volta a ser exibida: **Auditoria** refaz a busca (mesmos filtros e página; se virou o dia e o período era o dia aberto, passa para o dia atual) e **Dashboard** recarrega os números. Também corrigido: o "hoje" da Auditoria usava UTC e virava o dia às 21h; agora é a data local.

@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useAoFicarVisivel } from '../lib/useVisivel.js';
 import { api } from '../api.js';
 
-const hoje = () => new Date().toISOString().slice(0, 10);
+const hoje = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }; // dia local (toISOString usava UTC e virava o dia às 21h)
 const dh = (v) => (v ? String(v).replace('T', ' ').slice(0, 19) : '');
 const LIM = 200;
 
@@ -12,17 +13,28 @@ export default function Auditoria() {
   const [pag, setPag] = useState(0);
   const [erro, setErro] = useState('');
   const [det, setDet] = useState(null);
-  const qs = (extra = {}) => new URLSearchParams(Object.entries({ ...f, erros: f.erros ? '1' : '', ...extra }).filter(([, v]) => v !== '' && v != null)).toString();
-  const busca = useCallback(async (p = 0) => {
+  const qs = (extra = {}, ff = f) => new URLSearchParams(Object.entries({ ...ff, erros: ff.erros ? '1' : '', ...extra }).filter(([, v]) => v !== '' && v != null)).toString();
+  const busca = useCallback(async (p = 0, ff = f) => {
     setErro(''); setPag(p);
-    try { setDados(await api.get(`/auditoria?${qs({ limite: LIM, desloc: p * LIM })}`)); } catch (e) { setErro(e.message); }
+    try { setDados(await api.get(`/auditoria?${qs({ limite: LIM, desloc: p * LIM }, ff)}`)); } catch (e) { setErro(e.message); }
   }, [f]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { busca(0); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // ao voltar para a aba, busca de novo (com os filtros atuais, na mesma página); virou o dia → o período padrão passa a ser o dia atual
+  const diaAberto = useRef(hoje());
+  const atualiza = useCallback(() => {
+    const h = hoje();
+    if (h !== diaAberto.current) {
+      const ant = diaAberto.current; diaAberto.current = h;
+      if (f.de === ant && f.ate === ant) { const nf = { ...f, de: h, ate: h }; setF(nf); busca(0, nf); return; }
+    }
+    busca(pag);
+  }, [busca, f, pag]);
+  const raiz = useAoFicarVisivel(atualiza);
   const abre = async (id) => { try { const r = await api.get(`/auditoria/${id}`); let d = r.detalhes; try { d = JSON.stringify(JSON.parse(d), null, 2); } catch { /* texto cortado */ } setDet({ ...r, detalhes: d }); } catch (e) { setErro(e.message); } };
   const set = (k) => (e) => setF((x) => ({ ...x, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
   const total = dados?.total ?? 0;
   return (
-    <section className="aud">
+    <section className="aud" ref={raiz}>
       <header><h2>🕵️ Auditoria</h2><small>Tudo o que é feito no app fica gravado (usuário, dispositivo, IP, rota, dados enviados sem senhas, resultado). Só o administrador vê.</small></header>
       <form className="aud-filtros" onSubmit={(e) => { e.preventDefault(); busca(0); }}>
         <label>De<input type="date" value={f.de} onChange={set('de')} /></label>
