@@ -1019,3 +1019,7 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
+
+## Fase 221 — Diária: painel do item mais enxuto
+- A linha do topo do painel ("Alterando item · cliente · data · F5 salva · Esc cancela") virou um **painel na lateral direita** do próprio formulário (badge, cliente, data, "não salvo" e as teclas F5/Esc): ganha-se uma linha.
+- **Memos** (Anotações p/ faturamento e Informe p/ produção) bem mais estreitos e baixos; campos de 32 px, espaçamentos e margens reduzidos — o painel ficou menor sem mexer na fonte do sistema antigo.

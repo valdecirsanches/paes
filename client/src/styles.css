@@ -1980,3 +1980,22 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{text-decoration:underline}
 .dr2-abas{flex-direction:column;flex-wrap:nowrap;flex:none;gap:4px;align-self:stretch}
 .dr2-abas button{writing-mode:vertical-rl;transform:rotate(180deg);border-radius:0 10px 10px 0;padding:14px 5px;font-size:12px;letter-spacing:.02em;white-space:nowrap}
 .dr2-principal>.dr2-conteudo{flex:1;min-width:0}
+
+/* Fase 221: o texto do topo do painel ("Alterando item · cliente · data · F5/Esc") virou um painel na lateral direita; memos e painel mais enxutos */
+.if-corpo.dp{grid-template-columns:minmax(380px,1.15fr) minmax(130px,.38fr) auto 168px;gap:8px}
+.dp-b textarea{min-height:34px}
+.dp-b{gap:4px}
+.dp .if-topo.lat{flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:5px;padding:8px 8px;border:1px solid #e8dcc8;border-radius:10px;background:linear-gradient(#fbf6ec,#f3ebdc);min-width:0;overflow:hidden}
+.dp .if-topo.lat .if-ctx{font-weight:700;font-size:13px;white-space:normal;overflow-wrap:anywhere;line-height:1.2}
+.dp .if-topo.lat .if-ctx-d{font-size:12px;color:#7a6850}
+.dp .if-topo.lat .if-dicas{margin-left:0;margin-top:auto;font-size:11px;display:flex;flex-direction:column;gap:2px}
+.dp .if-topo.lat .if-dicas>span{display:none}
+.dp .leg input,.dp .leg select{height:32px}
+.dp .leg .if-grande input{height:32px}
+.dp .leg .if-orig input{height:32px}
+.dp .if-pn,.dp fieldset.if-pn{padding:2px 8px 4px}
+.dp-a{gap:1px}
+.if-corpo.dp{padding:4px 8px 6px}
+.dp .if-campo{gap:0}
+.dp-c{gap:4px 10px}.dp-c .if-pills{gap:3px}
+@media (max-width:1100px){.if-corpo.dp{grid-template-columns:1fr}}

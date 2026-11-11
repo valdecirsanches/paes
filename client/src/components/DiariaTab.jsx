@@ -393,7 +393,6 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
       {/* ---------- painel do item (pnlDiaria) ---------- */}
       {mostrarPainel && (
         <div className={`if${novo ? ' novo' : ''}`} ref={painelRef} onKeyDown={enterComoTab}>
-          <TopoItem novo={novo} sujo={editando} contexto={`${status?.unidade_nome ?? ''}${v.data ? ` · ${diaDaSemana(v.data)}, ${brData(v.data)}` : ''}`} />
           <div className="if-corpo dp">
             {/* posições do formulário do Delphi: bloco do item | anotações | acabamento | produção */}
             <fieldset className="if-pn dp-a leg"><legend>Item</legend>
@@ -435,6 +434,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
                 </div>
               </fieldset>
             )}
+            <TopoItem lateral novo={novo} sujo={editando} contexto={status?.unidade_nome ?? ''} data={v.data ? `${diaDaSemana(v.data)}, ${brData(v.data)}` : ''} />
           </div>
         </div>
       )}

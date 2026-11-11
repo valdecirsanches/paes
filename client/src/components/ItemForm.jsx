@@ -5,11 +5,12 @@ export const diaDaSemana = (iso) => {
 };
 
 /** Faixa de cima: o que se está fazendo, onde, e as teclas que valem. */
-export function TopoItem({ novo, contexto, sujo }) {
+export function TopoItem({ novo, contexto, sujo, lateral = false, data }) {
   return (
-    <header className="if-topo">
+    <header className={`if-topo${lateral ? ' lat' : ''}`}>
       <span className={`if-badge ${novo ? 'novo' : 'alt'}`}>{novo ? '＋ Novo item' : '✎ Alterando item'}</span>
       {contexto && <span className="if-ctx">{contexto}</span>}
+      {data && <span className="if-ctx-d">{data}</span>}
       {sujo && <span className="if-sujo" title="Há alterações ainda não salvas">● não salvo</span>}
       <span className="if-dicas"><kbd>F5</kbd> salva<span>·</span><kbd>Esc</kbd> cancela</span>
     </header>
