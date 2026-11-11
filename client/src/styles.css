@@ -1892,8 +1892,6 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{filter:brightness(1.15)}
 .grade thead .nf2-colbt.on{background:#fff;color:var(--azul-barra-2)}.nf2-ic .nf2-colbt{margin-left:2px}
 
 /* ---- Edição de item enxuta (Fase 187): faixa superior recolhida e espaçamentos menores ---- */
-.dr2-corpo.editando .dr2-lado{display:none}
-.dr2-corpo.editando{padding-top:4px}
 .if-topo{padding:4px 12px}
 .dp .if-pn,.dp fieldset.if-pn{padding:4px 8px 6px;margin:0}
 .dp .if-pn legend{padding:0 4px;font-size:11px}
@@ -1965,3 +1963,14 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{text-decoration:underline}
 .dp .leg .if-orig input{height:34px}
 .dp .leg-a select,.dp .leg-a input[type=date]{font-size:14px;font-weight:700;height:32px}
 .dp .if-campo{font-size:11px}
+
+/* Fase 218: o cabeçalho do dia (data, relógio, situação, Ações do dia, Fechar) virou um painel ao lado; ganha-se uma linha e calendário/clientes ficam sempre visíveis, inclusive editando */
+.dr2-lado>.dr2-card.dr2-dia{flex:none;width:210px;overflow:visible;gap:5px;justify-content:space-between}
+.dr2-dia .dr2-data b{font-size:15px;color:#5a3a1e}
+.dr2-dia .relogio{align-self:flex-start;font-size:20px}
+.dr2-dia .dr2-resumo{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.dr2-dia .dr2-pill{padding:2px 8px;justify-content:flex-start;white-space:nowrap}
+.dr2-dia .dr2-mais{position:relative;display:flex;gap:6px}
+.dr2-dia .dr2-mais .dr2-b{height:28px;padding:0 8px;font-size:11.5px;white-space:nowrap}
+.dr2-dia .dr2-mais .dr2-b.prim{flex:1}
+.dr2-dia .nf2-menu{right:0;left:auto;top:100%}

@@ -1008,3 +1008,7 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 - **Valor total** do item aparece ao abrir (é sempre calculado de Qtde fixa + Extra × Preço ÷ Cada; antes ficava 0,00 até mexer em algum campo).
 - Fonte dos campos do item no tamanho do sistema antigo (**14 pt negrito ≈ 18,7 px**); o painel cresce junto (campos de 34 px).
 - A linha amarela de "novo item" (`*`) na grade só aparece enquanto se inclui um item (F2); fora disso some.
+
+## Fase 218 — Diária: cabeçalho do dia em painel lateral; calendário e clientes sempre visíveis
+- Data, relógio, situação do dia (normal/alterado/nada/cancelado), **Ações do dia** e **Fechar** saíram da faixa do topo e foram para um **painel ao lado** (entre a lista de clientes e "Empresa selecionada"): ganha-se uma linha inteira para a grade e o painel de edição. A lista de clientes ficou mais estreita para isso.
+- Calendário, Apresentação e Clientes **não somem mais** durante a edição do item (antes ficavam escondidos assim que se mexia em um campo).

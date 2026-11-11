@@ -138,26 +138,6 @@ export default function Diaria({ onFechar }) {
 
   return (
     <div className="tela dr2" ref={raiz}>
-      <header className="dr2-topo">
-        <div className="dr2-data"><small>{diaSem}</small><b>{diaMes}</b></div>
-        <Relogio />
-        <div className="dr2-resumo" title="Empresas do dia por status">
-          {[1, 2, 0, 3].map((s) => <span key={s} className={`dr2-pill s${s}`}><i />{contagem[s]} {STATUS[s].toLowerCase()}</span>)}
-        </div>
-        <span className="dr2-esp" />
-        <div className="dr2-mais">
-          <button type="button" className="dr2-b prim" aria-haspopup="menu" aria-expanded={menuAberto} onClick={() => setMenuAberto((x) => !x)}>⚡ Ações do dia ▾</button>
-          {menuAberto && (
-            <>
-              <div className="nf2-veu" onClick={() => setMenuAberto(false)} />
-              <div className="nf2-menu" role="menu" onClick={() => setMenuAberto(false)}>
-                {acoes.map(([rotulo, fn]) => <button key={rotulo} type="button" role="menuitem" onClick={fn}>{rotulo}</button>)}
-              </div>
-            </>
-          )}
-        </div>
-        <button type="button" className="dr2-b" title="Fechar tela de programação" onClick={() => onFechar?.()}>Fechar</button>
-      </header>
 
       <Toast aviso={aviso} />
 
@@ -190,6 +170,25 @@ export default function Diaria({ onFechar }) {
               ))}
               {lista.length === 0 && <li className="vazio">Nenhuma empresa neste dia. Use ⚡ Ações do dia ▸ Ativar movimento do dia.</li>}
             </ul>
+          </div>
+          <div className="dr2-card dr2-dia">
+            <div className="dr2-data"><small>{diaSem}</small><b>{diaMes}</b></div>
+            <Relogio />
+            <div className="dr2-resumo" title="Empresas do dia por status">
+              {[1, 2, 0, 3].map((s) => <span key={s} className={`dr2-pill s${s}`}><i />{contagem[s]} {STATUS[s].toLowerCase()}</span>)}
+            </div>
+            <div className="dr2-mais">
+              <button type="button" className="dr2-b prim" aria-haspopup="menu" aria-expanded={menuAberto} onClick={() => setMenuAberto((x) => !x)}>⚡ Ações do dia ▾</button>
+              {menuAberto && (
+                <>
+                  <div className="nf2-veu" onClick={() => setMenuAberto(false)} />
+                  <div className="nf2-menu" role="menu" onClick={() => setMenuAberto(false)}>
+                    {acoes.map(([rotulo, fn]) => <button key={rotulo} type="button" role="menuitem" onClick={fn}>{rotulo}</button>)}
+                  </div>
+                </>
+              )}
+              <button type="button" className="dr2-b" title="Fechar tela de programação" onClick={() => onFechar?.()}>Fechar</button>
+            </div>
           </div>
           <div className="dr2-cab dr2-card">
             <div className="dr2-sel">
