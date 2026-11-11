@@ -180,7 +180,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
     if (editando) return;
     if (!itens.length) { notify.erro('Não há itens para o procedimento.'); return; }
     setPainel((p) => !p);
-    if (!painel) foca('hora');
+    if (!painel) foca('extra'); // item já incluído: o foco vai direto para a quantidade Extra
   };
   // alvo = item da linha (ícone 🗑) ou, sem argumento, o item selecionado (F4)
   const excluir = async (alvo = item) => {
@@ -195,7 +195,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
   };
   const desfazer = () => { setDraft(null); };
 
-  const gravar = async () => {
+  const gravar = async (manterPainel = false) => { // manterPainel: grava sem fechar a edição (passagem de um item para outro com as setas)
     const r = draft;
     if (!r) return true;
     const qtde = (Number(r.qtde_original) || 0) + (Number(r.qtde_alterada) || 0);
@@ -226,7 +226,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
       let id = r.id;
       if (novo) ({ id } = await api.post(`/status/${status.id}/diaria`, corpo));
       else await api.put(`/diaria/${r.id}`, corpo);
-      setDraft(null); setPainel(false);
+      setDraft(null); if (!manterPainel) setPainel(false);
       await atualizar();
       setSelId(id);
       notify.ok('Item gravado.');
@@ -235,6 +235,8 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
   };
 
   /** Trocar de linha com registro em edição: o Delphi gravava sozinho; aqui pergunta antes. */
+  // trocou o item com o painel de alteração aberto (setas ou clique na grade): mantém o painel aberto e põe o foco no Extra
+  useEffect(() => { if (painel && selId != null && !draft) foca('extra'); }, [selId]); // eslint-disable-line react-hooks/exhaustive-deps
   const escolher = async (id) => {
     if (id === selId) return;
     if (editando) {
@@ -292,6 +294,21 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
   useEffect(() => {
     const tecla = (e) => {
       if (modal) return;
+      // painel de alteração aberto: ↑ ↓ passam para o item vizinho, GRAVAM a alteração feita (se houver) e a edição continua aberta no Extra.
+      // Sem mudanças, vale em qualquer campo do painel; com mudanças, só nos campos Extra e Cada (nos demais as setas ficam com o campo).
+      if (painel && !ocupado && (e.key === 'ArrowDown' || e.key === 'ArrowUp') && !e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey && !document.querySelector('dialog[open]')) {
+        const t = e.target;
+        const noPainel = t === document.body || painelRef.current?.contains(t);
+        const livre = !t?.closest || !t.closest('select, textarea, [role=listbox], [role=menu], [contenteditable=true]');
+        const campoQtde = t === refs.current.extra || t === refs.current.cada;
+        if (noPainel && livre && (!editando || campoQtde) && !novo) {
+          const i = itens.findIndex((x) => x.id === selId);
+          const v = itens[i + (e.key === 'ArrowDown' ? 1 : -1)];
+          e.preventDefault();
+          if (i >= 0 && v) (async () => { if (editando && !(await gravar(true))) return; setSelId(v.id); })();
+          return;
+        }
+      }
       if (e.key === 'F5') { e.preventDefault(); if (editando && !ocupado) gravarRef.current?.(); return; } // F5 grava (e fecha a edição)
       if (e.key === 'Escape' && (editando || painel) && !document.querySelector('dialog[open]')) { e.preventDefault(); setDraft(null); setPainel(false); return; } // Esc cancela e fecha a edição
       if (ehFabrica() && e.key === 'F2' && (e.altKey || e.ctrlKey)) return; // fábrica não ajusta preço

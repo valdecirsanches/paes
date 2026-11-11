@@ -987,3 +987,7 @@ Comanda e demonstrativo seguem o desenho da comanda do Delphi: título grande, `
 
 ## Fase 210 — Telas atualizam ao voltar para a aba (Auditoria e Dashboard)
 As telas abertas ficam montadas (só escondidas); por isso a Auditoria mostrava o que carregou na 1ª abertura e só atualizava saindo e entrando. Agora `lib/useVisivel.js` avisa quando a aba volta a ser exibida: **Auditoria** refaz a busca (mesmos filtros e página; se virou o dia e o período era o dia aberto, passa para o dia atual) e **Dashboard** recarrega os números. Também corrigido: o "hoje" da Auditoria usava UTC e virava o dia às 21h; agora é a data local.
+
+## Fase 211/212 — Diária: alterar item vai direto no Extra e as setas passeiam gravando
+- Ao **alterar** um item já incluído (F3 / duplo clique / botão Alterar) o foco vai direto para **Extra** (item novo continua no horário).
+- Com a edição aberta, **↑ ↓** passam para o item vizinho **mantendo o painel aberto**, com o foco no Extra do novo item. Se houve alteração, ela é **gravada automaticamente** antes de passar (sem perguntar); se a gravação falhar (validação), fica no item atual. Com alteração pendente as setas só passeiam a partir dos campos Extra/Cada (nos demais campos ficam com o campo). Clicar em outro item com alteração pendente continua perguntando.
