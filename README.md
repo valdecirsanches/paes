@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 234 — Diária: campos da edição com as cores do tema
+
+- Os campos que eram vermelho (hora, produto, descrição p/ expedição, extra) e amarelo (data, descrições, qtde fixa, preço, cada, total) agora usam o tema: vermelho → tom claro da cor dos botões; amarelo → tom claro da cor da barra (`--leg-v`/`--leg-a` em lib/tema.js). Texto continua preto e negrito, mesmo tamanho. Com o tema Padrão (laranja/azul) o visual deixa de ser vermelho/amarelo; para parecer com o antigo, escolha botões vermelhos e barra amarela em Aparência.
+
 ## Fase 233 — Cadastro de clientes: lista de clientes ao lado de Unidades e Produtos
 
 - Nas abas Unidades e Produtos, a lista de clientes fica à esquerda (300 px, com busca e ordenação); clicar em outro cliente troca as unidades/produtos sem voltar à aba Clientes. Botão **⬌ Clientes ao lado** liga/desliga (lembrado no navegador). A aba "Lista de clientes" continua como estava.

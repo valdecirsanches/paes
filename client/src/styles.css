@@ -1952,10 +1952,10 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{text-decoration:underline}
 
 /* ---------- Diária (edição): cores e fontes do sistema antigo — vermelho nos campos de identificação/quantidade, amarelo nos demais ---------- */
 /* Fonte do Delphi: campos do item em 14 pt negrito (≈ 18,7 px); o painel cresce junto (altura dos campos 34 px) */
-.leg-v input,.leg-v select,.leg .if-grande input{background:#ff1a1a;color:#000;border-color:#9b0000;font-weight:700}
-.leg-a input,.leg-a select{background:#ffff99;color:#000;border-color:#b5a800;font-weight:700}
-.leg-a input:disabled,.leg-a input[readonly]{background:#ffff99;color:#000;opacity:1}
-.leg-v input::placeholder{color:#400}
+.leg-v input,.leg-v select,.leg .if-grande input{background:var(--leg-v,#ff1a1a);color:#000;border-color:var(--leg-v-borda,#9b0000);font-weight:700}
+.leg-a input,.leg-a select{background:var(--leg-a,#ffff99);color:#000;border-color:var(--leg-a-borda,#b5a800);font-weight:700}
+.leg-a input:disabled,.leg-a input[readonly]{background:var(--leg-a,#ffff99);color:#000;opacity:1}
+.leg-v input::placeholder{color:#333}
 .dp .leg input,.dp .leg select{font-size:18.7px;height:34px;font-weight:700;padding-top:0;padding-bottom:0}
 .dp .leg .if-grande input{width:160px;font-size:18.7px;height:34px}
 .dp .leg .if-n{font-size:18.7px}

@@ -35,6 +35,9 @@ export function aplicarTema(t = lerTema()) {
   r.setProperty('--cor-btn', t.btn); r.setProperty('--cor-btn-esc', mistura(t.btn, -0.18));
   r.setProperty('--azul-barra', t.barra); r.setProperty('--azul-barra-2', mistura(t.barra, -0.3));
   r.setProperty('--bt-1', mistura(t.barra, 0.93)); r.setProperty('--bt-2', mistura(t.barra, 0.62));
+  // campos da edição da programação diária (antes vermelho/amarelo fixos): agora seguem as cores do tema
+  r.setProperty('--leg-v', mistura(t.btn, 0.5)); r.setProperty('--leg-v-borda', mistura(t.btn, -0.25));
+  r.setProperty('--leg-a', mistura(t.barra, 0.86)); r.setProperty('--leg-a-borda', mistura(t.barra, 0.1));
   r.setProperty('--bt-borda', mistura(t.barra, -0.1)); r.setProperty('--bt-texto', mistura(t.barra, -0.6));
 }
 
