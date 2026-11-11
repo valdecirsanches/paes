@@ -664,13 +664,11 @@ export default function NFe({ onFechar }) {
         <div className="nf2-acoes">
           <button type="button" className="nf2-b novo" onClick={criar} disabled={ocupado}>＋ Criar</button>
           <button type="button" className="nf2-b prim" onClick={autorizar} disabled={ocupado || nPendentes === 0} title={nPendentes === 0 ? 'Nada a autorizar: só notas PENDENTES' : 'Autorizar NFe'}>✔ Autorizar{marcados.size > 0 ? ` (${nPendentes})` : ''}</button>
-          <button type="button" className="nf2-b" onClick={migrarPastas} disabled={ocupado} title="XML gravado em pasta com dia (11112026) passa para a pasta do mês (202611), e o caminho é corrigido na nota">📁 Pastas XML</button>
-          <button type="button" className="nf2-b" onClick={ajustarNfe} disabled={ocupado || (!nota && marcados.size === 0)} title="Busca a nota na API, atualiza o cadastro e grava o XML no N: para o sistema antigo">🛠 Ajustar NFe</button>
           <button type="button" className="nf2-b" onClick={danfe} disabled={nComDanfe === 0} title={nComDanfe === 0 ? 'Danfe só de notas AUTORIZADAS' : 'Imprimir o DANFE'}>🖨 Danfe{marcados.size > 0 ? ` (${nComDanfe})` : ''}</button>
           <button type="button" className={`nf2-b${todosMarcados ? ' on' : ''}`} onClick={marcarTodas} disabled={!linhas?.length} title="Marcar / desmarcar todas as notas da lista">{todosMarcados ? '☐ Desmarcar' : '☑ Marcar todas'}</button>
           <button type="button" className="nf2-b" onClick={() => setSubNfe('comanda')} disabled={!nota} title="Comandas ligadas à nota">🧾 Comandas{comandas.length ? ` (${comandas.length})` : ''}</button>
           <div className="nf2-mais">
-            <button type="button" className="nf2-b" aria-haspopup="menu" aria-expanded={maisAberto} onClick={() => setMaisAberto((x) => !x)}>⋯ Mais ações ▾</button>
+            <button type="button" className="nf2-b" aria-haspopup="menu" aria-expanded={maisAberto} onClick={() => setMaisAberto((x) => !x)}>⋯ Mais opções ▾</button>
             {maisAberto && (
               <>
                 <div className="nf2-veu" onClick={() => setMaisAberto(false)} />
@@ -684,6 +682,8 @@ export default function NFe({ onFechar }) {
                   <button type="button" role="menuitem" onClick={abreFiscal('consultas')} disabled={ocupado}>🏛 Consultas e status Receita</button>
                   <button type="button" role="menuitem" onClick={abreFiscal('arquivos')} disabled={!nota}>📄 Arquivos e retornos</button>
                   <button type="button" role="menuitem" onClick={() => { const ids = [...alvo].filter((id) => ['AUTORIZADA', 'CANCELADA'].includes(statusDe(id))); if (ids.length) gravaNoN(ids, true); else notificar('aviso', 'Selecione notas autorizadas.'); }}>💾 Gravar XML no N: (sistema antigo)</button>
+                  <button type="button" role="menuitem" title="Busca a nota na API, atualiza o cadastro e grava o XML no N: para o sistema antigo" onClick={ajustarNfe} disabled={ocupado || (!nota && marcados.size === 0)}>🛠 Ajustar NFe</button>
+                  <button type="button" role="menuitem" title="XML gravado em pasta com dia (11112026) passa para a pasta do mês (202611), e o caminho é corrigido na nota" onClick={migrarPastas} disabled={ocupado}>📁 Pastas XML (dia → mês)</button>
                   <small>Envio</small>
                   <button type="button" role="menuitem" onClick={enviaEmail('cliente')}>✉ Enviar e-mail ao cliente</button>
                   <button type="button" role="menuitem" onClick={enviaEmail('contabilidade')}>📧 Enviar à Contabilidade</button>

@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 242 — NFe: Ajustar e Pastas XML no menu "Mais opções"
+
+- Os botões **🛠 Ajustar NFe** e **📁 Pastas XML** saíram da barra e foram para o menu **⋯ Mais opções** (antes "Mais ações"). Mesmas funções.
+
 ## Fase 241 — NFe: anexar o XML autorizado manualmente
 
 - Em Dados da NFe, ao lado de "Arquivo XML (sistema novo)": **📎 Anexar XML** (rota `POST /api/nfe/:id/xml-upload`). Para nota que a API não conhece (404) e cujo XML só existe no sistema antigo. Valida: XML de NF-e com `<protNFe>` (autorizado), emitente = CNPJ da empresa, chave/número iguais aos da nota. Guarda no campo do app, preenche a chave se faltava e esvazia o PDF do app (DANFE sai do XML). Registrado na Auditoria.
