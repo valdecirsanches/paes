@@ -53,7 +53,10 @@ router.get('/unidades', async (req, res) => {
   const onde = [];
   const args = [];
   if (cliente) { onde.push('u.id_cliente = ?'); args.push(cliente); }
-  if (esconder) onde.push("u.ativo = 'True' and c.ativo = 'ATIVO'");
+  const sit = String(req.query.situacao ?? (esconder ? 'ATIVO' : 'TODOS')).toUpperCase();
+  // ativa = unidade ativa e cliente ativo; inativa = o contrário
+  if (sit === 'ATIVO') onde.push("(u.ativo = 'True' and c.ativo = 'ATIVO')");
+  else if (sit === 'INATIVO') onde.push("not (u.ativo = 'True' and c.ativo = 'ATIVO')");
   const [r] = await pool.query(
     `select u.* from tb_unidades u left join tb_clientes c on c.id = u.id_cliente ${onde.length ? `where ${onde.join(' and ')}` : ''} order by u.nome`, args);
   res.json(r);

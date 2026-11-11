@@ -34,7 +34,7 @@ export default function Clientes({ onFechar }) {
   const [abertoCli, setAbertoCli] = useState(true); // dados do cliente: abertos na lista, recolhidos ao editar unidades/produtos (mais espaço)
   const [abaProd, setAbaProd] = useState('lista');
   const [conectar, setConectar] = useState(false);
-  const [esconder, setEsconder] = useState(false);
+  const [sitUni, setSitUni] = useState('ATIVO'); // filtro das unidades: ATIVO (padrão) | INATIVO | TODOS
   const [sitCli, setSitCli] = useState('ATIVO'); // filtro da lista de clientes: ATIVO (padrão) | INATIVO | TODOS
   const [aviso, setAviso] = useState(null);
   const [confirma, setConfirma] = useState(null);
@@ -58,18 +58,18 @@ export default function Clientes({ onFechar }) {
     try {
       const par = new URLSearchParams();
       if (conectar && idCli) par.set('cliente', idCli);
-      if (esconder) par.set('esconder', '1');
+      par.set('situacao', sitUni);
       const r = await api.get(`${CAM}/unidades?${par}`);
       setUnidades(r); setFUni((f) => { const a = id ?? f; return r.some((x) => x.id === a) ? a : r[0]?.id ?? null; });
     } catch (e) { notificar('erro', e.message); }
-  }, [conectar, esconder, idCli, notificar]);
+  }, [conectar, sitUni, idCli, notificar]);
   useEffect(() => { recUni(); }, [recUni]);
   const bUni = useBusca(unidades, B_UNI);
   const [pagUni, setPagUni] = useState(0); // grade de unidades paginada (desconectado: todas as unidades)
   const totPagUni = Math.max(1, Math.ceil(bUni.visiveis.length / POR_PAG));
   const pagUniOk = Math.min(pagUni, totPagUni - 1);
   const uniPagina = useMemo(() => bUni.visiveis.slice(pagUniOk * POR_PAG, (pagUniOk + 1) * POR_PAG), [bUni.visiveis, pagUniOk]);
-  useEffect(() => { setPagUni(0); }, [bUni.termo, conectar, esconder, idCli]); // nova pesquisa/filtro volta à 1ª página
+  useEffect(() => { setPagUni(0); }, [bUni.termo, conectar, sitUni, idCli]); // nova pesquisa/filtro volta à 1ª página
   useEffect(() => { const i = bUni.visiveis.findIndex((x) => x.id === fUni); if (i >= 0) setPagUni(Math.floor(i / POR_PAG)); }, [fUni]); // eslint-disable-line react-hooks/exhaustive-deps -- navegador (◀ ▶) leva à página da unidade
   const uni = useEdicao({ lista: bUni.visiveis, foco: fUni, setFoco: setFUni, caminho: `${CAM}/unidades`, recarregar: recUni, aviso: notificar, confirmar: setConfirma, padrao: () => ({ ativo: 'True', id_cliente: idCli }), texto: (r) => `a unidade ${r?.nome ?? ''}` });
 
@@ -195,7 +195,7 @@ export default function Clientes({ onFechar }) {
             <div className="cd-minibarra">
               <Navegador compacto ed={uni} onEditar={() => campoNomeUni.current?.focus()} />
               <Busca busca={bUni} total={unidades.length} placeholder="Pesquisar unidade (nome, código, endereço, bairro…)" />
-              <label className="cd-filtro"><input type="checkbox" checked={esconder} onChange={(e) => setEsconder(e.target.checked)} />Esconder inativas</label>
+              <span className="cd-sit" role="group" aria-label="Situação das unidades">{[['ATIVO', 'Ativas'], ['INATIVO', 'Inativas'], ['TODOS', 'Todas']].map(([k, t]) => <button type="button" key={k} className={`cd-btn${sitUni === k ? ' on' : ''}`} aria-pressed={sitUni === k} onClick={() => setSitUni(k)}>{t}</button>)}</span>
             </div>
             <div className="cd-secoes">
               <Secao titulo="Unidade" icone="🏪">
