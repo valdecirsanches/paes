@@ -1,5 +1,6 @@
 import { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '../api.js';
+import { gravaOrdem, lerOrdem, ordenaPor } from '../lib/ordena.js';
 
 export { Confirma } from './toast.jsx';
 
@@ -83,14 +84,21 @@ export const Marca = ({ ed, k, rotulo, sim = 'True', nao = 'False' }) => (
 
 const semAcento = (t) => String(t ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 /** Filtro local: todas as palavras digitadas precisam aparecer (sem acento/maiúscula) em algum dos campos. */
-export function useBusca(lista, campos) {
+export function useBusca(lista, campos, nomeOrdem) {
   const [termo, setTermo] = useState('');
+  const [ordem, setOrdem] = useState(() => (nomeOrdem ? lerOrdem(nomeOrdem, { campo: '', dir: 1 }) : { campo: '', dir: 1 }));
+  // clicar no título da coluna: 1º clique crescente, 2º decrescente, 3º volta à ordem original
+  const ordenar = useCallback((campo) => setOrdem((o) => {
+    const n = o.campo !== campo ? { campo, dir: 1 } : o.dir === 1 ? { campo, dir: -1 } : { campo: '', dir: 1 };
+    if (nomeOrdem) gravaOrdem(nomeOrdem, n);
+    return n;
+  }), [nomeOrdem]);
   const visiveis = useMemo(() => {
     const ws = semAcento(termo).split(/\s+/).filter(Boolean);
-    if (!ws.length) return lista;
-    return lista.filter((r) => { const t = campos.map((c) => semAcento(r[c])).join(' '); return ws.every((w) => t.includes(w)); });
-  }, [lista, termo, campos]); // eslint-disable-line react-hooks/exhaustive-deps
-  return { termo, setTermo, visiveis };
+    const f = !ws.length ? lista : lista.filter((r) => { const t = campos.map((c) => semAcento(r[c])).join(' '); return ws.every((w) => t.includes(w)); });
+    return ordem.campo ? ordenaPor(f, (r) => r[ordem.campo], ordem.dir) : f;
+  }, [lista, termo, campos, ordem]); // eslint-disable-line react-hooks/exhaustive-deps
+  return { termo, setTermo, visiveis, ordem, ordenar };
 }
 export function Busca({ busca, placeholder = 'Pesquisar…', total, className = '' }) {
   return (

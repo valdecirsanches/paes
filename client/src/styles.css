@@ -2020,3 +2020,6 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{text-decoration:underline}
 /* Fase 228: nome do cliente no painel lateral do item; busca de produto com "todos os produtos" */
 .if-cli{display:block;font-weight:800;font-size:14px;color:#7a1a1a;text-transform:uppercase;overflow-wrap:anywhere;line-height:1.2}
 .pq-todos{display:flex;align-items:center;gap:6px;font-size:13px;margin:4px 2px}
+
+/* Fase 232: cabeçalho ordenável nas grades de cadastro */
+.cd-tab th.ord{cursor:pointer;user-select:none}.cd-tab th.ord:hover{text-decoration:underline}

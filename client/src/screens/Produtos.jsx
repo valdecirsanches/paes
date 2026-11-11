@@ -12,9 +12,10 @@ const COLS_LISTA = [['descricao', 'Descrição do item'], ['codigo', 'Código'],
 const COLS_REFS = [['id', 'ID'], ['codigo_referencia', 'Referência'], ['descricao', 'Descrição'], ['produto_especial', 'ESP', 'chk'], ['produto_producao', 'PRÇ', 'chk']];
 const COLS_CLIS = [['razao_social', 'Cliente'], ['codigo', 'Código']];
 
+const SEM_CAMPOS = [];
 // Cadastro de produtos (u_produtos): lista + referências + clientes à esquerda, edição à direita.
 export default function Produtos({ onFechar }) {
-  const [lista, setLista] = useState([]);
+  const [listaBruta, setLista] = useState([]);
   const [trunc, setTrunc] = useState(false);
   const [clientes, setClientes] = useState([]);
   const [referencias, setReferencias] = useState([]);
@@ -53,11 +54,13 @@ export default function Produtos({ onFechar }) {
     api.get('/tributos').then(setTributos).catch(() => {});
   }, []);
 
+  const bClis = useBusca(clientes, B_CLI, 'cad_prod_clientes');
+  const bLista = useBusca(listaBruta, SEM_CAMPOS, 'cad_produtos'); // só ordenação (a pesquisa de produtos é no servidor)
+  const lista = bLista.visiveis;
   const ed0 = useEdicao({ lista, foco, setFoco, caminho: CAM, recarregar, aviso: notificar, confirmar: setConfirma, padrao: () => ({ ativo: 'True', peso: '0.05', peso_bruto: '0.05', divisor_basico: 1, ...(clienteFiltro ? { id_cliente: clienteFiltro } : {}) }), texto: (r) => `o produto ${r?.descricao ?? ''}` });
   const codigoPara = useCallback(async (cli) => { try { const r = await api.get(`${CAM}/proximo-codigo?cliente=${cli}`); ed0.set('codigo', r.codigo); } catch (e) { notificar('erro', e.message); } }, [ed0.set, notificar]); // eslint-disable-line react-hooks/exhaustive-deps
   const ed = useMemo(() => ({ ...ed0, incluir: () => { if (ed0.sujo) { ed0.incluir(); return; } ed0.incluir(); if (clienteFiltro) codigoPara(clienteFiltro); } }), [ed0, clienteFiltro, codigoPara]);
   const campoCod = useRef(null);
-  const bClis = useBusca(clientes, B_CLI);
   const marca = (id, on) => setMarcados((m) => { const n = new Set(m); if (on) n.add(id); else n.delete(id); return n; });
   const marcaTodos = (on) => setMarcados(on ? new Set(lista.map((p) => p.id)) : new Set());
   // ativa/inativa de uma vez todos os produtos marcados (com confirmação)
@@ -147,12 +150,12 @@ export default function Produtos({ onFechar }) {
           <div className="cd-abas" role="tablist">
             {[['lista', 'Produtos'], ['refs', 'Referências da produção'], ['clis', 'Clientes']].map(([k, r]) => <button key={k} type="button" role="tab" aria-selected={aba === k} className={aba === k ? 'on' : ''} onClick={() => setAba(k)}>{r}</button>)}
           </div>
-          {aba === 'lista' && <GradeCad cols={COLS_LISTA} rows={lista} foco={foco} onSel={ed.selecionar} vazio={situacao === 'inativos' ? 'Nenhum produto inativo' : 'Nenhum produto'} marcados={marcados} onMarcar={marca} onMarcarTodos={marcaTodos} />}
+          {aba === 'lista' && <GradeCad cols={COLS_LISTA} rows={lista} ordem={bLista.ordem} onOrdenar={bLista.ordenar} foco={foco} onSel={ed.selecionar} vazio={situacao === 'inativos' ? 'Nenhum produto inativo' : 'Nenhum produto'} marcados={marcados} onMarcar={marca} onMarcarTodos={marcaTodos} />}
           {aba === 'refs' && <GradeCad cols={COLS_REFS} rows={referencias} foco={null} onSel={() => {}} vazio="Nenhuma referência" />}
           {aba === 'clis' && (
             <>
               <div className="cd-busca-linha"><Busca busca={bClis} total={clientes.length} placeholder="Pesquisar cliente…" /></div>
-              <GradeCad cols={COLS_CLIS} rows={bClis.visiveis} foco={cliSel} onSel={escolheCliente} vazio="Nenhum cliente" />
+              <GradeCad cols={COLS_CLIS} rows={bClis.visiveis} ordem={bClis.ordem} onOrdenar={bClis.ordenar} foco={cliSel} onSel={escolheCliente} vazio="Nenhum cliente" />
             </>
           )}
           <footer className="cd-rodape-lista">{aba === 'lista' ? `${lista.length} produto(s) ${situacao === 'todos' ? '(ativos e inativos)' : situacao === 'inativos' ? 'inativo(s)' : 'ativo(s)'}${marcados.size ? ` · ${marcados.size} marcado(s)` : ''}${clienteFiltro ? ` de ${clienteNome}` : ' (todos os clientes)'}${trunc ? ' — mostrando os primeiros 5000; refine a busca' : ''}` : aba === 'clis' ? 'Clique no cliente para ver só os produtos dele' : `${referencias.length} referência(s)`}</footer>

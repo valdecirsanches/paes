@@ -25,12 +25,12 @@ const Linha = memo(function Linha({ r, cols, sel, onSel, onDbl, marca, onMarcar 
  * Grade dos cadastros: cabeçalho fixo, linhas de altura fixa e rolagem virtual (só ~40 linhas no DOM).
  * cols: [campo, rótulo, tipo?] — tipo 'm' (número) | 'chk' (marca). `foco` = id selecionado.
  */
-export default function GradeCad({ cols, rows, foco, onSel, onDbl, vazio = 'Nenhum registro', marcados, onMarcar, onMarcarTodos }) {
+export default function GradeCad({ cols, rows, foco, onSel, onDbl, vazio = 'Nenhum registro', marcados, onMarcar, onMarcarTodos, ordem, onOrdenar }) {
   const j = useJanela(rows.length);
   return (
     <div className="cd-tab" ref={j.ref} onScroll={j.onScroll}>
       <table>
-        <thead><tr>{onMarcar && <th className="c cd-marca"><input type="checkbox" aria-label="Marcar todos os visíveis" title="Marcar/desmarcar todos os produtos da lista" checked={rows.length > 0 && rows.every((r) => marcados?.has(r.id))} onChange={(e) => onMarcarTodos?.(e.target.checked)} /></th>}{cols.map(([k, r, t]) => <th key={k} className={t === 'm' ? 'd' : t === 'chk' ? 'c' : ''}>{r}</th>)}</tr></thead>
+        <thead><tr>{onMarcar && <th className="c cd-marca"><input type="checkbox" aria-label="Marcar todos os visíveis" title="Marcar/desmarcar todos os produtos da lista" checked={rows.length > 0 && rows.every((r) => marcados?.has(r.id))} onChange={(e) => onMarcarTodos?.(e.target.checked)} /></th>}{cols.map(([k, r, t]) => <th key={k} className={`${t === 'm' ? 'd' : t === 'chk' ? 'c' : ''}${onOrdenar ? ' ord' : ''}`} onClick={onOrdenar ? () => onOrdenar(k) : undefined} title={onOrdenar ? 'Clique para ordenar (crescente, decrescente, original)' : undefined} aria-sort={ordem?.campo === k ? (ordem.dir === 1 ? 'ascending' : 'descending') : undefined}>{r}{ordem?.campo === k ? (ordem.dir === 1 ? ' ▲' : ' ▼') : ''}</th>)}</tr></thead>
         <tbody style={{ '--alt': `${ALT_LINHA}px` }}>
           {j.acima > 0 && <tr className="cd-esp" style={{ height: j.acima }}><td colSpan={cols.length + (onMarcar ? 1 : 0)} /></tr>}
           {rows.slice(j.ini, j.fim).map((r) => <Linha key={r.id} r={r} cols={cols} sel={r.id === foco} onSel={onSel} onDbl={onDbl} marca={marcados?.has(r.id)} onMarcar={onMarcar} />)}

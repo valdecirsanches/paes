@@ -51,7 +51,7 @@ export default function Clientes({ onFechar }) {
   useEffect(() => { recCli(); api.get('/cadastros/produtos/referencias').then(setReferencias).catch(() => {}); }, [recCli]);
 
   const clientesFiltrados = useMemo(() => (sitCli === 'TODOS' ? clientes : clientes.filter((c) => (String(c.ativo ?? 'ATIVO').toUpperCase() === 'INATIVO') === (sitCli === 'INATIVO'))), [clientes, sitCli]);
-  const bCli = useBusca(clientesFiltrados, B_CLI);
+  const bCli = useBusca(clientesFiltrados, B_CLI, 'cad_clientes');
   useEffect(() => { if (clientesFiltrados.length && !clientesFiltrados.some((c) => c.id === fCli)) setFCli(clientesFiltrados[0].id); }, [clientesFiltrados]); // eslint-disable-line react-hooks/exhaustive-deps
   const cli = useEdicao({ lista: bCli.visiveis, foco: fCli, setFoco: setFCli, caminho: CAM, recarregar: recCli, aviso: notificar, confirmar: setConfirma, padrao: () => ({ ativo: 'ATIVO', programacao_ativo: 'True', pessoa: 'JURIDICA', comanda_nf: '1' }), texto: (r) => `o cliente ${r?.razao_social ?? ''}` });
 
@@ -66,7 +66,7 @@ export default function Clientes({ onFechar }) {
     } catch (e) { notificar('erro', e.message); }
   }, [conectar, sitUni, idCli, notificar]);
   useEffect(() => { recUni(); }, [recUni]);
-  const bUni = useBusca(unidades, B_UNI);
+  const bUni = useBusca(unidades, B_UNI, 'cad_unidades');
   const [pagUni, setPagUni] = useState(0); // grade de unidades paginada (desconectado: todas as unidades)
   const totPagUni = Math.max(1, Math.ceil(bUni.visiveis.length / POR_PAG));
   const pagUniOk = Math.min(pagUni, totPagUni - 1);
@@ -80,7 +80,7 @@ export default function Clientes({ onFechar }) {
     try { const r = await api.get(`${CAM}/${idCli}/produtos`); setProdutos(r); setFProd((f) => { const a = id ?? f; return r.some((x) => x.id === a) ? a : r[0]?.id ?? null; }); } catch (e) { notificar('erro', e.message); }
   }, [idCli, notificar]);
   useEffect(() => { recProd(); }, [recProd]);
-  const bProd = useBusca(produtos, B_PROD);
+  const bProd = useBusca(produtos, B_PROD, 'cad_prod_cliente');
   const prod0 = useEdicao({ lista: bProd.visiveis, foco: fProd, setFoco: setFProd, caminho: '/cadastros/produtos', recarregar: recProd, aviso: notificar, confirmar: setConfirma, texto: (r) => `o produto ${r?.descricao ?? ''}`,
     padrao: () => ({ ativo: 'True', id_cliente: idCli, id_referencia: referencias[0]?.id ?? null, pm: 'PRODUTO', peso: '0.05', peso_bruto: '0.05', divisor_basico: 1 }) });
   const refDesc = (id) => referencias.find((r) => r.id === Number(id))?.descricao ?? '';
@@ -197,7 +197,7 @@ export default function Clientes({ onFechar }) {
         {ABAS.map(([k, r]) => <button key={k} type="button" role="tab" aria-selected={aba === k} className={aba === k ? 'on' : ''} onClick={() => { setAba(k); setAbertoCli(k === 'lista'); }}>{r}</button>)}
       </div>
 
-      {aba === 'lista' && <div className="cd-corpo cd-unico"><GradeCad cols={COLS_CLI} rows={bCli.visiveis} foco={fCli} onSel={cli.selecionar} vazio="Nenhum cliente" /></div>}
+      {aba === 'lista' && <div className="cd-corpo cd-unico"><GradeCad cols={COLS_CLI} rows={bCli.visiveis} ordem={bCli.ordem} onOrdenar={bCli.ordenar} foco={fCli} onSel={cli.selecionar} vazio="Nenhum cliente" /></div>}
 
       {aba === 'uni' && (
         <div className="cd-corpo cd-uni">
@@ -261,7 +261,7 @@ export default function Clientes({ onFechar }) {
             </div>
           </main>
           <section className="cd-lado larga">
-            <GradeCad cols={COLS_UNI} rows={uniPagina} foco={fUni} onSel={uni.selecionar} onDbl={(id) => { if (uni.selecionar(id)) setTimeout(() => campoNomeUni.current?.focus(), 0); }} vazio="Nenhuma unidade" />
+            <GradeCad cols={COLS_UNI} rows={uniPagina} ordem={bUni.ordem} onOrdenar={bUni.ordenar} foco={fUni} onSel={uni.selecionar} onDbl={(id) => { if (uni.selecionar(id)) setTimeout(() => campoNomeUni.current?.focus(), 0); }} vazio="Nenhuma unidade" />
             <footer className="cd-rodape-lista cd-pag">
               <span>{bUni.visiveis.length} unidade(s){conectar ? ' deste cliente' : ' — todas'}</span>
               {totPagUni > 1 && <span className="cd-pag-ctl">
@@ -290,7 +290,7 @@ export default function Clientes({ onFechar }) {
               {[['lista', 'Produtos do cliente'], ['refs', 'Referências']].map(([k, r]) => <button key={k} type="button" role="tab" aria-selected={abaProd === k} className={abaProd === k ? 'on' : ''} onClick={() => setAbaProd(k)}>{r}</button>)}
             </div>
             {abaProd === 'lista' && <div className="cd-busca-linha"><Busca busca={bProd} total={produtos.length} placeholder="Pesquisar produto…" /></div>}
-            {abaProd === 'lista' && <GradeCad cols={COLS_PROD} rows={bProd.visiveis} foco={fProd} onSel={prod.selecionar} vazio="Nenhum produto" />}
+            {abaProd === 'lista' && <GradeCad cols={COLS_PROD} rows={bProd.visiveis} ordem={bProd.ordem} onOrdenar={bProd.ordenar} foco={fProd} onSel={prod.selecionar} vazio="Nenhum produto" />}
             {abaProd === 'refs' && <GradeCad cols={COLS_REFS} rows={referencias} foco={null} onSel={() => {}} vazio="Nenhuma referência" />}
           </section>
         </div>
