@@ -180,8 +180,11 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
   };
 
   /* ----- ações da barra ----- */
-  const incluir = () => {
-    if (!status || editando) return;
+  const incluir = async () => {
+    if (ocupado) return;
+    if (!status) { notify.erro('Selecione um cliente/unidade na lista "Clientes do dia" para incluir um item.'); return; }
+    if (novo) { setPainel(true); foca('hora'); return; } // já está incluindo: só devolve o foco
+    if (draft && !(await gravar())) return; // alteração pendente de outro item: grava antes (se não der, avisa e para)
     setPainel(true); setDraft(novoItem(status)); setSelId(null);
     foca('hora');
   };
@@ -379,7 +382,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
         <button className="bt ic" title="Log de operações da programação diária" onClick={verLogDia} disabled={!status}><IcoUsuario /></button>
         <button className="bt ic" title="Imprime lista para conferencia" onClick={imprimirConferencia} disabled={!status}><IcoImpressora /></button>
         <button className="bt ic" title="Atalho para tela de recados" onClick={() => setModal({ tipo: 'recados' })}><IcoPessoa /></button>
-        <button className="bt" onClick={incluir} disabled={editando || !status}>F2 Incluir</button>
+        <button className="bt" onClick={incluir} disabled={ocupado || !status}>F2 Incluir</button>
         <button className="bt" onClick={alterar} disabled={editando || !status}>F3 Alterar</button>
         <button className="bt" onClick={() => excluir()} disabled={editando || !status}>🗑 F4 Excluir</button>
         <button className="bt" onClick={atualizar} disabled={editando || !status}>Atualizar</button>
