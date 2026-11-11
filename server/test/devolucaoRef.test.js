@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { chaveValida, analisaReferencias, candidatasOriginal, errosDaAnalise } from '../src/services/devolucaoRef.js';
+import { devolucoesDe, chaveValida, analisaReferencias, candidatasOriginal, errosDaAnalise } from '../src/services/devolucaoRef.js';
 
 // gera uma chave de 44 dígitos com DV correto
 function chave(base43) {
@@ -48,4 +48,12 @@ test('analisaReferencias: nota que não está na base só avisa', async () => {
 });
 test('candidatasOriginal: sem CNPJ não busca', async () => {
   assert.deepEqual(await candidatasOriginal({ id: 1 }, { query: async () => { throw new Error('não deveria consultar'); } }), []);
+});
+
+test('devolucoesDe: lista as devoluções que referenciam a nota; sem chave válida não consulta', async () => {
+  const k = chave('3'.repeat(43));
+  const db = { query: async (sql, p) => { assert.equal(p[0], k); return [[{ id: 9, nfe_numero: 55, nfe_serie: 1, data_emissao: '2026-11-01', nf_valor_total: 10, status_e: 'AUTORIZADA' }]]; } };
+  const r = await devolucoesDe({ id: 1, nfe_chave: k }, db);
+  assert.equal(r.length, 1); assert.equal(r[0].id, 9); assert.equal(r[0].numero, 55);
+  assert.deepEqual(await devolucoesDe({ id: 1, nfe_chave: '' }, { query: () => { throw new Error('não deveria consultar'); } }), []);
 });

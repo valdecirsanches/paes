@@ -1024,7 +1024,8 @@ As abas **Programação diária / Programação fixa / Reclamações** saíram d
 
 - Na seção "NFe referenciada" da devolução: para cada chave, resumo da nota original (nº/série, emissão, cliente, situação), botão **🔍 Ver nota original** (janela somente leitura com itens e total) e sugestão das notas do mesmo cliente.
 - Conferências: chave de 44 dígitos com DV, mesmo destinatário, original não cancelada/autorizada (bloqueiam a autorização); avisos para produto fora da original, quantidade maior e devolução duplicada.
-- Rota `GET /api/nfe/:id/referencia-analise`. Não testado contra MySQL/SEFAZ reais.
+- Na nota **original** (ex.: DEVOLVIDO) aparece o cartão **↩ Devolução gerada** com o botão **🔍 Ver devolução** (notas cuja referência é a chave desta nota).
+- Rota `GET /api/nfe/:id/referencia-analise` (devolve também `devolucoes`). Não testado contra MySQL/SEFAZ reais.
 
 ## Fase 221 — Diária: painel do item mais enxuto
 - A linha do topo do painel ("Alterando item · cliente · data · F5 salva · Esc cancela") virou um **painel na lateral direita** do próprio formulário (badge, cliente, data, "não salvo" e as teclas F5/Esc): ganha-se uma linha.

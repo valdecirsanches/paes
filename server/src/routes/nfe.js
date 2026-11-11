@@ -16,7 +16,7 @@ import { enriquece, arquivoDoEvento } from '../services/eventosNfe.js';
 import { baseGravacao, paraBanco, paraLocal, caminhoXmlLegado, ehCaminhoLegado } from '../services/caminhosNfe.js';
 import { acharArquivoNota, lerArquivoNota, baseArquivos } from '../services/arquivosApi.js';
 import { aplicaReducaoIbs, montaJsonNfe, validaParaAutorizar, dataHoraBr, regimeDoCrt, ehDevolucao } from '../services/nfeJson.js';
-import { analisaReferencias, candidatasOriginal, errosDaAnalise } from '../services/devolucaoRef.js';
+import { analisaReferencias, candidatasOriginal, devolucoesDe, errosDaAnalise } from '../services/devolucaoRef.js';
 
 const router = Router();
 const idValido = (v, rotulo = 'Nota') => {
@@ -810,7 +810,7 @@ router.get('/:id/referencia-analise', async (req, res) => {
   const [referencias] = await pool.query('select refNFe from tb_nfe_referencia where id_nfe = ?', [id]);
   const [itens] = await pool.query('select produto_codigo, qtde from tb_nfe_itens where id_nfe = ?', [id]);
   const analises = await analisaReferencias(nfe, referencias, itens);
-  res.json({ devolucao, analises, candidatas: devolucao ? await candidatasOriginal(nfe) : [] });
+  res.json({ devolucao, analises, candidatas: devolucao ? await candidatasOriginal(nfe) : [], devolucoes: await devolucoesDe(nfe) });
 });
 const REF_CAMPOS = ['refNFE', 'tipo', 'cUF', 'AAMM', 'cnpj', 'fld_mod', 'serie', 'nNF', 'cnpjcpf', 'IE', 'refCTe', 'modECF', 'nECF', 'nCOO'];
 router.get('/:id/referencias', async (req, res) => { const [r] = await pool.query('select * from tb_nfe_referencia where id_nfe = ? order by id', [idValido(req.params.id)]); res.json(r); });

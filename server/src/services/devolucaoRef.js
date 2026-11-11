@@ -63,3 +63,11 @@ export async function candidatasOriginal(nfe, db = pool, limite = 15) {
 
 /** Erros que BLOQUEIAM a autorização da devolução (os avisos só informam). */
 export const errosDaAnalise = (analises) => analises.flatMap((a) => a.erros.map((e) => `NFe referenciada …${a.chave.slice(-9)}: ${e}`));
+
+/** Devoluções (notas que referenciam a chave desta nota), mais recentes primeiro — para ir da original à devolução gerada. */
+export async function devolucoesDe(nfe, db = pool) {
+  const chave = dig(nfe?.nfe_chave);
+  if (chave.length !== 44) return [];
+  const [rows] = await db.query('select distinct n.id, n.nfe_numero, n.nfe_serie, n.data_emissao, n.nf_valor_total, n.status_e from tb_nfe_referencia r join tb_nfe n on n.id = r.id_nfe where r.refNFe = ? and n.id <> ? order by n.id desc limit 20', [chave, nfe.id]);
+  return rows.map(resumo);
+}

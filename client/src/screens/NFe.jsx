@@ -952,6 +952,16 @@ export default function NFe({ onFechar }) {
                                 {ref && !refEditando && <button type="button" className="nc-b perigo" disabled={!pendente || ocupado} onClick={apagarRef}>🗑 Excluir</button>}
                               </span>
                             </h4>
+                            {analise?.devolucoes?.length > 0 && (
+                              <div className="nc-dev" role="group" aria-label="Devoluções desta nota">
+                                {analise.devolucoes.map((d) => (
+                                  <div key={d.id} className="nc-dev-card aviso">
+                                    <b>↩ Devolução gerada</b> <span>NF {d.numero || `interna ${d.id}`}{d.serie ? `/${d.serie}` : ''} · {d.emissao} · {d.status}</span>
+                                    <button type="button" className="nc-b" style={{ marginLeft: 8 }} disabled={ocupado} onClick={() => verOriginal(d.id)}>🔍 Ver devolução</button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                             {analise?.devolucao && (
                               <div className="nc-dev" role="group" aria-label="Conferência da NF-e original">
                                 {devSemRef && <p className="nc-dev-erro">⛔ Devolução sem NFe referenciada: a SEFAZ rejeita. Escolha abaixo a nota original do cliente (ou use ＋ Nova e digite a chave).</p>}
@@ -997,7 +1007,7 @@ export default function NFe({ onFechar }) {
                     </Modal>
                   )}
 
-                  {origem && <Modal titulo={`NFe original ${origem.nota?.nfe_numero || ''} (somente leitura)`} onFechar={() => setOrigem(null)} largo>
+                  {origem && <Modal titulo={`NFe ${origem.nota?.nfe_numero || ''} — ${origem.nota?.status_e || ''} (somente leitura)`} onFechar={() => setOrigem(null)} largo>
                     <div className="rolagem">
                       <p><b>{origem.nota?.cliente_razao_social}</b> · {origem.nota?.cliente_cnpj} · {origem.nota?.status_e} · CFOP {origem.nota?.cfop_codigo}</p>
                       <p style={{ wordBreak: 'break-all' }}>Chave: {origem.nota?.nfe_chave || '—'}</p>
