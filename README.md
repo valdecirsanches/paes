@@ -1020,6 +1020,12 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 238 — NFe: campos próprios do sistema novo para XML/DANFE
+
+- Novas colunas `tb_nfe.nfe_xml_app` e `nfe_pdf_app` (criadas sozinhas, `varchar(500)`). O app novo lê/grava **só nelas**; `nfe_xml_file`/`nfe_pdf_file` ficam para o sistema antigo (N:/…) — "Ajustar", o agente do N: e quem editar o caminho antigo não afetam mais o DANFE do app. Notas antigas: sem valor em `_app`, o app usa o campo antigo se **não** for N:/, senão baixa da API e preenche o campo novo.
+- Emissão nova grava nos dois pares. "Ajustar" esvazia só o PDF do app. Nova rota `POST /api/nfe/:id/refazer-arquivos` (botão **♻ Refazer pela API** em Dados da NFe): baixa XML/DANFE de novo para os campos do app; se falhar, devolve o que havia.
+- Os quatro caminhos são editáveis em Dados da NFe (rota `PUT /:id/arquivos`), com o valor anterior na Auditoria. Não testado em MySQL real (o `alter table` roda no primeiro acesso a /api/nfe; o usuário do banco precisa ter permissão de ALTER).
+
 ## Fase 237 — NFe: editar o caminho do XML/PDF
 
 - Em "Dados do corpo da NFe", **Arquivo XML** e **Arquivo PDF** ficam editáveis em qualquer situação da nota (botão Gravar / ↩), para corrigir o apontamento quando o DANFE não imprime depois de "Ajustar". Rota `PUT /api/nfe/:id/arquivos` (máx. 500 caracteres); o valor anterior vai para a Auditoria. Vazio no XML faz o sistema buscar o XML de novo na API quando o DANFE for pedido.

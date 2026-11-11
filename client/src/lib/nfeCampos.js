@@ -82,7 +82,7 @@ export const CORPO_LINHAS = [
   ['entrega_endereco', 'Endereço'], ['entrega_numero', 'Número'], ['entrega_complemento', 'Complemento'], ['entrega_bairro', 'Bairro'], ['entrega_cidade', 'Municipio'], ['entrega_cidade_ibge', 'IBGE'], ['entrega_uf', 'UF'],
   ['entrega_uf_ibge', 'IBGE'], ['entrega_cep', 'Cep'], ['entrega_cnpj', 'CNPJ'], ['entrega_ie', 'Inscrição Estadual'], ['entrega_ddd', 'DDD'], ['entrega_fone', 'Telefone'],
   ['#', 'NF-e'],
-  ['nfe_numero', 'Número', 'ro'], ['nfe_modelo', 'Modelo'], ['nfe_serie', 'Série'], ['nfe_chave', 'Chave NF-e', 'ro'], ['nfe_xml_file', 'Arquivo XML', 'ro'], ['nfe_pdf_file', 'Arquivo PDF (Danfe)', 'ro'],
+  ['nfe_numero', 'Número', 'ro'], ['nfe_modelo', 'Modelo'], ['nfe_serie', 'Série'], ['nfe_chave', 'Chave NF-e', 'ro'], ['nfe_xml_app', 'Arquivo XML (sistema novo)', 'ro'], ['nfe_pdf_app', 'Arquivo PDF/DANFE (sistema novo)', 'ro'], ['nfe_xml_file', 'Arquivo XML (sistema antigo, N:)', 'ro'], ['nfe_pdf_file', 'Arquivo PDF (sistema antigo)', 'ro'],
   ['nfe_protocolo', 'Protocolo', 'ro'], ['nfe_recibo', 'Recibo', 'ro'], ['nfe_cancelamento_justificativa', 'Justificativa de Cancelamento', 'memo-ro'], ['csosn', 'CSOSN (Cód Sit Op S.Nac)'],
   ['#', 'Final'],
   ['volume_qtde', 'Qtde do Volume', 'num'], ['volume_numero', 'Número do volume'], ['volume_especie', 'Espécie'], ['volume_marca', 'Marca do Volume'], ['texto_corpo', 'Informações adicionais', 'memo'],

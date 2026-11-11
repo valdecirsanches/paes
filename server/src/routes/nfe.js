@@ -20,6 +20,25 @@ import { registra } from '../services/auditoria.js';
 import { analisaReferencias, candidatasOriginal, devolucoesDe, errosDaAnalise } from '../services/devolucaoRef.js';
 
 const router = Router();
+
+// O sistema novo guarda XML/PDF em campos PRÓPRIOS (nfe_xml_app / nfe_pdf_app). Os campos nfe_xml_file / nfe_pdf_file continuam sendo os do sistema antigo
+// (caminho N:/…): "Ajustar" ou o agente do N: mexem só neles, então o app novo sempre acha os seus arquivos e nada se perde.
+const APP_COL = { nfe_xml_file: 'nfe_xml_app', nfe_pdf_file: 'nfe_pdf_app' };
+let colunasApp = null;
+export function garanteColunasApp() {
+  colunasApp ??= (async () => {
+    for (const col of Object.values(APP_COL)) {
+      const [[r]] = await pool.query("select count(*) as n from information_schema.columns where table_schema = database() and table_name = 'tb_nfe' and column_name = ?", [col]);
+      if (!Number(r?.n)) await pool.query(`alter table tb_nfe add column ${col} varchar(500) null`);
+    }
+  })().catch((e) => { colunasApp = null; throw e; });
+  return colunasApp;
+}
+router.use(async (_req, _res, next) => { try { await garanteColunasApp(); } catch (e) { console.warn(`[nfe] colunas nfe_xml_app/nfe_pdf_app: ${e.message}`); } next(); });
+/** Arquivo do sistema novo; para notas antigas cai no campo legado, se ele NÃO for caminho N:/. */
+const arqApp = (n, campo) => txt(n[APP_COL[campo]]) || (ehCaminhoLegado(n[campo]) ? '' : txt(n[campo]));
+/** Grava o caminho no campo do app; o legado só é preenchido se estiver vazio (nunca sobrescreve o do sistema antigo). */
+const gravaCaminhoApp = (id, campo, p) => pool.query(`update tb_nfe set ${APP_COL[campo]} = ?, ${campo} = if(${campo} is null or ${campo} = '', ?, ${campo}) where id = ?`, [p, p, id]);
 const idValido = (v, rotulo = 'Nota') => {
   const n = Number(v);
   if (!Number.isInteger(n) || n <= 0) throw invalid(`${rotulo} inválido(a).`);
@@ -371,13 +390,13 @@ async function sincronizaArquivos(nfe, cfg, docId, orientacao) {
       if (r.status !== 200 || !r.buffer?.length) {
         const l = await consultaPastaApi(nfe, cfg, tipo).catch(() => ({}));
         if (l.buffer?.length) r = { status: 200, buffer: l.buffer };
-        else if (tipo === 'pdf' && nfe.nfe_xml_file) {
-          try { r = { status: 200, buffer: await danfeDoXml(await readFile(paraLocal(nfe.nfe_xml_file)), { logo: await lerLogo(), cancelada: nfe.status_e === 'CANCELADA' }) }; }
+        else if (tipo === 'pdf' && arqApp(nfe, 'nfe_xml_file')) {
+          try { r = { status: 200, buffer: await danfeDoXml(await readFile(paraLocal(arqApp(nfe, 'nfe_xml_file'))), { logo: await lerLogo(), cancelada: nfe.status_e === 'CANCELADA' }) }; }
           catch { feito[tipo] = r.erro || `HTTP ${r.status}`; continue; }
         } else { feito[tipo] = r.erro || `HTTP ${r.status}${l.motivo ? ` — ${l.motivo}` : ''}`; continue; }
       }
       const p = await gravaArquivo(cfg.cnpj, ambiente, `${nfe.nfe_chave}${ext}`, r.buffer);
-      if (!(campo === 'nfe_xml_file' && ehCaminhoLegado(nfe[campo]))) { await pool.query(`update tb_nfe set ${campo} = ? where id = ?`, [p, nfe.id]); nfe[campo] = p; }
+      await gravaCaminhoApp(nfe.id, campo, p); nfe[APP_COL[campo]] = p;
       feito[tipo] = 'ok';
     } catch (e) { feito[tipo] = e.message; }
   }
@@ -508,7 +527,7 @@ router.post('/:id/ajustar', async (req, res) => {
   if (r.status !== 200 && !jaTem) throw new AppError(502, `A API não respondeu à consulta (HTTP ${r.status}${r.body?.motivo ? ` — ${r.body.motivo}` : ''}).`);
   if (!ajuste?.achou && !jaTem) throw new AppError(404, 'A API não localizou a nota (ou ainda não consta como autorizada).');
   const idAj = ajuste?.id ?? nfe.id;
-  await pool.query("update tb_nfe set nfe_pdf_file = '' where id = ?", [idAj]); // ajustar esvazia o caminho do PDF (o DANFE é buscado de novo quando for pedido)
+  await pool.query("update tb_nfe set nfe_pdf_app = '' where id = ?", [idAj]); // ajustar esvazia o PDF do app (o DANFE é buscado de novo quando for pedido); o campo do sistema antigo não é tocado
   await pool.query("update tb_nfe set nfe_file_pdf = '' where id = ?", [idAj]).catch(() => {}); // coluna alternativa, se existir neste banco
   const [[atual]] = await pool.query('select id, status_e, nfe_chave, nfe_numero from tb_nfe where id = ?', [idAj]);
   res.json({ ok: true, id: atual.id, status: atual.status_e, chave: atual.nfe_chave, numero: atual.nfe_numero, arquivos: ajuste.arquivos });
@@ -696,12 +715,27 @@ const NFE_EDITAVEIS = ['cliente_uf_icms', 'substituicao_tributaria_ie', 'substit
   'entrega_endereco', 'entrega_numero', 'entrega_complemento', 'entrega_bairro', 'entrega_cidade', 'entrega_cidade_ibge', 'entrega_uf', 'entrega_uf_ibge', 'entrega_cep', 'entrega_cnpj', 'entrega_ie', 'entrega_ddd', 'entrega_fone',
   'transportadora_nome', 'transportadora_endereco', 'transportadora_cidade', 'transportadora_uf', 'transportadora_ie', 'transportadora_cnpj', 'transportadora_veiculo_placa', 'transportadora_veiculo_uf', 'transportadora_rntc',
   'volume_qtde', 'volume_numero', 'volume_especie', 'volume_marca', 'peso_bruto', 'peso_liquido', 'texto_corpo', 'csosn', 'nfe_modelo', 'nfe_serie', 'movimento_es'];
+/** Refaz os arquivos do SISTEMA NOVO (XML/DANFE) a partir da API, sem tocar no caminho N:/ do sistema antigo. Se não conseguir, devolve o que havia. */
+router.post('/:id/refazer-arquivos', async (req, res) => {
+  const nfe = await getNfe(idValido(req.params.id)); const cfg = await getCfg();
+  if (!['AUTORIZADA', 'CANCELADA'].includes(nfe.status_e)) throw invalid('Só notas autorizadas/canceladas têm arquivos a refazer.');
+  const antes = { nfe_xml_app: nfe.nfe_xml_app ?? '', nfe_pdf_app: nfe.nfe_pdf_app ?? '' };
+  await pool.query("update tb_nfe set nfe_xml_app = '', nfe_pdf_app = '' where id = ?", [nfe.id]);
+  nfe.nfe_xml_app = ''; nfe.nfe_pdf_app = '';
+  const { docId } = await docDaNota(nfe, cfg).catch(() => ({}));
+  const arquivos = docId ? await sincronizaArquivos(nfe, cfg, docId) : { xml: 'a API não conhece a nota', pdf: 'a API não conhece a nota' };
+  const falhou = Object.values(arquivos).some((v) => v !== 'ok');
+  if (falhou) for (const [k, v] of Object.entries(antes)) if (v && !nfe[k]) await pool.query(`update tb_nfe set ${k} = ? where id = ?`, [v, nfe.id]); // não deixa a nota sem arquivo
+  registra({ idUsuario: req.user?.id, usuario: req.user?.usuario ?? '', metodo: 'POST', rota: req.originalUrl, entidade: 'nfe', acao: 'Arquivos do app refeitos a partir da API', idRegistro: nfe.id, status: 200, detalhes: { antes, arquivos }, origem: 'api' });
+  res.json({ ok: !falhou, arquivos, nota: await getNfe(nfe.id) });
+});
+
 // Caminho do XML/PDF gravado na nota (qualquer situação): permite corrigir o apontamento quando o DANFE não imprime, p.ex. depois de "Ajustar" a NFe.
 router.put('/:id/arquivos', async (req, res) => {
   const id = idValido(req.params.id);
   const n = await getNfe(id);
   const b = {};
-  for (const k of ['nfe_xml_file', 'nfe_pdf_file']) {
+  for (const k of ['nfe_xml_file', 'nfe_pdf_file', 'nfe_xml_app', 'nfe_pdf_app']) {
     if (req.body?.[k] === undefined) continue;
     const v = String(req.body[k] ?? '').trim();
     if (v.length > 500) throw invalid('Caminho muito longo (máximo 500 caracteres).');
@@ -709,7 +743,7 @@ router.put('/:id/arquivos', async (req, res) => {
   }
   if (!Object.keys(b).length) throw invalid('Nada para gravar.');
   await pool.query('update tb_nfe set ? where id = ?', [b, id]);
-  registra({ idUsuario: req.user?.id, usuario: req.user?.usuario ?? '', metodo: 'PUT', rota: req.originalUrl, entidade: 'nfe', acao: 'Caminho de arquivo da NFe alterado', idRegistro: id, status: 200, detalhes: { antes: { nfe_xml_file: n.nfe_xml_file, nfe_pdf_file: n.nfe_pdf_file }, depois: b }, origem: 'api' }); // valor anterior, para poder reverter
+  registra({ idUsuario: req.user?.id, usuario: req.user?.usuario ?? '', metodo: 'PUT', rota: req.originalUrl, entidade: 'nfe', acao: 'Caminho de arquivo da NFe alterado', idRegistro: id, status: 200, detalhes: { antes: { nfe_xml_file: n.nfe_xml_file, nfe_pdf_file: n.nfe_pdf_file, nfe_xml_app: n.nfe_xml_app, nfe_pdf_app: n.nfe_pdf_app }, depois: b }, origem: 'api' }); // valor anterior, para poder reverter
   res.json(await getNfe(id));
 });
 router.put('/:id', async (req, res) => {
@@ -921,7 +955,7 @@ async function gravaAutorizada(id, cfg, doc, { ambiente, numero, usuario, increm
   const quando = dataHoraBr(doc.dataAutorizacao);
   await tx(async (c) => {
     await c.query('update tb_nfe set ? where id = ?', [{
-      nfe_xml_file: xmlFile, nfe_pdf_file: pdfFile, nfe: txt(doc.motivoRetorno) || 'Autorizado o uso da NF-e', nfe_chave: doc.chaveAcesso, status_e: 'AUTORIZADA',
+      nfe_xml_file: xmlFile, nfe_pdf_file: pdfFile, nfe_xml_app: xmlFile, nfe_pdf_app: pdfFile, nfe: txt(doc.motivoRetorno) || 'Autorizado o uso da NF-e', nfe_chave: doc.chaveAcesso, status_e: 'AUTORIZADA',
       nfe_numero: Number(String(doc.chaveAcesso).slice(25, 34)) || numero, usuario_autorizacao_nfe: await usuarioNfe(pool, usuario), nfe_recibo_datahora: quando, nfe_protocolo: txt(doc.protocolo), nfe_protocolo_data_hora: quando,
     }, id]);
     if (incrementa) await c.query('update tb_nfe_config set nfe_numero = ? where id = ?', [numero, cfg.id]); // incrementa o número da nota fiscal
@@ -1116,21 +1150,21 @@ async function consultaChaveSilenciosa(nfe, cfg) {
       const xml64 = r.body.xmlBase64 ?? r.body.documento?.xmlBase64;
       v = { xml: xml64 ? Buffer.from(String(xml64), 'base64') : null };
       try { await ajustaLocalPelaApi(cfg, { chave, d: { ...(r.body.documento ?? {}), ...r.body, id: r.body.documento?.id, protocolo: r.body.numeroProtocolo ?? r.body.documento?.protocolo, motivoRetorno: r.body.motivo }, xmlBase64: xml64 }); } catch { /* o XML da resposta já basta */ }
-      const [[atual]] = await pool.query('select nfe_xml_file, nfe_pdf_file from tb_nfe where id = ?', [nfe.id]);
-      if (atual) { nfe.nfe_xml_file = atual.nfe_xml_file; nfe.nfe_pdf_file = atual.nfe_pdf_file; }
+      const [[atual]] = await pool.query('select nfe_xml_file, nfe_pdf_file, nfe_xml_app, nfe_pdf_app from tb_nfe where id = ?', [nfe.id]);
+      if (atual) Object.assign(nfe, atual);
     } else console.warn(`[nfe] consulta pela chave ${chave}: HTTP ${r.status}`);
   } catch (e) { console.warn(`[nfe] consulta pela chave ${chave} falhou: ${e.message}`); }
   consultaChaveCache.set(chave, { t: Date.now(), v });
   return v;
 }
 async function buscaArquivo(nfe, cfg, campo, nomeExt, baixa, orientacao) {
-  const f = txt(nfe[campo]);
+  const f = arqApp(nfe, campo);
   const doDisco = f && existsSync(paraLocal(f));
   const ambiente = Number(cfg.nfe_configuracoes_webservice_ambiente) === 1 ? 1 : 2;
   const guarda = async (buf) => {
     try {
       const p = await gravaArquivo(cfg.cnpj, ambiente, `${nfe.nfe_chave}${nomeExt === 'xml' ? '-procNFe.xml' : '.pdf'}`, buf);
-      if (p !== f && !(campo === 'nfe_xml_file' && ehCaminhoLegado(f))) await pool.query(`update tb_nfe set ${campo} = ? where id = ?`, [p, nfe.id]); // não desfaz o caminho N:/ do sistema antigo
+      if (p !== f) { await gravaCaminhoApp(nfe.id, campo, p); nfe[APP_COL[campo]] = p; } // campo próprio do app; o N:/ do sistema antigo não é tocado
     } catch { /* guardar é melhor esforço */ }
   };
   let erro = null;
@@ -1146,7 +1180,7 @@ async function buscaArquivo(nfe, cfg, campo, nomeExt, baixa, orientacao) {
   if (l.buffer?.length) { await guarda(l.buffer); return l.buffer; }
   // plano B: a API conhece a nota pela chave (como na consulta manual): traz XML/PDF dela, em silêncio
   const viaChave = await consultaChaveSilenciosa(nfe, cfg);
-  const depois = txt(nfe[campo]);
+  const depois = arqApp(nfe, campo);
   if (depois && existsSync(paraLocal(depois))) return readFile(paraLocal(depois));
   if (nomeExt === 'xml' && viaChave?.xml?.length) { await guarda(viaChave.xml); return viaChave.xml; }
   if (nomeExt === 'xml') { // última tentativa: procura o XML pela chave nas pastas locais

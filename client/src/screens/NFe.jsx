@@ -970,14 +970,15 @@ export default function NFe({ onFechar }) {
                                     <input type="checkbox" checked={temMarca(val)} disabled={somenteLeitura} onChange={(e) => ed(k, e.target.checked ? 'True' : 'False')} /><i aria-hidden="true" />{r}
                                   </label>
                                 );
-                                if (k === 'nfe_xml_file' || k === 'nfe_pdf_file') { // editável sempre: corrige o apontamento quando o DANFE não imprime
+                                if (k === 'nfe_xml_file' || k === 'nfe_pdf_file' || k === 'nfe_xml_app' || k === 'nfe_pdf_app') { // editável sempre: corrige o apontamento quando o DANFE não imprime
                                   const atual = nota[k] ?? ''; const val2 = arqDraft[k] ?? atual; const mudou = val2 !== atual;
                                   return (
-                                    <label key={i} className="nc-c" style={{ gridColumn: 'span 12' }}><span>{r} <small>(editável em qualquer situação da nota)</small></span>
+                                    <label key={i} className="nc-c" style={{ gridColumn: 'span 12' }}><span>{r} <small>{k.endsWith('_app') ? '(usado pelo app novo)' : '(só o sistema antigo usa)'}</small></span>
                                       <span style={{ display: 'flex', gap: 6 }}>
                                         <input type="text" style={{ flex: 1 }} value={val2} onChange={(e) => setArqDraft((d) => ({ ...d, [k]: e.target.value }))} />
                                         <button type="button" className="nc-b prim" disabled={!mudou || ocupado} onClick={() => acao(async () => { await api.put(`/nfe/${nota.id}/arquivos`, { [k]: val2 }); setArqDraft((d) => { const n2 = { ...d }; delete n2[k]; return n2; }); cacheDet.current.clear(); recarregaDetalhe.current?.(nota.id); notificar('ok', 'Caminho gravado. O valor anterior ficou na Auditoria.'); })}>Gravar</button>
                                         <button type="button" className="nc-b" disabled={!mudou} onClick={() => setArqDraft((d) => { const n2 = { ...d }; delete n2[k]; return n2; })}>↩</button>
+                                        {k === 'nfe_xml_app' && ['AUTORIZADA', 'CANCELADA'].includes(nota.status_e) && <button type="button" className="nc-b" disabled={ocupado} title="Baixa de novo o XML e o DANFE da API para os campos do sistema novo, sem mexer no N: do sistema antigo" onClick={() => acao(async () => { const r = await api.post(`/nfe/${nota.id}/refazer-arquivos`, {}); cacheDet.current.clear(); recarregaDetalhe.current?.(nota.id); notificar(r.ok ? 'ok' : 'aviso', r.ok ? 'Arquivos do app refeitos a partir da API.' : `Não consegui refazer tudo (xml: ${r.arquivos?.xml}; pdf: ${r.arquivos?.pdf}). O que havia foi mantido.`); })}>♻ Refazer pela API</button>}
                                       </span>
                                     </label>
                                   );
