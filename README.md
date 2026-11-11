@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 229 — Unidade: mudar de cliente
+
+- Cadastro de unidades › **🔁 Mudar de cliente** (rota `POST /cadastros/clientes/unidades/:id/mudar-cliente`, numa transação). Passam para o novo cliente: a unidade, a programação fixa (`tb_fixa`) e `tb_status`/`tb_diaria` de hoje em diante. Dias passados, comandas e notas ficam com o cliente antigo. Produtos não mudam (continuam do cliente a que pertencem). SQL só testado com stub (sem MySQL real).
+
 ## Fase 228 — Diária: cliente no painel do item; busca de produto com "todos os produtos"
 
 - O painel lateral do item mostra o **nome do cliente** (razão social) acima da unidade (o texto que já aparecia é o da unidade).

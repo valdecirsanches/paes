@@ -445,6 +445,7 @@ window.fetch = async (url, opts = {}) => {
       comandas_itens: cmds.length ? [{ id: 1, descricao_generica: 'PAO DOCE KG', new_qtde: 5, preco: 14, vr_item: 70 }, { id: 2, descricao_generica: 'BISNAGA 50G', new_qtde: 10, preco: 2, vr_item: 20 }] : [], tributo: itens[0]?.id_tributo ? nfeTrib[itens[0].id_tributo] ?? null : null }) : json({ message: 'Nota não encontrada.' }, 404);
   }
   else if (m === 'DELETE' && /^\/nfe\/referencias\/\d+$/.test(p)) { const rid = Number(p.split('/')[3]); for (const k of Object.keys(nfeRefs)) nfeRefs[k] = nfeRefs[k].filter((y) => y.id !== rid); r = json({ ok: true }); }
+  else if (m === 'POST' && /\/unidades\/\d+\/mudar-cliente$/.test(p)) r = json({ ok: true, cliente: 'NOVO CLIENTE', fixa: 4, status: 2, diaria: 9 });
   else if (m === 'GET' && /^\/nfe\/\d+\/referencia-analise$/.test(p)) r = json({ devolucao: false, analises: [], candidatas: [], devolucoes: [] });
   else if (m === 'GET' && /^\/nfe\/\d+\/referencias$/.test(p)) r = json(nfeRefs[Number(p.split('/')[2])] ?? []);
   else if (m === 'POST' && /^\/nfe\/\d+\/referencias$/.test(p)) { const nid = Number(p.split('/')[2]); const x = { id: 50 + (nfeRefs[nid]?.length ?? 0), id_nfe: nid }; (nfeRefs[nid] ??= []).push(x); r = json(x, 201); }

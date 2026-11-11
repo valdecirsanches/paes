@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { pool } from '../db.js';
 import { invalid, notFound } from '../errors.js';
+import { tx } from '../db.js';
+import { mudaClienteUnidade } from '../services/mudaCliente.js';
 import { emUso, idValido, limpaCampos } from '../services/campos.js';
 
 // Cadastro de clientes (u_clientes): clientes (tb_clientes), unidades (tb_unidades) e a lista de produtos do cliente.
@@ -87,6 +89,14 @@ router.put('/unidades/:id', async (req, res) => {
   if (!r.affectedRows) throw notFound('Unidade');
   const [[u]] = await pool.query('select * from tb_unidades where id = ?', [id]);
   res.json(u);
+});
+// Muda o cliente dono da unidade (histórico fica com o cliente antigo)
+router.post('/unidades/:id/mudar-cliente', async (req, res) => {
+  const id = idValido(req.params.id, 'Unidade');
+  const cli = idValido(req.body?.id_cliente, 'Cliente');
+  const r = await tx((c) => mudaClienteUnidade(c, id, cli));
+  if (r.erro) throw invalid(r.erro);
+  res.json(r);
 });
 router.delete('/unidades/:id', async (req, res) => {
   const id = idValido(req.params.id, 'Unidade');

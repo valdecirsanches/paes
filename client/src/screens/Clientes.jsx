@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../api.js';
 import { Busca, Campo, Chave, Confirma, Navegador, Secao, Txt, useBusca, useEdicao } from '../components/cad.jsx';
 import GradeCad from '../components/GradeCad.jsx';
+import { Modal } from '../components/ui.jsx';
 import ProdutoForm from '../components/ProdutoForm.jsx';
 import { imprimirDocumento, temDestino } from '../lib/impressora.js';
 import { etiquetasNutricionista, imprimirHtml, listagemUnidades, tabelaPrecos } from '../lib/print.js';
@@ -38,6 +39,7 @@ export default function Clientes({ onFechar }) {
   const [sitCli, setSitCli] = useState('ATIVO'); // filtro da lista de clientes: ATIVO (padrão) | INATIVO | TODOS
   const [aviso, setAviso] = useState(null);
   const [confirma, setConfirma] = useState(null);
+  const [trocaCli, setTrocaCli] = useState(null); // { id_cliente } enquanto a janela "Mudar de cliente" está aberta
   const notificar = useCallback((tipo, m) => setAviso({ tipo, m }), []);
   useEffect(() => { if (!aviso) return undefined; const t = setTimeout(() => setAviso(null), 9000); return () => clearTimeout(t); }, [aviso]);
   const campoNomeUni = useRef(null);
@@ -119,6 +121,13 @@ export default function Clientes({ onFechar }) {
   const offU = !uni.atual && !uni.novo;
   const offC = !cli.atual && !cli.novo;
   const tiposU = TIPOS.includes(uni.v('tipo_faturamento')) || !uni.v('tipo_faturamento') ? TIPOS : [uni.v('tipo_faturamento'), ...TIPOS];
+  const mudarCliente = async () => {
+    try {
+      const r = await api.post(`${CAM}/unidades/${fUni}/mudar-cliente`, { id_cliente: Number(trocaCli.id_cliente) });
+      setTrocaCli(null); await recUni(fUni);
+      notificar('ok', `Unidade agora é de ${r.cliente}. Atualizados: ${r.fixa} da fixa, ${r.status} dias e ${r.diaria} itens da diária (de hoje em diante).`);
+    } catch (e) { notificar('erro', e.message); }
+  };
   const irCliente = () => { // abre o cliente dono da unidade (limpa a pesquisa de clientes para ele aparecer)
     const id = Number(uni.v('id_cliente')); if (!id) return;
     if (uni.sujo) { notificar('erro', 'Grave ou desfaça as alterações da unidade antes de trocar de cliente.'); return; }
@@ -203,6 +212,7 @@ export default function Clientes({ onFechar }) {
                   <span className="cd-dono">
                     <b>{clientes.find((c) => c.id === Number(uni.v('id_cliente')))?.razao_social || '—'}</b>
                     <button type="button" className="cd-btn" disabled={!uni.v('id_cliente') || uni.novo} onClick={irCliente} title="Abre o cadastro do cliente dono desta unidade">👤 Ir para o cliente</button>
+                    <button type="button" className="cd-btn" disabled={!uni.v('id_cliente') || uni.novo || uni.sujo} onClick={() => setTrocaCli({ id_cliente: '' })} title="Passa a unidade para outro cliente (o histórico fica com o cliente antigo)">🔁 Mudar de cliente</button>
                   </span>
                 </Campo>
                 <Campo rotulo="Código" span={3}><Txt ed={uni} k="codigo" /></Campo>
@@ -283,6 +293,16 @@ export default function Clientes({ onFechar }) {
             {abaProd === 'refs' && <GradeCad cols={COLS_REFS} rows={referencias} foco={null} onSel={() => {}} vazio="Nenhuma referência" />}
           </section>
         </div>
+      )}
+      {trocaCli && (
+        <Modal titulo="Mudar a unidade de cliente" onFechar={() => setTrocaCli(null)}>
+          <div style={{ display: 'grid', gap: 10, minWidth: 340 }}>
+            <p><b>{uni.atual?.nome}</b> hoje é de <b>{clientes.find((c) => c.id === Number(uni.v('id_cliente')))?.razao_social || '—'}</b>.</p>
+            <select value={trocaCli.id_cliente} onChange={(e) => setTrocaCli({ id_cliente: e.target.value })} aria-label="Novo cliente"><option value="">Escolha o novo cliente…</option>{[...clientes].filter((c) => c.id !== Number(uni.v('id_cliente'))).sort((a, b) => String(a.razao_social).localeCompare(String(b.razao_social))).map((c) => <option key={c.id} value={c.id}>{c.razao_social}</option>)}</select>
+            <small>Passam para o novo cliente: a unidade, a programação fixa e a programação de hoje em diante. Dias passados, comandas e notas já emitidas ficam com o cliente antigo.</small>
+            <div><button type="button" className="cd-btn" disabled={!trocaCli.id_cliente} onClick={mudarCliente}>Confirmar mudança</button> <button type="button" className="cd-btn" onClick={() => setTrocaCli(null)}>Cancelar</button></div>
+          </div>
+        </Modal>
       )}
       {confirma && <Confirma texto={confirma.texto} onSim={confirma.sim} onFechar={() => setConfirma(null)} />}
     </div>
