@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 237 — NFe: editar o caminho do XML/PDF
+
+- Em "Dados do corpo da NFe", **Arquivo XML** e **Arquivo PDF** ficam editáveis em qualquer situação da nota (botão Gravar / ↩), para corrigir o apontamento quando o DANFE não imprime depois de "Ajustar". Rota `PUT /api/nfe/:id/arquivos` (máx. 500 caracteres); o valor anterior vai para a Auditoria. Vazio no XML faz o sistema buscar o XML de novo na API quando o DANFE for pedido.
+
 ## Fase 236 — Ícone "impresso" atualiza entre terminais
 
 - O app grava `nfe_impresso` no servidor, mas outro terminal só via o ícone ao recarregar a lista. Agora a tela de NFe consulta `GET /api/nfe/impressos?ids=…` a cada 12 s (janela visível) e atualiza o 🖨️ das notas da lista (também desmarca se alguém desmarcar). Pode levar até ~12 s.

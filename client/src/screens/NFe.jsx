@@ -183,6 +183,7 @@ export default function NFe({ onFechar }) {
   const [dupIdx, setDupIdx] = useState(0);
   const [dupDraft, setDupDraft] = useState({});
   const [refs, setRefs] = useState([]);
+  const [arqDraft, setArqDraft] = useState({}); // caminhos do XML/PDF em edição (valem em qualquer situação da nota)
   const [origem, setOrigem] = useState(null); // NF-e original aberta para consulta (somente leitura)
   const [analise, setAnalise] = useState(null); // conferência da(s) NF-e referenciada(s) (devolução)
   const [refIdx, setRefIdx] = useState(0);
@@ -228,6 +229,7 @@ export default function NFe({ onFechar }) {
     const leve = (linhas ?? []).find((r) => r.id === foco) ?? null;
     return leve && completa?.id === leve.id ? { ...leve, ...completa } : leve;
   }, [linhas, foco, completa]);
+  useEffect(() => { setArqDraft({}); }, [nota?.id]);
   const v = { ...(nota ?? {}), ...draft };
   const pendente = nota?.status_e === 'PENDENTE';
   const sujo = Object.keys(draft).length > 0;
@@ -968,6 +970,18 @@ export default function NFe({ onFechar }) {
                                     <input type="checkbox" checked={temMarca(val)} disabled={somenteLeitura} onChange={(e) => ed(k, e.target.checked ? 'True' : 'False')} /><i aria-hidden="true" />{r}
                                   </label>
                                 );
+                                if (k === 'nfe_xml_file' || k === 'nfe_pdf_file') { // editável sempre: corrige o apontamento quando o DANFE não imprime
+                                  const atual = nota[k] ?? ''; const val2 = arqDraft[k] ?? atual; const mudou = val2 !== atual;
+                                  return (
+                                    <label key={i} className="nc-c" style={{ gridColumn: 'span 12' }}><span>{r} <small>(editável em qualquer situação da nota)</small></span>
+                                      <span style={{ display: 'flex', gap: 6 }}>
+                                        <input type="text" style={{ flex: 1 }} value={val2} onChange={(e) => setArqDraft((d) => ({ ...d, [k]: e.target.value }))} />
+                                        <button type="button" className="nc-b prim" disabled={!mudou || ocupado} onClick={() => acao(async () => { await api.put(`/nfe/${nota.id}/arquivos`, { [k]: val2 }); setArqDraft((d) => { const n2 = { ...d }; delete n2[k]; return n2; }); cacheDet.current.clear(); recarregaDetalhe.current?.(nota.id); notificar('ok', 'Caminho gravado. O valor anterior ficou na Auditoria.'); })}>Gravar</button>
+                                        <button type="button" className="nc-b" disabled={!mudou} onClick={() => setArqDraft((d) => { const n2 = { ...d }; delete n2[k]; return n2; })}>↩</button>
+                                      </span>
+                                    </label>
+                                  );
+                                }
                                 let ctl;
                                 if (t === 'num') ctl = <Num valor={val} ro={somenteLeitura} onMudar={(n) => ed(k, n)} />;
                                 else if (t === 'rom') ctl = <Num valor={val} ro dec={2} />;

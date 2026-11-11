@@ -16,6 +16,7 @@ import { enriquece, arquivoDoEvento } from '../services/eventosNfe.js';
 import { baseGravacao, paraBanco, paraLocal, caminhoXmlLegado, ehCaminhoLegado } from '../services/caminhosNfe.js';
 import { acharArquivoNota, lerArquivoNota, baseArquivos } from '../services/arquivosApi.js';
 import { aplicaReducaoIbs, montaJsonNfe, validaParaAutorizar, dataHoraBr, regimeDoCrt, ehDevolucao } from '../services/nfeJson.js';
+import { registra } from '../services/auditoria.js';
 import { analisaReferencias, candidatasOriginal, devolucoesDe, errosDaAnalise } from '../services/devolucaoRef.js';
 
 const router = Router();
@@ -695,6 +696,22 @@ const NFE_EDITAVEIS = ['cliente_uf_icms', 'substituicao_tributaria_ie', 'substit
   'entrega_endereco', 'entrega_numero', 'entrega_complemento', 'entrega_bairro', 'entrega_cidade', 'entrega_cidade_ibge', 'entrega_uf', 'entrega_uf_ibge', 'entrega_cep', 'entrega_cnpj', 'entrega_ie', 'entrega_ddd', 'entrega_fone',
   'transportadora_nome', 'transportadora_endereco', 'transportadora_cidade', 'transportadora_uf', 'transportadora_ie', 'transportadora_cnpj', 'transportadora_veiculo_placa', 'transportadora_veiculo_uf', 'transportadora_rntc',
   'volume_qtde', 'volume_numero', 'volume_especie', 'volume_marca', 'peso_bruto', 'peso_liquido', 'texto_corpo', 'csosn', 'nfe_modelo', 'nfe_serie', 'movimento_es'];
+// Caminho do XML/PDF gravado na nota (qualquer situação): permite corrigir o apontamento quando o DANFE não imprime, p.ex. depois de "Ajustar" a NFe.
+router.put('/:id/arquivos', async (req, res) => {
+  const id = idValido(req.params.id);
+  const n = await getNfe(id);
+  const b = {};
+  for (const k of ['nfe_xml_file', 'nfe_pdf_file']) {
+    if (req.body?.[k] === undefined) continue;
+    const v = String(req.body[k] ?? '').trim();
+    if (v.length > 500) throw invalid('Caminho muito longo (máximo 500 caracteres).');
+    b[k] = v;
+  }
+  if (!Object.keys(b).length) throw invalid('Nada para gravar.');
+  await pool.query('update tb_nfe set ? where id = ?', [b, id]);
+  registra({ idUsuario: req.user?.id, usuario: req.user?.usuario ?? '', metodo: 'PUT', rota: req.originalUrl, entidade: 'nfe', acao: 'Caminho de arquivo da NFe alterado', idRegistro: id, status: 200, detalhes: { antes: { nfe_xml_file: n.nfe_xml_file, nfe_pdf_file: n.nfe_pdf_file }, depois: b }, origem: 'api' }); // valor anterior, para poder reverter
+  res.json(await getNfe(id));
+});
 router.put('/:id', async (req, res) => {
   const id = idValido(req.params.id);
   const n = await getNfe(id);
