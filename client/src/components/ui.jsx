@@ -55,6 +55,7 @@ export function BuscaProduto({ onEscolher, onFechar, cliente }) {
   const [rows, setRows] = useState([]);
   const [estado, setEstado] = useState('ocioso'); // ocioso | buscando | ok | erro
   const [sel, setSel] = useState(0);
+  const [maisQue, setMaisQue] = useState(false); // havia mais produtos do que a lista mostra
   const [todos, setTodos] = useState(false); // ignora o filtro de cliente (produtos de qualquer cliente)
   const lista = useRef(null);
   const campo = useRef(null);
@@ -68,7 +69,7 @@ export function BuscaProduto({ onEscolher, onFechar, cliente }) {
     const n = ++seq.current;
     const t = setTimeout(() => {
       api.get(`/produtos?q=${encodeURIComponent(termo)}${cliente && !todos ? `&cliente=${encodeURIComponent(cliente)}` : ''}`)
-        .then((r) => { if (n === seq.current) { setRows(r); setSel(0); setEstado('ok'); } })
+        .then((r) => { if (n === seq.current) { setMaisQue(r.length > 300); setRows(r.slice(0, 300)); setSel(0); setEstado('ok'); } })
         .catch(() => { if (n === seq.current) { setRows([]); setEstado('erro'); } });
     }, 200);
     return () => clearTimeout(t);
@@ -92,7 +93,8 @@ export function BuscaProduto({ onEscolher, onFechar, cliente }) {
           {estado === 'ocioso' && 'Digite ao menos 2 letras para pesquisar.'}
           {estado === 'buscando' && 'Pesquisando…'}
           {estado === 'erro' && 'Não foi possível pesquisar agora. Tente de novo.'}
-          {estado === 'ok' && (rows.length ? `${rows.length} produto${rows.length > 1 ? 's' : ''} encontrado${rows.length > 1 ? 's' : ''}` : (cliente && !todos ? 'Nenhum produto ativo cadastrado para este cliente. Marque "Pesquisar em todos os produtos" ou confira em Cadastros › Produtos.' : 'Nenhum produto encontrado.'))}
+          {estado === 'ok' && maisQue && `Mostrando os 300 primeiros: digite mais letras para afinar a pesquisa.`}
+          {estado === 'ok' && !maisQue && (rows.length ? `${rows.length} produto${rows.length > 1 ? 's' : ''} encontrado${rows.length > 1 ? 's' : ''}` : (cliente && !todos ? 'Nenhum produto ativo cadastrado para este cliente. Marque "Pesquisar em todos os produtos" ou confira em Cadastros › Produtos.' : 'Nenhum produto encontrado.'))}
         </div>
         <ul className="pq-lista" role="listbox" ref={lista}>
           {rows.map((p, i) => (

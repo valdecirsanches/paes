@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 231 — Busca de produto: mais resultados e aviso
+
+- A janela "Localizar produto" cortava em 50 sem avisar. Agora mostra até 300 e, se houver mais, avisa para digitar mais letras.
+
 ## Fase 230 — Unidade: cliente com código
 
 - Em Unidades, o "Cliente dono da unidade" e a lista de "Mudar de cliente" mostram `código · razão social`.

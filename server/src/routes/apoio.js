@@ -25,7 +25,7 @@ router.get('/produtos', async (req, res) => {
   const [rows] = await pool.query(
     `select p.id, p.codigo, p.descricao, p.descricao_expedicao, p.preco, p.divisor_basico, p.un,
             (p.preco / if(p.divisor_basico = 0, 1, p.divisor_basico)) as preco_unitario
-       from tb_produtos p where (p.codigo like ? or p.descricao like ?) and ${SQL_ATIVO}${cli} order by p.descricao limit 50`, args);
+       from tb_produtos p where (p.codigo like ? or p.descricao like ?) and ${SQL_ATIVO}${cli} order by p.descricao limit 301`, args); // 301: o 301º só indica que há mais (a tela mostra 300 e avisa)
   res.json(rows);
 });
 
