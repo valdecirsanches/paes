@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 225 — Listagem de unidades com quadros para anotações
+
+- A impressão "Listagem das unidades" ganhou 4 quadros em branco por unidade (cabeçalho cinza, linhas mais altas para escrever). Não conferido em impressora.
+
 ## Fase 224 — Cadastro de unidades: filtro por situação
 
 - Substitui "Esconder inativas" por **Ativas / Inativas / Todas** (padrão: ativas), igual ao de clientes. A rota `GET /cadastros/clientes/unidades` aceita `situacao=ATIVO|INATIVO|TODOS` ("ativa" = unidade ativa **e** cliente ativo, como o filtro antigo; `esconder=1` continua valendo). SQL não testado em MySQL real.

@@ -300,10 +300,10 @@ export function tabelaPrecos(clienteNome, produtos) {
 /* ---------- Listagem (ppListagem de u_clientes): unidades exibidas na grade, A4 paisagem ---------- */
 export function listagemUnidades(unidades) {
   const corpo = `<div class="cab"><img src="${location.origin}/logo.jpg" alt=""><div><h1>LEV-PÃO COMÉRCIO DE PÃES</h1><h2>LISTAGEM DE CLIENTES</h2></div></div>
-    <table><thead><tr><th>Nome</th><th>Contato</th><th>Telefone</th></tr></thead><tbody>
-    ${unidades.map((u) => `<tr><td>${esc(u.nome)}</td><td>${esc(u.contato)}</td><td>${esc(u.telefone)}</td></tr>`).join('')}
+    <table><thead><tr><th>Nome</th><th>Contato</th><th>Telefone</th><th class="q"></th><th class="q"></th><th class="q"></th><th class="q"></th></tr></thead><tbody>
+    ${unidades.map((u) => `<tr><td>${esc(u.nome)}</td><td>${esc(u.contato)}</td><td>${esc(u.telefone)}</td><td class="q"></td><td class="q"></td><td class="q"></td><td class="q"></td></tr>`).join('')}
     </tbody></table>`;
-  const css = '@page{size:A4 landscape;margin:10mm}body{font:8pt Arial}.cab{display:flex;align-items:center;gap:6mm;margin-bottom:4mm}.cab img{height:16mm}h1,h2{font-size:18pt;margin:0;font-weight:normal}table{width:100%;border-collapse:collapse}th{border-bottom:.4mm solid #000;text-align:left}td,th{padding:.7mm 1mm;border-bottom:.2mm solid #999}tr{break-inside:avoid}';
+  const css = '@page{size:A4 landscape;margin:10mm}body{font:8pt Arial}.cab{display:flex;align-items:center;gap:6mm;margin-bottom:4mm}.cab img{height:16mm}h1,h2{font-size:18pt;margin:0;font-weight:normal}table{width:100%;border-collapse:collapse}th{border-bottom:.4mm solid #000;text-align:left}td,th{padding:.7mm 1mm;border-bottom:.2mm solid #999}tr{break-inside:avoid}tbody td{height:6.5mm}th.q{background:#666}td.q,th.q{width:34mm;border:.3mm solid #000}';
   return { corpo, css };
 }
 
