@@ -1020,6 +1020,11 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 254 — Correção: restrições da Fábrica vazavam para o Faturamento
+
+- O perfil "Fábrica" (só consulta, sem botões de ajuste/edição) era ligado ao carregar o módulo da Fábrica, que o App importa sempre — por isso valia também no Faturamento. Agora o App liga o perfil só enquanto mostra a janela da Fábrica; no Faturamento tudo fica liberado como antes.
+- Não testado em tela real (só build).
+
 ## Fase 253 — Fábrica/Produção: descrição dos Especiais
 
 - A aba Especiais mostrava a coluna "Descrição do produto" vazia: a tela lia `referencia_descricao`, campo que o resumo da produção não devolve (ele devolve `descricao`). Agora lê `descricao` nas duas abas.

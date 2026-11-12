@@ -7,10 +7,9 @@ import Extras from '../screens/Extras.jsx';
 import Conflitos from '../screens/Conflitos.jsx';
 import { aoPedirConflitos } from '../lib/navega.js';
 import FabricaProducao from './FabricaProducao.jsx';
-import { setFabrica } from '../lib/perfil.js';
 import './fabrica.css';
 
-setFabrica(true); // esconde os botões de ajuste (etiqueta, preço, cobrança, configurações) nas telas compartilhadas
+// (o perfil Fábrica é definido pelo App a cada renderização: este módulo é importado sempre, inclusive no Faturamento) — esconde os botões de ajuste (etiqueta, preço, cobrança, configurações) nas telas compartilhadas
 
 // Janela principal do sistema da fábrica (u_main): barra de botões grandes, abas das telas abertas e barra de status.
 // `claro` = tela ainda não refeita no visual original: aparece no desenho do sistema web até receber o mesmo tratamento.

@@ -25,6 +25,7 @@ import Funcionarios from './screens/Funcionarios.jsx';
 import Itinerario from './screens/Itinerario.jsx';
 import Cargas from './screens/Cargas.jsx';
 import Login from './screens/Login.jsx';
+import { setFabrica } from './lib/perfil.js';
 import FabricaApp from './fabrica/FabricaApp.jsx';
 import Auditoria from './screens/Auditoria.jsx';
 import Aparencia from './screens/Aparencia.jsx';
@@ -160,7 +161,9 @@ export default function App() {
   useEffect(() => aoPedirConflitos(() => abrir('conflitos')), []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (usuario && !usuario.fabrica) abrir('dashboard'); }, [usuario?.usuario]); // ao entrar, o Dashboard é a primeira tela (some só se o usuário fechar a aba)
 
-  if ((usuario?.fabrica || (usuario && ambas && modoFab)) && !bloqueio) return <FabricaApp saude={saude} dispositivo={codDisp} onVoltar={!usuario.fabrica && ambas ? () => alterna(false) : null} />; // máquina da fábrica: janela com o visual do sistema da fábrica
+  const naFabrica = Boolean((usuario?.fabrica || (usuario && ambas && modoFab)) && !bloqueio);
+  setFabrica(naFabrica); // perfil Fábrica (só consulta, sem botões de ajuste) vale apenas na janela da Fábrica; o Faturamento fica liberado
+  if (naFabrica) return <FabricaApp saude={saude} dispositivo={codDisp} onVoltar={!usuario.fabrica && ambas ? () => alterna(false) : null} />; // máquina da fábrica: janela com o visual do sistema da fábrica
   const menus = usuario?.fabrica ? MENUS_FABRICA : MENUS; // máquina só da fábrica: usuário "fabrica" automático, só os menus da fábrica
   return (
     <div className="win">
