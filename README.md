@@ -1020,6 +1020,13 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 255 — Fábrica: Cargas no layout do sistema antigo (filtro e ordem por coluna)
+
+- Só na janela da Fábrica (o Faturamento continua como estava): Cargas ganhou o layout compacto do Delphi — grupos de rádios no topo (Tipo/Embalagem, Programação/Expedição, Carga/Ítens, Extra, Região), data grande + **Atualizar**, abas Carga diária/fixa em formato de aba, grade ocupando o resto da tela.
+- Cada título de coluna tem **▼** com a lista de valores e caixas (como o cxGrid): marque os valores que devem aparecer; vários campos se combinam. Clicar no título ordena. Embaixo: total (=Total), expressão do filtro `((Descrição = …) or (…))`, **✕** limpa e a caixa liga/desliga o filtro. Também na Carga fixa.
+- Etiqueta do item, "Separar" por número e edição de acomodação/etinerário continuam disponíveis (botões compactos ao lado da data; o log de impressão lateral não aparece na Fábrica).
+- Conferido só no preview com dados de exemplo.
+
 ## Fase 254 — Correção: restrições da Fábrica vazavam para o Faturamento
 
 - O perfil "Fábrica" (só consulta, sem botões de ajuste/edição) era ligado ao carregar o módulo da Fábrica, que o App importa sempre — por isso valia também no Faturamento. Agora o App liga o perfil só enquanto mostra a janela da Fábrica; no Faturamento tudo fica liberado como antes.

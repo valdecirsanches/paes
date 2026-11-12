@@ -4,6 +4,7 @@ import { Toast, confirmar } from '../components/toast.jsx';
 import { useJanela, ALT_LINHA } from '../components/janela.js';
 import { etiquetaCarga } from '../lib/print.js';
 import { imprimirDocumento, temDestino } from '../lib/impressora.js';
+import { ehFabrica } from '../lib/perfil.js';
 import { bool, brData, fmtQtde, hhmm, hoje, semanaDia } from '../lib/rules.js';
 
 const ACOMOD = [['SACARIA', 'Sacaria'], ['CAIXA BRANCA', 'Caixa branca'], ['CAIXA QUADRADA', 'Caixa quadrada'], ['CAIXA AMARELINHA', 'Caixa amarelinha']];
@@ -108,7 +109,38 @@ function useOrdem(brutas, inicial = null) {
   return { rows, ord, alternar };
 }
 
-function Grade({ cols, rows, sel, classe, vazio, onKeyDown, ordem }) {
+
+/** Filtro por coluna (cxGrid): cada título tem um ▼ com a lista de valores e caixas; marcados = o que entra. Vários campos se combinam (E). */
+const textoCel = (c, r) => String(c[2] ? c[2](r) : r[c[0]] ?? '');
+function useFiltroCol(brutas, cols) {
+  const [fil, setFil] = useState({}); // coluna → Set de textos marcados
+  const [ligado, setLigado] = useState(true);
+  const ativos = useMemo(() => Object.entries(fil).filter(([, v]) => v.size), [fil]);
+  const rows = useMemo(() => {
+    if (!ligado || !ativos.length) return brutas;
+    const cm = Object.fromEntries(cols.map((c) => [c[0], c]));
+    return brutas.filter((r) => ativos.every(([k, v]) => cm[k] && v.has(textoCel(cm[k], r))));
+  }, [brutas, cols, ativos, ligado]);
+  const expr = ativos.map(([k, v]) => { const t = cols.find((c) => c[0] === k)?.[1] ?? k; return `(${[...v].map((x) => `(${t} = ${x})`).join(' or ')})`; }).join(' and ');
+  const alterna = (k, valor) => setFil((o) => { const n = new Set(o[k] ?? []); if (n.has(valor)) n.delete(valor); else n.add(valor); return { ...o, [k]: n }; });
+  const limpaCol = (k) => setFil((o) => ({ ...o, [k]: new Set() }));
+  const limpa = () => setFil({});
+  return { rows, fil, expr, ligado, setLigado, alterna, limpaCol, limpa, temFiltro: ativos.length > 0 };
+}
+function ListaValores({ col, valores, marcados, pos, onAlterna, onLimpa, onFecha }) {
+  return (
+    <>
+      <div className="cgf-veu" onClick={onFecha} />
+      <div className="cgf-pop" role="listbox" aria-label={`Filtrar ${col[1]}`} style={{ left: Math.max(4, Math.min(pos.x, window.innerWidth - 330)), top: pos.y }}>
+        <div className="cgf-pop-t"><b>{col[1]}</b><button type="button" onClick={onLimpa}>Limpar</button></div>
+        <ul>{valores.map((v) => <li key={v} className={marcados.has(v) ? 'on' : ''}><label><input type="checkbox" checked={marcados.has(v)} onChange={() => onAlterna(v)} />{v || '(vazio)'}</label></li>)}</ul>
+      </div>
+    </>
+  );
+}
+
+function Grade({ cols, rows, sel, classe, vazio, onKeyDown, ordem, fcol, fonte }) {
+  const [pop, setPop] = useState(null); // { k, x, y }
   const j = useJanela(rows.length);
   const teclado = (e) => {
     const k = e.key; const el = e.currentTarget;
@@ -128,7 +160,7 @@ function Grade({ cols, rows, sel, classe, vazio, onKeyDown, ordem }) {
   return (
     <div className="trb2-tab cg-grade" ref={j.ref} onScroll={j.onScroll} tabIndex={0} onKeyDown={teclado}>
       <table>
-        <thead><tr><th className="trb2-ck"><input type="checkbox" checked={sel.todos} onChange={sel.marcaTodos} aria-label="Marcar todos" title="Marcar/desmarcar todos" /></th>{cols.map(([k, r, , t]) => <th key={k} className={`${t ?? ''} cg-ord`} title="Clique para ordenar" onClick={() => ordem?.alternar(k)}>{r}{ordem?.ord?.[0] === k ? (ordem.ord[1] === 1 ? ' ⏶' : ' ⏷') : ''}</th>)}</tr></thead>
+        <thead><tr><th className="trb2-ck"><input type="checkbox" checked={sel.todos} onChange={sel.marcaTodos} aria-label="Marcar todos" title="Marcar/desmarcar todos" /></th>{cols.map(([k, r, , t]) => <th key={k} className={`${t ?? ''} cg-ord${fcol?.fil[k]?.size ? ' filtrada' : ''}`} title="Clique para ordenar" onClick={() => ordem?.alternar(k)}>{r}{ordem?.ord?.[0] === k ? (ordem.ord[1] === 1 ? ' ⏶' : ' ⏷') : ''}{fcol && <button type="button" className="cgf-dd" title="Filtrar por valores deste campo" aria-label={`Filtrar ${r}`} onClick={(e) => { e.stopPropagation(); const b = e.currentTarget.getBoundingClientRect(); setPop({ k, x: b.left, y: b.bottom }); }}>▼</button>}</th>)}</tr></thead>
         <tbody>
           {j.acima > 0 && <tr className="trb2-esp-l" style={{ height: j.acima }}><td colSpan={cols.length + 1} /></tr>}
           {rows.slice(j.ini, j.fim).map((r) => <Linha key={r.id} r={r} cols={cols} marc={sel.marcados.has(r.id)} foco={r.id === sel.foco} extra={classe(r)} onClick={sel.clica} onCheck={sel.checa} />)}
@@ -136,6 +168,7 @@ function Grade({ cols, rows, sel, classe, vazio, onKeyDown, ordem }) {
           {rows.length === 0 && <tr><td colSpan={cols.length + 1} className="trb2-vazio">{vazio}</td></tr>}
         </tbody>
       </table>
+      {pop && (() => { const col = cols.find((c) => c[0] === pop.k); return <ListaValores col={col} valores={[...new Set((fonte ?? rows).map((r) => textoCel(col, r)))].sort((a, b) => cmpOrdem(a, b))} marcados={fcol.fil[pop.k] ?? new Set()} pos={pop} onAlterna={(v) => fcol.alterna(pop.k, v)} onLimpa={() => fcol.limpaCol(pop.k)} onFecha={() => setPop(null)} />; })()}
     </div>
   );
 }
@@ -208,8 +241,11 @@ function CargaDiaria({ roteiros, notificar }) {
   const [data, setData] = useState(hoje());
   const [f, setF] = useState(PADRAO);
   const [brutas, setRows] = useState([]);
-  const ordem = useOrdem(brutas, ['xhora', 1]); // a carga abre por ordem de hora
+  const fab = ehFabrica(); // Fábrica: layout compacto do Delphi (rádios no topo, filtro por coluna, total e expressão embaixo)
+  const fcol = useFiltroCol(brutas, COLS_DIARIA);
+  const ordem = useOrdem(fcol.rows, ['xhora', 1]); // a carga abre por ordem de hora
   const rows = ordem.rows;
+  const [editaItem, setEditaItem] = useState(false);
   const [carregando, setCarregando] = useState(false);
   const [log, setLog] = useState([]);
   const [bip, setBip] = useState('');
@@ -257,6 +293,44 @@ function CargaDiaria({ roteiros, notificar }) {
     try { const r = await api.post('/cargas/diaria/separar', { ids: [...sel.marcados] }); await carrega(); notificar('ok', `${r.atualizados} item(ns) separado(s).`); } catch (er) { notificar('erro', er.message); }
   };
 
+  if (fab) {
+    const GRUPOS = [['tipo', 'embalagem'], ['modal', 'expedicao'], ['carga', 'alterados']];
+    const soma = rows.reduce((t, r) => t + (Number(r.display_total) || 0), 0);
+    const Radios = ({ titulo, opcoes, valor, onMudar, cols = 1 }) => (
+      <fieldset className="cgf-rg" style={{ '--n': cols }} aria-label={titulo}>{opcoes.map((o, i) => <label key={o}><input type="radio" name={`cgf-${titulo}`} checked={valor === i} onChange={() => onMudar(i)} />{o}</label>)}</fieldset>
+    );
+    return (
+      <div className="cg-aba cgf">
+        <section className="cgf-topo">
+          {GRUPOS.map((g) => (
+            <div key={g[0]} className="cgf-col">{g.map((k) => { const [, t, o] = FILTROS.find((x) => x[0] === k); return <Radios key={k} titulo={t} opcoes={o} valor={f[k]} onMudar={(i) => setF({ ...f, [k]: i })} />; })}</div>
+          ))}
+          <Radios titulo="Extra" opcoes={EXTRAS} valor={f.extra} onMudar={(i) => setF({ ...f, extra: i })} />
+          <Radios titulo="Região" opcoes={REGIOES} valor={f.regiao} onMudar={(i) => setF({ ...f, regiao: i })} cols={2} />
+          <div className="cgf-data">
+            <input type="date" value={data} onChange={(e) => e.target.value && setData(e.target.value)} aria-label="Data da carga" />
+            <button type="button" className="cgf-atu" onClick={carrega} disabled={carregando}>⟳ Atualizar</button>
+            <div className="cgf-acoes">
+              <button type="button" onClick={etiquetas} title="Etiqueta adesiva do(s) item(ns) marcado(s) ou do item em foco (Enter)">🏷 Etiqueta</button>
+              <button type="button" onClick={() => setEditaItem((x) => !x)} title="Acomodação e etinerário do item em foco" className={editaItem ? 'on' : ''}>✎ Item</button>
+              <input className="cg-bip" value={bip} onChange={(e) => setBip(e.target.value.replace(/\D/g, ''))} onKeyDown={separar} placeholder="Separar: nº etiqueta + Enter" aria-label="Separar pelo número da etiqueta" />
+            </div>
+          </div>
+        </section>
+        {editaItem && <EditorItem tabela="diaria" item={item} roteiros={roteiros} aoGravar={carrega} notificar={notificar} />}
+        <section className="trb2-card cg-lista cgf-lista">
+          <Grade cols={COLS_DIARIA} rows={rows} sel={sel} ordem={ordem} classe={classeDiaria} vazio={carregando ? 'Carregando…' : 'Nenhum item para este filtro'} onKeyDown={teclas} fcol={fcol} fonte={brutas} />
+          <div className="cgf-total"><span>{rows.length} item(ns)</span><b>{fmtQtde(soma)}</b></div>
+          <div className="cgf-expr">
+            <button type="button" className="x" onClick={fcol.limpa} disabled={!fcol.temFiltro} title="Limpar o filtro">✕</button>
+            <input type="checkbox" checked={fcol.ligado} onChange={(e) => fcol.setLigado(e.target.checked)} title="Filtro ligado/desligado" aria-label="Filtro ligado" />
+            <span className="txt" title={fcol.expr}>{fcol.expr || 'Filtre pelo ▼ no título de qualquer coluna'}</span>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
   return (
     <div className="cg-aba">
       <section className="cg-filtros">
@@ -302,7 +376,9 @@ function CargaFixa({ roteiros, notificar }) {
   const [dia, setDia] = useState(semanaDia(hoje()));
   const [des, setDes] = useState(() => new Set()); // chips desmarcados
   const [brutas, setRows] = useState([]);
-  const ordem = useOrdem(brutas, ['hora', 1]); // a carga abre por ordem de hora
+  const fab = ehFabrica();
+  const fcol = useFiltroCol(brutas, COLS_FIXA);
+  const ordem = useOrdem(fcol.rows, ['hora', 1]); // a carga abre por ordem de hora
   const rows = ordem.rows;
   const [carregando, setCarregando] = useState(false);
   const [filtrosAbertos, setFiltrosAbertos] = useState(true);
@@ -345,8 +421,9 @@ function CargaFixa({ roteiros, notificar }) {
       <EditorItem tabela="fixa" item={item} roteiros={roteiros} aoGravar={carrega} notificar={notificar} />
       <div className="cg-meio">
         <section className="trb2-card cg-lista">
-          <Grade cols={COLS_FIXA} rows={rows} sel={sel} ordem={ordem} classe={() => ''} vazio={carregando ? 'Carregando…' : 'Nenhuma programação fixa para este filtro'} />
+          <Grade cols={COLS_FIXA} rows={rows} sel={sel} ordem={ordem} classe={() => ''} vazio={carregando ? 'Carregando…' : 'Nenhuma programação fixa para este filtro'} fcol={fab ? fcol : undefined} fonte={brutas} />
           <footer>{rows.length} item(ns)</footer>
+          {fab && <div className="cgf-expr"><button type="button" className="x" onClick={fcol.limpa} disabled={!fcol.temFiltro} title="Limpar o filtro">✕</button><input type="checkbox" checked={fcol.ligado} onChange={(e) => fcol.setLigado(e.target.checked)} aria-label="Filtro ligado" /><span className="txt" title={fcol.expr}>{fcol.expr || 'Filtre pelo ▼ no título de qualquer coluna'}</span></div>}
         </section>
       </div>
     </div>
@@ -363,7 +440,7 @@ export default function Cargas({ onFechar }) {
   useEffect(() => { api.get('/cargas/roteiros').then(setRoteiros).catch((e) => notificar('erro', e.message)); }, [notificar]);
   const abas = useMemo(() => [['diaria', '🚚 Carga diária'], ['fixa', '📌 Carga fixa']], []);
   return (
-    <div className="cg">
+    <div className={`cg${ehFabrica() ? ' cg-fab' : ''}`}>
       <Toast aviso={aviso} />
       <header className="cg-topo">
         <div className="cg-tit"><b>🚚 Roteiro de cargas</b><small>Acomodação, etinerário e etiquetas da expedição</small></div>

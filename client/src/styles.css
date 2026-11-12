@@ -2039,3 +2039,39 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{text-decoration:underline}
 
 /* Fase 248 — pesquisa em Dispositivos autorizados */
 .dspa-busca { min-width: 260px; padding: 3px 8px; }
+
+/* Fase 255 — Cargas na Fábrica: layout compacto do sistema antigo (rádios no topo, filtro por coluna, total e expressão embaixo) */
+.cg-fab .cg-tit,.cg-fab .cg-topo>.trb2-btn{display:none}
+.cg-fab .cg-topo{padding:2px 6px;gap:6px}
+.cgf{gap:4px}
+.cgf-topo{display:flex;gap:6px;align-items:flex-start;background:#eaf3ff;border:1px solid #9db9d8;padding:6px;font:12px Tahoma,Arial,sans-serif;color:#1a1a1a}
+.cgf-col{display:flex;flex-direction:column;gap:4px}
+.cgf-rg{margin:0;border:1px solid #b9c9dc;border-radius:3px;background:#f6faff;padding:3px 8px 4px;display:grid;grid-template-columns:repeat(var(--n,1),auto);column-gap:14px;row-gap:1px;align-content:start}
+.cgf-rg label{display:flex;align-items:center;gap:4px;white-space:nowrap;cursor:pointer;line-height:1.35}
+.cgf-rg input{margin:0}
+.cgf-data{display:flex;flex-direction:column;gap:8px;margin-left:10px}
+.cgf-data input[type=date]{font:700 26px Tahoma,Arial,sans-serif;padding:2px 6px;border:1px solid #7aa0c8;background:#fff}
+.cgf-atu{height:44px;font:13px Tahoma,Arial,sans-serif;color:#fff;border:1px solid #2a74b8;border-radius:3px;background:linear-gradient(#4aa6ee,#1d82d6);cursor:pointer}
+.cgf-acoes{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.cgf-acoes button{font:12px Tahoma,Arial,sans-serif;padding:2px 6px;border:1px solid #9db9d8;background:#fff;border-radius:3px;cursor:pointer}.cgf-acoes button.on{background:#cfe4fa}
+.cgf-acoes .cg-bip{width:170px;font-size:12px;padding:2px 4px}
+.cgf-lista{flex:1;min-height:0;display:flex;flex-direction:column;padding:0;border-radius:0}
+.cgf-lista .cg-grade{flex:1;min-height:0}
+.cgf-lista .cg-grade thead th{background:linear-gradient(#4aa6ee,#1d82d6);color:#fff;font:12px Tahoma,Arial,sans-serif;font-weight:normal;position:sticky;top:0;white-space:nowrap}
+.cgf-lista .cg-grade thead th.filtrada{background:linear-gradient(#f4a93a,#d9780a)}
+.cgf-dd{float:right;margin-left:6px;padding:0 3px;font-size:9px;line-height:14px;border:1px solid #fff8;border-radius:2px;background:#ffffff40;color:#fff;cursor:pointer}
+.cgf-total{display:flex;justify-content:flex-end;gap:14px;align-items:center;padding:2px 12px;background:linear-gradient(#4aa6ee,#1d82d6);color:#fff;font:12px Tahoma,Arial,sans-serif}.cgf-total b{background:#fff;color:#000;min-width:90px;text-align:right;padding:1px 6px;border:1px solid #7aa0c8}
+.cgf-expr{display:flex;align-items:center;gap:6px;padding:3px 6px;background:#eaf3ff;border-top:1px solid #9db9d8;font:12px Tahoma,Arial,sans-serif;color:#0b5fa5}
+.cgf-expr .x{width:20px;height:20px;border:1px solid #2a74b8;background:#1d82d6;color:#fff;border-radius:2px;cursor:pointer;line-height:1;padding:0}.cgf-expr .x:disabled{opacity:.45;cursor:default}
+.cgf-expr .txt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cgf-veu{position:fixed;inset:0;z-index:60}
+.cgf-pop{position:fixed;z-index:61;width:320px;max-height:340px;display:flex;flex-direction:column;background:#fff;border:2px solid #1a1a1a;box-shadow:2px 3px 8px #0006;font:12px Tahoma,Arial,sans-serif;color:#000}
+.cgf-pop-t{display:flex;justify-content:space-between;align-items:center;padding:3px 6px;background:#dbe9f8;border-bottom:1px solid #9db9d8}.cgf-pop-t button{font-size:11px;cursor:pointer}
+.cgf-pop ul{list-style:none;margin:0;padding:0;overflow:auto}
+.cgf-pop li label{display:flex;align-items:center;gap:6px;padding:2px 6px;cursor:pointer;white-space:nowrap}
+.cgf-pop li.on label{background:#316ac5;color:#fff}.cgf-pop li:hover label{background:#7aa5e8;color:#fff}
+.cg-fab{padding:2px 4px;gap:2px;background:#dbe9f8}
+.cg-fab .cg-topo{background:transparent;border:0;padding:0;border-radius:0;flex:none}
+.cg-fab .dr2-abas{flex-direction:row;align-self:auto;gap:2px}
+.cg-fab .dr2-abas button{writing-mode:horizontal-tb;transform:none;border-radius:4px 4px 0 0;padding:3px 12px;font:12px Tahoma,Arial,sans-serif;background:#cfe0f3;border:1px solid #7aa0c8;color:#06355f}
+.cg-fab .dr2-abas button.on{background:#fff;font-weight:normal;color:#06355f;border-bottom-color:#fff}
