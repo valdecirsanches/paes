@@ -41,8 +41,9 @@ export function filtroDiaria(q = {}) {
   if (carga < 3) { where.push(`${cargaEfetiva('p')} = ?`); params.push(carga + 1); }
   const extra = ind(q.extra, 7, 7, 'Extra');
   if (extra < 7) where.push(ehTrue(`p.extra_${EXTRAS[extra]}`));
-  const reg = ind(q.regiao, 12, 12, 'Região');
-  if (reg < 12) { where.push('u.regiao = ?'); params.push(REGIOES[reg]); }
+  const nomeReg = String(q.regiao_nome ?? '').trim(); // região escolhida pelo nome (as que constam na entrega do dia)
+  if (nomeReg) { where.push('u.regiao = ?'); params.push(nomeReg.slice(0, 60)); }
+  else { const reg = ind(q.regiao, 12, 12, 'Região'); if (reg < 12) { where.push('u.regiao = ?'); params.push(REGIOES[reg]); } }
   const exp = ind(q.expedicao, 2, 2, 'Expedição');
   if (exp === 0) where.push(naoTrue('p.separado'));
   if (exp === 1) where.push(ehTrue('p.separado'));

@@ -15,6 +15,14 @@ const ids = (v) => {
 const tabela = (t) => { if (t !== 'diaria' && t !== 'fixa') throw invalid('Origem inválida.'); return t === 'diaria' ? 'tb_diaria' : 'tb_fixa'; };
 const idUm = (v) => { const n = Number(v); if (!Number.isInteger(n) || n <= 0) throw invalid('Item inválido.'); return n; };
 
+// Regiões que constam nas entregas do dia (alimenta o filtro Região de Cargas; fora da lista = "Todos")
+router.get('/regioes', async (req, res) => {
+  const data = String(req.query.data ?? '');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(data)) throw invalid('Data inválida.');
+  const [rows] = await pool.query(`select distinct u.regiao from tb_diaria p join tb_unidades u on u.id = p.id_unidade
+    where p.data = ? and coalesce(u.regiao, '') <> '' order by u.regiao`, [data]);
+  res.json(rows.map((r) => r.regiao));
+});
 router.get('/diaria', async (req, res) => {
   const f = filtroDiaria(req.query);
   const [rows] = await pool.query(SQL_DIARIA(f.where), f.params);

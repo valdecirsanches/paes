@@ -1020,6 +1020,12 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 259 — Cargas: Região só com as regiões da entrega
+
+- O filtro Região da Carga diária (rádios na Fábrica, lista no Faturamento) mostra apenas as regiões que constam nas entregas da data escolhida, mais "Todos". Novo `GET /api/cargas/regioes?data=`; o filtro passa a ir pelo nome da região (`regiao_nome`), então regiões fora da lista fixa antiga também funcionam. Trocar a data refaz a lista; se a região escolhida não existir na nova data, volta para "Todos".
+- A aba Carga fixa continua com seus quadradinhos de região fixos.
+- Servidor: 165 testes passam; tela conferida só no preview.
+
 ## Fase 258 — Fábrica: botões Tema e Atualização
 
 - A barra da Fábrica ganhou **Tema** (modo claro/escuro, tamanho da letra, temas prontos; abre um quadro sobre a tela e vale só neste computador, sem gravar no servidor) e **Atualização** (recarrega o sistema para pegar a versão nova), com os ícones do sistema antigo.

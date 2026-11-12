@@ -276,6 +276,7 @@ function cargasItin(m, p, u, b) {
   const rt = (id) => itRot.find((x) => x.id === id);
   const dec = (r) => ({ ...r, motorista_apelido: mot(rt(r.id_roteiro)?.id_funcionario)?.apelido ?? '', xhorario: rt(r.id_roteiro)?.horario.slice(0, 5) ?? '', display_total: r.qtde_original + r.qtde_alterada, motorista_nome: mot(rt(r.id_roteiro)?.id_funcionario)?.nome ?? '', horario: rt(r.id_roteiro)?.horario ?? '' });
   if (m === 'GET' && p === '/cargas/roteiros') return json(itRot.map((r) => ({ roteiro_id: r.id, chave: `${r.horario.slice(0, 5)} ${mot(r.id_funcionario)?.nome}` })));
+  if (m === 'GET' && p === '/cargas/regioes') return json(['BARUERI', 'LAPA', 'OSASCO']);
   if (m === 'GET' && p === '/cargas/diaria') {
     const q = (k) => Number(u.searchParams.get(k) ?? 99);
     return json(cgDia.filter((r) => (q('tipo') === 0 ? r.produto_especial === 'True' : q('tipo') === 1 ? r.produto_especial !== 'True' : true) && (q('modal') === 2 ? r.cancelado === 'True' : q('modal') === 0 ? r.cancelado !== 'True' : true)

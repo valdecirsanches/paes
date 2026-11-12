@@ -20,8 +20,7 @@ const FILTROS = [
   ['alterados', 'Ítens', ['Alterados', 'Não alterados', 'Todos'], 2],
 ];
 const EXTRAS = ['Cortado', 'Margarina', 'Côco', 'Açucar', 'Emb ind plástico', 'Emb ind papel', 'Pacote plástico', 'Tudo'];
-const REGIOES = ['Osasco', 'Raposo Tavares', 'Pinheiros', 'Jaguaré', 'Lapa/Barra Funda', 'Anhanguera', 'Pirituba', 'Barueri', 'Alphaville', 'Tamboré', 'Itapevi', 'Jandira', 'Todos'];
-const PADRAO = { tipo: 0, embalagem: 2, modal: 3, carga: 3, extra: 7, regiao: 12, expedicao: 2, alterados: 2 };
+const PADRAO = { tipo: 0, embalagem: 2, modal: 3, carga: 3, extra: 7, regiao: '', expedicao: 2, alterados: 2 }; // regiao: nome ('' = todas)
 
 // Aba "Carga fixa": cada chip é uma caixa de seleção do Delphi (marcada = entra; desmarcada = sai da lista)
 const GRUPOS_FIXA = [
@@ -246,6 +245,8 @@ function CargaDiaria({ roteiros, notificar }) {
   const ordem = useOrdem(fcol.rows, ['xhora', 1]); // a carga abre por ordem de hora
   const rows = ordem.rows;
   const [editaItem, setEditaItem] = useState(false);
+  const [regioes, setRegioes] = useState([]); // regiões que constam nas entregas da data
+  useEffect(() => { api.get(`/cargas/regioes?data=${data}`).then((r) => { setRegioes(r); setF((x) => (x.regiao && !r.includes(x.regiao) ? { ...x, regiao: '' } : x)); }).catch(() => setRegioes([])); }, [data]);
   const [carregando, setCarregando] = useState(false);
   const [log, setLog] = useState([]);
   const [bip, setBip] = useState('');
@@ -255,7 +256,7 @@ function CargaDiaria({ roteiros, notificar }) {
   const carrega = useCallback(async () => {
     setCarregando(true);
     try {
-      const qs = new URLSearchParams({ data, ...Object.fromEntries(Object.entries(f).map(([k, v]) => [k, String(v)])) });
+      const { regiao, ...resto } = f; const qs = new URLSearchParams({ data, ...Object.fromEntries(Object.entries(resto).map(([k, v]) => [k, String(v)])), ...(regiao ? { regiao_nome: regiao } : {}) });
       const r = await api.get(`/cargas/diaria?${qs}`);
       setRows(r); sel.setMarcados((m) => new Set([...m].filter((id) => r.some((x) => x.id === id))));
     } catch (e) { setRows([]); notificar('erro', e.message); } finally { setCarregando(false); }
@@ -306,7 +307,7 @@ function CargaDiaria({ roteiros, notificar }) {
             <div key={g[0]} className="cgf-col">{g.map((k) => { const [, t, o] = FILTROS.find((x) => x[0] === k); return <Radios key={k} titulo={t} opcoes={o} valor={f[k]} onMudar={(i) => setF({ ...f, [k]: i })} />; })}</div>
           ))}
           <Radios titulo="Extra" opcoes={EXTRAS} valor={f.extra} onMudar={(i) => setF({ ...f, extra: i })} />
-          <Radios titulo="Região" opcoes={REGIOES} valor={f.regiao} onMudar={(i) => setF({ ...f, regiao: i })} cols={2} />
+          <Radios titulo="Região" opcoes={[...regioes, 'Todos']} valor={f.regiao ? regioes.indexOf(f.regiao) : regioes.length} onMudar={(i) => setF({ ...f, regiao: regioes[i] ?? '' })} cols={regioes.length > 7 ? 2 : 1} />
           <div className="cgf-data">
             <input type="date" value={data} onChange={(e) => e.target.value && setData(e.target.value)} aria-label="Data da carga" />
             <button type="button" className="cgf-atu" onClick={carrega} disabled={carregando}>⟳ Atualizar</button>
@@ -337,7 +338,7 @@ function CargaDiaria({ roteiros, notificar }) {
         <div className="cg-gr"><span className="cg-rot">Data</span><input type="date" value={data} onChange={(e) => e.target.value && setData(e.target.value)} aria-label="Data da carga" /></div>
         {FILTROS.map(([k, t, o]) => <Segmentado key={k} titulo={t} opcoes={o} valor={f[k]} onMudar={(i) => setF({ ...f, [k]: i })} />)}
         <div className="cg-gr"><span className="cg-rot">Extra</span><select value={f.extra} onChange={(e) => setF({ ...f, extra: Number(e.target.value) })}>{EXTRAS.map((o, i) => <option key={o} value={i}>{o}</option>)}</select></div>
-        <div className="cg-gr"><span className="cg-rot">Região</span><select value={f.regiao} onChange={(e) => setF({ ...f, regiao: Number(e.target.value) })}>{REGIOES.map((o, i) => <option key={o} value={i}>{o}</option>)}</select></div>
+        <div className="cg-gr"><span className="cg-rot">Região</span><select value={f.regiao} onChange={(e) => setF({ ...f, regiao: e.target.value })}><option value="">Todos</option>{regioes.map((o) => <option key={o} value={o}>{o}</option>)}</select></div>
         <button type="button" className="trb2-btn principal" onClick={carrega} disabled={carregando}>⟳ Atualizar</button>
       </section>
 
