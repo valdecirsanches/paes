@@ -97,7 +97,7 @@ const pngB64 = (c) => c.toDataURL('image/png').split(',')[1];
 
 /** Cupom de texto (comanda/demonstrativo) desenhado como UMA imagem contínua, para destinos que não são ESC/POS (ex.: driver do Windows). */
 export function cupomComoImagem(linhas, lmm) {
-  const colunas = 48; // a maior linha do cupom tem 48 colunas (COLS em print.js)
+  const colunas = 64; // a maior linha do cupom tem 63 colunas (COLS em print.js)
   const cPt = Math.max(5, Math.min(9, (((lmm - 6) / colunas) / 0.6) / 0.3528)); // Courier: cada coluna = 0,6 em
   const pt = { c: cPt, n: cPt * 1.25, g: cPt * 1.5 };
   const L = linhas.map((l) => { const o = typeof l === 'object' && l ? l : { e: 'n', t: String(l ?? '') }; return { e: pt[o.e] ? o.e : 'n', t: o.t }; });

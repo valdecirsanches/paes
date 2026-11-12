@@ -231,8 +231,8 @@ const padL = (s, n) => String(s).padEnd(n); // xpadl: alinha à esquerda
 const nf = (v, min, max, grupo) => Number(v ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: min, maximumFractionDigits: max, useGrouping: grupo });
 const dataExtensoMaiusculo = (iso) => semAcento(`${dow(iso)} ${brData(iso)}`).toUpperCase();
 // Largura útil do cupom: 48 colunas (fonte A de 80 mm). Linhas maiores quebravam e o item ocupava duas linhas.
-const COLS = 48;
-const TRACO = '- '.repeat(COLS / 2).trimEnd();
+const COLS = 63; // linhas condensadas (c): a térmica de 80 mm leva 64 colunas em fonte B — antes só 46 eram usadas e a comanda ocupava ~70% do papel
+const TRACO = '- '.repeat(31).trimEnd() + ' -';
 const LINHA = '-'.repeat(COLS);
 
 /** Estilos: g = #14 (largo), n = #18 (normal), c = #15 (condensado). */
@@ -246,14 +246,14 @@ export function comandaTexto(comanda, itens, mercadorias, unidadeNome) {
   const L = [];
   L.push(['g', `COMANDA: ${comanda.id}`], ['n', `Responsavel: ${comanda.usuario ?? ''}`],
     ['g', dataExtensoMaiusculo(String(comanda.data_emissao).slice(0, 10))], ['c', TRACO], ['n', 'Cliente:'], ['g', unidadeNome ?? ''], ['c', LINHA],
-    ['c', `${padR('Qtde', 4)} ${padL('Descricao do produto', 24)} ${padR('Vr Un.', 6)} ${padR('Vr total', 9)}`], ['c', TRACO]);
+    ['c', `${padR('Qtde', 5)} ${padL('Descricao do produto', 35)} ${padR('Vr Un.', 8)} ${padR('Vr total', 12)}`], ['c', TRACO]);
   let total = 0;
   for (const i of itens) {
-    L.push(['c', `${padR(nf(i.new_qtde, 0, 2, false), 4)} ${padL(semAcento(i.descricao_generica ?? '').slice(0, 24), 24)} ${padR(nf(i.preco, 3, 3, true), 6)} ${padR(nf(i.vr_item, 3, 3, true), 9)}`]); // uma linha por item (46 colunas)
+    L.push(['c', `${padR(nf(i.new_qtde, 0, 2, false), 5)} ${padL(semAcento(i.descricao_generica ?? '').slice(0, 35), 35)} ${padR(nf(i.preco, 3, 3, true), 8)} ${padR(nf(i.vr_item, 3, 3, true), 12)}`]); // uma linha por item (63 colunas)
     total += Number(i.vr_item) || 0;
   }
   L.push(['c', TRACO], ['g', `Vr total ${padR(`R$ ${nf(total, 2, 2, true)}`, 12)}`], ['c', LINHA], ['p', ''],
-    ['c', `${'-'.repeat(22)}  ${'-'.repeat(24)}`], ['c', 'Assinatura e nome legivel do recebedor']);
+    ['c', `${'-'.repeat(28)}  ${'-'.repeat(33)}`], ['c', 'Assinatura e nome legivel do recebedor']);
   if (mercadorias.length) {
     L.push(['p', ''], ['p', ''], ['c', LINHA]);
     for (const m of mercadorias) L.push(['p', `${padR(nf(m.qtde, 1, 1, false), 7)} ${m.descricao ?? ''}`]);
@@ -269,19 +269,19 @@ export function demonstrativoTexto(linhas, dataSaida, unidadeNome, usuario = '')
   const dias = new Set(linhas.map((r) => String(r.data).slice(0, 10)));
   const comData = dias.size > 1;
   const dd = (r) => `${String(r.data).slice(8, 10)}/${String(r.data).slice(5, 7)}`;
-  const desc = comData ? 19 : 24;
+  const desc = comData ? 30 : 35;
   const L = [['g', 'DEMONSTRATIVO'], ['n', `Responsavel: ${usuario}`], ['g', dataExtensoMaiusculo(dataSaida)],
     ['c', TRACO], ['n', 'Cliente:'], ['g', unidadeNome ?? ''], ['c', LINHA],
-    ['c', `${comData ? `${padL('Data', 5)} ` : ''}${padR('Qtde', 4)} ${padL('Descricao do produto', desc)} ${padR('Vr Un.', 6)} ${padR('Vr total', 9)}`], ['c', TRACO]];
+    ['c', `${comData ? `${padL('Data', 5)} ` : ''}${padR('Qtde', 5)} ${padL('Descricao do produto', desc)} ${padR('Vr Un.', 8)} ${padR('Vr total', 12)}`], ['c', TRACO]];
   let total = 0;
   for (const r of linhas) {
     const xp = Number(r.xpreco) || 0;
     const q = Number(r.qtde) || 0;
-    L.push(['c', `${comData ? `${dd(r)} ` : ''}${padR(nf(q, 0, 2, false), 4)} ${padL(semAcento(r.produto_descricao ?? '').slice(0, desc), desc)} ${padR(nf(Math.round(xp * 1000) / 1000, 3, 3, true), 6)} ${padR(nf(xp * q, 3, 3, true), 9)}`]);
+    L.push(['c', `${comData ? `${dd(r)} ` : ''}${padR(nf(q, 0, 2, false), 5)} ${padL(semAcento(r.produto_descricao ?? '').slice(0, desc), desc)} ${padR(nf(Math.round(xp * 1000) / 1000, 3, 3, true), 8)} ${padR(nf(xp * q, 3, 3, true), 12)}`]);
     total += Math.round(xp * q * 100) / 100;
   }
   L.push(['c', TRACO], ['g', `Vr total ${padR(`R$ ${nf(Math.round(total * 100) / 100, 2, 2, true)}`, 12)}`], ['c', LINHA], ['p', ''],
-    ['c', `${'-'.repeat(22)}  ${'-'.repeat(24)}`], ['c', 'Assinatura e nome legivel do recebedor']);
+    ['c', `${'-'.repeat(28)}  ${'-'.repeat(33)}`], ['c', 'Assinatura e nome legivel do recebedor']);
   return textoParaHtml(L);
 }
 

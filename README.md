@@ -1020,6 +1020,12 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 263 — Comanda: ocupa a largura toda e letra larga (códigos da matricial)
+
+- **Largura**: as linhas condensadas tinham 46 colunas de 64 possíveis (térmica de 80 mm, fonte B), por isso a comanda ocupava só ~70% do papel. Agora têm 63 colunas (Qtde 5, Descrição 35, Vr Un. 8, Vr total 12; tracejados e assinatura acompanham). Vale para comanda e demonstrativo.
+- **Letra larga**: cada estilo manda o `ESC ! n` e também o código da matricial do sistema antigo (SO largo, SI condensado, DC2 normal); a impressora usa o que entende e ignora o outro.
+- Não testado em impressora real: se a letra do título não aumentar, me diga o modelo da impressora.
+
 ## Fase 262 — Comanda: estilos por ESC ! (sem GS) — corrige o "!" no começo das linhas
 
 - A impressora do cliente ignorava o comando GS ! (tamanho do caractere) e imprimia um "!" no início de cada linha, sem aumentar a letra. O cupom agora usa só **ESC ! n** (modo de impressão): largo = largura dupla + negrito (24 colunas), normal, condensado = fonte B. Nenhum GS é enviado no texto (o corte ao final continua sendo GS V).
