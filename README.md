@@ -1020,6 +1020,12 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 262 — Comanda: estilos por ESC ! (sem GS) — corrige o "!" no começo das linhas
+
+- A impressora do cliente ignorava o comando GS ! (tamanho do caractere) e imprimia um "!" no início de cada linha, sem aumentar a letra. O cupom agora usa só **ESC ! n** (modo de impressão): largo = largura dupla + negrito (24 colunas), normal, condensado = fonte B. Nenhum GS é enviado no texto (o corte ao final continua sendo GS V).
+- Se o corte não funcionar na impressora, é o GS V: me avise o modelo.
+- Não testado em impressora real.
+
 ## Fase 261 — Comanda: título em letra larga como no sistema antigo
 
 - No cupom ESC/POS (texto nativo), o estilo "largo" (COMANDA, data por extenso, nome do cliente, "Vr total R$") saía em **altura dupla** (letra alta e estreita). Agora sai em **largura dupla** (GS ! 0x10, equivalente ao #14 da matricial), em 24 colunas, como na comanda desejada. Itens e cabeçalhos continuam condensados (fonte B) e "Responsável" em fonte normal. Vale para comanda e demonstrativo. Teste novo em `rasterizar.test.js`.
