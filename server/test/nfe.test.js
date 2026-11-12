@@ -211,3 +211,12 @@ test('venda à vista (vencimento no dia da emissão): NF-e sem duplicatas/fatura
   assert.equal(montaJsonNfe(vista, itens, cfg, { numero: 5, duplicatas: [{ vencto: '2026-11-09', valor: 100 }] }).duplicatas, undefined);
   assert.equal(montaJsonNfe(vista, itens, cfg, { numero: 5, duplicatas: [{ vencto: '2026-12-09', valor: 100 }] }).duplicatas.length, 1);
 });
+
+test('autorização barra item com valor zerado ou negativo', () => {
+  const msg = (it) => validaParaAutorizar(nfe, [{ ...itens[0], ...it }], cfg).filter((x) => /zerad/.test(x));
+  assert.equal(msg({}).length, 0);
+  assert.equal(msg({ preco: 0 }).length, 1);
+  assert.equal(msg({ qtde: '0,00' }).length, 1);
+  assert.equal(msg({ preco: -3 }).length, 1);
+  assert.equal(msg({ preco_total: 0 }).length, 1);
+});

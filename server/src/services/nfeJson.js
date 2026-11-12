@@ -42,6 +42,7 @@ export function validaParaAutorizar(nfe, itens, cfg, { vencimentos = [], hoje = 
   const simplesNota = [1, 2].includes(regimeDoCrt(cfg?.nfe_crt));
   if (ehDevolucao(nfe) && !chavesDe(referencias).length) e.push('Devolução (CFOP ' + txt(nfe.cfop_codigo) + ') exige a chave (44 dígitos) da NF-e original na seção "NFe referenciada" da nota (o sistema tenta achá-la sozinho pelo número citado no texto da devolução).');
   if (!itens.length) e.push('A nota não tem itens.');
+  else if (nfe.nf_valor_total != null && String(nfe.nf_valor_total).trim() !== '' && !(n(nfe.nf_valor_total) > 0) && !itens.every((it) => n(it.qtde) * n(it.preco) > 0)) e.push('Valor total da nota zerado.');
   if (!codigoMunicipio(nfe.entrega_uf, nfe.entrega_cidade)) e.push(`Código IBGE ??? (${nfe.entrega_cidade}/${nfe.entrega_uf})`);
   if (!txt(nfe.forma_pagamento)) e.push('Forma de pagamento não informada.');
   if (!txt(nfe.volume_especie) || !txt(nfe.volume_numero) || !txt(nfe.volume_marca) || !n(nfe.volume_qtde) || !n(nfe.peso_liquido) || !n(nfe.peso_bruto)) {
@@ -57,7 +58,8 @@ export function validaParaAutorizar(nfe, itens, cfg, { vencimentos = [], hoje = 
   if (!txt(nfe.cliente_razao_social)) e.push('Razão social do destinatário não informada.');
   for (const [i, it] of itens.entries()) {
     if (dig(it.produto_ncm).length !== 8) e.push(`Item ${i + 1} (${it.produto_codigo}): NCM inválido.`);
-    if (!n(it.qtde) || !n(it.preco)) e.push(`Item ${i + 1} (${it.produto_codigo}): quantidade/preço zerado.`);
+    if (!(n(it.qtde) > 0) || !(n(it.preco) > 0)) e.push(`Item ${i + 1} (${it.produto_codigo}): quantidade/preço zerado ou negativo.`);
+    else if (it.preco_total != null && String(it.preco_total).trim() !== '' && !(n(it.preco_total) > 0)) e.push(`Item ${i + 1} (${it.produto_codigo}): valor total do item zerado.`);
     const rot = `Item ${i + 1} (${it.produto_codigo})`;
     if (dig(it.cClassTrib).length > 6) e.push(`${rot}: cClassTrib "${dig(it.cClassTrib)}" tem ${dig(it.cClassTrib).length} dígitos, mas o correto tem 6 (ex.: 200003). Corrija no Código de tributação do produto.`);
     else if (CST_IBS_REDUZIDO.has(dig(it.cst)) && reducaoIbs(dig(it.cst), dig(it.cClassTrib).padStart(6, '0')) === undefined) e.push(`${rot}: IBS/CBS CST ${dig(it.cst)} (alíquota reduzida) com classificação ${dig(it.cClassTrib).padStart(6, '0')}: o percentual de redução dessa classificação ainda não está cadastrado no sistema (SEFAZ exige o grupo de redução, erro 1033).`);
