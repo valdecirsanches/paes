@@ -62,12 +62,12 @@ export function cupomEscPos(linhas, { cortar = true, colunas = 48, negrito = tru
     const um = concat(cp1252(`${txt}\n\n\n\n\n`), cortar ? new Uint8Array([0x1d, 0x56, 0x42, 0x00]) : new Uint8Array());
     return concat(...Array.from({ length: Math.max(1, copias) }, () => um));
   }
-  // Linha = texto simples, ou { t, e } com estilo: g = largo (largura dupla, como o #14 da matricial; 24 colunas), n = normal, c = condensado (fonte B, 64 colunas)
+  // Linha = texto simples, ou { t, e } com estilo: g = largo (largura dupla, como o #14 da matricial; 24 colunas), n = normal, c = itens (fonte A, 48 colunas)
   // Estilo por ESC ! n (modo de impressão: bit0 = fonte B, bit3 = negrito, bit5 = largura dupla). Serve nas Epson e nas compatíveis simples;
   // o GS ! n (tamanho de caractere) que se usava antes é ignorado por várias impressoras, que ainda imprimiam o "!" no início de cada linha.
   // Além do ESC ! n, vai o código da matricial do sistema antigo (SO #14 largo, SI #15 condensado, DC2 #18 normal): as térmicas de
   // emulação ignoram um dos dois, e o que elas ignoram não imprime nada.
-  const ESTILO = { g: [new Uint8Array([0x1b, 0x21, 0x28, 0x0e]), 24], n: [new Uint8Array([0x1b, 0x21, 0x00, 0x14, 0x12]), 48], c: [new Uint8Array([0x1b, 0x21, 0x01, 0x0f]), 64] };
+  const ESTILO = { g: [new Uint8Array([0x1b, 0x21, 0x28, 0x0e]), 24], n: [new Uint8Array([0x1b, 0x21, 0x00, 0x14, 0x12]), 48], c: [new Uint8Array([0x1b, 0x21, 0x00, 0x14, 0x12]), 48] }; // c = fonte A (48 colunas): é com ela que as 46 colunas do item enchem o papel; a fonte B (64) deixava ~25% de sobra e a letra miúda
   const linha = (l) => {
     if (l && typeof l === 'object') { const [cmd, cols] = ESTILO[l.e] ?? ESTILO.n; return concat(cmd, cp1252(String(l.t ?? '').slice(0, cols)), new Uint8Array([0x0a])); }
     return concat(cp1252(String(l ?? '').slice(0, colunas)), new Uint8Array([0x0a]));

@@ -54,8 +54,7 @@ test('cupom ESC/POS: cp1252 (acentos), limite de colunas, corte', () => {
 test('cupomEscPos aceita linhas com estilo (g/n/c) e limita as colunas de cada estilo', () => {
   const b = cupomEscPos([{ e: 'g', t: 'COMANDA 1' }, { e: 'c', t: 'x'.repeat(80) }, { e: 'n', t: 'ok' }], { cortar: false });
   const t = Buffer.from(b).toString('latin1');
-  assert.ok(t.includes('COMANDA 1\n')); assert.ok(t.includes(`${'x'.repeat(64)}\n`)); assert.ok(!t.includes('x'.repeat(65)));
-  assert.ok(Buffer.from(b).includes(Buffer.from([0x1b, 0x21, 1]))); // fonte B no condensado
+  assert.ok(t.includes('COMANDA 1\n')); assert.ok(t.includes(`${'x'.repeat(48)}\n`)); assert.ok(!t.includes('x'.repeat(49)));
 });
 
 test('cupomEscPos em modo simples não emite ESC/GS (só texto, avanço e corte)', () => {
@@ -68,7 +67,6 @@ test('cupomEscPos em modo simples não emite ESC/GS (só texto, avanço e corte)
 test('cupom ESC/POS: estilo g = ESC ! 0x28 (largura dupla + negrito), 24 colunas, sem GS (que algumas impressoras imprimem como "!")', () => {
   const b = Array.from(cupomEscPos([{ e: 'g', t: 'X'.repeat(40) }, { e: 'c', t: 'a' }], { cortar: false }));
   assert.ok(b.some((v, k) => v === 0x1b && b[k + 1] === 0x21 && b[k + 2] === 0x28), 'ESC ! largura dupla ausente');
-  assert.ok(b.some((v, k) => v === 0x1b && b[k + 1] === 0x21 && b[k + 2] === 0x01), 'ESC ! fonte B ausente');
   assert.ok(!b.includes(0x1d), 'não deve enviar GS');
   assert.equal(b.filter((v) => v === 0x58).length, 24);
 });

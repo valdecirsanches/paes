@@ -1020,6 +1020,11 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 264 — Comanda: itens em fonte A (letra maior, papel cheio)
+
+- A Fase 263 deixou o item em fonte B de 63 colunas e a letra ficou miúda, sobrando ~20% nas laterais. Voltei às linhas de 46 colunas (Qtde 4, Descrição 24, Vr Un. 6, Vr total 9) e agora o estilo dos itens/cabeçalhos usa a **fonte A** (48 colunas) da térmica, que é a que enche a largura do papel e dá a letra maior da comanda desejada. Título largo (largura dupla) e demais estilos como na Fase 263. Vale para comanda e demonstrativo.
+- Não testado em impressora real.
+
 ## Fase 263 — Comanda: ocupa a largura toda e letra larga (códigos da matricial)
 
 - **Largura**: as linhas condensadas tinham 46 colunas de 64 possíveis (térmica de 80 mm, fonte B), por isso a comanda ocupava só ~70% do papel. Agora têm 63 colunas (Qtde 5, Descrição 35, Vr Un. 8, Vr total 12; tracejados e assinatura acompanham). Vale para comanda e demonstrativo.
