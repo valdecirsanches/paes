@@ -85,15 +85,8 @@ export function etiquetaMercadoria(d) {
 
 /* ---------- ppAdesivas (diária): etiqueta adesiva do item, 62 × 45 mm ---------- */
 export function etiquetaItem(i, unidadeNome) {
-  const corpo = `<div class="e"><b class="nome">${esc(i.nome ?? unidadeNome)}</b><hr class="l1"><div class="dt">${esc(semAcento(cap(dow(i.data))))} - ${esc(brData(i.data).replaceAll('/', ' / '))}</div>
-    <b class="hora">${esc(hhmm(i.hora))}</b><b class="qt">${esc(qtdTexto(i))}</b>${bool(i.cancelado) ? '<b class="cc">CANCELADO</b>' : ''}
-    <b class="ds">${esc(i.produto_descricao_expedicao)}</b><div class="ob">${esc(i.obs_producao)}</div><div class="in">${esc(i.inform ?? '')}</div><div class="ct">${Number(i.etiqueta_adesiva) ? `(${esc(i.etiqueta_adesiva)})` : ''}</div></div>`;
-  const css = `@page{size:62mm 45mm;margin:0}body{margin:0;font-family:Arial}.e{position:relative;width:62mm;height:45mm;overflow:hidden}.e>*{position:absolute;margin:0}
-  .nome{left:1.9mm;top:2.6mm;width:58mm;font-size:16pt;white-space:nowrap;overflow:hidden}.l1{left:1.6mm;top:9.5mm;width:58.7mm;border:0;border-top:.3mm solid #000}.dt{left:1.9mm;top:9.3mm;font-size:11pt}
-  .hora{left:1.6mm;top:13.8mm;width:13mm;height:5.8mm;border:.3mm solid #000;font-size:12pt;text-align:center}.qt{left:15mm;top:13.8mm;width:45mm;height:5.8mm;border:.3mm solid #000;font-size:12pt;padding-left:1mm}
-  .cc{left:29.4mm;top:14.3mm;font-size:12pt;background:#fff}.ds{left:1.6mm;top:19.8mm;width:58.7mm;font-size:8pt}.ob{left:2mm;top:27.8mm;width:58mm;height:7.4mm;border:.3mm solid #000;font-size:8pt;overflow:hidden;padding:.3mm 1mm}
-  .in{left:2.4mm;top:36mm;font-size:6pt;white-space:nowrap}.ct{left:55.8mm;top:36mm;font-size:6pt}`;
-  return { corpo, css };
+  // Mesmo desenho do sistema antigo (o da Carga): nome em cinza, quantidades "orig + alt = total", CANCELADO em caixa preta, quadro da observação e caixa da informação.
+  return etiquetaCarga({ ...i, nome: i.nome ?? unidadeNome });
 }
 
 /* ---------- ppAdesivas de Cargas (u_prg_cargas / cargas_etiquetas.rtm): etiqueta adesiva do item, 62 × 45 mm ---------- */

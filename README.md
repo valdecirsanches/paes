@@ -1020,6 +1020,11 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 273 — Etiqueta adesiva do item idêntica à antiga
+
+- A etiqueta adesiva do item (expedição) usava um desenho antigo do app: "Sexta-feira" com inicial maiúscula, CANCELADO em caixa branca sobre as quantidades ("100 + (CANCELADO)"), sem quadro da observação nem caixa da informação. Agora usa o mesmo desenho do sistema antigo: nome em cinza, dia em minúsculas, quantidades "orig + alt = total", **CANCELADO em caixa preta com letra branca**, quadro pontilhado da observação, caixa da informação com o contador "(n)". Os ajustes de posição do editor de etiquetas passam a ter os mesmos campos da etiqueta de carga.
+- Conferido por imagem renderizada; não impresso.
+
 ## Fase 272 — NFe: botão ✉ na linha de todas as notas processadas
 
 - O ícone ✉ da linha só aparecia nas autorizadas; agora aparece em toda nota que não esteja PENDENTE (cancelada, inutilizada, devolvida, rejeitada), igual ao envio liberado na Fase 271.
