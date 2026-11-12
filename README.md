@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 245 — NFe: valor alinhado à direita
+
+- Coluna "Valor da NF" da grade: título e valores alinhados à direita (dígitos de largura fixa).
+
 ## Fase 244 — NFe: ícone dos dados da nota
 
 - O ícone da linha que abre os dados da NFe passou de 📋 para **📝** (folha com lápis).

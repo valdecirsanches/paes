@@ -2030,3 +2030,6 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{text-decoration:underline}
 .cd-lado-bt{margin-left:auto;border:1px solid #c9b99c;background:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:12px}.cd-lado-bt.on{background:#1f5fa8;color:#fff;border-color:#1f5fa8}
 @media (max-width:1100px){.cd-split{flex-direction:column;overflow:auto}.cd-cli-lado{flex:0 0 220px}}
 .nf2-ic{width:140px}
+
+/* Fase 245: valor da NF alinhado à direita (célula, título e total) */
+.nfe-grade td.n,.nfe-grade th.n{text-align:right;font-variant-numeric:tabular-nums}
