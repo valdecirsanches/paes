@@ -64,3 +64,11 @@ test('cupomEscPos em modo simples não emite ESC/GS (só texto, avanço e corte)
   assert.deepEqual(b.slice(-4), [0x1d, 0x56, 0x42, 0x00]);
   assert.equal(String.fromCharCode(...b.slice(0, 12)), 'COMANDA\nITEM');
 });
+
+test('cupom ESC/POS: estilo g sai em largura dupla (GS ! 0x10) e corta em 24 colunas', () => {
+  const b = cupomEscPos([{ e: 'g', t: 'X'.repeat(40) }], { cortar: false });
+  const s = Array.from(b);
+  const i = s.findIndex((v, k) => v === 0x1d && s[k + 1] === 0x21 && s[k + 2] === 0x10);
+  assert.ok(i >= 0, 'comando de largura dupla ausente');
+  assert.equal(s.filter((v) => v === 0x58).length, 24);
+});

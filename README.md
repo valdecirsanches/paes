@@ -1020,6 +1020,12 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 261 — Comanda: título em letra larga como no sistema antigo
+
+- No cupom ESC/POS (texto nativo), o estilo "largo" (COMANDA, data por extenso, nome do cliente, "Vr total R$") saía em **altura dupla** (letra alta e estreita). Agora sai em **largura dupla** (GS ! 0x10, equivalente ao #14 da matricial), em 24 colunas, como na comanda desejada. Itens e cabeçalhos continuam condensados (fonte B) e "Responsável" em fonte normal. Vale para comanda e demonstrativo. Teste novo em `rasterizar.test.js`.
+- A impressora do tipo de documento precisa estar em destino de linguagem **escpos** (texto nativo); em destinos de imagem o cupom é desenhado como figura e a letra sai condensada.
+- Não testado em impressora real.
+
 ## Fase 260 — Fábrica/Produção: linha marcada inteira
 
 - Na lista da Produção, a linha atual agora fica toda marcada (antes a célula da coluna atual voltava à cor normal e parecia "cortada"); a coluna atual ganha só um contorno. Navegando com ↑ ↓ a linha atual sempre fica visível (rola sem esconder sob o cabeçalho).
