@@ -1020,6 +1020,12 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 267 — Cupom: letra larga SO por padrão e avanço de papel no final
+
+- O Teste de letras da matricial mostrou que as linhas **1 (SO)** e **2 (ESC W)** saem grandes, 3 (ESC !) normal e 4 (GS !) imprime "!". O padrão agora é **SO**, o mesmo código do sistema antigo (#14), então COMANDA, data, cliente e "Vr total R$" saem em letra larga sem precisar configurar (a caixa Letra larga continua em Configurar impressoras).
+- **Totalizador que não aparecia**: a impressora não corta e, depois da última linha, o papel só avançava 4 linhas; o "Vr total" e a assinatura ficavam dentro da impressora quando se rasgava o cupom. Agora o cupom termina com 9 linhas de avanço.
+- Não testado em impressora real além do teste de letras enviado.
+
 ## Fase 266 — Cupom: letra larga escolhida por impressora (Teste de letras)
 
 - A Fase 265 não imprimiu nada na matricial: cada impressora entende um código diferente de letra larga e eu estava chutando. Agora o **padrão não envia nenhum código de tamanho** (só ESC M / ESC E, que a impressora já aceitava — imprime tudo, títulos só em negrito).

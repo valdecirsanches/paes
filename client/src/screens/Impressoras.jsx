@@ -141,7 +141,7 @@ export default function Impressoras() {
                 <button type="button" className="imp-btn" disabled={!c.destino || !!ocupado} onClick={() => testar(tipo, c.destino)}>{ocupado === tipo ? 'Enviando…' : 'Teste'}</button>
                 {DOCS[tipo]?.cupom && (<>
                   <button type="button" className="imp-btn" disabled={!c.destino || !!ocupado} title="Imprime 4 linhas, cada uma com um código de letra larga. Veja qual saiu grande e escolha o número ao lado." onClick={async () => { setOcupado(tipo); try { await testeLetrasCupom(c.destino); mensagem('ok', 'Teste de letras enviado: escolha ao lado o número da linha que saiu grande.'); } catch (e) { mensagem('erro', e.message); } finally { setOcupado(''); } }}>Teste de letras</button>
-                  <label className="imp-cop" title="Código usado nos títulos do cupom (COMANDA, data, cliente, total)">Letra larga<select value={c.largo ?? ''} disabled={!c.destino} onChange={(e) => muda(tipo, 'largo', e.target.value)}><option value="">0 – sem</option><option value="so">1 – SO</option><option value="escw">2 – ESC W</option><option value="escbang">3 – ESC !</option><option value="gs">4 – GS !</option></select></label>
+                  <label className="imp-cop" title="Código usado nos títulos do cupom (COMANDA, data, cliente, total)">Letra larga<select value={c.largo ?? 'so'} disabled={!c.destino} onChange={(e) => muda(tipo, 'largo', e.target.value)}><option value="nenhum">0 – sem</option><option value="so">1 – SO</option><option value="escw">2 – ESC W</option><option value="escbang">3 – ESC !</option><option value="gs">4 – GS !</option></select></label>
                 </>)}
               </div>
             );

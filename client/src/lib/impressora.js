@@ -135,7 +135,7 @@ export async function imprimirDocumento(tipo, doc0, aviso = () => {}) {
     const cupomImagem = def.cupom && !((d.linguagem === 'escpos' || d.linguagem === 'texto') && doc.linhas);
     if (cupomImagem && !doc.linhas) throw new Error('este documento não tem texto para a impressora');
     if (def.cupom && !cupomImagem) {
-      await enviar(cfg.destino, { tipo: 'raw', dados_b64: paraBase64(cupomEscPos(doc.linhas, { cortar: d.cortar !== false, copias, simples: d.linguagem === 'texto', largo: cfg.largo })) });
+      await enviar(cfg.destino, { tipo: 'raw', dados_b64: paraBase64(cupomEscPos(doc.linhas, { cortar: d.cortar !== false, copias, simples: d.linguagem === 'texto', largo: cfg.largo ?? 'so' })) });
     } else {
       // Um único trabalho com várias etiquetas (antes: um trabalho por etiqueta, e cada trabalho puxava papel/corte
       // próprio da impressora — daí o espaço enorme entre as etiquetas). Etiquetas continuam separadas (uma página cada).

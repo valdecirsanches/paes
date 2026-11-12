@@ -64,9 +64,9 @@ test('cupomEscPos em modo simples não emite ESC/GS (só texto, avanço e corte)
   assert.equal(String.fromCharCode(...b.slice(0, 12)), 'COMANDA\nITEM');
 });
 
-test('cupom ESC/POS: letra larga só com o código escolhido; padrão = sem GS, ESC ! nem SO', () => {
+test('cupom ESC/POS: letra larga só com o código escolhido; sem código = sem GS, ESC ! nem SO (o padrão do app é SO)', () => {
   const l = [{ e: 'g', t: 'X'.repeat(40) }, { e: 'c', t: 'a' }];
-  const pad = Array.from(cupomEscPos(l, { cortar: false }));
+  const pad = Array.from(cupomEscPos(l, { cortar: false, largo: 'nenhum' }));
   assert.ok(!pad.includes(0x1d) && !pad.includes(0x0e) && !pad.some((v, k) => v === 0x1b && pad[k + 1] === 0x21));
   assert.equal(pad.filter((v) => v === 0x58).length, 40);
   const so = Array.from(cupomEscPos(l, { cortar: false, largo: 'so' }));
