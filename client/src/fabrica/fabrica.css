@@ -46,3 +46,4 @@
 .fbp-dest thead th{position:sticky;top:0;background:#373737;color:#d6d6d6;font-weight:normal;font-size:12px;text-align:left;padding:3px 3px;cursor:pointer;white-space:nowrap}.fbp-dest thead th i{font-style:normal;font-size:8px;color:#bdb4ff}
 .fbp-dest td{font-size:12px;padding:2px 3px;color:#e6e6e6;border-bottom:1px solid #444;white-space:nowrap}.fbp-dest td.n{text-align:right}
 .fbp-dest tfoot td{background:#373737;color:#fff;border-top:1px solid #222;padding:2px 4px}
+.fbp-sep{width:6px;flex:none;cursor:col-resize;background:#3a3a3a;border-left:1px solid #2a2a2a;touch-action:none}.fbp-sep:hover{background:#6a6a6a}

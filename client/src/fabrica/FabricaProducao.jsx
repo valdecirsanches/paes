@@ -15,6 +15,13 @@ const num = (n) => Number(n ?? 0).toLocaleString('pt-BR', { maximumFractionDigit
 /** Aba (Salgados / Especiais): lista mestre (horário × referência) + "Detalhamento de destino" à direita. */
 function Aba({ tipo, data, recarga, ativa, fonte, onCarga }) {
   const [mestre, setMestre] = useState([]);
+  const [larg, setLarg] = useState(() => { try { const n = Number(localStorage.getItem('fab_producao_dest')); return n >= 200 && n <= 1400 ? n : 520; } catch { return 520; } });
+  const arrasta = (e) => { // barra entre a lista e o detalhamento: arrastar muda a largura (lembrada neste navegador)
+    e.preventDefault(); const x0 = e.clientX; const l0 = larg; let l = l0;
+    const mv = (m) => { l = Math.min(1400, Math.max(200, l0 + (x0 - m.clientX))); setLarg(l); };
+    const up = () => { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); try { localStorage.setItem('fab_producao_dest', String(Math.round(l))); } catch { /* sem armazenamento */ } };
+    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
+  };
   const [sel, setSel] = useState(null);      // chave "turno-referencia"
   const [col, setCol] = useState(0);         // coluna da célula com foco (fica com a cor do horário, como no original)
   const [destinos, setDestinos] = useState([]);
@@ -75,7 +82,8 @@ function Aba({ tipo, data, recarga, ativa, fonte, onCarga }) {
           </tbody>
         </table>
       </div>
-      <div className="fbp-dest">
+      <div className="fbp-sep" role="separator" aria-orientation="vertical" title="Arraste para aumentar ou diminuir o detalhamento" onPointerDown={arrasta} />
+      <div className="fbp-dest" style={{ width: larg }}>
         <div className="fbp-dest-t">Detalhamento de destino</div>
         <div className="fbp-dest-g">
           <table>

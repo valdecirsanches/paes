@@ -1020,6 +1020,11 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 249 — Fábrica/Produção: detalhamento de destino maior e redimensionável
+
+- O painel "Detalhamento de destino" (cliente, hora, qtde, entrega…) abre mais largo (520 px) para mostrar todas as colunas sem rolar, e há uma barra entre a lista e o painel: arrastar aumenta ou diminui. A largura fica lembrada no navegador.
+- Não testado em tela real (só build).
+
 ## Fase 248 — E-mail de NF cancelada, pesquisa em Dispositivos, janela da Fábrica
 
 - **NFe cancelada por e-mail**: o envio agora aceita notas CANCELADAS. Assunto e texto próprios (chave, protocolo e data do cancelamento, justificativa) e anexos: XML da nota, XML do evento de cancelamento e PDF do cancelamento (o PDF é opcional; sem o XML do cancelamento o envio é recusado).
