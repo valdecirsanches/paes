@@ -1020,6 +1020,11 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 274 — Comanda: descrição em mais de uma linha e "preço x qtde = total"
+
+- Na comanda impressa, cada item agora tem a descrição na largura toda (43 colunas) e o que não couber vai para a linha de baixo; em seguida uma linha à direita com **preço x qtde = total** (ex.: `0,700 x 325 = 227,500`). O cabeçalho passa a ser "Qtde Descricao do produto". Resto do cupom inalterado (o demonstrativo continua como estava).
+- Conferido pelo texto gerado; não impresso.
+
 ## Fase 273 — Etiqueta adesiva do item idêntica à antiga
 
 - A etiqueta adesiva do item (expedição) usava um desenho antigo do app: "Sexta-feira" com inicial maiúscula, CANCELADO em caixa branca sobre as quantidades ("100 + (CANCELADO)"), sem quadro da observação nem caixa da informação. Agora usa o mesmo desenho do sistema antigo: nome em cinza, dia em minúsculas, quantidades "orig + alt = total", **CANCELADO em caixa preta com letra branca**, quadro pontilhado da observação, caixa da informação com o contador "(n)". Os ajustes de posição do editor de etiquetas passam a ter os mesmos campos da etiqueta de carga.

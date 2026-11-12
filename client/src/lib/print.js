@@ -228,6 +228,17 @@ const COLS = 48; // largura do cupom em fonte A de 80 mm (itens de 46 colunas en
 const TRACO = '- '.repeat(COLS / 2).trimEnd();
 const LINHA = '-'.repeat(COLS);
 
+/** Quebra um texto em linhas de até n colunas, nas palavras (palavra maior que n é partida). */
+const quebraTexto = (t, n) => {
+  const out = []; let at = '';
+  for (let w of String(t ?? '').split(/\s+/).filter(Boolean)) {
+    while (w.length > n) { if (at) { out.push(at); at = ''; } out.push(w.slice(0, n)); w = w.slice(n); }
+    if (!at) at = w; else if (at.length + 1 + w.length <= n) at += ` ${w}`; else { out.push(at); at = w; }
+  }
+  if (at || !out.length) out.push(at);
+  return out;
+};
+
 /** Letra larga cabe em 24 colunas: nome maior quebra em mais linhas (nas palavras) em vez de perder letras. */
 const quebraG = (t, n = 24) => {
   const pal = String(t ?? '').split(/\s+/).filter(Boolean); const out = []; let at = '';
@@ -247,10 +258,14 @@ export function comandaTexto(comanda, itens, mercadorias, unidadeNome) {
   const L = [];
   L.push(['g', `COMANDA: ${comanda.id}`], ['n', `Responsavel: ${comanda.usuario ?? ''}`],
     ['g', dataExtensoMaiusculo(String(comanda.data_emissao).slice(0, 10))], ['c', TRACO], ['n', 'Cliente:'], ...quebraG(unidadeNome), ['c', LINHA],
-    ['c', `${padR('Qtde', 4)} ${padL('Descricao do produto', 24)} ${padR('Vr Un.', 6)} ${padR('Vr total', 9)}`], ['c', TRACO]);
+    ['c', `${padR('Qtde', 4)} Descricao do produto`, ], ['c', TRACO]);
   let total = 0;
   for (const i of itens) {
-    L.push(['c', `${padR(nf(i.new_qtde, 0, 2, false), 4)} ${padL(semAcento(i.descricao_generica ?? '').slice(0, 24), 24)} ${padR(nf(i.preco, 3, 3, true), 6)} ${padR(nf(i.vr_item, 3, 3, true), 9)}`]); // uma linha por item (46 colunas)
+    // descrição na largura toda (43 colunas); o que não couber vai para a linha de baixo; depois "preço x qtde = total" à direita
+    const qt = nf(i.new_qtde, 0, 2, false);
+    const partes = quebraTexto(semAcento(i.descricao_generica ?? ''), 43);
+    partes.forEach((t, k) => L.push(['c', `${k ? '    ' : padR(qt, 4)} ${t}`]));
+    L.push(["c", padR(`${nf(i.preco, 3, 3, true)} x ${qt} = ${nf(i.vr_item, 3, 3, true)}`, 46)]);
     total += Number(i.vr_item) || 0;
   }
   L.push(['c', TRACO], ['g', `Vr total ${padR(`R$ ${nf(total, 2, 2, true)}`, 12)}`], ['c', LINHA], ['p', ''],
