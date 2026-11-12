@@ -11,7 +11,7 @@ import { lerDanfeCfg, gravarDanfeCfg, gravarLogo, lerLogo, removerLogo, ORIENTAC
 import { danfeDoXml, achaXmlLocal } from '../services/danfeLocal.js';
 import { lerA3, gravarA3, limparA3 } from '../services/a3Store.js';
 import { impostos, usuarioNfe } from '../services/geraFatura.js';
-import { destinatarios, assuntoPadrao, mensagemPadrao, enviaEmail, criaTransporte, listaEmails } from '../services/emailNfe.js';
+import { destinatarios, assuntoPadrao, mensagemPadrao, assuntoCancelamento, mensagemCancelamento, enviaEmail, criaTransporte, listaEmails } from '../services/emailNfe.js';
 import { enriquece, arquivoDoEvento } from '../services/eventosNfe.js';
 import { baseGravacao, paraBanco, paraLocal, caminhoXmlLegado, ehCaminhoLegado } from '../services/caminhosNfe.js';
 import { acharArquivoNota, lerArquivoNota, baseArquivos } from '../services/arquivosApi.js';
@@ -607,17 +607,39 @@ async function propostaEmail(nfe, cfg, destino) {
   // endereços conhecidos que não entram por padrão (aparecem desmarcados): contabilidade quando "enviar DANFE à contabilidade" está desligado
   const opc = { cc: destino === 'cliente' ? listaEmails(cfg.nfe_email_contabilidade).ok.filter((e) => ![...d.para, ...d.cc, ...d.cco].some((x) => x.toLowerCase() === e.toLowerCase())) : [] };
   const avisos = [];
-  if (nfe.status_e !== 'AUTORIZADA') avisos.push(`Nota ${nfe.status_e || ''}: só notas AUTORIZADAS podem ser enviadas.`.replace('Nota :', 'Nota:'));
+  const cancelada = nfe.status_e === 'CANCELADA';
+  if (nfe.status_e !== 'AUTORIZADA' && !cancelada) avisos.push(`Nota ${nfe.status_e || ''}: só notas AUTORIZADAS (ou CANCELADAS, com o aviso de cancelamento) podem ser enviadas.`.replace('Nota :', 'Nota:'));
+  let canc = {};
+  if (cancelada) { // dados do cancelamento para o aviso: protocolo e data do evento
+    const [[ev]] = await pool.query("select data_evento, retorno from tb_nfe_eventos where id_nfe = ? and nome_evento = 'CANCELAMENTO' order by id desc limit 1", [nfe.id]);
+    let ret = {}; try { ret = JSON.parse(ev?.retorno ?? '{}'); } catch { /* sem retorno guardado */ }
+    canc = { justificativa: nfe.nfe_cancelamento_justificativa, protocolo: ret.protocoloEvento ?? ret.protocolo ?? '', data: ev?.data_evento };
+  }
   if (!d.para.length) avisos.push(destino === 'contabilidade' ? 'E-mail da contabilidade não configurado (Emitente › Envio de email).' : 'Cliente sem e-mail para NF-e.');
   if (d.invalidos.length) avisos.push(`E-mail(s) inválido(s) ignorado(s): ${d.invalidos.join(', ')}`);
   return { id: nfe.id, numero: nfe.nfe_numero, serie: nfe.nfe_serie, status: nfe.status_e, cliente: nfe.cliente_razao_social ?? '', valor: nfe.nf_valor_total,
-    para: d.para, cc: d.cc, cco: d.cco, opcionais: opc, assunto: assuntoPadrao(cfg, nfe), mensagem: mensagemPadrao(cfg, nfe, destino), avisos, pode: nfe.status_e === 'AUTORIZADA' && d.para.length > 0 };
+    para: d.para, cc: d.cc, cco: d.cco, opcionais: opc, cancelamento: cancelada,
+    assunto: cancelada ? assuntoCancelamento(cfg, nfe) : assuntoPadrao(cfg, nfe), mensagem: cancelada ? mensagemCancelamento(cfg, nfe, destino, canc) : mensagemPadrao(cfg, nfe, destino), avisos, pode: ['AUTORIZADA', 'CANCELADA'].includes(nfe.status_e) && d.para.length > 0 };
 }
 /** XML e DANFE da nota: do disco, ou baixados da API (e guardados em disco para o próximo envio). */
 async function anexosDaNota(nfe, cfg) {
   const x = await buscaArquivo(nfe, cfg, 'nfe_xml_file', 'xml', (d) => api.xmlAutorizado(d));
   const p = await buscaArquivo(nfe, cfg, 'nfe_pdf_file', 'pdf', (d, o) => api.danfePdf(d, o)); // sem PDF, gera do XML
   return [{ filename: `${nfe.nfe_chave}-procNFe.xml`, content: x, contentType: 'application/xml' }, { filename: `${nfe.nfe_chave}.pdf`, content: p, contentType: 'application/pdf' }];
+}
+/** Nota cancelada: XML da nota + XML do evento de cancelamento + comprovante (PDF) — os dois últimos sempre da API. O PDF é opcional (se a API não o tiver, segue sem ele). */
+async function anexosDaCancelada(nfe, cfg) {
+  const x = await buscaArquivo(nfe, cfg, 'nfe_xml_file', 'xml', (d) => api.xmlAutorizado(d));
+  const anexos = [{ filename: `${nfe.nfe_chave}-procNFe.xml`, content: x, contentType: 'application/xml' }];
+  const { docId } = await docDaNota(nfe, cfg);
+  const cx = await api.arquivoEvento(docId, 'cancelamento.xml');
+  if (cx.status !== 200) throw new AppError(502, `A API não devolveu o XML do cancelamento (HTTP ${cx.status}).`);
+  anexos.push({ filename: `${nfe.nfe_chave}-cancelamento.xml`, content: cx.buffer, contentType: 'application/xml' });
+  for (const nome of ['danfe-cancelamento.pdf', 'cancelamento.pdf']) {
+    const pdf = await api.arquivoEvento(docId, nome).catch(() => null);
+    if (pdf?.status === 200) { anexos.push({ filename: `${nfe.nfe_chave}-${nome}`, content: pdf.buffer, contentType: 'application/pdf' }); break; }
+  }
+  return anexos;
 }
 router.post('/email/previa', async (req, res) => {
   const { ids, destino } = pedidoEmail(req.body);
@@ -636,7 +658,7 @@ router.post('/email', async (req, res) => {
     try {
       const nfe = await getNfe(id);
       const p = await propostaEmail(nfe, cfg, destino);
-      if (nfe.status_e !== 'AUTORIZADA') throw invalid(p.avisos[0]);
+      if (!['AUTORIZADA', 'CANCELADA'].includes(nfe.status_e)) throw invalid(p.avisos[0]);
       let { para, cc, cco, assunto, mensagem } = p;
       if (aj) {
         const l = (v, atual) => (v === undefined ? atual : listaEmails(v).ok);
@@ -649,7 +671,7 @@ router.post('/email', async (req, res) => {
         para = f(para, sel.para); cc = f([...cc, ...(p.opcionais?.cc ?? [])], sel.cc); cco = f(cco, sel.cco);
       }
       if (!para.length) throw invalid(p.avisos[0] || 'Nenhum e-mail de destino marcado.');
-      const r = await enviaEmail(cfg, { para, cc, cco, assunto, mensagem, anexos: await anexosDaNota(nfe, cfg) }, transporte);
+      const r = await enviaEmail(cfg, { para, cc, cco, assunto, mensagem, anexos: nfe.status_e === 'CANCELADA' ? await anexosDaCancelada(nfe, cfg) : await anexosDaNota(nfe, cfg) }, transporte);
       if (destino === 'cliente') { try { await pool.query("update tb_nfe set nfe_email_enviado = 'True' where id = ?", [id]); } catch { await pool.query('update tb_nfe set nfe_email_enviado = 1 where id = ?', [id]).catch(() => {}); } }
       await evento(pool, id, 'EMAIL', { resposta: `${destino === 'contabilidade' ? 'Contabilidade' : 'Cliente'}: ${[...para, ...cc].join('; ')}`, obs: assunto, retorno: JSON.stringify({ destino, para, cc, cco, ...r }) }).catch(() => {});
       resultados.push({ id, numero: nfe.nfe_numero, ok: true, para, cc, log: `NFe ${nfe.nfe_numero}: enviada para ${para.join('; ')}${cc.length ? ` (cópia: ${cc.join('; ')})` : ''}.` });

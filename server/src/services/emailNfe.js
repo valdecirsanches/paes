@@ -50,6 +50,18 @@ export function mensagemPadrao(cfg, nfe, destino = 'cliente') {
     + 'com o arquivo XML (guarda fiscal) e o DANFE em PDF.\n\n'
     + `Chave de acesso: ${nfe.nfe_chave}\n\nAtenciosamente,\n${cfg.razao || cfg.fantasia || ''}`;
 }
+export function assuntoCancelamento(cfg, nfe) {
+  return `CANCELAMENTO de NFe ${nfe.nfe_numero}${nfe.nfe_serie ? `/${Number(nfe.nfe_serie) || nfe.nfe_serie}` : ''} - ${cfg.fantasia || cfg.razao || ''}`.trim().replace(/ -$/, '');
+}
+/** Aviso de cancelamento: justificativa, protocolo e data do evento (dados do cancelamento que o cliente precisa para o estorno/escrituração). */
+export function mensagemCancelamento(cfg, nfe, destino = 'cliente', { justificativa = '', protocolo = '', data = '' } = {}) {
+  const dest = destino === 'contabilidade' ? 'Prezados,' : `Prezado(a) ${nfe.cliente_razao_social || 'cliente'},`;
+  const dt = data ? new Date(data).toLocaleString('pt-BR') : '';
+  return `${dest}\n\nInformamos que a Nota Fiscal Eletrônica nº ${nfe.nfe_numero} (série ${Number(nfe.nfe_serie) || nfe.nfe_serie || 1}), no valor de ${moeda(nfe.nf_valor_total)}, foi CANCELADA.\n\n`
+    + `Chave de acesso: ${nfe.nfe_chave}\n${protocolo ? `Protocolo do cancelamento: ${protocolo}\n` : ''}${dt ? `Data do cancelamento: ${dt}\n` : ''}Justificativa: ${justificativa || nfe.nfe_cancelamento_justificativa || ''}\n\n`
+    + 'Seguem em anexo o XML da nota, o XML do evento de cancelamento e o comprovante em PDF. Esta nota não deve ser escriturada.\n\n'
+    + `Atenciosamente,\n${cfg.razao || cfg.fantasia || ''}`;
+}
 /** Texto simples → HTML (parágrafos e quebras). */
 export const htmlDaMensagem = (m) => `<div style="font-family:Arial,sans-serif;font-size:14px;color:#222">${esc(m).split(/\n{2,}/).map((p) => `<p>${p.replaceAll('\n', '<br>')}</p>`).join('')}</div>`;
 

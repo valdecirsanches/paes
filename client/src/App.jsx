@@ -90,6 +90,9 @@ export default function App() {
   const [usuario, setUsuario] = useState(null); // null = sem sessão (tela de login)
   useEffect(() => { if (usuario) carregaFundo(); }, [usuario, carregaFundo]);
   const [verificando, setVerificando] = useState(true);
+  const [ambas, setAmbas] = useState(false); // dispositivo liberado para Faturamento E Fábrica: pode alternar entre as duas janelas
+  const [modoFab, setModoFab] = useState(() => { try { return localStorage.getItem('paes_modo_fabrica') === '1'; } catch { return false; } });
+  const alterna = (v) => { setModoFab(v); try { localStorage.setItem('paes_modo_fabrica', v ? '1' : '0'); } catch { /* sem armazenamento */ } };
   const [bloqueio, setBloqueio] = useState(null); // dispositivo não habilitado: { codigo, message }
   const [trocaSenha, setTrocaSenha] = useState(false);
   const [menuAberto, setMenuAberto] = useState(null);
@@ -101,7 +104,7 @@ export default function App() {
     return () => { document.removeEventListener('pointerdown', fora); document.removeEventListener('keydown', esc); };
   }, []);
   useEffect(() => { // dispositivo habilitado? (a tela de bloqueio mostra o código; qualquer chamada barrada também aciona o evento)
-    api.get('/dispositivo').then((d) => { if (d && d.habilitado === false) setBloqueio(d); }).catch(() => {});
+    api.get('/dispositivo').then((d) => { if (d && d.habilitado === false) setBloqueio(d); setAmbas(Boolean(d?.exigido && d.habilitado && d.areas?.includes('fabrica') && d.areas?.includes('faturamento'))); }).catch(() => {});
     const f = (e) => setBloqueio(e.detail ?? { codigo: '' });
     window.addEventListener('dispositivo-bloqueado', f);
     return () => window.removeEventListener('dispositivo-bloqueado', f);
@@ -156,7 +159,7 @@ export default function App() {
   useEffect(() => aoPedirConflitos(() => abrir('conflitos')), []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (usuario && !usuario.fabrica) abrir('dashboard'); }, [usuario?.usuario]); // ao entrar, o Dashboard é a primeira tela (some só se o usuário fechar a aba)
 
-  if (usuario?.fabrica && !bloqueio) return <FabricaApp saude={saude} />; // máquina da fábrica: janela com o visual do sistema da fábrica
+  if ((usuario?.fabrica || (usuario && ambas && modoFab)) && !bloqueio) return <FabricaApp saude={saude} onVoltar={!usuario.fabrica && ambas ? () => alterna(false) : null} />; // máquina da fábrica: janela com o visual do sistema da fábrica
   const menus = usuario?.fabrica ? MENUS_FABRICA : MENUS; // máquina só da fábrica: usuário "fabrica" automático, só os menus da fábrica
   return (
     <div className="win">
@@ -182,6 +185,7 @@ export default function App() {
         })}
         {MENUS_FUTUROS.map(([r, ic]) => <span key={r} className="menu-bt desab" title="Próximas fases"><span className="mi" aria-hidden="true">{ic}</span>{r}</span>)}
         <span className="menu-espaco" />
+        {usuario && ambas && !usuario.fabrica && <button type="button" className="menu-bt" title="Abrir a janela da Fábrica (este dispositivo está liberado para Faturamento e Fábrica)" onClick={() => alterna(true)}><span className="mi" aria-hidden="true">🏭</span>Fábrica</button>}
         {usuario && ambiente !== null && (
           <button type="button" className={`amb-selo ${ambiente === 1 ? 'prod' : ambiente === 2 ? 'hom' : 'unk'}`} title="Ambiente de emissão de NFe — clique para configurar" onClick={() => abrir('nfe')}>
             <i aria-hidden="true" />{ambiente === 1 ? 'PRODUÇÃO' : ambiente === 2 ? 'HOMOLOGAÇÃO' : 'AMBIENTE ?'}

@@ -26,7 +26,7 @@ const TELAS = {
 const BOTOES = [['diaria', 'Programação', 'programacao'], ['producao', 'Produção', 'producao'], ['mercadorias', 'Mercadorias', 'mercadorias'], ['cargas', 'Cargas', 'cargas'], ['reclamacoes', 'Reclamações', 'reclamacoes'], ['extras', 'Pedidos Extras', 'extras']];
 const VERSAO = typeof __BUILD__ === 'string' ? __BUILD__.replace(/ · build.*/, '').replace('fase ', '3.0.') : '3.0';
 
-export default function FabricaApp({ saude }) {
+export default function FabricaApp({ saude, onVoltar = null }) {
   const [abertas, setAbertas] = useState([]);
   const [ativa, setAtiva] = useState(null);
   const [msg, setMsg] = useState('');
@@ -44,6 +44,7 @@ export default function FabricaApp({ saude }) {
       <div className="fb-titulo"><img src="/fabrica/janela.png" alt="" />{titulo}</div>
       <div className="fb-barra" role="toolbar" aria-label="Menu">
         <span className="fb-grip" />
+        {onVoltar && <button type="button" className="fb-bt" title="Voltar ao sistema completo (Faturamento)" onClick={onVoltar}><span>↩ Faturamento</span></button>}
         {BOTOES.map(([k, rot, ic]) => (
           <button key={k} type="button" className={`fb-bt${ativa === k ? ' on' : ''}`} onClick={() => abrir(k)}><img src={`/fabrica/${ic}.png`} alt="" /><span>{rot}</span></button>))}
       </div>

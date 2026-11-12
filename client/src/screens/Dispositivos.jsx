@@ -16,6 +16,7 @@ export default function Dispositivos({ onFechar }) {
   const [erro, setErro] = useState('');
   const [aviso, setAviso] = useState(null);
   const [filtro, setFiltro] = useState('todos');
+  const [busca, setBusca] = useState('');
   const carrega = useCallback(() => api.get('/dispositivos').then((d) => { setDados(d); setErro(''); }).catch((e) => setErro(e.message)), []);
   useEffect(() => { carrega(); const t = setInterval(carrega, 15000); return () => clearInterval(t); }, [carrega]);
   const salva = async (it, campos) => { try { await api.put(`/dispositivos/${it.id}`, campos); setDados((d) => ({ ...d, itens: d.itens.map((x) => (x.id === it.id ? { ...x, ...campos } : x)) })); } catch (e) { setAviso({ tipo: 'erro', m: e.message }); } };
@@ -27,7 +28,10 @@ export default function Dispositivos({ onFechar }) {
     try { await api.post(`/dispositivos/${novo.id}/assume`, { origem: o.id }); carrega(); } catch (e) { setAviso({ tipo: 'erro', m: e.message }); }
   };
   const provavel = (i) => (dados?.itens ?? []).find((x) => x.ativo && x.id !== i.id && x.ultimo_ip && x.ultimo_ip === i.ultimo_ip && x.navegador === i.navegador);
-  const itens = (dados?.itens ?? []).filter((i) => (filtro === 'todos' ? true : filtro === 'pendentes' ? !i.ativo : i.ativo));
+  const norm = (v) => String(v ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const termos = norm(busca).split(/\s+/).filter(Boolean);
+  const itens = (dados?.itens ?? []).filter((i) => (filtro === 'todos' ? true : filtro === 'pendentes' ? !i.ativo : i.ativo))
+    .filter((i) => { const t = norm([i.codigo, i.descricao, i.ultimo_usuario, i.ultimo_ip, resumoUA(i.navegador), i.areas.join(' ')].join(' ')); return termos.every((x) => t.includes(x)); });
   const habilitados = (dados?.itens ?? []).filter((i) => i.ativo).length;
   return (
     <section className="dspa">
@@ -37,6 +41,7 @@ export default function Dispositivos({ onFechar }) {
         <div className="dspa-filtro" role="tablist">
           {[['todos', 'Todos'], ['pendentes', 'Pendentes'], ['habilitados', 'Habilitados']].map(([k, r]) => <button key={k} role="tab" aria-selected={filtro === k} className={filtro === k ? 'on' : ''} onClick={() => setFiltro(k)}>{r}</button>)}
         </div>
+        <input type="search" className="dspa-busca" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="🔎 Pesquisar código, descrição, usuário, IP…" aria-label="Pesquisar dispositivos" />
         <span className="dspa-esp" />
         <button type="button" className="bt" onClick={carrega}>⟳ Atualizar</button>
         <button type="button" className="bt" onClick={onFechar}>Fechar</button>
