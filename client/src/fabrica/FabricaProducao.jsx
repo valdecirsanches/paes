@@ -27,6 +27,8 @@ function Aba({ tipo, data, recarga, ativa, fonte, onCarga }) {
   const [destinos, setDestinos] = useState([]);
   const [ordD, setOrdD] = useState([['hora', 1], ['cliente_nome', 1]]);
   const corpo = useRef(null);
+  const gradeD = useRef(null);
+  const [selD, setSelD] = useState(0); // linha atual do detalhamento (setas ↑ ↓ navegam; ← volta à lista)
   const chave = (r) => `${r.producao_turno}-${r.id_referencia}`;
   const atual = mestre.find((r) => chave(r) === sel) ?? null;
 
@@ -50,13 +52,23 @@ function Aba({ tipo, data, recarga, ativa, fonte, onCarga }) {
   const linhasD = useMemo(() => [...destinos].sort((a, b) => { for (const [c, d] of ordD) { const r = cmp(a[c], b[c]) * d; if (r) return r; } return 0; }), [destinos, ordD]);
   const alterna = (c) => setOrdD((o) => (o[0]?.[0] === c ? [[c, -o[0][1]]] : [[c, 1]]));
   const seta = (c) => (ordD[0]?.[0] === c ? (ordD[0][1] === 1 ? '▲' : '▼') : '');
+  const teclaD = (e) => {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); corpo.current?.focus({ preventScroll: true }); return; }
+    if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key) || !linhasD.length) return;
+    e.preventDefault();
+    const n = e.key === 'Home' ? 0 : e.key === 'End' ? linhasD.length - 1 : Math.min(linhasD.length - 1, Math.max(0, selD + (e.key === 'ArrowDown' ? 1 : -1)));
+    setSelD(n);
+    setTimeout(() => gradeD.current?.querySelector('tr.atual')?.scrollIntoView({ block: 'nearest' }), 0);
+  };
   const tecla = (e) => {
+    if (e.key === 'ArrowRight' && linhasD.length) { e.preventDefault(); gradeD.current?.focus({ preventScroll: true }); return; }
     if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
     e.preventDefault();
     const i = linhasM.findIndex((r) => chave(r) === sel);
     const n = linhasM[Math.min(linhasM.length - 1, Math.max(0, i + (e.key === 'ArrowDown' ? 1 : -1)))];
     if (n) setSel(chave(n));
   };
+  useEffect(() => { setSelD(0); }, [sel, destinos]);
   useEffect(() => { if (ativa) corpo.current?.focus({ preventScroll: true }); }, [ativa, sel]);
   const total = destinos.reduce((s, r) => s + Number(r.qtde_producao || 0), 0);
   const esp = tipo === 'especiais';
@@ -85,7 +97,7 @@ function Aba({ tipo, data, recarga, ativa, fonte, onCarga }) {
       <div className="fbp-sep" role="separator" aria-orientation="vertical" title="Arraste para aumentar ou diminuir o detalhamento" onPointerDown={arrasta} />
       <div className="fbp-dest" style={{ width: larg }}>
         <div className="fbp-dest-t">Detalhamento de destino</div>
-        <div className="fbp-dest-g">
+        <div className="fbp-dest-g" tabIndex={0} ref={gradeD} onKeyDown={teclaD} title="Setas ↑ ↓ navegam entre os clientes; ← volta à lista">
           <table>
             <thead><tr>
               <th onClick={() => alterna('cliente_nome')}>Destino <i>{seta('cliente_nome')}</i></th>
@@ -95,7 +107,7 @@ function Aba({ tipo, data, recarga, ativa, fonte, onCarga }) {
             </tr></thead>
             <tbody>
               {linhasD.map((r, i) => (
-                <tr key={`${r.id_unidade}|${r.data}|${r.hora}|${i}`}>
+                <tr key={`${r.id_unidade}|${r.data}|${r.hora}|${i}`} className={i === selD ? 'atual' : ''} onClick={() => { setSelD(i); gradeD.current?.focus({ preventScroll: true }); }}>
                   <td>{r.cliente_nome}</td><td>{String(r.hora ?? '').slice(0, 8)}</td><td className="n">{num(r.qtde_producao)}</td><td>{brData(r.data)}</td>
                 </tr>))}
               {!linhasD.length && <tr><td colSpan={4} className="fbp-vazio">&lt;Não há informações&gt;</td></tr>}

@@ -1,3 +1,4 @@
+import { ehFabrica } from '../lib/perfil.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../api.js';
 import {
@@ -105,13 +106,16 @@ export default function FixaTab({ status, roteiros, onChanged, notify, onEditand
   };
 
   /* ----- botões ----- */
-  const incluir = () => { if (editando) return; setPainel(true); setDraft(novoItem(dia)); setSelId(null); foca('hora'); };
+  const consulta = ehFabrica(); // Fábrica: só consulta
+  const incluir = () => { if (editando || consulta) return; setPainel(true); setDraft(novoItem(dia)); setSelId(null); foca('hora'); };
   const alterar = () => {
+    if (consulta) return;
     if (editando) return;
     if (!info.itens.length) { notify.erro('Não há itens para o procedimento.'); return; }
     setPainel((p) => !p); foca('hora');
   };
   const excluir = async () => {
+    if (consulta) return;
     if (editando) return;
     if (!item) { notify.erro('Não há itens para o procedimento.'); return; }
     if ((await confirmar('Eliminar o item programado?'))) rodar(() => api.del(`/fixa/${item.id}`), 'Item excluído.');
@@ -165,6 +169,7 @@ export default function FixaTab({ status, roteiros, onChanged, notify, onEditand
 
   useEffect(() => {
     const tecla = (e) => {
+      if (consulta) return;
       if (modal) return;
       if (e.key === 'F5') { e.preventDefault(); if (editando && !ocupado) gravarRef.current?.(); return; } // F5 grava (e fecha a edição)
       if (e.key === 'Escape' && (editando || painel) && !document.querySelector('dialog[open]')) { e.preventDefault(); setDraft(null); setPainel(false); return; } // Esc cancela e fecha a edição
@@ -201,13 +206,13 @@ export default function FixaTab({ status, roteiros, onChanged, notify, onEditand
     <section className="diaria fixa">
       <div className="tb">
         <button className="bt ic" title="Log de operações da programação fixa" onClick={verLog} disabled={!item}><IcoUsuario /></button>
-        <button className="bt" onClick={incluir} disabled={editando}>F2 Incluir</button>
-        <button className="bt" onClick={alterar} disabled={editando}>F3 Alterar</button>
-        <button className="bt" onClick={excluir} disabled={editando}>F4 Excluir</button>
-        <button className="bt larga" onClick={gravar} disabled={!editando || ocupado} title="F5"><IcoDisco />&nbsp;F5 Salvar</button>
-        <button className="bt larga" onClick={() => { setDraft(null); setPainel(false); }} disabled={!editando} title="Esc"><IcoDesfazer />&nbsp;Esc Cancelar</button>
-        <button className="bt larga" onClick={ativarOuDesativar} disabled={!info.ativavel || editando}
-          title={info.ativavel ? '' : 'Só vale quando o dia da semana é o mesmo da data do movimento'}><IcoAtivar />&nbsp;{info.ativada ? 'Desativar' : 'Ativar'}</button>
+        {!consulta && <button className="bt" onClick={incluir} disabled={editando}>F2 Incluir</button>}
+        {!consulta && <button className="bt" onClick={alterar} disabled={editando}>F3 Alterar</button>}
+        {!consulta && <button className="bt" onClick={excluir} disabled={editando}>F4 Excluir</button>}
+        {!consulta && <button className="bt larga" onClick={gravar} disabled={!editando || ocupado} title="F5"><IcoDisco />&nbsp;F5 Salvar</button>}
+        {!consulta && <button className="bt larga" onClick={() => { setDraft(null); setPainel(false); }} disabled={!editando} title="Esc"><IcoDesfazer />&nbsp;Esc Cancelar</button>}
+        {!consulta && <button className="bt larga" onClick={ativarOuDesativar} disabled={!info.ativavel || editando}
+          title={info.ativavel ? '' : 'Só vale quando o dia da semana é o mesmo da data do movimento'}><IcoAtivar />&nbsp;{info.ativada ? 'Desativar' : 'Ativar'}</button>}
         <button className="bt larga" onClick={imprimirPasta}><IcoPasta />&nbsp;Pasta</button>
         <fieldset className="semana" title="Selecione o dia da semana para ver a programação" role="radiogroup">
           {DIAS.map((d, i) => (
@@ -217,7 +222,7 @@ export default function FixaTab({ status, roteiros, onChanged, notify, onEditand
         {dia !== diaData && <span className="dica">Exibindo {DIAS[dia - 1]}; o movimento é de {DIAS[diaData - 1]}.</span>}
       </div>
 
-      {painel && v && (
+      {!consulta && painel && v && (
         <div className={`if if-fixa${novo ? ' novo' : ''}`} onKeyDown={enterComoTab}>
           <TopoItem novo={novo} sujo={editando} contexto={`Fixa · ${DIAS[(v.semana_dia ?? dia) - 1] ?? ''}`} />
           <div className="if-corpo">
@@ -255,7 +260,7 @@ export default function FixaTab({ status, roteiros, onChanged, notify, onEditand
         </div>
       )}
 
-      <div className="rolagem diaria-grade" onContextMenu={(e) => { if (!item) return; e.preventDefault(); setMenu({ x: e.clientX, y: e.clientY }); }}>
+      <div className="rolagem diaria-grade" onContextMenu={(e) => { if (!item || consulta) return; e.preventDefault(); setMenu({ x: e.clientX, y: e.clientY }); }}>
         <table className="grade">
           <thead><tr><th className="ind" /><th>Entrega</th><th>Qtde</th><th>Descrição</th><th>Preço</th><th>Produção</th></tr></thead>
           <tbody>
@@ -263,7 +268,7 @@ export default function FixaTab({ status, roteiros, onChanged, notify, onEditand
               const ed = draft && draft.id === i.id ? draft : i;
               return (
                 <tr key={i.id} className={`clicavel ${classeFixa(i)}${i.id === selId ? ' sel' : ''}${(painel && i.id === selId) ? ' edit' : ''}`} onClick={() => escolher(i.id)} onDoubleClick={alterar}
-                  onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); escolher(i.id); setMenu({ x: e.clientX, y: e.clientY }); }}>
+                  onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); escolher(i.id); if (!consulta) setMenu({ x: e.clientX, y: e.clientY }); }}>
                   <td className="ind">{(painel && i.id === selId) ? '✎' : i.id === selId ? '▶' : ''}</td>
                   <td className="num">{hhmm(ed.hora)}</td><td className="num">{fmtQtde(ed.produto_qtde)}</td>
                   <td>{ed.produto_descricao_expedicao}</td><td className="num">{i.xproduto_preco != null ? fmtMoeda(i.xproduto_preco) : ''}</td>

@@ -121,6 +121,8 @@ export function rotaDaFabrica(req) {
   if (seg === 'mercadorias' && /^\/api\/mercadorias\/etiquetas/.test(caminho)) return false; // etiquetas de Mercadorias: só faturamento (as do item em Cargas a fábrica imprime, como no sistema antigo)
   if (seg === 'layout-etiquetas' && req.method !== 'GET') return false; // ajuste de etiqueta: só faturamento
   if (/^\/api\/status\/\d+\/unidade$/.test(caminho) && req.method !== 'GET') return false; // aba Configurações da unidade
+  // Programação diária/fixa na fábrica: só consulta (e etiqueta do item); nada de incluir, alterar, excluir, cancelar ou ativar
+  if ((seg === 'diaria' || seg === 'fixa' || /^\/api\/status\/\d+\/(diaria|fixa)/.test(caminho)) && req.method !== 'GET' && !/^\/api\/diaria\/\d+\/etiqueta$/.test(caminho)) return false;
   if (seg === 'produtos') return req.method === 'GET';
   return PREFIXOS_FABRICA.includes(seg);
 }

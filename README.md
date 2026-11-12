@@ -1020,6 +1020,12 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 252 — Fábrica: Programação só consulta; setas no detalhamento da Produção
+
+- **Fábrica, Programação diária e fixa**: só consulta/pesquisa. Sem barra de botões (Incluir, Alterar, Excluir, Salvar…), sem tela de edição de itens, sem menu do botão direito, sem lixeira nas linhas, sem "Ações do dia" e sem trocar status. No servidor, a máquina só-Fábrica também é barrada (403) em qualquer gravação em `/diaria` e `/fixa` (a etiqueta do item continua liberada).
+- **Fábrica, Produção**: no Detalhamento de destino, ↑ ↓ (Home/End) navegam entre os clientes, com a linha atual em vermelho/amarelo; → na lista vai ao detalhamento e ← volta; clique também seleciona.
+- Testes do servidor atualizados (165 passam). Não testado em tela real.
+
 ## Fase 251 — Código do dispositivo no rodapé
 
 - O rodapé do sistema (e a barra de status da janela da Fábrica) mostra **Dispositivo: código**, o mesmo da tela Dispositivos autorizados, para o usuário informar ao administrador sem precisar ser bloqueado.

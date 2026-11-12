@@ -185,7 +185,7 @@ export default function Diaria({ onFechar }) {
               {[1, 2, 0, 3].map((s) => <span key={s} className={`dr2-pill s${s}`}><i />{contagem[s]} {STATUS[s].toLowerCase()}</span>)}
             </div>
             <div className="dr2-mais">
-              <button type="button" className="dr2-b prim" aria-haspopup="menu" aria-expanded={menuAberto} onClick={() => setMenuAberto((x) => !x)}>⚡ Ações do dia ▾</button>
+              {!ehFabrica() && <><button type="button" className="dr2-b prim" aria-haspopup="menu" aria-expanded={menuAberto} onClick={() => setMenuAberto((x) => !x)}>⚡ Ações do dia ▾</button>
               {menuAberto && (
                 <>
                   <div className="nf2-veu" onClick={() => setMenuAberto(false)} />
@@ -193,7 +193,7 @@ export default function Diaria({ onFechar }) {
                     {acoes.map(([rotulo, fn]) => <button key={rotulo} type="button" role="menuitem" onClick={fn}>{rotulo}</button>)}
                   </div>
                 </>
-              )}
+              )}</>}
               <button type="button" className="dr2-b" title="Fechar tela de programação" onClick={() => onFechar?.()}>Fechar</button>
             </div>
           </div>
@@ -205,7 +205,7 @@ export default function Diaria({ onFechar }) {
             </div>
             <div className="dr2-seg" role="group" aria-label="Status">
               {[0, 1, 2, 3].map((s) => (
-                <button key={s} type="button" disabled={!sel} className={`s${s}${sel?.status === s ? ' on' : ''}`} onClick={() => mudarStatus(s)}>{STATUS[s]}</button>
+                <button key={s} type="button" disabled={!sel || ehFabrica()} className={`s${s}${sel?.status === s ? ' on' : ''}`} onClick={() => mudarStatus(s)}>{STATUS[s]}</button>
               ))}
             </div>
             <div className="dr2-rot">

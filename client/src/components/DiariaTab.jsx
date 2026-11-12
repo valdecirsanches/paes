@@ -111,10 +111,11 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
 
   const item = itens.find((i) => i.id === selId) || null;
   const novo = !!draft && !draft.id;
+  const consulta = ehFabrica(); // Fábrica: só consulta (sem botões, sem tela de edição, sem gravar)
   const editando = !!draft;
   useEffect(() => { onEditando?.(editando); return () => onEditando?.(false); }, [editando]); // eslint-disable-line react-hooks/exhaustive-deps
   const v = draft ?? (item ? hidratar(item) : null);
-  const mostrarPainel = painel && (!!v);
+  const mostrarPainel = !consulta && painel && (!!v);
   const mercadoria = v && !bool(v.produto_producao);
 
   useEffect(() => { ultimoCodigo.current = draft ? draft.produto_codigo ?? '' : item?.produto_codigo ?? ''; }, [draft?.id, novo, item?.id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -181,6 +182,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
 
   /* ----- ações da barra ----- */
   const incluir = async () => {
+    if (consulta) return;
     if (ocupado) return;
     if (!status) { notify.erro('Selecione um cliente/unidade na lista "Clientes do dia" para incluir um item.'); return; }
     if (novo) { setPainel(true); foca('hora'); return; } // já está incluindo: só devolve o foco
@@ -189,14 +191,14 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
     foca('hora');
   };
   const alterar = () => {
-    if (editando) return;
+    if (editando || consulta) return;
     if (!itens.length) { notify.erro('Não há itens para o procedimento.'); return; }
     setPainel((p) => !p);
     if (!painel) foca('extra'); // item já incluído: o foco vai direto para a quantidade Extra
   };
   // alvo = item da linha (ícone 🗑) ou, sem argumento, o item selecionado (F4)
   const excluir = async (alvo = item) => {
-    if (editando) return;
+    if (editando || consulta) return;
     if (!itens.length || !alvo) { notify.erro('Não há itens para o procedimento.'); return; }
     if (bool(alvo.programacao_fixa)) { // item fixo não se elimina: oferece cancelar (o cancelamento pode ser desfeito)
       if (bool(alvo.cancelado)) { notify.erro('Este item fixo já está cancelado.'); return; }
@@ -310,7 +312,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
   /* ----- teclado: F2/F3/F4 e Alt+F2, Alt+Shift+F2, Ctrl+Shift+F2 (FormKeyDown) ----- */
   useEffect(() => {
     const tecla = (e) => {
-      if (modal) return;
+      if (modal || consulta) return;
       // painel de alteração aberto: ↑ ↓ passam para o item vizinho, GRAVAM a alteração feita (se houver) e a edição continua aberta no Extra.
       // Sem mudanças, vale em qualquer campo do painel; com mudanças, só nos campos Extra e Cada (nos demais as setas ficam com o campo).
       if (painel && !ocupado && (e.key === 'ArrowDown' || e.key === 'ArrowUp') && !e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey && !document.querySelector('dialog[open]')) {
@@ -378,7 +380,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
   return (
     <section className="diaria">
       {/* ---------- barra de botões (cxTabControl1) ---------- */}
-      <div className="tb">
+      {!consulta && <div className="tb">
         <button className="bt ic" title="Log de operações da programação diária" onClick={verLogDia} disabled={!status}><IcoUsuario /></button>
         <button className="bt ic" title="Imprime lista para conferencia" onClick={imprimirConferencia} disabled={!status}><IcoImpressora /></button>
         <button className="bt ic" title="Atalho para tela de recados" onClick={() => setModal({ tipo: 'recados' })}><IcoPessoa /></button>
@@ -391,7 +393,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
         <button className="bt larga" onClick={imprimirAlteracoes}><IcoImpressora />&nbsp;Imprimir alterações</button>
         <label className="chk-completa"><input type="checkbox" checked={completa} onChange={(e) => setCompleta(e.target.checked)} />Imprimir programação completa</label>
         <button className="bt larga" onClick={alterar} disabled={!status || editando}>Mostrar/Esconder&nbsp;item</button>
-      </div>
+      </div>}
 
       {/* ---------- painel do item (pnlDiaria) ---------- */}
       {mostrarPainel && (
@@ -443,7 +445,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
       )}
 
       {/* ---------- grade (GridPrd) ---------- */}
-      <div className="rolagem diaria-grade" onContextMenu={(e) => { if (!item) return; e.preventDefault(); setMenu({ x: e.clientX, y: e.clientY }); }}>
+      <div className="rolagem diaria-grade" onContextMenu={(e) => { if (!item || consulta) return; e.preventDefault(); setMenu({ x: e.clientX, y: e.clientY }); }}>
         <table className="grade">
           <thead>
             <tr><th className="ind" /><th className="c" title="Registro alterado">A</th><th className="c" title="Programação fixa">Fx</th>
@@ -465,7 +467,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
               return (
                 <tr key={i.id} className={`clicavel ${classeLinha(i)}${i.id === selId ? ' sel' : ''}${(painel && i.id === selId) ? ' edit' : ''}`}
                   onClick={() => escolher(i.id)} onDoubleClick={alterar}
-                  onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); escolher(i.id); setMenu({ x: e.clientX, y: e.clientY }); }}>
+                  onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); escolher(i.id); if (!consulta) setMenu({ x: e.clientX, y: e.clientY }); }}>
                   <td className="ind">{(painel && i.id === selId) ? '✎' : i.id === selId ? '▶' : ''}</td>
                   <td className="c"><input type="checkbox" readOnly checked={!!Number(i.registro_alterado)} tabIndex={-1} /></td>
                   <td className="c"><input type="checkbox" readOnly checked={bool(i.programacao_fixa)} tabIndex={-1} /></td>
@@ -477,7 +479,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
                   <td>{ed.obs}</td>
                   <td className="num">{i.producao_esquema}</td>
                   <td className="num">{i.comandas}</td>
-                  <td className="c dx-lixo"><button type="button" className="dx-del" title={bool(i.programacao_fixa) ? 'Item fixo: oferece cancelar' : 'Excluir este lançamento'} aria-label="Excluir lançamento" disabled={editando} onClick={(e) => { e.stopPropagation(); escolher(i.id); excluir(i); }}>🗑</button></td>
+                  <td className="c dx-lixo">{!consulta && <button type="button" className="dx-del" title={bool(i.programacao_fixa) ? 'Item fixo: oferece cancelar' : 'Excluir este lançamento'} aria-label="Excluir lançamento" disabled={editando} onClick={(e) => { e.stopPropagation(); escolher(i.id); excluir(i); }}>🗑</button>}</td>
                 </tr>
               );
             })}
