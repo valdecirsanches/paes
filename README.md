@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 256 — Fábrica/Cargas: total de pães
+
+- Rótulo "Total de pães" no total da Carga diária (soma do =Total das linhas filtradas) e total também na Carga fixa (soma da Qtde). Acompanha o filtro por coluna.
+
 ## Fase 255 — Fábrica: Cargas no layout do sistema antigo (filtro e ordem por coluna)
 
 - Só na janela da Fábrica (o Faturamento continua como estava): Cargas ganhou o layout compacto do Delphi — grupos de rádios no topo (Tipo/Embalagem, Programação/Expedição, Carga/Ítens, Extra, Região), data grande + **Atualizar**, abas Carga diária/fixa em formato de aba, grade ocupando o resto da tela.

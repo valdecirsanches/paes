@@ -320,7 +320,7 @@ function CargaDiaria({ roteiros, notificar }) {
         {editaItem && <EditorItem tabela="diaria" item={item} roteiros={roteiros} aoGravar={carrega} notificar={notificar} />}
         <section className="trb2-card cg-lista cgf-lista">
           <Grade cols={COLS_DIARIA} rows={rows} sel={sel} ordem={ordem} classe={classeDiaria} vazio={carregando ? 'Carregando…' : 'Nenhum item para este filtro'} onKeyDown={teclas} fcol={fcol} fonte={brutas} />
-          <div className="cgf-total"><span>{rows.length} item(ns)</span><b>{fmtQtde(soma)}</b></div>
+          <div className="cgf-total"><span>{rows.length} item(ns)</span><span>Total de pães:</span><b>{fmtQtde(soma)}</b></div>
           <div className="cgf-expr">
             <button type="button" className="x" onClick={fcol.limpa} disabled={!fcol.temFiltro} title="Limpar o filtro">✕</button>
             <input type="checkbox" checked={fcol.ligado} onChange={(e) => fcol.setLigado(e.target.checked)} title="Filtro ligado/desligado" aria-label="Filtro ligado" />
@@ -422,7 +422,8 @@ function CargaFixa({ roteiros, notificar }) {
       <div className="cg-meio">
         <section className="trb2-card cg-lista">
           <Grade cols={COLS_FIXA} rows={rows} sel={sel} ordem={ordem} classe={() => ''} vazio={carregando ? 'Carregando…' : 'Nenhuma programação fixa para este filtro'} fcol={fab ? fcol : undefined} fonte={brutas} />
-          <footer>{rows.length} item(ns)</footer>
+          {!fab && <footer>{rows.length} item(ns)</footer>}
+          {fab && <div className="cgf-total"><span>{rows.length} item(ns)</span><span>Total de pães:</span><b>{fmtQtde(rows.reduce((t, r) => t + (Number(r.qtde_total) || 0), 0))}</b></div>}
           {fab && <div className="cgf-expr"><button type="button" className="x" onClick={fcol.limpa} disabled={!fcol.temFiltro} title="Limpar o filtro">✕</button><input type="checkbox" checked={fcol.ligado} onChange={(e) => fcol.setLigado(e.target.checked)} aria-label="Filtro ligado" /><span className="txt" title={fcol.expr}>{fcol.expr || 'Filtre pelo ▼ no título de qualquer coluna'}</span></div>}
         </section>
       </div>
