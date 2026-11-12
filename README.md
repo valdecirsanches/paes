@@ -1020,6 +1020,11 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 271 — NFe: e-mail para todas as notas, menos as pendentes
+
+- O envio por e-mail agora vale para **todas** as situações exceto PENDENTE: autorizada e devolvida (XML + DANFE, texto padrão), cancelada (aviso de cancelamento + XML do evento), **inutilizada** (aviso com protocolo e justificativa, sem anexo) e rejeitada (aviso com o motivo, sem anexo). Como inutilizada/rejeitada costumam não ter cliente com e-mail, o destinatário pode ser digitado na janela de envio (uma nota).
+- Não testado com SMTP real.
+
 ## Fase 270 — Cupom: primeira linha (COMANDA) não perde o começo
 
 - Sem os NULs da Fase 268 a matricial perdia o início da 1ª linha logo após o reset (ESC @): "COMANDA" saía cortado e pequeno. Agora o início do cupom leva 24 NULs (ignorados) depois do reset; as demais linhas seguem como na Fase 269 (SO + texto + DC4).

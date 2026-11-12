@@ -11,7 +11,7 @@ import { lerDanfeCfg, gravarDanfeCfg, gravarLogo, lerLogo, removerLogo, ORIENTAC
 import { danfeDoXml, achaXmlLocal } from '../services/danfeLocal.js';
 import { lerA3, gravarA3, limparA3 } from '../services/a3Store.js';
 import { impostos, usuarioNfe } from '../services/geraFatura.js';
-import { destinatarios, assuntoPadrao, mensagemPadrao, assuntoCancelamento, mensagemCancelamento, enviaEmail, criaTransporte, listaEmails } from '../services/emailNfe.js';
+import { destinatarios, assuntoPadrao, mensagemPadrao, assuntoCancelamento, mensagemCancelamento, assuntoInutilizacao, mensagemInutilizacao, assuntoRejeicao, mensagemRejeicao, enviaEmail, criaTransporte, listaEmails } from '../services/emailNfe.js';
 import { enriquece, arquivoDoEvento } from '../services/eventosNfe.js';
 import { baseGravacao, paraBanco, paraLocal, caminhoXmlLegado, ehCaminhoLegado } from '../services/caminhosNfe.js';
 import { acharArquivoNota, lerArquivoNota, baseArquivos } from '../services/arquivosApi.js';
@@ -608,7 +608,13 @@ async function propostaEmail(nfe, cfg, destino) {
   const opc = { cc: destino === 'cliente' ? listaEmails(cfg.nfe_email_contabilidade).ok.filter((e) => ![...d.para, ...d.cc, ...d.cco].some((x) => x.toLowerCase() === e.toLowerCase())) : [] };
   const avisos = [];
   const cancelada = nfe.status_e === 'CANCELADA';
-  if (nfe.status_e !== 'AUTORIZADA' && !cancelada) avisos.push(`Nota ${nfe.status_e || ''}: só notas AUTORIZADAS (ou CANCELADAS, com o aviso de cancelamento) podem ser enviadas.`.replace('Nota :', 'Nota:'));
+  const inutilizada = nfe.status_e === 'INUTILIZADA'; const rejeitada = nfe.status_e === 'REJEITADA';
+  if (!nfe.status_e || nfe.status_e === 'PENDENTE') avisos.push('Nota PENDENTE: só notas já processadas (autorizada, cancelada, inutilizada, devolvida ou rejeitada) podem ser enviadas.');
+  let info = {};
+  if (inutilizada || rejeitada) { // justificativa/motivo guardados nos eventos da própria nota
+    const [[ev]] = await pool.query("select nome_evento, resposta, obs from tb_nfe_eventos where id_nfe = ? and nome_evento <> 'EMAIL' order by id desc limit 1", [nfe.id]);
+    info = { justificativa: ev?.obs ?? '', motivo: ev?.resposta ?? '' };
+  }
   let canc = {};
   if (cancelada) { // dados do cancelamento para o aviso: protocolo e data do evento
     const [[ev]] = await pool.query("select data_evento, retorno from tb_nfe_eventos where id_nfe = ? and nome_evento = 'CANCELAMENTO' order by id desc limit 1", [nfe.id]);
@@ -619,7 +625,8 @@ async function propostaEmail(nfe, cfg, destino) {
   if (d.invalidos.length) avisos.push(`E-mail(s) inválido(s) ignorado(s): ${d.invalidos.join(', ')}`);
   return { id: nfe.id, numero: nfe.nfe_numero, serie: nfe.nfe_serie, status: nfe.status_e, cliente: nfe.cliente_razao_social ?? '', valor: nfe.nf_valor_total,
     para: d.para, cc: d.cc, cco: d.cco, opcionais: opc, cancelamento: cancelada,
-    assunto: cancelada ? assuntoCancelamento(cfg, nfe) : assuntoPadrao(cfg, nfe), mensagem: cancelada ? mensagemCancelamento(cfg, nfe, destino, canc) : mensagemPadrao(cfg, nfe, destino), avisos, pode: ['AUTORIZADA', 'CANCELADA'].includes(nfe.status_e) && d.para.length > 0 };
+    assunto: cancelada ? assuntoCancelamento(cfg, nfe) : inutilizada ? assuntoInutilizacao(cfg, nfe) : rejeitada ? assuntoRejeicao(cfg, nfe) : assuntoPadrao(cfg, nfe),
+    mensagem: cancelada ? mensagemCancelamento(cfg, nfe, destino, canc) : inutilizada ? mensagemInutilizacao(cfg, nfe, destino, info) : rejeitada ? mensagemRejeicao(cfg, nfe, destino, info) : mensagemPadrao(cfg, nfe, destino), avisos, pode: Boolean(nfe.status_e) && nfe.status_e !== 'PENDENTE' && d.para.length > 0 };
 }
 /** XML e DANFE da nota: do disco, ou baixados da API (e guardados em disco para o próximo envio). */
 async function anexosDaNota(nfe, cfg) {
@@ -658,7 +665,7 @@ router.post('/email', async (req, res) => {
     try {
       const nfe = await getNfe(id);
       const p = await propostaEmail(nfe, cfg, destino);
-      if (!['AUTORIZADA', 'CANCELADA'].includes(nfe.status_e)) throw invalid(p.avisos[0]);
+      if (!nfe.status_e || nfe.status_e === 'PENDENTE') throw invalid(p.avisos[0]);
       let { para, cc, cco, assunto, mensagem } = p;
       if (aj) {
         const l = (v, atual) => (v === undefined ? atual : listaEmails(v).ok);
@@ -671,7 +678,7 @@ router.post('/email', async (req, res) => {
         para = f(para, sel.para); cc = f([...cc, ...(p.opcionais?.cc ?? [])], sel.cc); cco = f(cco, sel.cco);
       }
       if (!para.length) throw invalid(p.avisos[0] || 'Nenhum e-mail de destino marcado.');
-      const r = await enviaEmail(cfg, { para, cc, cco, assunto, mensagem, anexos: nfe.status_e === 'CANCELADA' ? await anexosDaCancelada(nfe, cfg) : await anexosDaNota(nfe, cfg) }, transporte);
+      const r = await enviaEmail(cfg, { para, cc, cco, assunto, mensagem, anexos: nfe.status_e === 'CANCELADA' ? await anexosDaCancelada(nfe, cfg) : ['INUTILIZADA', 'REJEITADA'].includes(nfe.status_e) ? [] : await anexosDaNota(nfe, cfg) }, transporte);
       if (destino === 'cliente') { try { await pool.query("update tb_nfe set nfe_email_enviado = 'True' where id = ?", [id]); } catch { await pool.query('update tb_nfe set nfe_email_enviado = 1 where id = ?', [id]).catch(() => {}); } }
       await evento(pool, id, 'EMAIL', { resposta: `${destino === 'contabilidade' ? 'Contabilidade' : 'Cliente'}: ${[...para, ...cc].join('; ')}`, obs: assunto, retorno: JSON.stringify({ destino, para, cc, cco, ...r }) }).catch(() => {});
       resultados.push({ id, numero: nfe.nfe_numero, ok: true, para, cc, log: `NFe ${nfe.nfe_numero}: enviada para ${para.join('; ')}${cc.length ? ` (cópia: ${cc.join('; ')})` : ''}.` });

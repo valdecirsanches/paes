@@ -62,6 +62,18 @@ export function mensagemCancelamento(cfg, nfe, destino = 'cliente', { justificat
     + 'Seguem em anexo o XML da nota, o XML do evento de cancelamento e o comprovante em PDF. Esta nota não deve ser escriturada.\n\n'
     + `Atenciosamente,\n${cfg.razao || cfg.fantasia || ''}`;
 }
+export const assuntoInutilizacao = (cfg, nfe) => `INUTILIZAÇÃO de numeração NFe ${nfe.nfe_numero} - ${cfg.fantasia || cfg.razao || ''}`.replace(/ - $/, '');
+export function mensagemInutilizacao(cfg, nfe, destino = 'cliente', { justificativa = '', protocolo = '' } = {}) {
+  const dest = destino === 'contabilidade' ? 'Prezados,' : 'Prezado(a),';
+  return `${dest}\n\nInformamos que a numeração da NF-e nº ${nfe.nfe_numero} (série ${Number(nfe.nfe_serie) || nfe.nfe_serie || 1}) foi INUTILIZADA e não corresponde a nenhuma nota emitida.\n\n`
+    + `${protocolo || nfe.nfe_protocolo ? `Protocolo da inutilização: ${protocolo || nfe.nfe_protocolo}\n` : ''}Justificativa: ${justificativa}\n\nAtenciosamente,\n${cfg.razao || cfg.fantasia || ''}`;
+}
+export const assuntoRejeicao = (cfg, nfe) => `NFe ${nfe.nfe_numero || ''} REJEITADA - ${cfg.fantasia || cfg.razao || ''}`.replace(/ - $/, '');
+export function mensagemRejeicao(cfg, nfe, destino = 'cliente', { motivo = '' } = {}) {
+  const dest = destino === 'contabilidade' ? 'Prezados,' : `Prezado(a) ${nfe.cliente_razao_social || 'cliente'},`;
+  return `${dest}\n\nA NF-e${nfe.nfe_numero ? ` nº ${nfe.nfe_numero}` : ''}, no valor de ${moeda(nfe.nf_valor_total)}, foi REJEITADA pela SEFAZ e não tem validade fiscal. Uma nova nota será emitida.\n\n`
+    + `${motivo ? `Motivo: ${motivo}\n\n` : ''}Atenciosamente,\n${cfg.razao || cfg.fantasia || ''}`;
+}
 /** Texto simples → HTML (parágrafos e quebras). */
 export const htmlDaMensagem = (m) => `<div style="font-family:Arial,sans-serif;font-size:14px;color:#222">${esc(m).split(/\n{2,}/).map((p) => `<p>${p.replaceAll('\n', '<br>')}</p>`).join('')}</div>`;
 
