@@ -235,6 +235,14 @@ const COLS = 48; // largura do cupom em fonte A de 80 mm (itens de 46 colunas en
 const TRACO = '- '.repeat(COLS / 2).trimEnd();
 const LINHA = '-'.repeat(COLS);
 
+/** Letra larga cabe em 24 colunas: nome maior quebra em mais linhas (nas palavras) em vez de perder letras. */
+const quebraG = (t, n = 24) => {
+  const pal = String(t ?? '').split(/\s+/).filter(Boolean); const out = []; let at = '';
+  for (let w of pal) { while (w.length > n) { if (at) { out.push(at); at = ''; } out.push(w.slice(0, n)); w = w.slice(n); } if (!at) at = w; else if (at.length + 1 + w.length <= n) at += ` ${w}`; else { out.push(at); at = w; } }
+  if (at || !out.length) out.push(at);
+  return out.map((x) => ['g', x]);
+};
+
 /** Estilos: g = #14 (largo), n = #18 (normal), c = #15 (condensado). */
 function textoParaHtml(linhas) {
   const css = '@page{size:A4;margin:8mm}body{font-family:"Courier New",monospace;font-weight:bold}.g{font-size:15pt;white-space:pre}.n{font-size:11pt;white-space:pre}.c{font-size:9pt;white-space:pre}.p{font-size:9pt;white-space:pre}';
@@ -245,7 +253,7 @@ function textoParaHtml(linhas) {
 export function comandaTexto(comanda, itens, mercadorias, unidadeNome) {
   const L = [];
   L.push(['g', `COMANDA: ${comanda.id}`], ['n', `Responsavel: ${comanda.usuario ?? ''}`],
-    ['g', dataExtensoMaiusculo(String(comanda.data_emissao).slice(0, 10))], ['c', TRACO], ['n', 'Cliente:'], ['g', unidadeNome ?? ''], ['c', LINHA],
+    ['g', dataExtensoMaiusculo(String(comanda.data_emissao).slice(0, 10))], ['c', TRACO], ['n', 'Cliente:'], ...quebraG(unidadeNome), ['c', LINHA],
     ['c', `${padR('Qtde', 4)} ${padL('Descricao do produto', 24)} ${padR('Vr Un.', 6)} ${padR('Vr total', 9)}`], ['c', TRACO]);
   let total = 0;
   for (const i of itens) {
@@ -271,7 +279,7 @@ export function demonstrativoTexto(linhas, dataSaida, unidadeNome, usuario = '')
   const dd = (r) => `${String(r.data).slice(8, 10)}/${String(r.data).slice(5, 7)}`;
   const desc = comData ? 19 : 24;
   const L = [['g', 'DEMONSTRATIVO'], ['n', `Responsavel: ${usuario}`], ['g', dataExtensoMaiusculo(dataSaida)],
-    ['c', TRACO], ['n', 'Cliente:'], ['g', unidadeNome ?? ''], ['c', LINHA],
+    ['c', TRACO], ['n', 'Cliente:'], ...quebraG(unidadeNome), ['c', LINHA],
     ['c', `${comData ? `${padL('Data', 5)} ` : ''}${padR('Qtde', 4)} ${padL('Descricao do produto', desc)} ${padR('Vr Un.', 6)} ${padR('Vr total', 9)}`], ['c', TRACO]];
   let total = 0;
   for (const r of linhas) {

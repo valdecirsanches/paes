@@ -66,8 +66,9 @@ export function cupomEscPos(linhas, { cortar = true, colunas = 48, negrito = tru
   // Letra larga (estilo g): cada impressora entende um código diferente, então ele é escolhido por impressora (Configurar impressoras › Teste de letras).
   // Padrão = sem código de tamanho (só negrito): é o que toda impressora aceita. Nada de GS ! por padrão (várias o imprimem como "!").
   const LARGO = { so: [[0x0e], [0x14]], escw: [[0x1b, 0x57, 1], [0x1b, 0x57, 0]], escbang: [[0x1b, 0x21, 0x28], [0x1b, 0x21, 0]], gs: [[0x1d, 0x21, 0x10], [0x1d, 0x21, 0]] }[largo] ?? [[], []];
-  const g0 = new Uint8Array([0x1b, 0x4d, 0, 0x1b, 0x45, 1, ...LARGO[0]]);
-  const ESTILO = { g: [g0, LARGO[0].length ? 24 : 48], n: [new Uint8Array([0x1b, 0x4d, 0, 0x1b, 0x45, 0, ...LARGO[1]]), 48], c: [new Uint8Array([0x1b, 0x4d, 0, 0x1b, 0x45, 0, ...LARGO[1]]), 48] }; // c = itens: fonte A de 48 colunas (46 usadas)
+  const NUL = Array(10).fill(0); // a impressora perde os primeiros caracteres enquanto troca de modo: NULs (ignorados) absorvem a perda
+  const g0 = new Uint8Array([0x1b, 0x4d, 0, 0x1b, 0x45, 1, ...LARGO[0], ...NUL]);
+  const ESTILO = { g: [g0, LARGO[0].length ? 24 : 48], n: [new Uint8Array([0x1b, 0x4d, 0, 0x1b, 0x45, 0, ...LARGO[1], ...NUL]), 48], c: [new Uint8Array([0x1b, 0x4d, 0, 0x1b, 0x45, 0, ...LARGO[1], ...NUL]), 48] }; // c = itens: fonte A de 48 colunas (46 usadas)
   const linha = (l) => {
     if (l && typeof l === 'object') { const [cmd, cols] = ESTILO[l.e] ?? ESTILO.n; return concat(cmd, cp1252(String(l.t ?? '').slice(0, cols)), new Uint8Array([0x0a])); }
     return concat(cp1252(String(l ?? '').slice(0, colunas)), new Uint8Array([0x0a]));

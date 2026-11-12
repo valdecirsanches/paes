@@ -1020,6 +1020,12 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 268 — Cupom: não perde letras da data e do cliente; nome do cliente quebra em linhas grandes
+
+- Ao trocar para letra larga a impressora perdia os primeiros caracteres da linha (data e cliente): cada estilo agora envia 10 NULs (ignorados) depois do código para absorver a troca de modo.
+- O nome do cliente na letra larga cabe em 24 colunas; nomes maiores **quebram em duas ou mais linhas grandes** (nas palavras) em vez de cortar o final. Vale para comanda e demonstrativo.
+- Não testado em impressora real: se ainda faltar letra no começo, avisar quantas.
+
 ## Fase 267 — Cupom: letra larga SO por padrão e avanço de papel no final
 
 - O Teste de letras da matricial mostrou que as linhas **1 (SO)** e **2 (ESC W)** saem grandes, 3 (ESC !) normal e 4 (GS !) imprime "!". O padrão agora é **SO**, o mesmo código do sistema antigo (#14), então COMANDA, data, cliente e "Vr total R$" saem em letra larga sem precisar configurar (a caixa Letra larga continua em Configurar impressoras).
