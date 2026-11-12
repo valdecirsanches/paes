@@ -1020,6 +1020,11 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 253 — Fábrica/Produção: descrição dos Especiais
+
+- A aba Especiais mostrava a coluna "Descrição do produto" vazia: a tela lia `referencia_descricao`, campo que o resumo da produção não devolve (ele devolve `descricao`). Agora lê `descricao` nas duas abas.
+- Não testado com dados reais (só build).
+
 ## Fase 252 — Fábrica: Programação só consulta; setas no detalhamento da Produção
 
 - **Fábrica, Programação diária e fixa**: só consulta/pesquisa. Sem barra de botões (Incluir, Alterar, Excluir, Salvar…), sem tela de edição de itens, sem menu do botão direito, sem lixeira nas linhas, sem "Ações do dia" e sem trocar status. No servidor, a máquina só-Fábrica também é barrada (403) em qualquer gravação em `/diaria` e `/fixa` (a etiqueta do item continua liberada).

@@ -84,7 +84,7 @@ function Aba({ tipo, data, recarga, ativa, fonte, onCarga }) {
               return (
                 <tr key={k} onClick={() => setSel(k)}>
                   <td className={`ind${ehSel ? ' on' : ''}`}>{ehSel ? '▸' : ''}</td>
-                  {[r.producao_turno, num(r.producao_qtde), esp ? r.referencia_descricao : r.descricao].map((v, i) => {
+                  {[r.producao_turno, num(r.producao_qtde), r.descricao ?? r.referencia_descricao].map((v, i) => {
                     const s = ehSel && i !== col ? SEL : base;
                     return <td key={i} className={i === 1 ? 'n' : ''} onClick={() => setCol(i)} style={{ background: s.bg, color: s.fg, fontWeight: 'bold' }}>{v}</td>;
                   })}
