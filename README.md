@@ -1020,6 +1020,11 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 251 — Código do dispositivo no rodapé
+
+- O rodapé do sistema (e a barra de status da janela da Fábrica) mostra **Dispositivo: código**, o mesmo da tela Dispositivos autorizados, para o usuário informar ao administrador sem precisar ser bloqueado.
+- Não testado em tela real (só build).
+
 ## Fase 250 — NFe: bloqueio de itens com valor zerado
 
 - Autorizar (individual e em lote) agora recusa item com quantidade, preço ou valor total do item zerado ou negativo (antes só quantidade/preço igual a zero). A mensagem aponta o item. Teste novo em `nfe.test.js`.

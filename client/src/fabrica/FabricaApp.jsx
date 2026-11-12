@@ -26,7 +26,7 @@ const TELAS = {
 const BOTOES = [['diaria', 'Programação', 'programacao'], ['producao', 'Produção', 'producao'], ['mercadorias', 'Mercadorias', 'mercadorias'], ['cargas', 'Cargas', 'cargas'], ['reclamacoes', 'Reclamações', 'reclamacoes'], ['extras', 'Pedidos Extras', 'extras']];
 const VERSAO = typeof __BUILD__ === 'string' ? __BUILD__.replace(/ · build.*/, '').replace('fase ', '3.0.') : '3.0';
 
-export default function FabricaApp({ saude, onVoltar = null }) {
+export default function FabricaApp({ saude, onVoltar = null, dispositivo = '' }) {
   const [abertas, setAbertas] = useState([]);
   const [ativa, setAtiva] = useState(null);
   const [msg, setMsg] = useState('');
@@ -62,6 +62,7 @@ export default function FabricaApp({ saude, onVoltar = null }) {
       <div className="fb-status">
         <span><i>Compilação:</i> <b className="v">{VERSAO}</b></span>
         <span><i>Host:</i> <b className="h">{saude?.ok ? `${saude.host}/${saude.banco}` : ''}</b></span>
+        <span title="Código deste navegador (liberação em Dispositivos autorizados)"><i>Dispositivo:</i> <b className="h">{dispositivo || '—'}</b></span>
         <span><b className="m">Mensagem:</b> {msg}</span>
       </div>
       {menuAba && <ul className="fb-ctx" style={{ left: menuAba.x, top: menuAba.y }}><li><button type="button" onClick={() => fechar(menuAba.k)}>Fechar aba</button></li></ul>}

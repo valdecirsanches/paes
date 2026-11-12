@@ -90,6 +90,7 @@ export default function App() {
   const [usuario, setUsuario] = useState(null); // null = sem sessão (tela de login)
   useEffect(() => { if (usuario) carregaFundo(); }, [usuario, carregaFundo]);
   const [verificando, setVerificando] = useState(true);
+  const [codDisp, setCodDisp] = useState(''); // código deste navegador (o mesmo da tela de Dispositivos autorizados)
   const [ambas, setAmbas] = useState(false); // dispositivo liberado para Faturamento E Fábrica: pode alternar entre as duas janelas
   const [modoFab, setModoFab] = useState(() => { try { return localStorage.getItem('paes_modo_fabrica') === '1'; } catch { return false; } });
   const alterna = (v) => { setModoFab(v); try { localStorage.setItem('paes_modo_fabrica', v ? '1' : '0'); } catch { /* sem armazenamento */ } };
@@ -104,7 +105,7 @@ export default function App() {
     return () => { document.removeEventListener('pointerdown', fora); document.removeEventListener('keydown', esc); };
   }, []);
   useEffect(() => { // dispositivo habilitado? (a tela de bloqueio mostra o código; qualquer chamada barrada também aciona o evento)
-    api.get('/dispositivo').then((d) => { if (d && d.habilitado === false) setBloqueio(d); setAmbas(Boolean(d?.exigido && d.habilitado && d.areas?.includes('fabrica') && d.areas?.includes('faturamento'))); }).catch(() => {});
+    api.get('/dispositivo').then((d) => { if (d?.codigo) setCodDisp(d.codigo); if (d && d.habilitado === false) setBloqueio(d); setAmbas(Boolean(d?.exigido && d.habilitado && d.areas?.includes('fabrica') && d.areas?.includes('faturamento'))); }).catch(() => {});
     const f = (e) => setBloqueio(e.detail ?? { codigo: '' });
     window.addEventListener('dispositivo-bloqueado', f);
     return () => window.removeEventListener('dispositivo-bloqueado', f);
@@ -159,7 +160,7 @@ export default function App() {
   useEffect(() => aoPedirConflitos(() => abrir('conflitos')), []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (usuario && !usuario.fabrica) abrir('dashboard'); }, [usuario?.usuario]); // ao entrar, o Dashboard é a primeira tela (some só se o usuário fechar a aba)
 
-  if ((usuario?.fabrica || (usuario && ambas && modoFab)) && !bloqueio) return <FabricaApp saude={saude} onVoltar={!usuario.fabrica && ambas ? () => alterna(false) : null} />; // máquina da fábrica: janela com o visual do sistema da fábrica
+  if ((usuario?.fabrica || (usuario && ambas && modoFab)) && !bloqueio) return <FabricaApp saude={saude} dispositivo={codDisp} onVoltar={!usuario.fabrica && ambas ? () => alterna(false) : null} />; // máquina da fábrica: janela com o visual do sistema da fábrica
   const menus = usuario?.fabrica ? MENUS_FABRICA : MENUS; // máquina só da fábrica: usuário "fabrica" automático, só os menus da fábrica
   return (
     <div className="win">
@@ -239,6 +240,7 @@ export default function App() {
       <footer className="rodape">
         <span><b>Host:</b> {saude ? (saude.ok ? `${saude.host}/${saude.banco}` : <em className="falha">sem conexão com o banco</em>) : '…'}</span>
         <span title="Se após o deploy este texto não mudou, o navegador/Cloudflare está com a versão antiga ou o build não foi refeito"><b>Versão:</b> {typeof __VERSAO__ === 'string' ? __VERSAO__ : '1.0'} · {typeof __BUILD__ === 'string' ? __BUILD__ : ''}</span>
+        <span title="Código deste navegador: é o que aparece em Ferramentas → Dispositivos autorizados"><b>Dispositivo:</b> <code>{codDisp || '—'}</code></span>
         <span><b>Usuário:</b> {usuario ? usuario.nome || usuario.usuario : ''}</span>
         {saude && !saude.ok && <span className="falha">{saude.message}</span>}
       </footer>
