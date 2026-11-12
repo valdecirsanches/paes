@@ -74,7 +74,7 @@ export function cupomEscPos(linhas, { cortar = true, colunas = 48, negrito = tru
     return concat(cp1252(String(l ?? '').slice(0, colunas)), new Uint8Array([0x0a]));
   };
   const um = concat(
-    new Uint8Array([0x1b, 0x40, 0x1b, 0x74, 16, 0x1b, 0x45, negrito ? 1 : 0]),
+    new Uint8Array([0x1b, 0x40, 0x1b, 0x74, 16, 0x1b, 0x45, negrito ? 1 : 0, ...Array(24).fill(0)]), // NULs: a matricial demora no ESC @ e perdia o começo da 1ª linha (COMANDA saía cortado e sem letra larga)
     ...linhas.map(linha),
     new Uint8Array([...LARGO[1], 0x1b, 0x45, 0, ...Array(feed).fill(0x0a)]),
     cortar ? new Uint8Array([0x1d, 0x56, 0x42, 0x00]) : new Uint8Array(),
