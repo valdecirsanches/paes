@@ -54,7 +54,7 @@ test('cupom ESC/POS: cp1252 (acentos), limite de colunas, corte', () => {
 test('cupomEscPos aceita linhas com estilo (g/n/c) e limita as colunas de cada estilo', () => {
   const b = cupomEscPos([{ e: 'g', t: 'COMANDA 1' }, { e: 'c', t: 'x'.repeat(80) }, { e: 'n', t: 'ok' }], { cortar: false });
   const t = Buffer.from(b).toString('latin1');
-  assert.ok(t.includes('COMANDA 1\n')); assert.ok(t.includes(`${'x'.repeat(48)}\n`)); assert.ok(!t.includes('x'.repeat(49)));
+  assert.ok(t.includes('COMANDA 1')); assert.ok(t.includes(`${'x'.repeat(48)}\n`)); assert.ok(!t.includes('x'.repeat(49)));
 });
 
 test('cupomEscPos em modo simples não emite ESC/GS (só texto, avanço e corte)', () => {
