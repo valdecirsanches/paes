@@ -63,7 +63,7 @@ const LinhaNota = memo(function LinhaNota({ cols, r, i, sel, marc, foco, onClick
     <tr className={`clicavel${foco ? ' foco' : ''}`} style={corLinha(r.status_e, sel) ?? undefined} onClick={(e) => onClick(e, r, i)}>
       <td className="ind">{foco ? '▶' : ''}</td>
       <td className="nf2-chk" onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={!!marc} onChange={() => onMarcar(r, i)} aria-label={`Marcar NFe ${r.nfe_numero || r.id}`} title="Marcar para autorizar (qualquer nota, sem ordem)" /></td>
-      <td className="nf2-ic"><button type="button" title="Dados do corpo da NFe" onClick={(e) => { e.stopPropagation(); onModal(r, i, 'corpo'); }}>📋</button><button type="button" title="Eventos da NFe" onClick={(e) => { e.stopPropagation(); onModal(r, i, 'eventos'); }}>🗓</button><button type="button" title="Clonar esta NFe (nova nota PENDENTE, sem XML, PDF, chave, protocolo e recibo)" onClick={(e) => { e.stopPropagation(); onClonar(r); }}>⧉</button>{r.status_e === 'AUTORIZADA' && <button type="button" title={foiMarcado(r.nfe_impresso) ? 'Imprimir o DANFE novamente (já impresso)' : 'Imprimir o DANFE desta nota'} onClick={(e) => { e.stopPropagation(); onDanfe(r); }}>🖨</button>}{r.status_e === 'AUTORIZADA' && <button type="button" title="Enviar esta NFe por e-mail ao cliente (XML + DANFE)" onClick={(e) => { e.stopPropagation(); onEmail(r); }}>✉</button>}{!['AUTORIZADA', 'CANCELADA'].includes(r.status_e) && <button type="button" className="lx" title="Apagar esta NF (só notas não autorizadas)" onClick={(e) => { e.stopPropagation(); onApagar(r); }}>🗑</button>}</td>
+      <td className="nf2-ic"><button type="button" title="Dados do corpo da NFe" onClick={(e) => { e.stopPropagation(); onModal(r, i, 'corpo'); }}>📋</button><button type="button" title="Comandas ligadas a esta NFe" onClick={(e) => { e.stopPropagation(); onModal(r, i, 'comandas'); }}>🧾</button><button type="button" title="Eventos da NFe" onClick={(e) => { e.stopPropagation(); onModal(r, i, 'eventos'); }}>🗓</button><button type="button" title="Clonar esta NFe (nova nota PENDENTE, sem XML, PDF, chave, protocolo e recibo)" onClick={(e) => { e.stopPropagation(); onClonar(r); }}>⧉</button>{r.status_e === 'AUTORIZADA' && <button type="button" title={foiMarcado(r.nfe_impresso) ? 'Imprimir o DANFE novamente (já impresso)' : 'Imprimir o DANFE desta nota'} onClick={(e) => { e.stopPropagation(); onDanfe(r); }}>🖨</button>}{r.status_e === 'AUTORIZADA' && <button type="button" title="Enviar esta NFe por e-mail ao cliente (XML + DANFE)" onClick={(e) => { e.stopPropagation(); onEmail(r); }}>✉</button>}{!['AUTORIZADA', 'CANCELADA'].includes(r.status_e) && <button type="button" className="lx" title="Apagar esta NF (só notas não autorizadas)" onClick={(e) => { e.stopPropagation(); onApagar(r); }}>🗑</button>}</td>
       {cols.map((c) => <td key={c[0]} className={c[2] === 'm' ? 'n' : c[2] === 'chk' ? 'c' : ''}>{celulaGrade(r, c)}</td>)}
     </tr>
   );
@@ -349,7 +349,7 @@ export default function NFe({ onFechar }) {
     });
   }, []);
   const marcar = useCallback((r, i) => { ancora.current = i; setMarcados((s) => { const n = new Set(s); if (n.has(r.id)) n.delete(r.id); else n.add(r.id); return n; }); }, []);
-  const abreModal = useCallback((r, i, qual) => { setFoco(r.id); setMarcados(new Set([r.id])); ancora.current = i; setModalNota(qual); }, []);
+  const abreModal = useCallback((r, i, qual) => { setFoco(r.id); setMarcados(new Set([r.id])); ancora.current = i; if (qual === 'comandas') setSubNfe('comanda'); else setModalNota(qual); }, []);
   const todosMarcados = (linhas?.length ?? 0) > 0 && marcados.size === linhas.length;
   const marcarTodas = () => setMarcados(todosMarcados ? new Set(foco ? [foco] : []) : new Set(linhas.map((r) => r.id)));
   const irPara = (i) => { const r = linhas?.[i]; if (r) { setFoco(r.id); setMarcados(new Set([r.id])); ancora.current = i; } };
@@ -662,11 +662,8 @@ export default function NFe({ onFechar }) {
           {nota && <span className="nf2-nota">NF {nota.nfe_numero || '—'} · <i className={`nf2-st ${nota.status_e}`}>{nota.status_e}</i></span>}
         </div>
         <div className="nf2-acoes">
-          <button type="button" className="nf2-b novo" onClick={criar} disabled={ocupado}>＋ Criar</button>
           <button type="button" className="nf2-b prim" onClick={autorizar} disabled={ocupado || nPendentes === 0} title={nPendentes === 0 ? 'Nada a autorizar: só notas PENDENTES' : 'Autorizar NFe'}>✔ Autorizar{marcados.size > 0 ? ` (${nPendentes})` : ''}</button>
           <button type="button" className="nf2-b" onClick={danfe} disabled={nComDanfe === 0} title={nComDanfe === 0 ? 'Danfe só de notas AUTORIZADAS' : 'Imprimir o DANFE'}>🖨 Danfe{marcados.size > 0 ? ` (${nComDanfe})` : ''}</button>
-          <button type="button" className={`nf2-b${todosMarcados ? ' on' : ''}`} onClick={marcarTodas} disabled={!linhas?.length} title="Marcar / desmarcar todas as notas da lista">{todosMarcados ? '☐ Desmarcar' : '☑ Marcar todas'}</button>
-          <button type="button" className="nf2-b" onClick={() => setSubNfe('comanda')} disabled={!nota} title="Comandas ligadas à nota">🧾 Comandas{comandas.length ? ` (${comandas.length})` : ''}</button>
           <div className="nf2-mais">
             <button type="button" className="nf2-b" aria-haspopup="menu" aria-expanded={maisAberto} onClick={() => setMaisAberto((x) => !x)}>⋯ Mais opções ▾</button>
             {maisAberto && (
@@ -684,6 +681,8 @@ export default function NFe({ onFechar }) {
                   <button type="button" role="menuitem" onClick={() => { const ids = [...alvo].filter((id) => ['AUTORIZADA', 'CANCELADA'].includes(statusDe(id))); if (ids.length) gravaNoN(ids, true); else notificar('aviso', 'Selecione notas autorizadas.'); }}>💾 Gravar XML no N: (sistema antigo)</button>
                   <button type="button" role="menuitem" title="Busca a nota na API, atualiza o cadastro e grava o XML no N: para o sistema antigo" onClick={ajustarNfe} disabled={ocupado || (!nota && marcados.size === 0)}>🛠 Ajustar NFe</button>
                   <button type="button" role="menuitem" title="XML gravado em pasta com dia (11112026) passa para a pasta do mês (202611), e o caminho é corrigido na nota" onClick={migrarPastas} disabled={ocupado}>📁 Pastas XML (dia → mês)</button>
+                  <button type="button" role="menuitem" onClick={() => setSubNfe('comanda')} disabled={!nota} title="Comandas ligadas à nota">🧾 Comandas{comandas.length ? ` (${comandas.length})` : ''}</button>
+                  <button type="button" role="menuitem" onClick={criar} disabled={ocupado} title="Cria uma nova NFe">＋ Criar NFe</button>
                   <small>Envio</small>
                   <button type="button" role="menuitem" onClick={enviaEmail('cliente')}>✉ Enviar e-mail ao cliente</button>
                   <button type="button" role="menuitem" onClick={enviaEmail('contabilidade')}>📧 Enviar à Contabilidade</button>
