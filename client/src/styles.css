@@ -2035,4 +2035,4 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{text-decoration:underline}
 .nfe-grade td.n,.nfe-grade th.n{text-align:right;font-variant-numeric:tabular-nums}
 
 /* Fase 246: itens da NFe — preço, qtde e valor alinhados à direita */
-.nfe-itens td.n,.nfe-itens th.n,.nfe-itens tfoot td.n{text-align:right;font-variant-numeric:tabular-nums}
+.tb-itens-nfe td.n,.tb-itens-nfe th.n,.tb-itens-nfe tfoot td.n{text-align:right;font-variant-numeric:tabular-nums}

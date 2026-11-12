@@ -868,7 +868,7 @@ export default function NFe({ onFechar }) {
                         setItemSel(itens[j].id);
                         const tr = e.currentTarget.querySelectorAll('tbody tr')[j]; tr?.scrollIntoView({ block: 'nearest' });
                       }}>
-                        <table className="grade nfe-itens">
+                        <table className="grade tb-itens-nfe">
                           <thead><tr><th className="ind" />{ITEM_COLS.map(([k, r, t, w]) => <th key={k} style={{ minWidth: w }} className={t ? 'n' : ''}>{r}</th>)}</tr></thead>
                           <tbody>
                             {itens.map((i) => <LinhaItem key={i.id} i={i} sel={itemSel === i.id} onSel={setItemSel} />)}

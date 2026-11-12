@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 247 — Correção: itens da NFe sumiam atrás do cabeçalho
+
+- Na 246 dei à tabela de itens a classe `nfe-itens`, que já era a do bloco inteiro (altura mínima 261 px): o cabeçalho ficou gigante e cobriu as linhas. Agora a classe é `tb-itens-nfe` (o alinhamento à direita continua).
+
 ## Fase 246 — NFe: itens alinhados à direita
 
 - Grade de itens da NFe: títulos e valores de **Preço unitário, Qtde. e Valor do item** (e o total do rodapé) alinhados à direita.
