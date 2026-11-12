@@ -64,9 +64,10 @@ test('cupomEscPos em modo simples não emite ESC/GS (só texto, avanço e corte)
   assert.equal(String.fromCharCode(...b.slice(0, 12)), 'COMANDA\nITEM');
 });
 
-test('cupom ESC/POS: estilo g = ESC ! 0x28 (largura dupla + negrito), 24 colunas, sem GS (que algumas impressoras imprimem como "!")', () => {
+test('cupom ESC/POS: estilo g = SO (largura dupla), 24 colunas, sem GS nem ESC !', () => {
   const b = Array.from(cupomEscPos([{ e: 'g', t: 'X'.repeat(40) }, { e: 'c', t: 'a' }], { cortar: false }));
-  assert.ok(b.some((v, k) => v === 0x1b && b[k + 1] === 0x21 && b[k + 2] === 0x28), 'ESC ! largura dupla ausente');
+  assert.ok(b.includes(0x0e), 'SO ausente');
   assert.ok(!b.includes(0x1d), 'não deve enviar GS');
+  assert.ok(!b.some((v, k) => v === 0x1b && b[k + 1] === 0x21), 'não deve enviar ESC !');
   assert.equal(b.filter((v) => v === 0x58).length, 24);
 });

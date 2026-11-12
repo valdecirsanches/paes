@@ -1020,6 +1020,11 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 265 — Comanda na matricial: sem ESC ! (volta a ESC M/ESC E + códigos da matricial)
+
+- Depois de eu trocar para ESC ! (Fases 262–264), a impressora matricial de cupom passou a perder partes da comanda (saía só o valor total). O texto agora usa apenas **ESC M / ESC E** (como na versão que imprimia tudo) e os códigos da matricial do sistema antigo: **SO** (largo) nos títulos, **DC4/DC2** (normal) nos demais; nada de `GS !` nem `ESC !`. Itens em fonte A de 48 colunas (46 usadas).
+- Não testado em impressora real; se o resultado não vier completo, enviar uma foto e o modelo da impressora.
+
 ## Fase 264 — Comanda: itens em fonte A (letra maior, papel cheio)
 
 - A Fase 263 deixou o item em fonte B de 63 colunas e a letra ficou miúda, sobrando ~20% nas laterais. Voltei às linhas de 46 colunas (Qtde 4, Descrição 24, Vr Un. 6, Vr total 9) e agora o estilo dos itens/cabeçalhos usa a **fonte A** (48 colunas) da térmica, que é a que enche a largura do papel e dá a letra maior da comanda desejada. Título largo (largura dupla) e demais estilos como na Fase 263. Vale para comanda e demonstrativo.

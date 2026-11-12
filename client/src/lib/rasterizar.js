@@ -63,11 +63,9 @@ export function cupomEscPos(linhas, { cortar = true, colunas = 48, negrito = tru
     return concat(...Array.from({ length: Math.max(1, copias) }, () => um));
   }
   // Linha = texto simples, ou { t, e } com estilo: g = largo (largura dupla, como o #14 da matricial; 24 colunas), n = normal, c = itens (fonte A, 48 colunas)
-  // Estilo por ESC ! n (modo de impressão: bit0 = fonte B, bit3 = negrito, bit5 = largura dupla). Serve nas Epson e nas compatíveis simples;
-  // o GS ! n (tamanho de caractere) que se usava antes é ignorado por várias impressoras, que ainda imprimiam o "!" no início de cada linha.
-  // Além do ESC ! n, vai o código da matricial do sistema antigo (SO #14 largo, SI #15 condensado, DC2 #18 normal): as térmicas de
-  // emulação ignoram um dos dois, e o que elas ignoram não imprime nada.
-  const ESTILO = { g: [new Uint8Array([0x1b, 0x21, 0x28, 0x0e]), 24], n: [new Uint8Array([0x1b, 0x21, 0x00, 0x14, 0x12]), 48], c: [new Uint8Array([0x1b, 0x21, 0x00, 0x14, 0x12]), 48] }; // c = fonte A (48 colunas): é com ela que as 46 colunas do item enchem o papel; a fonte B (64) deixava ~25% de sobra e a letra miúda
+  // Estilos só com ESC M / ESC E e os códigos da matricial do sistema antigo (SO #14 largo, DC4 cancela largo, DC2 #18 normal).
+  // Nada de GS ! (impresso como "!") nem ESC ! (algumas matriciais de cupom o interpretam de outro jeito e perdem o cupom).
+  const ESTILO = { g: [new Uint8Array([0x1b, 0x4d, 0, 0x1b, 0x45, 1, 0x0e]), 24], n: [new Uint8Array([0x1b, 0x4d, 0, 0x1b, 0x45, 0, 0x14, 0x12]), 48], c: [new Uint8Array([0x1b, 0x4d, 0, 0x1b, 0x45, 0, 0x14, 0x12]), 48] }; // c = itens: fonte A de 48 colunas (46 usadas)
   const linha = (l) => {
     if (l && typeof l === 'object') { const [cmd, cols] = ESTILO[l.e] ?? ESTILO.n; return concat(cmd, cp1252(String(l.t ?? '').slice(0, cols)), new Uint8Array([0x0a])); }
     return concat(cp1252(String(l ?? '').slice(0, colunas)), new Uint8Array([0x0a]));
@@ -75,7 +73,7 @@ export function cupomEscPos(linhas, { cortar = true, colunas = 48, negrito = tru
   const um = concat(
     new Uint8Array([0x1b, 0x40, 0x1b, 0x74, 16, 0x1b, 0x45, negrito ? 1 : 0]),
     ...linhas.map(linha),
-    new Uint8Array([0x1b, 0x21, 0, 0x1b, 0x45, 0, 0x1b, 0x64, 4]),
+    new Uint8Array([0x14, 0x12, 0x1b, 0x45, 0, 0x1b, 0x4d, 0, 0x1b, 0x64, 4]),
     cortar ? new Uint8Array([0x1d, 0x56, 0x42, 0x00]) : new Uint8Array(),
   );
   return concat(...Array.from({ length: Math.max(1, copias) }, () => um));
