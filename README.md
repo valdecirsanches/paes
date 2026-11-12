@@ -1020,6 +1020,11 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 260 — Fábrica/Produção: linha marcada inteira
+
+- Na lista da Produção, a linha atual agora fica toda marcada (antes a célula da coluna atual voltava à cor normal e parecia "cortada"); a coluna atual ganha só um contorno. Navegando com ↑ ↓ a linha atual sempre fica visível (rola sem esconder sob o cabeçalho).
+- Só build; não conferido em tela.
+
 ## Fase 259 — Cargas: Região só com as regiões da entrega
 
 - O filtro Região da Carga diária (rádios na Fábrica, lista no Faturamento) mostra apenas as regiões que constam nas entregas da data escolhida, mais "Todos". Novo `GET /api/cargas/regioes?data=`; o filtro passa a ir pelo nome da região (`regiao_nome`), então regiões fora da lista fixa antiga também funcionam. Trocar a data refaz a lista; se a região escolhida não existir na nova data, volta para "Todos".

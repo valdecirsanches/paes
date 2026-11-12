@@ -69,6 +69,7 @@ function Aba({ tipo, data, recarga, ativa, fonte, onCarga }) {
     if (n) setSel(chave(n));
   };
   useEffect(() => { setSelD(0); }, [sel, destinos]);
+  useEffect(() => { if (ativa) corpo.current?.querySelector('tr.sel-l')?.scrollIntoView({ block: 'nearest' }); }, [ativa, sel]); // setas: mantém a linha atual à vista
   useEffect(() => { if (ativa) corpo.current?.focus({ preventScroll: true }); }, [ativa, sel]);
   const total = destinos.reduce((s, r) => s + Number(r.qtde_producao || 0), 0);
   const esp = tipo === 'especiais';
@@ -82,11 +83,11 @@ function Aba({ tipo, data, recarga, ativa, fonte, onCarga }) {
             {linhasM.map((r) => {
               const k = chave(r); const ehSel = k === sel; const base = COR[r.producao_turno] ?? COR[1];
               return (
-                <tr key={k} onClick={() => setSel(k)}>
+                <tr key={k} className={ehSel ? 'sel-l' : ''} onClick={() => setSel(k)}>
                   <td className={`ind${ehSel ? ' on' : ''}`}>{ehSel ? '▸' : ''}</td>
                   {[r.producao_turno, num(r.producao_qtde), r.descricao ?? r.referencia_descricao].map((v, i) => {
-                    const s = ehSel && i !== col ? SEL : base;
-                    return <td key={i} className={i === 1 ? 'n' : ''} onClick={() => setCol(i)} style={{ background: s.bg, color: s.fg, fontWeight: 'bold' }}>{v}</td>;
+                    const s = ehSel ? SEL : base; // linha toda marcada (a coluna atual só ganha um contorno)
+                    return <td key={i} className={i === 1 ? 'n' : ''} onClick={() => setCol(i)} style={{ background: s.bg, color: s.fg, fontWeight: 'bold', ...(ehSel && i === col ? { boxShadow: 'inset 0 0 0 2px #000' } : {}) }}>{v}</td>;
                   })}
                 </tr>);
             })}
