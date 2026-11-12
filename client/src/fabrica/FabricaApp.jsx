@@ -8,6 +8,7 @@ import Conflitos from '../screens/Conflitos.jsx';
 import { aoPedirConflitos } from '../lib/navega.js';
 import FabricaProducao from './FabricaProducao.jsx';
 import './fabrica.css';
+import TemaControles from '../components/TemaControles.jsx';
 
 // (o perfil Fábrica é definido pelo App a cada renderização: este módulo é importado sempre, inclusive no Faturamento) — esconde os botões de ajuste (etiqueta, preço, cobrança, configurações) nas telas compartilhadas
 
@@ -30,6 +31,7 @@ export default function FabricaApp({ saude, onVoltar = null, dispositivo = '' })
   const [ativa, setAtiva] = useState(null);
   const [msg, setMsg] = useState('');
   const [menuAba, setMenuAba] = useState(null);
+  const [popTema, setPopTema] = useState(null); // { x, y } quando aberto (posição fixa: a barra rola e cortaria um popover absoluto)
   const abrir = (k) => { setAbertas((a) => (a.includes(k) ? a : [...a, k])); setAtiva(k); };
   const fechar = (k) => setAbertas((a) => { const n = a.filter((x) => x !== k); if (ativa === k) setAtiva(n[n.length - 1] ?? null); return n; });
   useEffect(() => aoPedirConflitos(() => abrir('conflitos')), []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -46,6 +48,11 @@ export default function FabricaApp({ saude, onVoltar = null, dispositivo = '' })
         {onVoltar && <button type="button" className="fb-bt" title="Voltar ao sistema completo (Faturamento)" onClick={onVoltar}><span>↩ Faturamento</span></button>}
         {BOTOES.map(([k, rot, ic]) => (
           <button key={k} type="button" className={`fb-bt${ativa === k ? ' on' : ''}`} onClick={() => abrir(k)}><img src={`/fabrica/${ic}.png`} alt="" /><span>{rot}</span></button>))}
+        <span className="fb-tema">
+          <button type="button" className={`fb-bt${popTema ? ' on' : ''}`} aria-haspopup="dialog" aria-expanded={Boolean(popTema)} title="Cores, modo claro/escuro e tamanho da letra (vale só neste computador)" onClick={(e) => { const b = e.currentTarget.getBoundingClientRect(); setPopTema((x) => (x ? null : { x: b.left, y: b.bottom + 2 })); }}><img src="/fabrica/tema.png" alt="" /><span>Tema</span></button>
+          {popTema && (<><div className="fb-tema-veu" onClick={() => setPopTema(null)} /><div className="fb-tema-pop" role="dialog" aria-label="Tema" style={{ left: Math.max(4, Math.min(popTema.x, window.innerWidth - 430)), top: popTema.y }}><TemaControles compacto /><button type="button" onClick={() => setPopTema(null)}>Fechar</button></div></>)}
+        </span>
+        <button type="button" className="fb-bt" title="Recarrega o sistema para pegar a versão mais nova" onClick={() => window.location.reload()}><img src="/fabrica/atualizacao.png" alt="" /><span>Atualização</span></button>
       </div>
       <div className="fb-abas" role="tablist">
         {abertas.map((k) => (

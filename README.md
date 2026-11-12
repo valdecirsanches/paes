@@ -1020,6 +1020,11 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 258 — Fábrica: botões Tema e Atualização
+
+- A barra da Fábrica ganhou **Tema** (modo claro/escuro, tamanho da letra, temas prontos; abre um quadro sobre a tela e vale só neste computador, sem gravar no servidor) e **Atualização** (recarrega o sistema para pegar a versão nova), com os ícones do sistema antigo.
+- Conferido só no preview.
+
 ## Fase 257 — Cargas: contraste da linha marcada
 
 - A linha marcada/em foco usava uma mistura do azul do tema com branco, com letra branca: em alguns temas as letras sumiam. Agora a linha marcada é azul fixo (#1f5fb4) com letra branca, em qualquer tema (também sobre linhas amarelas, canceladas ou separadas); a linha só em foco ganha filetes azuis.
