@@ -868,8 +868,8 @@ export default function NFe({ onFechar }) {
                         setItemSel(itens[j].id);
                         const tr = e.currentTarget.querySelectorAll('tbody tr')[j]; tr?.scrollIntoView({ block: 'nearest' });
                       }}>
-                        <table className="grade">
-                          <thead><tr><th className="ind" />{ITEM_COLS.map(([k, r, , w]) => <th key={k} style={{ minWidth: w }}>{r}</th>)}</tr></thead>
+                        <table className="grade nfe-itens">
+                          <thead><tr><th className="ind" />{ITEM_COLS.map(([k, r, t, w]) => <th key={k} style={{ minWidth: w }} className={t ? 'n' : ''}>{r}</th>)}</tr></thead>
                           <tbody>
                             {itens.map((i) => <LinhaItem key={i.id} i={i} sel={itemSel === i.id} onSel={setItemSel} />)}
                             {itens.length === 0 && <tr className="semlinha"><td colSpan={ITEM_COLS.length + 1} className="vazio">&lt;Sem itens&gt;</td></tr>}

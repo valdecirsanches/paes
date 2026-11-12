@@ -2033,3 +2033,6 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{text-decoration:underline}
 
 /* Fase 245: valor da NF alinhado à direita (célula, título e total) */
 .nfe-grade td.n,.nfe-grade th.n{text-align:right;font-variant-numeric:tabular-nums}
+
+/* Fase 246: itens da NFe — preço, qtde e valor alinhados à direita */
+.nfe-itens td.n,.nfe-itens th.n,.nfe-itens tfoot td.n{text-align:right;font-variant-numeric:tabular-nums}
