@@ -135,7 +135,7 @@ export async function imprimirDocumento(tipo, doc0, aviso = () => {}) {
     const cupomImagem = def.cupom && !((d.linguagem === 'escpos' || d.linguagem === 'texto') && doc.linhas);
     if (cupomImagem && !doc.linhas) throw new Error('este documento não tem texto para a impressora');
     if (def.cupom && !cupomImagem) {
-      await enviar(cfg.destino, { tipo: 'raw', dados_b64: paraBase64(cupomEscPos(doc.linhas, { cortar: d.cortar !== false, copias, simples: d.linguagem === 'texto' })) });
+      await enviar(cfg.destino, { tipo: 'raw', dados_b64: paraBase64(cupomEscPos(doc.linhas, { cortar: d.cortar !== false, copias, simples: d.linguagem === 'texto', largo: cfg.largo })) });
     } else {
       // Um único trabalho com várias etiquetas (antes: um trabalho por etiqueta, e cada trabalho puxava papel/corte
       // próprio da impressora — daí o espaço enorme entre as etiquetas). Etiquetas continuam separadas (uma página cada).
@@ -214,4 +214,17 @@ export async function salvaXmlLegado(idNota, api) {
     .catch((e) => { throw new Error(e[SEM_REDE] ? 'o agente de impressão não respondeu neste computador (ele grava no N:)' : e.message); });
   await api.post(`/nfe/${idNota}/xml-legado/confirma`, {});
   return r.caminho ?? destino;
+}
+
+/** Teste de letras do cupom: uma linha por código de letra larga; o usuário escolhe o número que saiu grande. */
+export async function testeLetrasCupom(destino) {
+  const linhas = [{ e: 'n', t: 'TESTE DE LETRAS - qual linha saiu GRANDE?' }, { e: 'n', t: '' }];
+  const bytes = [];
+  const cod = { 1: [[0x0e], [0x14]], 2: [[0x1b, 0x57, 1], [0x1b, 0x57, 0]], 3: [[0x1b, 0x21, 0x28], [0x1b, 0x21, 0]], 4: [[0x1d, 0x21, 0x10], [0x1d, 0x21, 0]] };
+  const txt = (t) => Array.from(String(t), (c) => c.charCodeAt(0) & 0xff);
+  bytes.push(0x1b, 0x40, 0x1b, 0x74, 16);
+  for (const l of linhas) bytes.push(...txt(l.t), 0x0a);
+  for (const [n, [on, off]] of Object.entries(cod)) bytes.push(...on, ...txt(`${n} COMANDA 601737`), ...off, 0x0a);
+  bytes.push(...txt('0 (sem letra larga)'), 0x0a, 0x1b, 0x64, 4);
+  await enviar(destino, { tipo: 'raw', dados_b64: paraBase64(Uint8Array.from(bytes)) });
 }

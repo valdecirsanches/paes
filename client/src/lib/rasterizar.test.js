@@ -64,10 +64,12 @@ test('cupomEscPos em modo simples não emite ESC/GS (só texto, avanço e corte)
   assert.equal(String.fromCharCode(...b.slice(0, 12)), 'COMANDA\nITEM');
 });
 
-test('cupom ESC/POS: estilo g = SO (largura dupla), 24 colunas, sem GS nem ESC !', () => {
-  const b = Array.from(cupomEscPos([{ e: 'g', t: 'X'.repeat(40) }, { e: 'c', t: 'a' }], { cortar: false }));
-  assert.ok(b.includes(0x0e), 'SO ausente');
-  assert.ok(!b.includes(0x1d), 'não deve enviar GS');
-  assert.ok(!b.some((v, k) => v === 0x1b && b[k + 1] === 0x21), 'não deve enviar ESC !');
-  assert.equal(b.filter((v) => v === 0x58).length, 24);
+test('cupom ESC/POS: letra larga só com o código escolhido; padrão = sem GS, ESC ! nem SO', () => {
+  const l = [{ e: 'g', t: 'X'.repeat(40) }, { e: 'c', t: 'a' }];
+  const pad = Array.from(cupomEscPos(l, { cortar: false }));
+  assert.ok(!pad.includes(0x1d) && !pad.includes(0x0e) && !pad.some((v, k) => v === 0x1b && pad[k + 1] === 0x21));
+  assert.equal(pad.filter((v) => v === 0x58).length, 40);
+  const so = Array.from(cupomEscPos(l, { cortar: false, largo: 'so' }));
+  assert.ok(so.includes(0x0e)); assert.equal(so.filter((v) => v === 0x58).length, 24);
+  assert.ok(Array.from(cupomEscPos(l, { cortar: false, largo: 'escbang' })).some((v, k, a) => v === 0x1b && a[k + 1] === 0x21 && a[k + 2] === 0x28));
 });

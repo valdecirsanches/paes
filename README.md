@@ -1020,6 +1020,12 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 266 — Cupom: letra larga escolhida por impressora (Teste de letras)
+
+- A Fase 265 não imprimiu nada na matricial: cada impressora entende um código diferente de letra larga e eu estava chutando. Agora o **padrão não envia nenhum código de tamanho** (só ESC M / ESC E, que a impressora já aceitava — imprime tudo, títulos só em negrito).
+- Em **Configurar impressoras**, nas linhas de cupom (comanda, cupom da expedição) há **Teste de letras** (imprime 4 linhas, cada uma com um código: 1 SO, 2 ESC W, 3 ESC !, 4 GS !) e a caixa **Letra larga**: escolha o número da linha que saiu grande e os títulos passam a usar esse código (24 colunas). Fica salvo nesta estação.
+- Não testado em impressora real.
+
 ## Fase 265 — Comanda na matricial: sem ESC ! (volta a ESC M/ESC E + códigos da matricial)
 
 - Depois de eu trocar para ESC ! (Fases 262–264), a impressora matricial de cupom passou a perder partes da comanda (saía só o valor total). O texto agora usa apenas **ESC M / ESC E** (como na versão que imprimia tudo) e os códigos da matricial do sistema antigo: **SO** (largo) nos títulos, **DC4/DC2** (normal) nos demais; nada de `GS !` nem `ESC !`. Itens em fonte A de 48 colunas (46 usadas).

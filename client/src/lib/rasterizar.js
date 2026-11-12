@@ -56,16 +56,18 @@ const CP1252_EXTRA = { '€': 0x80, '‚': 0x82, 'ƒ': 0x83, '„': 0x84, '…':
 export const cp1252 = (t) => Uint8Array.from(String(t ?? ''), (c) => { const n = c.charCodeAt(0); return n < 0x100 ? n : (CP1252_EXTRA[c] ?? 0x3f); });
 
 /** ESC/POS texto nativo (cupom): linhas monoespaçadas, negrito opcional, corte. */
-export function cupomEscPos(linhas, { cortar = true, colunas = 48, negrito = true, copias = 1, simples = false } = {}) {
+export function cupomEscPos(linhas, { cortar = true, colunas = 48, negrito = true, copias = 1, simples = false, largo = '' } = {}) {
   if (simples) { // "texto puro": só caracteres e quebras de linha, para impressoras/drivers que não entendem (e imprimem como lixo) ESC/GS
     const txt = linhas.map((l) => String((l && typeof l === 'object' ? l.t : l) ?? '').slice(0, colunas)).join('\n');
     const um = concat(cp1252(`${txt}\n\n\n\n\n`), cortar ? new Uint8Array([0x1d, 0x56, 0x42, 0x00]) : new Uint8Array());
     return concat(...Array.from({ length: Math.max(1, copias) }, () => um));
   }
   // Linha = texto simples, ou { t, e } com estilo: g = largo (largura dupla, como o #14 da matricial; 24 colunas), n = normal, c = itens (fonte A, 48 colunas)
-  // Estilos só com ESC M / ESC E e os códigos da matricial do sistema antigo (SO #14 largo, DC4 cancela largo, DC2 #18 normal).
-  // Nada de GS ! (impresso como "!") nem ESC ! (algumas matriciais de cupom o interpretam de outro jeito e perdem o cupom).
-  const ESTILO = { g: [new Uint8Array([0x1b, 0x4d, 0, 0x1b, 0x45, 1, 0x0e]), 24], n: [new Uint8Array([0x1b, 0x4d, 0, 0x1b, 0x45, 0, 0x14, 0x12]), 48], c: [new Uint8Array([0x1b, 0x4d, 0, 0x1b, 0x45, 0, 0x14, 0x12]), 48] }; // c = itens: fonte A de 48 colunas (46 usadas)
+  // Letra larga (estilo g): cada impressora entende um código diferente, então ele é escolhido por impressora (Configurar impressoras › Teste de letras).
+  // Padrão = sem código de tamanho (só negrito): é o que toda impressora aceita. Nada de GS ! por padrão (várias o imprimem como "!").
+  const LARGO = { so: [[0x0e], [0x14]], escw: [[0x1b, 0x57, 1], [0x1b, 0x57, 0]], escbang: [[0x1b, 0x21, 0x28], [0x1b, 0x21, 0]], gs: [[0x1d, 0x21, 0x10], [0x1d, 0x21, 0]] }[largo] ?? [[], []];
+  const g0 = new Uint8Array([0x1b, 0x4d, 0, 0x1b, 0x45, 1, ...LARGO[0]]);
+  const ESTILO = { g: [g0, LARGO[0].length ? 24 : 48], n: [new Uint8Array([0x1b, 0x4d, 0, 0x1b, 0x45, 0, ...LARGO[1]]), 48], c: [new Uint8Array([0x1b, 0x4d, 0, 0x1b, 0x45, 0, ...LARGO[1]]), 48] }; // c = itens: fonte A de 48 colunas (46 usadas)
   const linha = (l) => {
     if (l && typeof l === 'object') { const [cmd, cols] = ESTILO[l.e] ?? ESTILO.n; return concat(cmd, cp1252(String(l.t ?? '').slice(0, cols)), new Uint8Array([0x0a])); }
     return concat(cp1252(String(l ?? '').slice(0, colunas)), new Uint8Array([0x0a]));
@@ -73,7 +75,7 @@ export function cupomEscPos(linhas, { cortar = true, colunas = 48, negrito = tru
   const um = concat(
     new Uint8Array([0x1b, 0x40, 0x1b, 0x74, 16, 0x1b, 0x45, negrito ? 1 : 0]),
     ...linhas.map(linha),
-    new Uint8Array([0x14, 0x12, 0x1b, 0x45, 0, 0x1b, 0x4d, 0, 0x1b, 0x64, 4]),
+    new Uint8Array([...LARGO[1], 0x1b, 0x45, 0, 0x1b, 0x4d, 0, 0x1b, 0x64, 4]),
     cortar ? new Uint8Array([0x1d, 0x56, 0x42, 0x00]) : new Uint8Array(),
   );
   return concat(...Array.from({ length: Math.max(1, copias) }, () => um));

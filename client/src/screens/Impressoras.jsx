@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../api.js';
-import { DOCS, AGENTE, destinosAgente, gravarMapa, lerMapa, statusAgente, testarDestino } from '../lib/impressora.js';
+import { DOCS, AGENTE, destinosAgente, gravarMapa, lerMapa, statusAgente, testarDestino, testeLetrasCupom } from '../lib/impressora.js';
 import { mensagem } from '../components/toast.jsx';
 import EditorEtiqueta from '../components/EditorEtiqueta.jsx';
 import { temAjuste } from '../lib/ajustes.js';
@@ -139,6 +139,10 @@ export default function Impressoras() {
                 {d.etiqueta && <label className="imp-cop" title="Altura da página = passo entre etiquetas. Se cada etiqueta sair mais abaixo que a anterior, diminua; se sair cortada/apertada, aumente.">Altura mm<input type="number" min="20" max="100" step="0.5" placeholder={String(d.mm[1])} value={c.altura ?? ''} disabled={!c.destino} onChange={(e) => muda(tipo, 'altura', e.target.value === '' ? undefined : Number(e.target.value))} /></label>}
                 {d.etiqueta && <button type="button" className="imp-btn ajuste" onClick={() => setEditor(tipo)} title="Ajustar posições, fontes e altura em milímetros">📐 Editor{temAjuste(tipo) ? ' ●' : ''}</button>}
                 <button type="button" className="imp-btn" disabled={!c.destino || !!ocupado} onClick={() => testar(tipo, c.destino)}>{ocupado === tipo ? 'Enviando…' : 'Teste'}</button>
+                {DOCS[tipo]?.cupom && (<>
+                  <button type="button" className="imp-btn" disabled={!c.destino || !!ocupado} title="Imprime 4 linhas, cada uma com um código de letra larga. Veja qual saiu grande e escolha o número ao lado." onClick={async () => { setOcupado(tipo); try { await testeLetrasCupom(c.destino); mensagem('ok', 'Teste de letras enviado: escolha ao lado o número da linha que saiu grande.'); } catch (e) { mensagem('erro', e.message); } finally { setOcupado(''); } }}>Teste de letras</button>
+                  <label className="imp-cop" title="Código usado nos títulos do cupom (COMANDA, data, cliente, total)">Letra larga<select value={c.largo ?? ''} disabled={!c.destino} onChange={(e) => muda(tipo, 'largo', e.target.value)}><option value="">0 – sem</option><option value="so">1 – SO</option><option value="escw">2 – ESC W</option><option value="escbang">3 – ESC !</option><option value="gs">4 – GS !</option></select></label>
+                </>)}
               </div>
             );
           })}
