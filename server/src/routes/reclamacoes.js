@@ -42,9 +42,10 @@ router.post('/status/:id/reclamacoes', async (req, res) => {
   if (!String(c.reclamante ?? '').trim()) throw invalid('Informe o nome do reclamante.');
   const agora = new Date();
   const hora = [agora.getHours(), agora.getMinutes(), agora.getSeconds()].map((n) => String(n).padStart(2, '0')).join(':');
-  const [r] = await pool.query('insert into tb_reclamacoes set ?', [{
-    ...c, data: String(st.data).slice(0, 10), hora, id_cliente: st.id_cliente, id_unidade: st.id_unidade, usuario_id: req.userId,
-  }]);
+  const reg = { ...c, data: String(st.data).slice(0, 10), hora, id_cliente: st.id_cliente, id_unidade: st.id_unidade };
+  if (req.userId) reg.usuario_id = req.userId; // sem usuário (ex.: falha ao criar o "fabrica") não manda NULL: a gravação não pode falhar por isso
+  for (const k of ['telefone', 'reclamacao', 'explicacao']) reg[k] ??= '';
+  const [r] = await pool.query('insert into tb_reclamacoes set ?', [reg]);
   res.status(201).json({ id: r.insertId });
 });
 

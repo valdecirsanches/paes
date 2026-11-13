@@ -1020,6 +1020,12 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 275 — NF-e: e-mail de nota que não está na lista · Reclamações: gravação mais robusta
+
+- **Enviar NF-e (e-mail)**: o diálogo podia tentar enviar uma nota que já não estava na lista (linha "em foco" de uma consulta anterior). Agora só vale a nota visível; ao recarregar a lista o foco antigo é descartado.
+- O erro "Falha ao localizar a empresa na API / não achei a pasta do CNPJ …" é de configuração: o CNPJ do emitente da nota não existe na API de NF-e nem em `NFE_ARQUIVOS_DIR` (precisa conter `<CNPJ>/NFe/<aaaamm>/...`).
+- **Reclamações**: a gravação não manda mais `usuario_id` nulo e preenche telefone/reclamação/contestação vazios com texto vazio (evita recusa do MySQL).
+
 ## Fase 274 — Comanda: descrição em mais de uma linha e "preço x qtde = total"
 
 - Na comanda impressa, cada item agora tem a descrição na largura toda (43 colunas) e o que não couber vai para a linha de baixo; em seguida uma linha à direita com **preço x qtde = total** (ex.: `0,700 x 325 = 227,500`). O cabeçalho passa a ser "Qtde Descricao do produto". Resto do cupom inalterado (o demonstrativo continua como estava).

@@ -338,6 +338,7 @@ export default function NFe({ onFechar }) {
   }, [comandaSel]);
 
   const linhasRef = useRef(linhas); linhasRef.current = linhas;
+  useEffect(() => { if (linhas && foco && !linhas.some((r) => r.id === foco)) setFoco(null); }, [linhas]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { const ids = new Set((linhas ?? []).map((r) => r.id)); setMarcados((m) => { const n = new Set([...m].filter((x) => ids.has(x))); return n.size === m.size ? m : n; }); }, [linhas]); // filtro por coluna: o que ficou escondido deixa de estar marcado
   const clicar = useCallback((e, r, i) => {
     setFoco(r.id);
@@ -353,7 +354,9 @@ export default function NFe({ onFechar }) {
   const todosMarcados = (linhas?.length ?? 0) > 0 && marcados.size === linhas.length;
   const marcarTodas = () => setMarcados(todosMarcados ? new Set(foco ? [foco] : []) : new Set(linhas.map((r) => r.id)));
   const irPara = (i) => { const r = linhas?.[i]; if (r) { setFoco(r.id); setMarcados(new Set([r.id])); ancora.current = i; } };
-  const alvo = marcados.size ? marcados : new Set(foco ? [foco] : []);
+  // só vale o que está na lista: um foco antigo (nota que saiu da lista ao mudar o filtro) não pode ser enviado/autorizado sem a pessoa ver
+  const idsVisiveis = useMemo(() => new Set((linhas ?? []).map((r) => r.id)), [linhas]);
+  const alvo = marcados.size ? marcados : new Set(foco && idsVisiveis.has(foco) ? [foco] : []);
   // Autorizar só vale para PENDENTE; Danfe só para AUTORIZADA (ou CANCELADA, no caso de uma nota). Com notas marcadas, vale se ao menos uma serve.
   const statusDe = (id) => (id === foco && nota ? nota.status_e : (linhas ?? []).find((r) => r.id === id)?.status_e);
   const nPendentes = [...alvo].filter((id) => statusDe(id) === 'PENDENTE').length;
