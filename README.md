@@ -1020,6 +1020,12 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 299 — Faturamento: produtos só do cliente do item
+
+- Faturamento: `BuscaProduto` com `cliente` + `soCliente` (sem a opção "todos os produtos"); `resolver` confere `id_cliente`; `PUT /api/faturamento/diaria/:id` recusa `produto_codigo`/`conversao_produto_codigo` de outro cliente.
+- Comandas: removida a linha de filtros por coluna (digitar/setas na grade, Fase 298).
+- Não testado com o MySQL real.
+
 ## Fase 298 — Digitar direto na grade (Comandas e Diária)
 
 - Novo `lib/digitaNaLista.js` (`useDigitaNaLista`): teclas digitadas com o foco na lista montam um texto (some após 1,8 s de pausa) e a primeira linha que contém todas as palavras (sem acento) é selecionada; Backspace apaga, Esc limpa. Campos de formulário mantêm o teclado.

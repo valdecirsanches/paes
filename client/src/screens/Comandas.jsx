@@ -329,14 +329,6 @@ export default function Comandas({ onFechar }) {
           <table className="grade">
             <thead>
               <tr><th className="ind">✱</th><th>Unidade ⏶</th><th>Cliente</th><th>Faturamento</th></tr>
-              <tr className="cm2-filtro">
-                <th className="ind" title="Filtros">🔎</th>
-                {[['u', 'Unidade…'], ['c', 'Cliente…'], ['t', 'Tipo…']].map(([k, ph], i) => (
-                  <th key={k}><input type="search" value={fUni[k]} placeholder={ph} aria-label={`Filtrar por ${ph.replace('…', '').toLowerCase()}`}
-                    onChange={(e) => setFUni((x) => ({ ...x, [k]: e.target.value }))}
-                    onKeyDown={(e) => { if (e.key === 'Enter' && unisVisiveis[0]) { e.preventDefault(); mudarUnidade(unisVisiveis[0].id); } }} /></th>
-                ))}
-              </tr>
             </thead>
             <tbody>
               {unisVisiveis.map((u) => (

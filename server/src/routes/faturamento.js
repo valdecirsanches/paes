@@ -190,6 +190,7 @@ router.put('/diaria/:id', async (req, res) => {
       if (!b.produto_codigo || b.produto_codigo === '0') throw invalid('Informe o código do produto.');
       const p = await produtoPorCodigo(c, b.produto_codigo);
       if (!p) throw invalid('Produto não encontrado!');
+      if (atual.id_cliente != null && Number(p.id_cliente) !== Number(atual.id_cliente)) throw invalid('Este produto não pertence ao cliente do item.');
       Object.assign(n, { id_produto: p.id, produto_descricao: p.descricao });
       if (n.produto_descricao_expedicao === undefined) n.produto_descricao_expedicao = p.descricao_expedicao ?? p.descricao;
       if (n.produto_preco === undefined) n.produto_preco = p.preco;
@@ -206,6 +207,7 @@ router.put('/diaria/:id', async (req, res) => {
       if (b.conversao_produto_codigo && b.conversao_produto_codigo !== '0') {
         const p = await produtoPorCodigo(c, b.conversao_produto_codigo);
         if (!p) throw invalid('Produto não encontrado!');
+        if (atual.id_cliente != null && Number(p.id_cliente) !== Number(atual.id_cliente)) throw invalid('Este produto não pertence ao cliente do item.');
         n.conversao_id_produto = p.id; n.id_produto_conversao = p.id;
         if (n.conversao_produto_descricao === undefined) n.conversao_produto_descricao = p.descricao;
         if (n.conversao_produto_preco === undefined) n.conversao_produto_preco = Number(p.preco) || 0;

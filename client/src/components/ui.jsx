@@ -50,7 +50,7 @@ export function Marca({ texto, termo }) {
 }
 
 /** Janela "Localizar produto": pesquisa ao digitar, setas navegam, Enter escolhe, Esc fecha. */
-export function BuscaProduto({ onEscolher, onFechar, cliente }) {
+export function BuscaProduto({ onEscolher, onFechar, cliente, soCliente = false }) {
   const [q, setQ] = useState('');
   const [rows, setRows] = useState([]);
   const [estado, setEstado] = useState('ocioso'); // ocioso | buscando | ok | erro
@@ -88,7 +88,7 @@ export function BuscaProduto({ onEscolher, onFechar, cliente }) {
           <input ref={campo} type="search" placeholder="Digite parte do código ou da descrição…" aria-label="Pesquisar produto" value={q} onChange={(e) => setQ(e.target.value)} />
           {q && <button type="button" className="pq-limpa" aria-label="Limpar pesquisa" onClick={() => setQ('')}>×</button>}
         </div>
-        {cliente && <label className="pq-todos"><input type="checkbox" checked={todos} onChange={(e) => setTodos(e.target.checked)} />Pesquisar em todos os produtos (não só os deste cliente)</label>}
+        {cliente && !soCliente && <label className="pq-todos"><input type="checkbox" checked={todos} onChange={(e) => setTodos(e.target.checked)} />Pesquisar em todos os produtos (não só os deste cliente)</label>}
         <div className="pq-estado" aria-live="polite">
           {estado === 'ocioso' && 'Digite ao menos 2 letras para pesquisar.'}
           {estado === 'buscando' && 'Pesquisando…'}
