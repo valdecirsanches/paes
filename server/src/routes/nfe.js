@@ -17,6 +17,7 @@ import { baseGravacao, paraBanco, paraLocal, caminhoXmlLegado, ehCaminhoLegado }
 import { acharArquivoNota, lerArquivoNota, baseArquivos } from '../services/arquivosApi.js';
 import { aplicaReducaoIbs, montaJsonNfe, validaParaAutorizar, dataHoraBr, regimeDoCrt, ehDevolucao } from '../services/nfeJson.js';
 import { registra } from '../services/auditoria.js';
+import { auditaTributos } from '../services/auditaTributos.js';
 import { migraPastasXml } from '../services/migraXmlPastas.js';
 import { analisaReferencias, candidatasOriginal, devolucoesDe, errosDaAnalise } from '../services/devolucaoRef.js';
 
@@ -706,6 +707,10 @@ router.get('/impressos', async (req, res) => {
   res.json({ impressos: r.map((x) => x.id) });
 });
 /** Diagnóstico: operações de escrita da API (swagger) e quais parecem importar XML autorizado. */
+// Conferência (somente leitura): o que saiu nos últimos XMLs autorizados × Código de tributação de cada produto
+router.get('/auditoria-tributos', async (req, res) => {
+  res.json(await auditaTributos(pool, { limite: req.query.n, arqApp }));
+});
 router.get('/api-rotas', async (_req, res) => {
   const tentativas = []; const ops = await api.listaRotas(tentativas);
   res.json({ total: ops.length, base: process.env.NFE_API_URL || 'http://127.0.0.1:5240', tentativas, candidatas: api.candidatasImportacao(ops), todas: ops.map((o) => `${o.metodo} ${o.caminho}`) });

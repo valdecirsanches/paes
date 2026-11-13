@@ -1020,6 +1020,12 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 302 — NFe: abas de item unificadas e conferência dos tributos pelos XMLs
+
+- Ficha do item: 4 abas → 2 (Produto e Tributos; ICMS, IPI/PIS/COFINS e Código de tributação ficam empilhados). Os valores de ICMS/PIS/COFINS/IPI continuam sendo recalculados no servidor a partir do tributo (`gravaItem`).
+- `GET /api/nfe/auditoria-tributos?n=60` (`services/auditaTributos.js`): lê os XMLs das últimas notas AUTORIZADAS, pega o que mais saiu por código de produto e compara com `tb_tributos` (NCM, CST/alíquota ICMS, red. base, CST IPI/PIS/COFINS, alíquotas, CST IBS/CBS, cClassTrib, pIBS, pCBS, cBenef). Somente leitura; botão em Mais opções.
+- Não testado com XMLs/MySQL reais (só o parser, com teste unitário).
+
 ## Fase 301 — Cadastro de clientes: lista à esquerda, edição à direita
 
 - Abas Unidades e Produtos de `Clientes.jsx` invertidas (lista `cd-lado` primeiro, `cd-rola` depois) e grid `.cd-uni` com as colunas trocadas; busca + Ativas/Inativas/Todas da unidade movidas para acima da lista (`.cd-busca-uni`).

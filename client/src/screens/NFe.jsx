@@ -175,6 +175,11 @@ export default function NFe({ onFechar }) {
   const [itens, setItens] = useState([]);
   const [itemSel, setItemSel] = useState(null);
   const [itemTab, setItemTab] = useState('produto');
+  const [audit, setAudit] = useState(null); // conferência dos últimos XMLs × código de tributação (somente leitura)
+  const conferirTributos = async () => {
+    setAudit({ carregando: true });
+    try { setAudit(await api.get('/nfe/auditoria-tributos?n=60')); } catch (e) { setAudit(null); notificar('erro', e.message); }
+  };
   const txt1 = (x) => String(x ?? '').trim();
   const [trib, setTrib] = useState(null);
   const [tribDraft, setTribDraft] = useState({});
@@ -697,6 +702,7 @@ export default function NFe({ onFechar }) {
                   <button type="button" role="menuitem" onClick={abreFiscal('arquivos')} disabled={!nota}>📄 Arquivos e retornos</button>
                   <button type="button" role="menuitem" onClick={() => { const ids = [...alvo].filter((id) => ['AUTORIZADA', 'CANCELADA'].includes(statusDe(id))); if (ids.length) gravaNoN(ids, true); else notificar('aviso', 'Selecione notas autorizadas.'); }}>💾 Gravar XML no N: (sistema antigo)</button>
                   <button type="button" role="menuitem" title="Busca a nota na API, atualiza o cadastro e grava o XML no N: para o sistema antigo" onClick={ajustarNfe} disabled={ocupado || (!nota && marcados.size === 0)}>🛠 Ajustar NFe</button>
+                  <button type="button" role="menuitem" title="Lê os XMLs das últimas notas autorizadas e compara com o Código de tributação de cada produto (não altera nada)" onClick={conferirTributos} disabled={ocupado}>🔍 Conferir tributos × últimos XMLs</button>
                   <button type="button" role="menuitem" title="XML gravado em pasta com dia (11112026) passa para a pasta do mês (202611), e o caminho é corrigido na nota" onClick={migrarPastas} disabled={ocupado}>📁 Pastas XML (dia → mês)</button>
                   <button type="button" role="menuitem" onClick={() => setSubNfe('comanda')} disabled={!nota} title="Comandas ligadas à nota">🧾 Comandas{comandas.length ? ` (${comandas.length})` : ''}</button>
                   <button type="button" role="menuitem" onClick={criar} disabled={ocupado} title="Cria uma nova NFe">＋ Criar NFe</button>
@@ -909,7 +915,7 @@ export default function NFe({ onFechar }) {
                       {/* Ficha do item: tudo à vista, agrupado por assunto (antes: 5 abas com campos posicionados e repetidos) */}
                       <div className="nfe-p5 fi">
                         <div className="nfe-p5-tabs" role="tablist">
-                          {[['produto', '📦 Produto'], ['icms', '🏛 ICMS'], ['pc', '🧮 IPI/PIS/COFINS'], ['trib', '🏷 Tributação']].map(([k, r]) => <button key={k} role="tab" aria-selected={itemTab === k} className={itemTab === k ? 'on' : ''} onClick={() => setItemTab(k)}>{r}</button>)}
+                          {[['produto', '📦 Produto'], ['trib', '🏷 Tributos']].map(([k, r]) => <button key={k} role="tab" aria-selected={itemTab === k} className={itemTab === k ? 'on' : ''} onClick={() => setItemTab(k)}>{r}</button>)}
                         </div>
                         <div className="fi-rolagem">
                           {!item && <p className="vazio">Sem item.</p>}
@@ -928,8 +934,8 @@ export default function NFe({ onFechar }) {
                                 <label className="fi-c"><span>Nº item</span><input value={iv.item ?? ''} readOnly={ro} onChange={(e) => edi('item', e.target.value)} /></label>
                               </div>
                             </section>}
-                            {itemTab === 'icms' && <section className="fi-sec">
-                              <h5>🏛 ICMS do item</h5>
+                            {itemTab === 'trib' && <section className="fi-sec">
+                              <h5>🏛 ICMS do item <small>(calculado pelo código de tributação)</small></h5>
                               <div className="fi-grid">
                                 <label className="fi-c"><span>CFOP</span><input value={iv.cfop_codigo ?? ''} readOnly={ro} onChange={(e) => edi('cfop_codigo', e.target.value)} /></label>
                                 {(!simplesNota || txt1(iv.cfop_cst_icms)) && <label className="fi-c"><span>CST</span><input value={iv.cfop_cst_icms ?? ''} readOnly={ro} onChange={(e) => edi('cfop_cst_icms', e.target.value)} /></label>}
@@ -939,8 +945,8 @@ export default function NFe({ onFechar }) {
                                 <label className="fi-c"><span>vICMS</span><Num valor={iv.icms_valor} ro={ro} onMudar={(n) => edi('icms_valor', n)} /></label>
                               </div>
                             </section>}
-                            {itemTab === 'pc' && <section className="fi-sec">
-                              <h5>🧮 IPI · PIS · COFINS</h5>
+                            {itemTab === 'trib' && <section className="fi-sec">
+                              <h5>🧮 IPI · PIS · COFINS <small>(calculado pelo código de tributação)</small></h5>
                               <div className="fi-grid">
                                 <label className="fi-c"><span>CST IPI</span><input value={iv.cst_ipi ?? ''} readOnly={ro} onChange={(e) => edi('cst_ipi', e.target.value)} /></label>
                                 <label className="fi-c"><span>CST PIS</span><input value={iv.cfop_cst_pis ?? ''} readOnly={ro} onChange={(e) => edi('cfop_cst_pis', e.target.value)} /></label>
@@ -1114,6 +1120,16 @@ export default function NFe({ onFechar }) {
                     </Modal>
                   )}
 
+                  {audit && <Modal titulo="Conferência dos tributos × últimos XMLs autorizados" onFechar={() => setAudit(null)} largo>
+                    {audit.carregando ? <p>Lendo os XMLs…</p> : (<div className="nf2-audit">
+                      <p><b>{audit.lidas}</b> XML(s) lidos de {audit.notas} nota(s) autorizada(s) · {audit.itens} itens · <b>{audit.ok}</b> produto(s) conferem com o código de tributação{audit.semArquivo ? ` · ${audit.semArquivo} nota(s) sem arquivo visível neste servidor` : ''}.</p>
+                      {audit.produtos.length === 0 && audit.semTributo.length === 0 && <p>✔ Nenhuma divergência: o que foi transmitido bate com os códigos de tributação.</p>}
+                      {audit.produtos.length > 0 && <table className="grade"><thead><tr><th>Produto</th><th>Trib.</th><th>Notas</th><th>Campo</th><th>Saiu no XML</th><th>No cadastro</th></tr></thead><tbody>
+                        {audit.produtos.flatMap((p) => p.diferencas.map((d, i) => <tr key={`${p.codigo}-${d.campo}`}>{i === 0 && <><td rowSpan={p.diferencas.length}><b>{p.codigo}</b><br /><small>{p.descricao}</small></td><td rowSpan={p.diferencas.length}>{p.id_tributo}</td><td rowSpan={p.diferencas.length}>{p.notas}{p.variantes > 1 ? ` (${p.variantes} variações)` : ''}</td></>}<td>{d.campo}</td><td>{String(d.xml) || '—'}</td><td>{String(d.tributo) || '—'}</td></tr>))}
+                      </tbody></table>}
+                      {audit.semTributo.length > 0 && <p><b>Sem código de tributação:</b> {audit.semTributo.map((x) => `${x.codigo} (${x.motivo})`).join(', ')}</p>}
+                    </div>)}
+                  </Modal>}
                   {origem && <Modal titulo={`NFe ${origem.nota?.nfe_numero || ''} — ${origem.nota?.status_e || ''} (somente leitura)`} onFechar={() => setOrigem(null)} largo>
                     <div className="rolagem">
                       <p><b>{origem.nota?.cliente_razao_social}</b> · {origem.nota?.cliente_cnpj} · {origem.nota?.status_e} · CFOP {origem.nota?.cfop_codigo}</p>
