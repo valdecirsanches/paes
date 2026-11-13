@@ -13,6 +13,7 @@ const COLS_REFS = [['id', 'ID'], ['codigo_referencia', 'Referência'], ['descric
 const COLS_CLIS = [['razao_social', 'Cliente'], ['codigo', 'Código']];
 
 const SEM_CAMPOS = [];
+const B_REF = ['id', 'codigo_referencia', 'descricao'];
 // Cadastro de produtos (u_produtos): lista + referências + clientes à esquerda, edição à direita.
 export default function Produtos({ onFechar }) {
   const [listaBruta, setLista] = useState([]);
@@ -55,6 +56,7 @@ export default function Produtos({ onFechar }) {
   }, []);
 
   const bClis = useBusca(clientes, B_CLI, 'cad_prod_clientes');
+  const bRefs = useBusca(referencias, B_REF, 'cad_prod_refs');
   const bLista = useBusca(listaBruta, SEM_CAMPOS, 'cad_produtos'); // só ordenação (a pesquisa de produtos é no servidor)
   const lista = bLista.visiveis;
   const ed0 = useEdicao({ lista, foco, setFoco, caminho: CAM, recarregar, aviso: notificar, confirmar: setConfirma, padrao: () => ({ ativo: 'True', peso: '0.05', peso_bruto: '0.05', divisor_basico: 1, ...(clienteFiltro ? { id_cliente: clienteFiltro } : {}) }), texto: (r) => `o produto ${r?.descricao ?? ''}` });
@@ -155,7 +157,12 @@ export default function Produtos({ onFechar }) {
             </div>
           )}
           {aba === 'lista' && <GradeCad cols={COLS_LISTA} rows={lista} ordem={bLista.ordem} onOrdenar={bLista.ordenar} foco={foco} onSel={ed.selecionar} vazio={situacao === 'inativos' ? 'Nenhum produto inativo' : 'Nenhum produto'} marcados={marcados} onMarcar={marca} onMarcarTodos={marcaTodos} />}
-          {aba === 'refs' && <GradeCad cols={COLS_REFS} rows={referencias} foco={null} onSel={() => {}} vazio="Nenhuma referência" />}
+          {aba === 'refs' && (
+            <>
+              <div className="cd-busca-linha"><Busca busca={bRefs} total={referencias.length} placeholder="Pesquisar referência…" /></div>
+              <GradeCad cols={COLS_REFS} rows={bRefs.visiveis} ordem={bRefs.ordem} onOrdenar={bRefs.ordenar} foco={null} onSel={() => {}} vazio="Nenhuma referência" />
+            </>
+          )}
           {aba === 'clis' && (
             <>
               <div className="cd-busca-linha"><Busca busca={bClis} total={clientes.length} placeholder="Pesquisar cliente…" /></div>

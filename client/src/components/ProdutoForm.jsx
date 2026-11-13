@@ -1,5 +1,6 @@
 import { Campo, Chave, Secao, Txt } from './cad.jsx';
 import NcmCampo from './NcmCampo.jsx';
+import ComboBusca from './ComboBusca.jsx';
 
 // Campos do produto em seções. layout 'tela' = cadastro de produtos; 'cli' = aba Produtos do cliente (versão enxuta).
 const OPCOES = [['extra_cortado', 'Cortado'], ['extra_margarina', 'C/ margarina'], ['extra_coco', 'Cobertura côco'], ['extra_acucar', 'Cobertura açúcar'],
@@ -14,6 +15,7 @@ export default function ProdutoForm({ ed, layout = 'tela', clientes = [], refere
       {ed.v(k) != null && ed.v(k) !== '' && !lista.some((o) => o.id === Number(ed.v(k))) && <option value={ed.v(k)}>{`${ed.v(k)} - (fora da lista)`}</option>}
     </select>
   );
+  const refCombo = <ComboBusca valor={ed.v('id_referencia')} lista={referencias} rotulo={(r) => `${r.id} - ${r.descricao}`} disabled={off} onEscolher={(n) => ed.set('id_referencia', n)} />;
   const num = (k) => <Txt ed={ed} k={k} inputMode="decimal" />;
   return (
     <div className={`cd-secoes${tela ? ' pf2' : ''}`}>
@@ -22,7 +24,7 @@ export default function ProdutoForm({ ed, layout = 'tela', clientes = [], refere
           <Campo rotulo="ID" span={1}><input readOnly tabIndex={-1} value={ed.novo ? '' : ed.atual?.id ?? ''} /></Campo>
           <Campo rotulo="Código" span={2}><Txt ed={ed} k="codigo" /></Campo>
           <Campo rotulo="Cliente" span={5}>{sel('id_cliente', clientes, (x) => x.razao_social, aoMudarCliente)}</Campo>
-          <Campo rotulo="Referência a ser produzido" span={4}>{sel('id_referencia', referencias, (r) => `${r.id} - ${r.descricao}`)}</Campo>
+          <Campo rotulo="Referência a ser produzido" span={4}>{refCombo}</Campo>
           <Campo rotulo="Descrição impressa na nota fiscal e na comanda" span={6}><Txt ed={ed} k="descricao" /></Campo>
           <Campo rotulo="Descrição para a expedição" span={6}><Txt ed={ed} k="descricao_expedicao" /></Campo>
         </Secao>
@@ -30,7 +32,7 @@ export default function ProdutoForm({ ed, layout = 'tela', clientes = [], refere
         <>
           <Secao titulo="Identificação" icone="🏷️">
             <Campo rotulo="Código" span={4}><Txt ed={ed} k="codigo" /></Campo>
-            <Campo rotulo="Referência (produção)" span={8}>{sel('id_referencia', referencias, (r) => `${r.id} - ${r.descricao}`)}</Campo>
+            <Campo rotulo="Referência (produção)" span={8}>{refCombo}</Campo>
             <Campo rotulo="Cliente" span={12}>{sel('id_cliente', clientes, (x) => x.razao_social, aoMudarCliente)}</Campo>
           </Secao>
           <Secao titulo="Descrições" icone="📝">
