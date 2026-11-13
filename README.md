@@ -1020,6 +1020,16 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 312 — Botão Gravar tributo no fim da ficha
+
+- `useEffect([foco])` volta a ficha do item para a aba Produto ao trocar de nota.
+- Botão passa para depois do bloco de valores calculados (rodapé da ficha); ajustes de altura para não rolar. (Junto da Fase 311: Ord. Compra em nota emitida.)
+
+## Fase 311 — Ord. Compra em nota emitida; ficha Tributos ajustada
+
+- `PUT /api/nfe/itens/:id`: em nota não PENDENTE aceita só `ordem_compra` (update direto, sem recálculo, auditado); qualquer outro campo continua recusado. A grade deixa de exigir nota pendente para editar a Ord. Compra.
+- Ficha Tributos: altura total, campos maiores, botão Gravar em uma linha, bloco "calculado" ancorado embaixo (`margin-top:auto`).
+
 ## Fase 310 — NFe: Ord. Compra editável na grade de itens
 
 - `LinhaItem` com input em `ordem_compra` (nota PENDENTE); Enter → `PUT /api/nfe/itens/:id {ordem_compra}` e foco na próxima linha. Não testado com dados reais.

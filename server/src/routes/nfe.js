@@ -918,6 +918,18 @@ router.put('/itens/:itemId', async (req, res) => {
   const itemId = idValido(req.params.itemId, 'Item');
   const b = pick(req.body, ITEM_EDITAVEIS);
   if (!Object.keys(b).length) throw invalid('Nada para gravar.');
+  // nota já emitida: só a referência interna "Ord. Compra" pode ser ajustada (não muda o XML autorizado nem recalcula nada)
+  const [[ex]] = await pool.query('select i.id, i.id_nfe, i.ordem_compra, n.status_e from tb_nfe_itens i join tb_nfe n on n.id = i.id_nfe where i.id = ?', [itemId]);
+  if (!ex) throw notFound('Item');
+  if (ex.status_e !== 'PENDENTE') {
+    if (Object.keys(b).some((k) => k !== 'ordem_compra')) throw invalid('Só é possível editar itens de notas PENDENTES (em nota emitida, apenas a Ord. Compra).');
+    const oc = b.ordem_compra === '' || b.ordem_compra == null ? null : String(b.ordem_compra).trim().slice(0, 30);
+    await pool.query('update tb_nfe_itens set ordem_compra = ? where id = ?', [oc, itemId]);
+    registra({ idUsuario: req.user?.id, usuario: req.user?.usuario ?? '', metodo: 'PUT', rota: req.originalUrl, entidade: 'nfe', acao: `Ord. Compra do item alterada em nota ${ex.status_e}`, idRegistro: ex.id_nfe, status: 200, detalhes: { item: itemId, de: ex.ordem_compra, para: oc } });
+    const [[novoI]] = await pool.query('select * from tb_nfe_itens where id = ?', [itemId]);
+    const [[notaI]] = await pool.query('select valor_produtos, nf_valor_total from tb_nfe where id = ?', [ex.id_nfe]);
+    return res.json({ ...novoI, _nota: notaI });
+  }
   const novo = await tx((c) => gravaItem(c, itemId, b));
   const [[nota]] = await pool.query('select valor_produtos, nf_valor_total from tb_nfe where id = ?', [novo.id_nfe]);
   res.json({ ...novo, _nota: nota });

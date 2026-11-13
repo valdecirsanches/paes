@@ -2152,3 +2152,12 @@ button.lk-versao{background:none!important;border:0!important;box-shadow:none!im
 .trb2-grupos{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}.trb2-grupos .trb2-g6{grid-column:1/-1}.trb2-edita .trb2-grid{gap:6px 10px}.trb2-edita input{padding:4px 7px}
 @media (max-width:760px){.trb2-grupos{grid-template-columns:1fr}}
 .tb-itens-nfe input.oc-edit{width:100%;box-sizing:border-box;padding:0 4px;height:20px;border:1px solid #c9b99c;border-radius:4px;font:inherit;font-size:12px;background:#fffdf5}
+/* ficha Tributos: ocupa a altura toda; campos maiores no alto, valores calculados fixos embaixo */
+.fi-rolagem .fi-compacto{display:flex;flex-direction:column;min-height:100%;box-sizing:border-box}
+.fi-rolagem .fi-compacto .fi-c input,.fi-rolagem .fi-compacto .fi-c>*:not(span){height:23px!important;font-size:12px!important;line-height:18px}
+.fi-rolagem .fi-compacto .fi-c span{font-size:10px}.fi-rolagem .fi-compacto .fi-grid{gap:2px 6px}
+.fi-rolagem .fi-compacto .fi-grava{height:24px;margin:4px 0;font-size:12px;white-space:nowrap}
+.fi-rolagem .fi-compacto .fi-calc{margin-top:auto;border-top:2px solid #e3dccf;padding-top:4px;background:#f6f1e4;border-radius:0 0 8px 8px}
+.fi-rolagem .fi-compacto{padding-top:4px;padding-bottom:4px}.fi-rolagem .fi-compacto .fi-c *:not(span){min-height:0!important;height:23px!important;box-sizing:border-box;line-height:18px;padding-top:1px!important;padding-bottom:1px!important}
+.fi-rolagem .fi-compacto .fi-grid{gap:0 6px}.fi-rolagem .fi-compacto .fi-grava{margin:2px 0}.fi-rolagem .fi-compacto .fi-calc{padding-top:2px}.fi-rolagem .fi-compacto .fi-c span{margin-bottom:0;line-height:12px}
+.fi-rolagem .fi-compacto .fi-grava{margin:3px 0 0;flex:none}.fi-rolagem .fi-compacto .fi-calc{margin-top:auto}

@@ -574,6 +574,7 @@ export default function NFe({ onFechar }) {
   };
 
   // ----- itens (tbnfi)
+  useEffect(() => { setItemTab('produto'); }, [foco]); // ao carregar outra NFe a ficha do item volta para a pasta Produto
   const iv = { ...(item ?? {}), ...itemDraft };
   const edi = (k, val) => setItemDraft((d) => ({ ...d, [k]: val }));
   const itemSujo = Object.keys(itemDraft).length > 0;
@@ -582,7 +583,7 @@ export default function NFe({ onFechar }) {
     const { _nota, ...novo } = await api.put(`/nfe/itens/${itemSel}`, itemDraft);
     setItens((is) => is.map((i) => (i.id === novo.id ? { ...i, ...novo } : i))); setItemDraft({}); aplicaNota(_nota); notificar('ok', 'Item gravado.');
   });
-  // grade de itens: Ord. Compra editável direto; Enter grava (só nota PENDENTE)
+  // grade de itens: Ord. Compra editável direto, mesmo em nota emitida; Enter grava
   const gravaOc = async (id, valor) => {
     try {
       const { _nota, ...novo } = await api.put(`/nfe/itens/${id}`, { ordem_compra: valor });
@@ -935,7 +936,7 @@ export default function NFe({ onFechar }) {
                         <table className="grade tb-itens-nfe">
                           <thead><tr><th className="ind" />{ITEM_COLS.map(([k, r, t, w]) => <th key={k} style={{ minWidth: w }} className={t ? 'n' : ''}>{r}</th>)}</tr></thead>
                           <tbody>
-                            {itens.map((i) => <LinhaItem key={i.id} i={i} sel={itemSel === i.id} onSel={setItemSel} editavel={pendente && !ocupado} onGravaOc={gravaOc} />)}
+                            {itens.map((i) => <LinhaItem key={i.id} i={i} sel={itemSel === i.id} onSel={setItemSel} editavel={!!nota && !ocupado} onGravaOc={gravaOc} />)}
                             {itens.length === 0 && <tr className="semlinha"><td colSpan={ITEM_COLS.length + 1} className="vazio">&lt;Sem itens&gt;</td></tr>}
                           </tbody>
                           <tfoot><tr><td className="ind" />{ITEM_COLS.map(([k]) => <td key={k} className={k === 'preco_total' ? 'n' : ''}>{k === 'preco_total' ? <b>{fmtBr(totalItens, 2)}</b> : ''}</td>)}</tr></tfoot>
@@ -970,7 +971,6 @@ export default function NFe({ onFechar }) {
                                 <label className="fi-c" title="id_tributo (tb_tributos) — vale para todos os itens com este código"><span>Tributo (id)</span><input value={iv.id_tributo ?? ''} readOnly={ro} onChange={(e) => edi('id_tributo', e.target.value)} /></label>
                                 {trib && COMPACTOS.map(([k, rot, dica]) => <label key={k} className="fi-c" title={dica}><span>{rot}</span><input value={tv[k] ?? ''} onChange={(e) => setTribDraft({ ...tribDraft, [k]: e.target.value })} /></label>)}
                               </div>
-                              {trib && <button type="button" className="bt fi-grava" disabled={!Object.keys(tribDraft).length || ocupado} onClick={salvarTrib}>✔ Gravar tributo (vale p/ todos os itens com este código)</button>}
                               <div className="fi-grid fi-calc" title="Calculado a partir do tributo; recalculado ao gravar o item e na autorização">
                                 <label className="fi-c"><span>CFOP item</span><input value={iv.cfop_codigo ?? ''} readOnly={ro} onChange={(e) => edi('cfop_codigo', e.target.value)} title="Pode diferir do CFOP do tributo conforme a operação" /></label>
                                 {(simplesNota || txt1(iv.csosn)) && <label className="fi-c"><span>CSOSN</span><input value={iv.csosn ?? ''} readOnly={ro} onChange={(e) => edi('csosn', e.target.value)} /></label>}
@@ -980,6 +980,7 @@ export default function NFe({ onFechar }) {
                                 <label className="fi-c"><span>vCOFINS</span><Num valor={iv.cofins_valor} ro /></label>
                                 <label className="fi-c"><span>Tot. tributos</span><Num valor={iv.valor_trib_prod} ro /></label>
                               </div>
+                              {trib && <button type="button" className="bt fi-grava" title="Vale para todos os itens que usam este código de tributação" disabled={!Object.keys(tribDraft).length || ocupado} onClick={salvarTrib}>✔ Gravar tributo</button>}
                             </section>}
                           </>)}
                         </div>
