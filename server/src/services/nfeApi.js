@@ -26,17 +26,18 @@ export function nfeApiConfigurada() {
 }
 
 /** Chamada HTTP; devolve { status, body, buffer }. Nunca lança por 4xx (a API usa 422 para rejeição da SEFAZ). */
-export async function chamar(metodo, caminho, { json, form, query, binario = false, idempotencyKey } = {}) {
+export async function chamar(metodo, caminho, { json, form, raw, tipoRaw, query, binario = false, idempotencyKey } = {}) {
   if (!nfeApiConfigurada()) throw new AppError(503, 'API de NF-e não configurada: defina NFE_API_TOKEN (e NFE_API_URL) no server/.env.');
   const url = new URL(base() + caminho);
   for (const [k, v] of Object.entries(query ?? {})) if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
   const [hNome, hValor] = cabecalhoAuth();
   const headers = { [hNome]: hValor, Accept: binario ? '*/*' : 'application/json' };
   if (json !== undefined) headers['Content-Type'] = 'application/json'; // com `form` (FormData) o fetch define o Content-Type com o boundary
+  if (raw !== undefined) headers['Content-Type'] = tipoRaw || 'application/octet-stream';
   if (idempotencyKey) headers['Idempotency-Key'] = String(idempotencyKey);
   let r;
   try {
-    r = await fetch(url, { method: metodo, headers, body: form ?? (json !== undefined ? JSON.stringify(json) : undefined), signal: AbortSignal.timeout(TIMEOUT_MS) });
+    r = await fetch(url, { method: metodo, headers, body: form ?? raw ?? (json !== undefined ? JSON.stringify(json) : undefined), signal: AbortSignal.timeout(TIMEOUT_MS) });
   } catch (e) {
     const motivo = e.name === 'TimeoutError' ? 'tempo esgotado' : e.cause?.code || e.message;
     throw new AppError(502, `Não foi possível falar com a API de NF-e (${base()}): ${motivo}.`);
@@ -232,22 +233,15 @@ export async function listaRotas(tentativas = []) {
 /** Operações que parecem importar/registrar um XML já autorizado. */
 export const candidatasImportacao = (ops) => ops.filter((o) => /(import|registr|legad|existente|xml)/i.test(`${o.caminho} ${o.resumo}`) && !/cancel|inutiliz|carta|logo|certific|danfe/i.test(o.caminho));
 
-/** Envia o XML autorizado à API. Rota: NFE_API_IMPORTAR_XML="POST /api/empresas/{empresaId}/nfe/importar" (e NFE_API_IMPORTAR_XML_CORPO=multipart|json|raw; padrão: pelo swagger). */
+/** Envia o XML autorizado à API: POST /api/empresas/{empresaId}/nfe/importar, multipart com o campo "xml" (aceita vários) ou o XML cru com Content-Type application/xml.
+ *  Ajustável por NFE_API_IMPORTAR_XML="POST /caminho/{empresaId}" e NFE_API_IMPORTAR_XML_CORPO=multipart|raw. */
 export async function importarXml(empId, xml, nomeArquivo = 'nfe.xml') {
-  let metodo, caminho, corpo = process.env.NFE_API_IMPORTAR_XML_CORPO || '', campo = 'arquivo';
-  const cfg = String(process.env.NFE_API_IMPORTAR_XML || '').trim();
-  if (cfg) [metodo, caminho] = cfg.split(/\s+/);
-  else {
-    const c = candidatasImportacao(await listaRotas());
-    const forte = c.filter((o) => /import/i.test(o.caminho));
-    const uma = c.length === 1 ? c[0] : forte.length === 1 ? forte[0] : null;
-    if (!uma) throw Object.assign(new AppError(409, c.length ? 'Há mais de uma rota candidata na API; defina NFE_API_IMPORTAR_XML no server/.env com a certa.' : 'A API não tem rota de importação de XML autorizado (nada parecido no swagger).'), { extra: { candidatas: c } });
-    metodo = uma.metodo; caminho = uma.caminho;
-    if (!corpo) corpo = /multipart/.test(uma.tipo ?? '') ? 'multipart' : /json/.test(uma.tipo ?? '') ? 'json' : 'raw';
-    campo = (uma.props.find((p) => p.formato === 'binary') ?? uma.props.find((p) => /xml|arquivo|file/i.test(p.nome)) ?? { nome: 'arquivo' }).nome;
-  }
-  caminho = caminho.replace(/\{[^}]*\}/, empId);
-  if (corpo === 'multipart') { const form = new FormData(); form.append(campo, new Blob([xml], { type: 'application/xml' }), nomeArquivo); return { rota: `${metodo} ${caminho}`, ...(await chamar(metodo, caminho, { form })) }; }
-  if (corpo === 'json') return { rota: `${metodo} ${caminho}`, ...(await chamar(metodo, caminho, { json: { xmlBase64: Buffer.from(xml).toString('base64'), xml: Buffer.from(xml).toString('utf8') } })) };
-  return { rota: `${metodo} ${caminho}`, ...(await chamar(metodo, caminho, { json: undefined, form: new Blob([xml], { type: 'application/xml' }) })) };
+  const cfg = String(process.env.NFE_API_IMPORTAR_XML || 'POST /api/empresas/{empresaId}/nfe/importar').trim();
+  const [metodo, cam] = cfg.split(/\s+/);
+  const caminho = cam.replace(/\{[^}]*\}/, empId);
+  const corpo = process.env.NFE_API_IMPORTAR_XML_CORPO || 'multipart';
+  const rota = `${metodo} ${caminho}`;
+  if (corpo === 'raw') return { rota, ...(await chamar(metodo, caminho, { raw: xml, tipoRaw: 'application/xml' })) };
+  const form = new FormData(); form.append('xml', new Blob([xml], { type: 'application/xml' }), nomeArquivo);
+  return { rota, ...(await chamar(metodo, caminho, { form })) };
 }

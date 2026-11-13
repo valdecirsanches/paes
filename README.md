@@ -1020,6 +1020,11 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 282 — Registrar na API: rota de importação conhecida
+
+- A API tem `POST /api/empresas/{empresaId}/nfe/importar` (multipart com o campo `xml`, um ou vários; ou o XML cru com `Content-Type: application/xml`). O botão **🔗 Registrar na API** agora usa essa rota direto (sem procurar swagger), e em seguida baixa da API o XML e o DANFE da nota. `NFE_API_IMPORTAR_XML` / `NFE_API_IMPORTAR_XML_CORPO=raw` só se for preciso mudar.
+- Fluxo: nota com XML → **📎 Anexar XML** (se ainda não tiver em disco) → **🔗 Registrar na API** → DANFE do layout aceito.
+
 ## Fase 281 — /api/nfe/api-rotas mostra onde procurou o swagger
 
 - Com `total: 0` não dava para saber por quê. Agora a resposta traz `base` (NFE_API_URL em uso) e `tentativas` (cada endereço de documentação testado e o HTTP devolvido; mais endereços de swagger/OpenAPI além dos 4 anteriores).
