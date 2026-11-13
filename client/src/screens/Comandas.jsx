@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useDigitaNaLista } from '../lib/digitaNaLista.js';
 import { assinaUnidade, publicaUnidade, unidadeSelecionada, useRolarParaSelecionada } from '../lib/unidadeSel.js';
 import { api } from '../api.js';
 import { Modal } from '../components/ui.jsx';
@@ -146,6 +147,8 @@ export default function Comandas({ onFechar }) {
   }, [notificar]);
   const unidade = unidades.find((u) => u.id === uniId) ?? null;
   const rolaUni = useRolarParaSelecionada(uniId);
+  // digitar direto na grade de unidades: vai posicionando (e assumindo) a unidade/cliente que combina
+  const digUni = useDigitaNaLista({ itens: unisVisiveis, texto: (u) => `${u.unidade_nome} ${u.cliente_razao_social} ${u.tipo_faturamento ?? ''}`, onAchar: (u) => { if (!edicao && u.id !== uniId) mudarUnidade(u.id); } });
 
   // bAtualizeClick
   const atualizar = useCallback(async (manter) => {
@@ -321,7 +324,8 @@ export default function Comandas({ onFechar }) {
             <tfoot><tr><td className="ind" /><td>{totais.n}</td><td colSpan={2} /><td className="n">{f2(totais.valor)}</td><td /></tr></tfoot>
           </table>
         </div>
-        <div className="rolagem cmd-g-uni" ref={rolaUni}>
+        <div className="rolagem cmd-g-uni" ref={rolaUni} {...digUni.props} title="Digite aqui para localizar unidade ou cliente">
+          {digUni.digitado && <div className="dg-badge" role="status">⌨ {digUni.digitado}</div>}
           <div className="cm2-geral">
             <input type="search" value={fUni.g} placeholder="🔎 Localizar unidade / cliente (a primeira encontrada já é assumida)…" aria-label="Localizar unidade ou cliente" autoFocus
               onChange={(e) => setFUni((x) => ({ ...x, g: e.target.value }))}

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useDigitaNaLista } from '../lib/digitaNaLista.js';
 import { assinaUnidade, publicaUnidade, unidadeSelecionada, useRolarParaSelecionada } from '../lib/unidadeSel.js';
 import { api } from '../api.js';
 import Calendario from '../components/Calendario.jsx';
@@ -344,6 +345,8 @@ export default function Faturamento({ onFechar }) {
     else trocar();
   };
   // digitou na pesquisa de unidade/cliente: depois de uma pausa, a primeira encontrada vira a unidade atual (sem esperar clique)
+  // digitar direto na lista de unidades: posiciona/assume a que combina (sem usar o campo de pesquisa)
+  const digUni = useDigitaNaLista({ itens: buscaUni.visiveis, texto: (u) => `${u.unidade_nome} ${u.cliente_razao_social ?? ''} ${u.tipo_faturamento ?? ''}`, onAchar: (u) => { if (u.id !== uniId) mudarUnidade(u.id); } });
   primeiraUni.current = { id: buscaUni.visiveis[0]?.id ?? null, uniId, mudarUnidade };
   useEffect(() => {
     if (!buscaUni.termo.trim()) return undefined;
@@ -541,7 +544,8 @@ export default function Faturamento({ onFechar }) {
               <section className="fp-card fp-unis">
                 <h4>🏢 Unidades <small>{unidades.length ? `${unidades.length} no período` : ''}</small></h4>
                 <div className="busca-lateral" onKeyDown={(e) => { if (e.key === 'Enter' && buscaUni.termo.trim() && buscaUni.visiveis[0]) { e.preventDefault(); mudarUnidade(buscaUni.visiveis[0].id); } }}><Busca busca={buscaUni} total={unidades.length} placeholder="Pesquisar unidade/cliente… (Enter assume a primeira)" /></div>
-                <div className="rolagem fp-lista" ref={rolaUni}>
+                <div className="rolagem fp-lista" ref={rolaUni} {...digUni.props} title="Digite aqui para localizar unidade ou cliente">
+                  {digUni.digitado && <div className="dg-badge" role="status">⌨ {digUni.digitado}</div>}
                   <table className="grade">
                     <thead><tr><th className="ind" /><th>Unidade <i className="ord">⏶</i></th><th>Faturamento</th><th title="Comanda diária">CM</th></tr></thead>
                     <tbody>

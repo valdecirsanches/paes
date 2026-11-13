@@ -10,6 +10,7 @@ import FixaTab from '../components/FixaTab.jsx';
 import ReclamacoesTab from '../components/ReclamacoesTab.jsx';
 import ConfigTab from '../components/ConfigTab.jsx';
 import { Toast } from '../components/toast.jsx';
+import { useDigitaNaLista } from '../lib/digitaNaLista.js';
 import { Busca, useBusca } from '../components/cad.jsx';
 import { confirmar } from '../components/toast.jsx';
 
@@ -86,6 +87,8 @@ export default function Diaria({ onFechar }) {
   useEffect(() => { carregarLista().catch((e) => { setLista([]); notify.erro(e.message); }); }, [carregarLista, recarga]);
 
   const sel = lista.find((r) => r.id === selId) || null;
+  // digitar direto na lista de clientes: posiciona a unidade/cliente que combina
+  const digCli = useDigitaNaLista({ itens: busca.visiveis, texto: (r) => `${r.unidade_nome} ${r.cliente_razao_social ?? ''}`, onAchar: (r) => { if (editandoItem) return; setSelId(r.id); requestAnimationFrame(() => document.querySelector('.dr2-cli.atual')?.scrollIntoView({ block: 'nearest' })); } });
   // ↑ ↓ PageUp PageDown Home End trocam o cliente selecionado: com o foco na lista/pesquisa OU em qualquer ponto da tela
   // (fora de campos de formulário); não vale com o item em edição.
   const raiz = useRef(null);
@@ -167,7 +170,8 @@ export default function Diaria({ onFechar }) {
               </span>
             </div>
             <Busca busca={busca} total={lista.length} placeholder="Pesquisar cliente/unidade…" />
-            <ul className="dr2-clientes" aria-label="Clientes do dia">
+            {digCli.digitado && <div className="dg-badge" role="status">⌨ {digCli.digitado}</div>}
+            <ul className="dr2-clientes" aria-label="Clientes do dia" {...digCli.props} title="Digite aqui para localizar cliente/unidade">
               {busca.visiveis.map((r) => (
                 <li key={r.id}>
                   <button type="button" className={`dr2-cli s${r.status}${r.id === selId ? ' atual' : ''}`} onClick={() => trocaClienteClique(r.id)} title={STATUS[r.status]}>
