@@ -1,4 +1,5 @@
 [
+  {"fase": 293, "itens": ["Cadastro de produtos: Tributação e Cliente também viraram listas com pesquisa (digite para filtrar)."]},
   {"fase": 292, "itens": ["Cadastro de produtos: o campo Referência agora é uma lista com pesquisa (digite parte do código ou da descrição), e a aba Referências da produção também ganhou pesquisa."]},
   {"fase": 291, "itens": ["Cadastro de produtos: a pesquisa e os botões da lista (filtro por cliente, Mostrar, Inativar/Ativar marcados, Sem uso, Marcar sem uso, Reativar inativos) agora ficam dentro do painel Produtos."]},
   {"fase": 290, "itens": ["Cadastro de produtos: se a lista de referências da produção não carregar, agora aparece o erro; e a referência atual do produto sempre aparece no campo, mesmo se não estiver na lista."]},

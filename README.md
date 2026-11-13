@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 293 — Produtos: tributação e cliente com pesquisa
+
+- **Tributação** e **Cliente** do cadastro de produtos usam a mesma lista com pesquisa da Referência (`ComboBusca`): digite parte do código/descrição (ou razão social) para filtrar; ↑/↓, Enter e Esc funcionam. Escolher um cliente continua gerando o código do produto novo.
+
 ## Fase 292 — Produtos: referência com pesquisa
 
 - O campo **Referência** do produto era uma lista simples (não aceitava digitação). Agora é uma **lista com pesquisa** (`ComboBusca`): digite parte do código ou da descrição (sem acento/maiúsculas), ↑/↓ navegam, Enter escolhe, Esc fecha, "(nenhuma)" limpa. A aba **Referências da produção** também ganhou pesquisa.

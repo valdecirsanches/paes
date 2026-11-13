@@ -16,6 +16,8 @@ export default function ProdutoForm({ ed, layout = 'tela', clientes = [], refere
     </select>
   );
   const refCombo = <ComboBusca valor={ed.v('id_referencia')} lista={referencias} rotulo={(r) => `${r.id} - ${r.descricao}`} disabled={off} onEscolher={(n) => ed.set('id_referencia', n)} />;
+  // listas com pesquisa (digite para filtrar): cliente e tributação
+  const comb = (k, lista, rot, extra) => <ComboBusca valor={ed.v(k)} lista={lista} rotulo={rot} disabled={off} onEscolher={(n) => { ed.set(k, n); extra?.(n); }} />;
   const num = (k) => <Txt ed={ed} k={k} inputMode="decimal" />;
   return (
     <div className={`cd-secoes${tela ? ' pf2' : ''}`}>
@@ -23,7 +25,7 @@ export default function ProdutoForm({ ed, layout = 'tela', clientes = [], refere
         <Secao titulo="Produto" icone="🏷️" className="pf-full">
           <Campo rotulo="ID" span={1}><input readOnly tabIndex={-1} value={ed.novo ? '' : ed.atual?.id ?? ''} /></Campo>
           <Campo rotulo="Código" span={2}><Txt ed={ed} k="codigo" /></Campo>
-          <Campo rotulo="Cliente" span={5}>{sel('id_cliente', clientes, (x) => x.razao_social, aoMudarCliente)}</Campo>
+          <Campo rotulo="Cliente" span={5}>{comb('id_cliente', clientes, (x) => x.razao_social, aoMudarCliente)}</Campo>
           <Campo rotulo="Referência a ser produzido" span={4}>{refCombo}</Campo>
           <Campo rotulo="Descrição impressa na nota fiscal e na comanda" span={6}><Txt ed={ed} k="descricao" /></Campo>
           <Campo rotulo="Descrição para a expedição" span={6}><Txt ed={ed} k="descricao_expedicao" /></Campo>
@@ -33,7 +35,7 @@ export default function ProdutoForm({ ed, layout = 'tela', clientes = [], refere
           <Secao titulo="Identificação" icone="🏷️">
             <Campo rotulo="Código" span={4}><Txt ed={ed} k="codigo" /></Campo>
             <Campo rotulo="Referência (produção)" span={8}>{refCombo}</Campo>
-            <Campo rotulo="Cliente" span={12}>{sel('id_cliente', clientes, (x) => x.razao_social, aoMudarCliente)}</Campo>
+            <Campo rotulo="Cliente" span={12}>{comb('id_cliente', clientes, (x) => x.razao_social, aoMudarCliente)}</Campo>
           </Secao>
           <Secao titulo="Descrições" icone="📝">
             <Campo rotulo="Descrição impressa na nota fiscal e na comanda" span={12}><Txt ed={ed} k="descricao" /></Campo>
@@ -55,7 +57,7 @@ export default function ProdutoForm({ ed, layout = 'tela', clientes = [], refere
         <Campo rotulo="IPI %" span={tela ? 1 : 2}>{num('aliq_ipi')}</Campo>
         <Campo rotulo="ICMS %" span={tela ? 1 : 2}>{num('aliq_icms')}</Campo>
         <Campo rotulo="S. trib." span={tela ? 2 : 2}><Txt ed={ed} k="sit_tributaria" /></Campo>
-        {tela && <Campo rotulo="Tributação" span={12}>{sel('id_tributos', tributos, (t) => `${t.id} - ${t.descricao}`)}</Campo>}
+        {tela && <Campo rotulo="Tributação" span={12}>{comb('id_tributos', tributos, (t) => `${t.id} - ${t.descricao}`)}</Campo>}
       </Secao>
       <Secao titulo="Opções do produto" icone="🥖">
         {OPCOES.map(([k, r]) => <Chave key={k} ed={ed} k={k} rotulo={r} span={tela ? 6 : 6} />)}
