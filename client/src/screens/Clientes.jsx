@@ -85,7 +85,7 @@ export default function Clientes({ onFechar }) {
   useEffect(() => { recProd(); }, [recProd]);
   const bProd = useBusca(produtos, B_PROD, 'cad_prod_cliente');
   const prod0 = useEdicao({ lista: bProd.visiveis, foco: fProd, setFoco: setFProd, caminho: '/cadastros/produtos', recarregar: recProd, aviso: notificar, confirmar: setConfirma, texto: (r) => `o produto ${r?.descricao ?? ''}`,
-    padrao: () => ({ ativo: 'True', id_cliente: idCli, id_referencia: referencias[0]?.id ?? null, pm: 'PRODUTO', peso: '0.05', peso_bruto: '0.05', divisor_basico: 1 }) });
+    padrao: () => ({ ativo: 'True', un: 'PC', id_cliente: idCli, id_referencia: referencias[0]?.id ?? null, pm: 'PRODUTO', peso: '0.05', peso_bruto: '0.05', divisor_basico: 1 }) });
   const refDesc = (id) => referencias.find((r) => r.id === Number(id))?.descricao ?? '';
   // cbCortadoClick: ao marcar/desmarcar uma opção, a descrição da expedição é remontada
   const prod = useMemo(() => ({

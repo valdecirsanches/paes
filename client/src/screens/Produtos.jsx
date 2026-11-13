@@ -59,7 +59,7 @@ export default function Produtos({ onFechar }) {
   const bRefs = useBusca(referencias, B_REF, 'cad_prod_refs');
   const bLista = useBusca(listaBruta, SEM_CAMPOS, 'cad_produtos'); // só ordenação (a pesquisa de produtos é no servidor)
   const lista = bLista.visiveis;
-  const ed0 = useEdicao({ lista, foco, setFoco, caminho: CAM, recarregar, aviso: notificar, confirmar: setConfirma, padrao: () => ({ ativo: 'True', peso: '0.05', peso_bruto: '0.05', divisor_basico: 1, ...(clienteFiltro ? { id_cliente: clienteFiltro } : {}) }), texto: (r) => `o produto ${r?.descricao ?? ''}` });
+  const ed0 = useEdicao({ lista, foco, setFoco, caminho: CAM, recarregar, aviso: notificar, confirmar: setConfirma, padrao: () => ({ ativo: 'True', un: 'PC', peso: '0.05', peso_bruto: '0.05', divisor_basico: 1, ...(clienteFiltro ? { id_cliente: clienteFiltro } : {}) }), texto: (r) => `o produto ${r?.descricao ?? ''}` });
   const codigoPara = useCallback(async (cli) => { try { const r = await api.get(`${CAM}/proximo-codigo?cliente=${cli}`); ed0.set('codigo', r.codigo); } catch (e) { notificar('erro', e.message); } }, [ed0.set, notificar]); // eslint-disable-line react-hooks/exhaustive-deps
   const ed = useMemo(() => ({ ...ed0, incluir: () => { if (ed0.sujo) { ed0.incluir(); return; } ed0.incluir(); if (clienteFiltro) codigoPara(clienteFiltro); } }), [ed0, clienteFiltro, codigoPara]);
   const campoCod = useRef(null);

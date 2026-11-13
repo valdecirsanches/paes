@@ -1020,6 +1020,12 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 294 — Cadastro de produto: expedição automática, unidade PC e fiscal enxuto
+
+- **Descrição → expedição:** ao digitar a descrição, a "Descrição para a expedição" é preenchida junto enquanto estiver vazia (ou ainda igual à descrição anterior, ou seja, só espelhada); depois de editada à mão, deixa de acompanhar.
+- **Produto novo nasce com Un. = PC** (cadastro de produtos e aba Produtos do cliente).
+- **Fiscal:** ficam só **NCM** e **Tributação**. Class. fiscal, IPI %, ICMS % e S. trib. saíram da tela (a nota usa os valores da tributação; as colunas continuam no banco, só não são mais mostradas).
+
 ## Fase 293 — Produtos: tributação e cliente com pesquisa
 
 - **Tributação** e **Cliente** do cadastro de produtos usam a mesma lista com pesquisa da Referência (`ComboBusca`): digite parte do código/descrição (ou razão social) para filtrar; ↑/↓, Enter e Esc funcionam. Escolher um cliente continua gerando o código do produto novo.

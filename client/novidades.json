@@ -1,4 +1,5 @@
 [
+  {"fase": 294, "itens": ["Cadastro de produtos: a descrição para a expedição é preenchida sozinha enquanto você digita a descrição (se estiver vazia); produto novo já nasce com a unidade PC; e a seção Fiscal ficou só com NCM e Tributação (Class. fiscal, IPI, ICMS e S. trib. saíram da tela porque a tributação já define isso)."]},
   {"fase": 293, "itens": ["Cadastro de produtos: Tributação e Cliente também viraram listas com pesquisa (digite para filtrar)."]},
   {"fase": 292, "itens": ["Cadastro de produtos: o campo Referência agora é uma lista com pesquisa (digite parte do código ou da descrição), e a aba Referências da produção também ganhou pesquisa."]},
   {"fase": 291, "itens": ["Cadastro de produtos: a pesquisa e os botões da lista (filtro por cliente, Mostrar, Inativar/Ativar marcados, Sem uso, Marcar sem uso, Reativar inativos) agora ficam dentro do painel Produtos."]},
