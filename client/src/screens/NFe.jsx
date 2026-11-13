@@ -60,9 +60,9 @@ const LinhaItem = memo(function LinhaItem({ i, sel, onSel }) {
 });
 const LinhaNota = memo(function LinhaNota({ cols, r, i, sel, marc, foco, onClick, onMarcar, onModal, onClonar, onApagar, onEmail, onDanfe }) {
   return (
-    <tr className={`clicavel${foco ? ' foco' : ''}`} style={corLinha(r.status_e, sel) ?? undefined} onClick={(e) => onClick(e, r, i)}>
+    <tr className={`clicavel${foco ? ' foco' : ''}`} style={corLinha(r.status_e, sel) ?? undefined} onClick={(e) => onClick(e, r, i)} onMouseDown={(e) => { if (e.shiftKey) e.preventDefault(); }}>
       <td className="ind">{foco ? '▶' : ''}</td>
-      <td className="nf2-chk" onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={!!marc} onChange={() => onMarcar(r, i)} aria-label={`Marcar NFe ${r.nfe_numero || r.id}`} title="Marcar para autorizar (qualquer nota, sem ordem)" /></td>
+      <td className="nf2-chk" onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={!!marc} onClick={(e) => { if (e.shiftKey) { e.preventDefault(); onClick(e, r, i); } }} onChange={() => onMarcar(r, i)} aria-label={`Marcar NFe ${r.nfe_numero || r.id}`} title="Marcar para autorizar (qualquer nota, sem ordem). Shift+clique marca o lote até esta nota" /></td>
       <td className="nf2-ic"><button type="button" title="Dados do corpo da NFe" onClick={(e) => { e.stopPropagation(); onModal(r, i, 'corpo'); }}>📝</button><button type="button" title="Comandas ligadas a esta NFe" onClick={(e) => { e.stopPropagation(); onModal(r, i, 'comandas'); }}>🧾</button><button type="button" title="Eventos da NFe" onClick={(e) => { e.stopPropagation(); onModal(r, i, 'eventos'); }}>🗓</button><button type="button" title="Clonar esta NFe (nova nota PENDENTE, sem XML, PDF, chave, protocolo e recibo)" onClick={(e) => { e.stopPropagation(); onClonar(r); }}>⧉</button>{r.status_e === 'AUTORIZADA' && <button type="button" title={foiMarcado(r.nfe_impresso) ? 'Imprimir o DANFE novamente (já impresso)' : 'Imprimir o DANFE desta nota'} onClick={(e) => { e.stopPropagation(); onDanfe(r); }}>🖨</button>}{r.status_e && r.status_e !== 'PENDENTE' && <button type="button" title={r.status_e === 'AUTORIZADA' || r.status_e === 'DEVOLVIDO' ? 'Enviar esta NFe por e-mail ao cliente (XML + DANFE)' : `Enviar aviso desta NFe ${r.status_e.toLowerCase()} por e-mail`} onClick={(e) => { e.stopPropagation(); onEmail(r); }}>✉</button>}{!['AUTORIZADA', 'CANCELADA'].includes(r.status_e) && <button type="button" className="lx" title="Apagar esta NF (só notas não autorizadas)" onClick={(e) => { e.stopPropagation(); onApagar(r); }}>🗑</button>}</td>
       {cols.map((c) => <td key={c[0]} className={c[2] === 'm' ? 'n' : c[2] === 'chk' ? 'c' : ''}>{celulaGrade(r, c)}</td>)}
     </tr>
@@ -341,6 +341,7 @@ export default function NFe({ onFechar }) {
   useEffect(() => { if (linhas && foco && !linhas.some((r) => r.id === foco)) setFoco(null); }, [linhas]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { const ids = new Set((linhas ?? []).map((r) => r.id)); setMarcados((m) => { const n = new Set([...m].filter((x) => ids.has(x))); return n.size === m.size ? m : n; }); }, [linhas]); // filtro por coluna: o que ficou escondido deixa de estar marcado
   const clicar = useCallback((e, r, i) => {
+    if (e.shiftKey && ancora.current == null) { const k = linhasRef.current.findIndex((x) => x.id === focoRef.current); if (k >= 0) ancora.current = k; } // sem âncora: começa na nota em foco
     setFoco(r.id);
     setMarcados((s) => {
       if (e.shiftKey && ancora.current != null) { const [a, b] = [Math.min(ancora.current, i), Math.max(ancora.current, i)]; return new Set(linhasRef.current.slice(a, b + 1).map((x) => x.id)); }
