@@ -45,11 +45,11 @@ function EditaDesconto({ item, comandaId, onFechar, onAplicado }) {
   const buscaProduto = async () => {
     if (modo !== 'incluir' || resolvido || !produto.trim()) return;
     try {
-      const p = await api.get(`/comandas/produto/${encodeURIComponent(produto.trim())}`);
+      const p = await api.get(`/comandas/produto/${encodeURIComponent(produto.trim())}?comanda=${comandaId}`);
       setResolvido(true); setProduto(p.codigo); setDescricao(p.descricao ?? ''); setQtde('1');
       setPreco(fmtBr(p.preco, 3)); setCada(fmtBr(Number(p.divisor_basico) || 1, 0, 3)); setErro('');
     } catch {
-      setDescricao('Produto não encontrado!'); setErro('Produto não encontrado!'); refProduto.current?.select();
+      setDescricao('Produto não encontrado!'); setErro('Produto não encontrado para este cliente.'); refProduto.current?.select();
     }
   };
   const aplicar = async () => {

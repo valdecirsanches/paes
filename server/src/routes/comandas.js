@@ -56,6 +56,11 @@ router.get('/produto/:codigo', async (req, res) => {
   if (!codigo || codigo.length > 30) throw invalid('Código do produto inválido.');
   const p = await produtoPorCodigo(pool, codigo);
   if (!p) throw notFound('Produto');
+  // pesquisa dentro da comanda: só produtos do cliente dela
+  if (req.query.comanda) {
+    const [[cm]] = await pool.query('select id_cliente from tb_comandas where id = ?', [idValido(req.query.comanda, 'Comanda')]);
+    if (cm && Number(p.id_cliente) !== Number(cm.id_cliente)) throw notFound('Produto deste cliente');
+  }
   res.json({ id: p.id, codigo: p.codigo, descricao: p.descricao, preco: p.preco, divisor_basico: p.divisor_basico });
 });
 
@@ -80,6 +85,8 @@ router.post('/:id/itens', async (req, res) => {
     await comandaEditavel(c, id);
     const p = await produtoPorCodigo(c, codigo);
     if (!p) throw invalid('Produto não encontrado!');
+    const [[cm]] = await c.query('select id_cliente from tb_comandas where id = ?', [id]);
+    if (cm && Number(p.id_cliente) !== Number(cm.id_cliente)) throw invalid('Este produto não pertence ao cliente da comanda.');
     const qtdeBanco = r6(qtde * cada);
     const total = r6(preco * qtdeBanco);
     const [r] = await c.query(

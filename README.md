@@ -1020,6 +1020,11 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 297 — Comandas: produtos só do cliente da comanda
+
+- `GET /api/comandas/produto/:codigo?comanda=ID` e `POST /api/comandas/:id/itens` passam a exigir `tb_produtos.id_cliente` = cliente da comanda; produto de outro cliente é recusado ("Produto não encontrado para este cliente").
+- Não testado com o MySQL real.
+
 ## Fase 296 — Pesquisa de unidade: campo acima da lista, assume a primeira encontrada
 
 - **Comandas**: novo campo de pesquisa geral acima da lista de unidades (procura em unidade, cliente e tipo), com foco automático; Enter assume a primeira, e após 600 ms sem digitar a primeira encontrada já vira a unidade atual.
