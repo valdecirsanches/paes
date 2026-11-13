@@ -388,7 +388,7 @@ async function sincronizaArquivos(nfe, cfg, docId, orientacao) {
   const ambiente = Number(cfg.nfe_configuracoes_webservice_ambiente) === 1 ? 1 : 2;
   const o = orientacao || (await lerDanfeCfg()).orientacao;
   const feito = {};
-  for (const [campo, ext, tipo, baixa] of [['nfe_xml_file', '-procNFe.xml', 'xml', () => api.xmlAutorizado(docId)], ['nfe_pdf_file', '.pdf', 'pdf', () => api.danfePdf(docId, o)]]) {
+  for (const [campo, ext, tipo, baixa] of [['nfe_xml_file', '-procNFe.xml', 'xml', () => api.xmlAutorizado(docId)], ['nfe_pdf_file', '-danfe.pdf', 'pdf', () => api.danfePdf(docId, o)]]) {
     try {
       let r = await baixa().catch((e) => ({ status: 0, erro: e.message }));
       if (r.status !== 200 || !r.buffer?.length) {
@@ -1220,12 +1220,17 @@ async function consultaChaveSilenciosa(nfe, cfg) {
   return v;
 }
 async function buscaArquivo(nfe, cfg, campo, nomeExt, baixa, orientacao) {
-  const f = arqApp(nfe, campo);
+  let f = arqApp(nfe, campo);
+  // PDFs que o app guardou antes da Fase 278 (nome "<chave>.pdf") podem ser o DANFE do gerador local (layout não aceito): são ignorados e o DANFE é buscado de novo na API.
+  if (nomeExt === 'pdf' && f && f === txt(nfe[APP_COL[campo]]) && !/-danfe\.pdf$/.test(f)) {
+    const leg = txt(nfe[campo]);
+    f = leg && leg !== f && existsSync(paraLocal(leg)) ? leg : '';
+  }
   const doDisco = f && existsSync(paraLocal(f));
   const ambiente = Number(cfg.nfe_configuracoes_webservice_ambiente) === 1 ? 1 : 2;
   const guarda = async (buf) => {
     try {
-      const p = await gravaArquivo(cfg.cnpj, ambiente, `${nfe.nfe_chave}${nomeExt === 'xml' ? '-procNFe.xml' : '.pdf'}`, buf);
+      const p = await gravaArquivo(cfg.cnpj, ambiente, `${nfe.nfe_chave}${nomeExt === 'xml' ? '-procNFe.xml' : '-danfe.pdf'}`, buf);
       if (p !== txt(nfe[APP_COL[campo]])) { await gravaCaminhoApp(nfe.id, campo, p); nfe[APP_COL[campo]] = p; } // campo próprio do app; o N:/ do sistema antigo não é tocado
     } catch { /* guardar é melhor esforço */ }
   };

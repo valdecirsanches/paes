@@ -1020,6 +1020,11 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 278 — DANFE: PDFs antigos do app deixam de ser usados
+
+- Mesmo com o gerador local desligado (Fase 277), as notas que já tinham o DANFE local gravado em disco continuavam abrindo com o layout errado, porque o app lia o arquivo guardado quando a API não respondia na hora.
+- Agora os PDFs guardados pelo app com o nome antigo (`<chave>.pdf`) são ignorados: o DANFE é buscado de novo na API (ou usa o PDF do sistema antigo, se existir) e passa a ser guardado como `<chave>-danfe.pdf`. Sem API e sem PDF antigo, aparece o erro.
+
 ## Fase 277 — DANFE: acabou o desenho "esporádico" (gerador local desligado)
 
 - Causa do DANFE com layout diferente (canhoto no topo, "NF-e", blocos IBS/CBS): quando a API de NF-e não entregava o PDF (erro 502, empresa/pasta não encontrada), o app gerava o DANFE sozinho a partir do XML (biblioteca `node-pdf-nfe`, desenho próprio) e **guardava** esse PDF no campo do app — então a nota ficava com o layout errado mesmo depois da API voltar.
