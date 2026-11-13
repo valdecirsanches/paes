@@ -1254,13 +1254,12 @@ async function buscaArquivo(nfe, cfg, campo, nomeExt, baixa, orientacao) {
     const x = await achaXmlLocal({ chave: nfe.nfe_chave, arquivoBanco: f, bases: [baseGravacao(), baseArquivos()] }).catch(() => null);
     if (x?.length) { await guarda(x); return x; }
   }
-  // plano B silencioso: sem o PDF, busca o XML e gera o DANFE localmente
-  if (nomeExt === 'pdf' && danfeLocalLigado()) {
+  // último recurso: a API não tem a nota (ou não responde) mas o XML existe (ex.: anexado à mão) → gera o DANFE do XML, com o desenho da biblioteca local.
+  // NÃO é guardado em disco: assim, quando a API passar a entregar o PDF, o layout aceito volta sozinho.
+  if (nomeExt === 'pdf') {
     try {
       const xml = viaChave?.xml?.length ? viaChave.xml : await buscaArquivo(nfe, cfg, 'nfe_xml_file', 'xml', (d) => api.xmlAutorizado(d));
-      const pdf = await danfeDoXml(xml, { logo: await lerLogo(), cancelada: nfe.status_e === 'CANCELADA' });
-      await guarda(pdf);
-      return pdf;
+      return await danfeDoXml(xml, { logo: await lerLogo(), cancelada: nfe.status_e === 'CANCELADA' });
     } catch (e2) { erro = erro ?? e2; }
   }
   console.warn(`[nfe] ${nomeExt.toUpperCase()} da nota ${nfe.nfe_numero}/${nfe.nfe_serie} indisponível: ${erro?.message ?? ''}`);
