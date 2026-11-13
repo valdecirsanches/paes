@@ -1,4 +1,5 @@
 [
+  {"fase": 289, "itens": ["NFe: no quadro “Dados do corpo da NFe”, o administrador agora também altera o Número e o Status direto nos campos (com botão Gravar)."]},
   {"fase": 288, "itens": ["NFe: o administrador pode corrigir o número e o status da nota (qualquer status), no cartão “Número e status” dos dados da NFe. Fica registrado na auditoria."]},
   {"fase": 287, "itens": ["Ferramentas › Voz do assistente (só administrador): escolha, ajuste e ouça a voz da ElevenLabs que narra a ajuda."]},
   {"fase": 286, "itens": ["Ajuda em qualquer tela: tecle F1 ou clique no “?” para ver como usar a tela, ouvir a explicação narrada e perguntar ao assistente de IA (precisa das chaves da OpenAI e da ElevenLabs no servidor)."]},

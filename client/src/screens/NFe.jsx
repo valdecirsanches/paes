@@ -1009,6 +1009,20 @@ export default function NFe({ onFechar }) {
                                     <input type="checkbox" checked={temMarca(val)} disabled={somenteLeitura} onChange={(e) => ed(k, e.target.checked ? 'True' : 'False')} /><i aria-hidden="true" />{r}
                                   </label>
                                 );
+                                if (admin && (k === 'nfe_numero' || k === 'status_e')) { // administrador: corrige número/status em qualquer status (grava na hora, com confirmação)
+                                  const campoNs = k === 'nfe_numero' ? 'numero' : 'status';
+                                  return (
+                                    <label key={i} className="nc-c" style={{ gridColumn: k === 'nfe_numero' ? 'span 4' : 'span 12' }}><span>{r} <small>(administrador)</small></span>
+                                      <span style={{ display: 'flex', gap: 6 }}>
+                                        {k === 'nfe_numero'
+                                          ? <input type="number" min="0" style={{ flex: 1 }} value={ns.numero} onChange={(e) => setNs({ ...ns, numero: e.target.value })} />
+                                          : <select style={{ flex: 1 }} value={ns.status} onChange={(e) => setNs({ ...ns, status: e.target.value })}>{['PENDENTE', 'AUTORIZADA', 'CANCELADA', 'INUTILIZADA', 'DEVOLVIDO', 'REJEITADA'].map((x) => <option key={x} value={x}>{x}</option>)}</select>}
+                                        <button type="button" className="nc-b prim" disabled={!nsMudou || ocupado || ns.numero === ''} title="Grava o número e o status mostrados" onClick={gravarNumStatus}>Gravar</button>
+                                        <button type="button" className="nc-b" disabled={!nsMudou} onClick={() => setNs({ numero: nota.nfe_numero ?? '', status: nota.status_e ?? '' })}>↩</button>
+                                      </span>
+                                    </label>
+                                  );
+                                }
                                 if (k === 'nfe_xml_file' || k === 'nfe_pdf_file' || k === 'nfe_xml_app' || k === 'nfe_pdf_app') { // editável sempre: corrige o apontamento quando o DANFE não imprime
                                   const atual = nota[k] ?? ''; const val2 = arqDraft[k] ?? atual; const mudou = val2 !== atual;
                                   return (

@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 289 — NFe: número e status também no "Dados do corpo da NFe"
+
+- No quadro **Dados do corpo da NFe** (Identificação › Número; Final › Status), o administrador (SANCHES) agora vê esses dois campos **editáveis**, cada um com **Gravar** e ↩ (mesma confirmação e mesma rota `PUT /api/nfe/:id/numero-status` da Fase 288). Para os demais usuários continuam somente leitura.
+
 ## Fase 288 — NFe: número e status editáveis (administrador)
 
 - Novo cartão **🔧 Número e status** na lateral dos dados da NFe (aparece só para SANCHES): altera o **Nº da NF-e** e o **Status** de uma nota em **qualquer status** (a edição normal só vale para PENDENTE). Pede confirmação, mostra "de → para" e grava só o cadastro (não fala com SEFAZ nem com a API).
