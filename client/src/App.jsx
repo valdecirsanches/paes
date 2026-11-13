@@ -1,4 +1,5 @@
 import { sincronizaLayout } from './lib/ajustes.js';
+import Ajuda from './components/Ajuda.jsx';
 import { abrirHistorico } from './components/NovaVersao.jsx';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, imagemApi } from './api.js';
@@ -168,6 +169,7 @@ export default function App() {
   const menus = usuario?.fabrica ? MENUS_FABRICA : MENUS; // máquina só da fábrica: usuário "fabrica" automático, só os menus da fábrica
   return (
     <div className="win">
+      {usuario && !bloqueio && <Ajuda tela={ativa} />}
       <div className={`titulo-janela${ambiente === 1 ? ' prod' : ''}`}>Sistema Gestor WinBakery{ativa ? ` — [${TELAS[ativa].titulo}]` : ''}{ambiente === 1 ? '  ·  ⚠ NFe em PRODUÇÃO' : ambiente === 2 ? '  ·  NFe em homologação' : ''}</div>
       <nav className="menubar" ref={barra} aria-label="Menu principal">
         <span className="menu-marca" aria-hidden="true">🥖</span>

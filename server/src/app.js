@@ -1,3 +1,4 @@
+import ajudaRoutes from './routes/ajuda.js';
 import express from 'express';
 import cors from 'cors';
 import { dbConfig, explicaErroDb, pool } from './db.js';
@@ -59,6 +60,7 @@ app.use('/api/auditoria', auditoriaRoutes);
 app.use('/api/tema', temaRoutes);
 app.use('/api/tela-principal', telaPrincipalRoutes);
 app.use('/api/agente', agenteRoutes);
+app.use('/api/ajuda', ajudaRoutes);
 app.use('/api/impressao', impressaoRoutes);
 app.use('/api/layout-etiquetas', layoutEtiquetasRoutes);
 

@@ -1020,6 +1020,14 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 286 — Ajuda F1 / "?" com IA (OpenAI) e narração (ElevenLabs)
+
+- **F1** ou o botão **?** (canto inferior direito) abre o painel de ajuda da **tela atual**: resumo, "como usar" e dicas. Funciona também na janela da Fábrica. Texto em `server/src/data/ajuda-telas.json` (fonte única; ao criar/alterar uma tela, atualize-o).
+- **🔊 Ouvir** narra a explicação (ElevenLabs; sem a chave, usa a voz do navegador em pt-BR). Cada resposta do assistente também tem 🔊. Narrações repetidas ficam em cache no servidor (poupa créditos).
+- **Assistente de IA** (OpenAI, `gpt-4o-mini` por padrão): responde dúvidas de uso com base no `ajuda-telas.json` e na tela atual. Instruído a não inventar; **não recebe dados de clientes, notas ou valores**. Limite de 40 perguntas/min por usuário.
+- Configuração no `server/.env` (as chaves ficam só no servidor, nunca no navegador): `OPENAI_API_KEY`, `OPENAI_MODEL`, `ELEVENLABS_API_KEY`, `ELEVENLABS_VOICE_ID`, `ELEVENLABS_MODEL` (padrão `eleven_multilingual_v2`). Sem as chaves a ajuda por tela continua funcionando.
+- Rotas: `GET /api/ajuda/status|telas`, `POST /api/ajuda/chat|voz` (liberadas também para a Fábrica).
+
 ## Fase 285 — Link "O que mudou" e histórico de versões
 
 - Link **O que mudou** ao lado da versão: no rodapé, na tela de login e na janela da Fábrica. Abre o **histórico de versões** (da mais nova para a mais antiga).

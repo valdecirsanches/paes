@@ -2090,3 +2090,21 @@ th.ord{cursor:pointer;user-select:none}th.ord:hover{text-decoration:underline}
 .lk-versao{background:none;border:0;padding:0;margin:0;font:inherit;color:inherit;text-decoration:underline;cursor:pointer}
 .nv-caixa h3 small{font-weight:400;font-size:13px;opacity:.7}
 .lg-versao{z-index:60}.lg-versao .lk-versao{position:relative;z-index:61;color:#d00;font-weight:700}
+/* Fase 286: ajuda F1 / ? com IA e narração */
+.aj-btn{position:fixed;right:14px;bottom:40px;z-index:9000;width:34px;height:34px;border-radius:50%;border:2px solid #fff;background:#1f5fa8;color:#fff;font-weight:700;font-size:18px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.aj-painel{position:fixed;top:0;right:0;bottom:0;width:min(400px,100vw);z-index:100002;display:flex;flex-direction:column;background:var(--painel,#fff);color:var(--texto,#222);box-shadow:-4px 0 18px rgba(0,0,0,.35);font-size:14px}
+.aj-painel header{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#1f5fa8;color:#fff}
+.aj-painel header b{flex:1}
+.aj-painel header button{border:0;border-radius:6px;padding:5px 10px;cursor:pointer;font-weight:700}
+.aj-corpo{flex:1;overflow:auto;padding:10px 14px}
+.aj-corpo h4{margin:12px 0 4px}.aj-corpo ol,.aj-corpo ul{margin:0;padding-left:20px}.aj-corpo li{margin:3px 0}
+.aj-aviso{font-size:13px;opacity:.75}.aj-erro{color:#b00020;font-size:13px}
+.aj-chat{display:flex;flex-direction:column;gap:6px}
+.aj-m{display:flex;gap:6px;align-items:flex-start;max-width:92%;padding:7px 10px;border-radius:10px;white-space:pre-wrap}
+.aj-m.user{align-self:flex-end;background:#d9e8fb;color:#123}.aj-m.assistant{align-self:flex-start;background:#eef1f4;color:#222}
+.aj-m button{border:0;background:none;cursor:pointer}
+.aj-form{display:flex;gap:6px;padding:8px 12px;border-top:1px solid #0002}
+.aj-form input{flex:1;padding:7px;border:1px solid #8aa;border-radius:6px}
+.aj-form button{border:0;border-radius:6px;padding:7px 14px;background:#1f5fa8;color:#fff;font-weight:700;cursor:pointer}.aj-form button:disabled{opacity:.5;cursor:default}
+.aj-painel footer{padding:6px 12px;font-size:11px;opacity:.7}
+button.lk-versao{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0!important;min-height:0!important;height:auto!important;width:auto!important;font:inherit!important;color:inherit!important;text-decoration:underline;cursor:pointer;border-radius:0!important}

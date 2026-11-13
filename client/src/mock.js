@@ -344,6 +344,9 @@ window.fetch = async (url, opts = {}) => {
   else if (m === 'POST' && p === '/auth/login') {
     if (b.usuario?.toLowerCase() === 'sanches' && b.senha === '123') { mockUser = { id: 1, usuario: 'sanches', nome: 'VALDECIR SANCHES', admin: true }; r = json(mockUser); } else r = json({ message: 'Usuário ou senha inválido.' }, 401);
   } else if (m === 'POST' && p === '/auth/logout') { mockUser = null; r = json({ ok: true }); }
+  else if (m === 'GET' && p === '/ajuda/status') r = json({ chat: true, voz: false });
+  else if (m === 'GET' && p === '/ajuda/telas') r = json({ geral: { titulo: 'Sistema Gestor WinBakery', resumo: 'Resumo geral do sistema.', passos: ['Escolha a tela no menu.'], dicas: ['F1 abre a ajuda.'] }, diaria: { titulo: 'Programação diária e fixa', resumo: 'Cadastro do que cada cliente recebe.', passos: ['Escolha o dia.', 'Escolha o cliente.'], dicas: ['Na Fábrica é só consulta.'] } });
+  else if (m === 'POST' && p === '/ajuda/chat') r = json({ resposta: '1. Clique na primeira nota.\n2. Role até a última.\n3. Use Shift+clique.' });
   else if (m === 'POST' && p === '/auth/senha') r = b.nova !== b.confirma ? json({ message: 'A confirmação não confere com a nova senha.' }, 422) : json({ ok: true });
   else if (p.startsWith('/cadastros/') && (r = cadastros(m, p, u, b))) { /* resposta definida */ }
   else if ((p.startsWith('/cargas') || p.startsWith('/itinerario')) && (r = cargasItin(m, p, u, b))) { /* resposta definida */ }

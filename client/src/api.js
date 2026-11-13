@@ -38,6 +38,12 @@ export async function imagemApi(path) {
     return URL.createObjectURL(await res.blob());
   } catch { return null; }
 }
+/** POST que devolve áudio (narração): URL local do MP3, ou lança o erro da API. */
+export async function audioApi(path, body) {
+  const res = await fetch(`/api${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(lerDispositivo() ? { 'x-dispositivo': lerDispositivo() } : {}) }, body: JSON.stringify(body) });
+  if (!res.ok) { const d = await res.json().catch(() => ({})); throw Object.assign(new Error(d.message || 'Erro inesperado.'), { status: res.status }); }
+  return URL.createObjectURL(await res.blob());
+}
 export const api = {
   upload,
   get: (p) => req('GET', p),

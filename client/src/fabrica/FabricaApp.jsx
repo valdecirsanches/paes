@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Ajuda from '../components/Ajuda.jsx';
 import { abrirHistorico } from '../components/NovaVersao.jsx';
 import Diaria from '../screens/Diaria.jsx';
 import Mercadorias from '../screens/Mercadorias.jsx';
@@ -43,6 +44,7 @@ export default function FabricaApp({ saude, onVoltar = null, dispositivo = '' })
 
   return (
     <div className="fb-win">
+      <Ajuda tela={ativa} />
       <div className="fb-titulo"><img src="/fabrica/janela.png" alt="" />{titulo}</div>
       <div className="fb-barra" role="toolbar" aria-label="Menu">
         <span className="fb-grip" />
