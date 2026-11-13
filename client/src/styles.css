@@ -2135,3 +2135,6 @@ button.lk-versao{background:none!important;border:0!important;box-shadow:none!im
 .cmd-g-uni .cm2-geral{position:sticky;top:0;z-index:3;background:var(--painel,#f4f6f8)}
 .dg-badge{position:sticky;top:0;z-index:4;display:inline-block;margin:2px 4px;padding:1px 8px;border-radius:10px;background:#1f3a5f;color:#fff;font-size:12px}
 .cmd-g-uni:focus-visible,.dr2-clientes:focus-visible{outline:2px solid #3b82f6;outline-offset:-2px}
+/* Cadastro de clientes: lista à esquerda, edição à direita (Unidades e Produtos) */
+.cd-uni{grid-template-columns:minmax(340px,1fr) minmax(440px,1.05fr)}
+.cd-busca-uni{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.cd-busca-uni .cad-busca-cx{flex:1;min-width:200px}

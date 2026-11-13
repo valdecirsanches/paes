@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 301 — Cadastro de clientes: lista à esquerda, edição à direita
+
+- Abas Unidades e Produtos de `Clientes.jsx` invertidas (lista `cd-lado` primeiro, `cd-rola` depois) e grid `.cd-uni` com as colunas trocadas; busca + Ativas/Inativas/Todas da unidade movidas para acima da lista (`.cd-busca-uni`).
+
 ## Fase 300 — Faturamento: localizar já carrega os itens
 
 - `mudarUnidade` marca `autoAtualiza`; ao trocar `uniId` a tela chama `atualizar(false)` após 250 ms (rajadas de ↑↓ só carregam a última). Não testado com dados reais.

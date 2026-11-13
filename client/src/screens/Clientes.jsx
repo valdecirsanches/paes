@@ -213,11 +213,26 @@ export default function Clientes({ onFechar }) {
         <div className="cd-split-corpo">
       {aba === 'uni' && (
         <div className="cd-corpo cd-uni">
+          <section className="cd-lado larga">
+            <div className="cd-busca-linha cd-busca-uni">
+              <Busca busca={bUni} total={unidades.length} placeholder="Pesquisar unidade (nome, código, endereço, bairro…)" />
+              <span className="cd-sit" role="group" aria-label="Situação das unidades">{[['ATIVO', 'Ativas'], ['INATIVO', 'Inativas'], ['TODOS', 'Todas']].map(([k, t]) => <button type="button" key={k} className={`cd-btn${sitUni === k ? ' on' : ''}`} aria-pressed={sitUni === k} onClick={() => setSitUni(k)}>{t}</button>)}</span>
+            </div>
+            <GradeCad cols={COLS_UNI} rows={uniPagina} ordem={bUni.ordem} onOrdenar={bUni.ordenar} foco={fUni} onSel={uni.selecionar} onDbl={(id) => { if (uni.selecionar(id)) setTimeout(() => campoNomeUni.current?.focus(), 0); }} vazio="Nenhuma unidade" />
+            <footer className="cd-rodape-lista cd-pag">
+              <span>{bUni.visiveis.length} unidade(s){conectar ? ' deste cliente' : ' — todas'}</span>
+              {totPagUni > 1 && <span className="cd-pag-ctl">
+                <button type="button" className="cd-btn" disabled={pagUniOk === 0} onClick={() => setPagUni(0)} title="Primeira página">⏮</button>
+                <button type="button" className="cd-btn" disabled={pagUniOk === 0} onClick={() => setPagUni(pagUniOk - 1)}>‹ Anterior</button>
+                <b>Página {pagUniOk + 1} de {totPagUni}</b>
+                <button type="button" className="cd-btn" disabled={pagUniOk >= totPagUni - 1} onClick={() => setPagUni(pagUniOk + 1)}>Próxima ›</button>
+                <button type="button" className="cd-btn" disabled={pagUniOk >= totPagUni - 1} onClick={() => setPagUni(totPagUni - 1)} title="Última página">⏭</button>
+              </span>}
+            </footer>
+          </section>
           <main className="cd-rola">
             <div className="cd-minibarra">
               <Navegador compacto ed={uni} onEditar={() => campoNomeUni.current?.focus()} />
-              <Busca busca={bUni} total={unidades.length} placeholder="Pesquisar unidade (nome, código, endereço, bairro…)" />
-              <span className="cd-sit" role="group" aria-label="Situação das unidades">{[['ATIVO', 'Ativas'], ['INATIVO', 'Inativas'], ['TODOS', 'Todas']].map(([k, t]) => <button type="button" key={k} className={`cd-btn${sitUni === k ? ' on' : ''}`} aria-pressed={sitUni === k} onClick={() => setSitUni(k)}>{t}</button>)}</span>
             </div>
             <div className="cd-secoes">
               <Secao titulo="Unidade" icone="🏪">
@@ -272,31 +287,11 @@ export default function Clientes({ onFechar }) {
               </Secao>
             </div>
           </main>
-          <section className="cd-lado larga">
-            <GradeCad cols={COLS_UNI} rows={uniPagina} ordem={bUni.ordem} onOrdenar={bUni.ordenar} foco={fUni} onSel={uni.selecionar} onDbl={(id) => { if (uni.selecionar(id)) setTimeout(() => campoNomeUni.current?.focus(), 0); }} vazio="Nenhuma unidade" />
-            <footer className="cd-rodape-lista cd-pag">
-              <span>{bUni.visiveis.length} unidade(s){conectar ? ' deste cliente' : ' — todas'}</span>
-              {totPagUni > 1 && <span className="cd-pag-ctl">
-                <button type="button" className="cd-btn" disabled={pagUniOk === 0} onClick={() => setPagUni(0)} title="Primeira página">⏮</button>
-                <button type="button" className="cd-btn" disabled={pagUniOk === 0} onClick={() => setPagUni(pagUniOk - 1)}>‹ Anterior</button>
-                <b>Página {pagUniOk + 1} de {totPagUni}</b>
-                <button type="button" className="cd-btn" disabled={pagUniOk >= totPagUni - 1} onClick={() => setPagUni(pagUniOk + 1)}>Próxima ›</button>
-                <button type="button" className="cd-btn" disabled={pagUniOk >= totPagUni - 1} onClick={() => setPagUni(totPagUni - 1)} title="Última página">⏭</button>
-              </span>}
-            </footer>
-          </section>
         </div>
       )}
 
       {aba === 'prod' && (
         <div className="cd-corpo cd-uni">
-          <main className="cd-rola">
-            <div className="cd-minibarra">
-              <Navegador compacto ed={prod} onEditar={() => {}} desabilitado={!idCli} />
-              <button type="button" className="cd-btn" onClick={tabela}>🖨 Tabela de preços</button>
-            </div>
-            <ProdutoForm ed={prod} layout="cli" clientes={clientes} referencias={referencias} />
-          </main>
           <section className="cd-lado larga">
             <div className="cd-abas" role="tablist">
               {[['lista', 'Produtos do cliente'], ['refs', 'Referências']].map(([k, r]) => <button key={k} type="button" role="tab" aria-selected={abaProd === k} className={abaProd === k ? 'on' : ''} onClick={() => setAbaProd(k)}>{r}</button>)}
@@ -305,6 +300,13 @@ export default function Clientes({ onFechar }) {
             {abaProd === 'lista' && <GradeCad cols={COLS_PROD} rows={bProd.visiveis} ordem={bProd.ordem} onOrdenar={bProd.ordenar} foco={fProd} onSel={prod.selecionar} vazio="Nenhum produto" />}
             {abaProd === 'refs' && <GradeCad cols={COLS_REFS} rows={referencias} foco={null} onSel={() => {}} vazio="Nenhuma referência" />}
           </section>
+          <main className="cd-rola">
+            <div className="cd-minibarra">
+              <Navegador compacto ed={prod} onEditar={() => {}} desabilitado={!idCli} />
+              <button type="button" className="cd-btn" onClick={tabela}>🖨 Tabela de preços</button>
+            </div>
+            <ProdutoForm ed={prod} layout="cli" clientes={clientes} referencias={referencias} />
+          </main>
         </div>
       )}
         </div>
