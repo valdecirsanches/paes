@@ -1020,6 +1020,13 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 284 — Atualizações dizem o que mudou
+
+- `client/novidades.json` guarda, por fase, o que mudou em linguagem de usuário. O build o publica em `/version.json`.
+- **Aviso de versão nova** (barra azul): botão **O que mudou?** lista as novidades das fases que o usuário ainda não tem.
+- **Depois de atualizar**: quadro "✨ O que mudou nesta atualização" aparece uma vez, com as novidades desde a última fase vista naquele navegador (`localStorage paes_fase_vista`). Na primeira vez num navegador só registra a fase, sem quadro.
+- **A cada entrega acrescente a fase em `novidades.json`** (um teste falha se a fase do `vite.config.js` não estiver no topo da lista).
+
 ## Fase 283 — NFe: Shift+clique marca o lote
 
 - Na lista de notas: clique numa nota, role até o fim e **Shift+clique** noutra — todas as notas entre as duas ficam marcadas (inclusive as que não estão na tela, pois a lista é rolada por janela). Funciona clicando na linha **ou na caixinha**; sem nota clicada antes, parte da nota em foco. O Shift não seleciona mais o texto da linha.

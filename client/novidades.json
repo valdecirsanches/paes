@@ -1,0 +1,12 @@
+[
+  {"fase": 284, "itens": ["Atualizações agora avisam o que mudou: o aviso de nova versão tem o botão “O que mudou?” e, depois de atualizar, aparece um quadro com as novidades."]},
+  {"fase": 283, "itens": ["NFe: Shift+clique marca um lote de notas (na linha ou na caixinha), até o fim da lista."]},
+  {"fase": 282, "itens": ["NFe: novo botão “🔗 Registrar na API”, que envia o XML autorizado à API para ela gerar o DANFE no layout aceito."]},
+  {"fase": 279, "itens": ["DANFE de nota que a API não conhece e tem XML anexado volta a sair (layout alternativo, só como último recurso)."]},
+  {"fase": 278, "itens": ["DANFE: os PDFs antigos guardados pelo app com layout diferente deixam de ser usados; o DANFE é buscado de novo na API."]},
+  {"fase": 277, "itens": ["DANFE: o app não gera mais sozinho um DANFE com layout diferente do da API."]},
+  {"fase": 276, "itens": ["Agente de impressão passa a subir sozinho com o Windows e é vigiado a cada 5 minutos (reinstale o agente no servidor de impressão)."]},
+  {"fase": 275, "itens": ["NFe: o e-mail só vale para a nota que está na lista.", "Reclamações: gravação mais robusta."]},
+  {"fase": 274, "itens": ["Comanda impressa: descrição que não cabe passa para a linha de baixo e o preço aparece como “preço x qtde = total”."]},
+  {"fase": 272, "itens": ["NFe: botão ✉ de e-mail na linha de todas as notas já processadas (inclusive canceladas e inutilizadas)."]}
+]
