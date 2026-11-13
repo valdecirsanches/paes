@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 310 — NFe: Ord. Compra editável na grade de itens
+
+- `LinhaItem` com input em `ordem_compra` (nota PENDENTE); Enter → `PUT /api/nfe/itens/:id {ordem_compra}` e foco na próxima linha. Não testado com dados reais.
+
 ## Fase 309 — Faturamento: Saída acompanha o 2º calendário
 
 - `clicouD2` também grava `emissao` (campo Saída). Sem teste com dados reais.

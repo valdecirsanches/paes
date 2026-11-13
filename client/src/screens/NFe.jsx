@@ -52,11 +52,22 @@ function celulaGrade(r, [k, , t]) {
   return String(r[k] ?? '');
 }
 /** Linha da grade de notas: memoizada, para que digitar no formulário não redesenhe centenas de linhas. */
-const LinhaItem = memo(function LinhaItem({ i, sel, onSel }) {
+const LinhaItem = memo(function LinhaItem({ i, sel, onSel, editavel, onGravaOc }) {
+  const [oc, setOc] = useState(String(i.ordem_compra ?? ''));
+  useEffect(() => { setOc(String(i.ordem_compra ?? '')); }, [i.ordem_compra]);
+  const grava = async (e) => {
+    const tr = e.currentTarget.closest('tr');
+    if (oc === String(i.ordem_compra ?? '')) { tr?.nextElementSibling?.querySelector('input.oc-edit')?.focus(); return; }
+    if (await onGravaOc(i.id, oc.trim())) tr?.nextElementSibling?.querySelector('input.oc-edit')?.focus(); // Enter grava e passa para a próxima linha
+  };
   return (
     <tr className={`clicavel${sel ? ' sel' : ''}`} onClick={() => onSel(i.id)}>
       <td className="ind">{sel ? '▶' : ''}</td>
-      {ITEM_COLS.map(([k, , t]) => <td key={k} className={t ? 'n' : ''}>{t === 'p' ? fmtBr(i[k], 2, 5) : t === 'q' ? fmtBr(i[k], 1, 3) : t === 'v' ? fmtBr(i[k], 5) : String(i[k] ?? '')}</td>)}
+      {ITEM_COLS.map(([k, , t]) => (k === 'ordem_compra' && editavel
+        ? <td key={k}><input className="oc-edit" value={oc} maxLength={30} aria-label="Ord. Compra" title="Enter grava e vai para a próxima linha · Esc desfaz"
+          onChange={(e) => setOc(e.target.value)} onFocus={() => onSel(i.id)} onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); grava(e); } else if (e.key === 'Escape') { setOc(String(i.ordem_compra ?? '')); } }} /></td>
+        : <td key={k} className={t ? 'n' : ''}>{t === 'p' ? fmtBr(i[k], 2, 5) : t === 'q' ? fmtBr(i[k], 1, 3) : t === 'v' ? fmtBr(i[k], 5) : String(i[k] ?? '')}</td>))}
     </tr>
   );
 });
@@ -571,6 +582,13 @@ export default function NFe({ onFechar }) {
     const { _nota, ...novo } = await api.put(`/nfe/itens/${itemSel}`, itemDraft);
     setItens((is) => is.map((i) => (i.id === novo.id ? { ...i, ...novo } : i))); setItemDraft({}); aplicaNota(_nota); notificar('ok', 'Item gravado.');
   });
+  // grade de itens: Ord. Compra editável direto; Enter grava (só nota PENDENTE)
+  const gravaOc = async (id, valor) => {
+    try {
+      const { _nota, ...novo } = await api.put(`/nfe/itens/${id}`, { ordem_compra: valor });
+      setItens((is) => is.map((i) => (i.id === novo.id ? { ...i, ...novo } : i))); aplicaNota(_nota); notificar('ok', 'Ord. compra gravada.'); return true;
+    } catch (e) { notificar('erro', e.message); return false; }
+  };
   const novoItem = () => {
     if (!pendente) { notificar('erro', 'Só é possível incluir itens em notas PENDENTES.'); return; }
     setDialogo({ titulo: 'Novo item', campos: [{ k: 'produto_codigo', rotulo: 'Produto (código)' }, { k: 'qtde', rotulo: 'Qtde', valor: '1', tipo: 'number' }],
@@ -917,7 +935,7 @@ export default function NFe({ onFechar }) {
                         <table className="grade tb-itens-nfe">
                           <thead><tr><th className="ind" />{ITEM_COLS.map(([k, r, t, w]) => <th key={k} style={{ minWidth: w }} className={t ? 'n' : ''}>{r}</th>)}</tr></thead>
                           <tbody>
-                            {itens.map((i) => <LinhaItem key={i.id} i={i} sel={itemSel === i.id} onSel={setItemSel} />)}
+                            {itens.map((i) => <LinhaItem key={i.id} i={i} sel={itemSel === i.id} onSel={setItemSel} editavel={pendente && !ocupado} onGravaOc={gravaOc} />)}
                             {itens.length === 0 && <tr className="semlinha"><td colSpan={ITEM_COLS.length + 1} className="vazio">&lt;Sem itens&gt;</td></tr>}
                           </tbody>
                           <tfoot><tr><td className="ind" />{ITEM_COLS.map(([k]) => <td key={k} className={k === 'preco_total' ? 'n' : ''}>{k === 'preco_total' ? <b>{fmtBr(totalItens, 2)}</b> : ''}</td>)}</tr></tfoot>
