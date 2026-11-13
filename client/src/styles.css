@@ -2121,3 +2121,7 @@ button.lk-versao{background:none!important;border:0!important;box-shadow:none!im
 .va-bt{display:flex;gap:8px;margin-top:8px}
 .va-ok{color:#0a7a2f;font-weight:700}.va-erro{color:#b00020;font-weight:700}.va-aviso{font-size:13px;opacity:.8}
 .nf2-ns select,.nf2-ns input{width:100%}.nf2-ns .bt{margin-top:6px;width:100%}.nf2-card-t small{font-weight:400;opacity:.7}
+/* Fase 291: botões dos produtos dentro do painel Produtos */
+.cd-acoes-lista{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;padding:6px 8px;border-bottom:1px solid #8aa6}
+.cd-acoes-lista .cd-busca{flex:1 1 100%;min-width:0}
+.cd-acoes-lista .cd-btn{padding:4px 8px;font-size:12px}

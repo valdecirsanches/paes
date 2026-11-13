@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 291 — Produtos: botões da lista dentro do painel Produtos
+
+- Pesquisa, "Só produtos de um cliente", Mostrar (ativos/inativos/todos), Inativar marcados, Sem uso há N meses, Marcar sem uso, Reativar todos os inativos e Ativar marcados saíram da barra do topo e ficam no topo do painel **Produtos** (aba lista). A barra de cima mantém navegador/Gravar/Cancelar, Tabela de preços, Exportar e Fechar.
+
 ## Fase 290 — Produtos: referência da produção
 
 - O cadastro de produtos engolia em silêncio a falha ao carregar `GET /api/cadastros/produtos/referencias` (campo "Referência a ser produzido" ficava sem opções). Agora a falha aparece como aviso de erro.
