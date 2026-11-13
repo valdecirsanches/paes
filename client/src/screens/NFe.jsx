@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../api.js';
 import { Modal } from '../components/ui.jsx';
+import { GRUPOS as GRUPOS_TRIB } from '../lib/tributoGrupos.js';
 import EnvioEmail from '../components/EnvioEmail.jsx';
 import NcmCampo from '../components/NcmCampo.jsx';
 import NfeFiscal, { EventosTabela, abrirArquivo } from '../components/NfeFiscal.jsx';
@@ -944,46 +945,34 @@ export default function NFe({ onFechar }) {
                                 <label className="fi-c"><span>Nº item</span><input value={iv.item ?? ''} readOnly={ro} onChange={(e) => edi('item', e.target.value)} /></label>
                               </div>
                             </section>}
-                            {itemTab === 'trib' && <section className="fi-sec">
-                              <h5>🏛 ICMS do item <small>(calculado pelo código de tributação)</small></h5>
-                              <div className="fi-grid">
-                                <label className="fi-c"><span>CFOP</span><input value={iv.cfop_codigo ?? ''} readOnly={ro} onChange={(e) => edi('cfop_codigo', e.target.value)} /><DoTributo atual={iv.cfop_codigo} trib={trib} valor={trib?.cfop} /></label>
-                                {(!simplesNota || txt1(iv.cfop_cst_icms)) && <label className="fi-c"><span>CST</span><input value={iv.cfop_cst_icms ?? ''} readOnly={ro || !!trib} onChange={(e) => edi('cfop_cst_icms', e.target.value)} /><DoTributo atual={iv.cfop_cst_icms} trib={trib} valor={trib?.sit_trib} /></label>}
-                                {(simplesNota || txt1(iv.csosn)) && <label className="fi-c"><span>CSOSN</span><input value={iv.csosn ?? ''} readOnly={ro} onChange={(e) => edi('csosn', e.target.value)} /></label>}
-                                <label className="fi-c"><span>vBC (base)</span><Num valor={iv.icms_base_calculo} ro={ro || !!trib} onMudar={(n) => edi('icms_base_calculo', n)} /></label>
-                                <label className="fi-c"><span>pICMS</span><Num valor={iv.icms_aliquota} sufixo=" %" ro={ro || !!trib} onMudar={(n) => edi('icms_aliquota', n)} /><DoTributo atual={iv.icms_aliquota} trib={trib} valor={trib?.aliq_icms} /></label>
-                                <label className="fi-c"><span>vICMS</span><Num valor={iv.icms_valor} ro={ro || !!trib} onMudar={(n) => edi('icms_valor', n)} /></label>
-                              </div>
-                            </section>}
-                            {itemTab === 'trib' && <section className="fi-sec">
-                              <h5>🧮 IPI · PIS · COFINS <small>(calculado pelo código de tributação)</small></h5>
-                              <div className="fi-grid">
-                                <label className="fi-c"><span>CST IPI</span><input value={iv.cst_ipi ?? ''} readOnly={ro || !!trib} onChange={(e) => edi('cst_ipi', e.target.value)} /><DoTributo atual={iv.cst_ipi} trib={trib} valor={trib?.cst_ipi} /></label>
-                                <label className="fi-c"><span>CST PIS</span><input value={iv.cfop_cst_pis ?? ''} readOnly={ro || !!trib} onChange={(e) => edi('cfop_cst_pis', e.target.value)} /><DoTributo atual={iv.cfop_cst_pis} trib={trib} valor={trib?.cst_pis} /></label>
-                                <label className="fi-c"><span>CST Cofins</span><input value={iv.cfop_cst_cofins ?? ''} readOnly={ro || !!trib} onChange={(e) => edi('cfop_cst_cofins', e.target.value)} /><DoTributo atual={iv.cfop_cst_cofins} trib={trib} valor={trib?.cst_cofins} /></label>
-                                <label className="fi-c"><span>pPIS</span><Num valor={iv.pis_aliquota} sufixo=" %" ro={ro || !!trib} onMudar={(n) => edi('pis_aliquota', n)} /><DoTributo atual={iv.pis_aliquota} trib={trib} valor={trib?.aliq_pis} /></label>
-                                <label className="fi-c"><span>vPIS</span><Num valor={iv.pis_valor} ro={ro || !!trib} onMudar={(n) => edi('pis_valor', n)} /></label>
-                                <span />
-                                <label className="fi-c"><span>pCOFINS</span><Num valor={iv.cofins_aliquota} sufixo=" %" ro={ro || !!trib} onMudar={(n) => edi('cofins_aliquota', n)} /><DoTributo atual={iv.cofins_aliquota} trib={trib} valor={trib?.aliq_cofins} /></label>
-                                <label className="fi-c"><span>vCOFINS</span><Num valor={iv.cofins_valor} ro={ro || !!trib} onMudar={(n) => edi('cofins_valor', n)} /></label>
-                              </div>
-                            </section>}
                             {itemTab === 'trib' && <section className="fi-sec fi-trib">
-                              <h5>🏷 Código de tributação <small>(vale p/ todos os itens com este código)</small></h5>
+                              <h5>🏷 Código de tributação <small>(vale p/ todos os itens com este código — é a fonte de NCM, CSTs, alíquotas e IBS/CBS)</small></h5>
                               <div className="fi-grid">
                                 <label className="fi-c"><span>Código (id)</span><input value={iv.id_tributo ?? ''} readOnly={ro} onChange={(e) => edi('id_tributo', e.target.value)} title="id_tributo (tb_tributos)" /></label>
-                                <label className="fi-c"><span>Total dos tributos</span><Num valor={iv.valor_trib_prod} ro /></label>
-                                {!trib && <p className="vazio s2">Item sem código de tributação (id_tributo): a nota não poderá ser autorizada.</p>}
-                                {trib && (<>
-                                  <label className="fi-c"><span>Red. base ICMS %</span><Num valor={tv.red_aliq} dec={2} max={4} onMudar={(n) => setTribDraft({ ...tribDraft, red_aliq: n })} /></label>
-                                  <label className="fi-c"><span>cBenef</span><input value={tv.cBenef ?? ''} onChange={(e) => setTribDraft({ ...tribDraft, cBenef: e.target.value })} /></label>
-                                  <label className="fi-c"><span>CST IBS/CBS</span><input maxLength={3} value={tv.cst ?? ''} onChange={(e) => setTribDraft({ ...tribDraft, cst: e.target.value })} /></label>
-                                  <label className="fi-c"><span>cClassTrib</span><input maxLength={6} value={tv.cClassTrib ?? ''} onChange={(e) => setTribDraft({ ...tribDraft, cClassTrib: e.target.value })} /></label>
-                                  <label className="fi-c"><span>pIBS %</span><Num valor={tv.pIBS} dec={2} max={4} onMudar={(n) => setTribDraft({ ...tribDraft, pIBS: n })} /></label>
-                                  <label className="fi-c"><span>pCBS %</span><Num valor={tv.pCBS} dec={2} max={4} onMudar={(n) => setTribDraft({ ...tribDraft, pCBS: n })} /></label>
-                                  <button type="button" className="bt s2" disabled={!Object.keys(tribDraft).length || ocupado} onClick={salvarTrib}>✔ Gravar código de tributação</button>
-                                </>)}
+                                <label className="fi-c s3"><span>Descrição do tributo</span><input value={tv.descricao ?? ''} readOnly={!trib} onChange={(e) => setTribDraft({ ...tribDraft, descricao: e.target.value })} /></label>
+                                {!trib && <p className="vazio s4">Item sem código de tributação (id_tributo): a nota não poderá ser autorizada.</p>}
                               </div>
+                              {trib && (<>
+                                {GRUPOS_TRIB.map(([titulo, campos]) => (
+                                  <fieldset key={titulo} className="fi-grupo"><legend>{titulo}</legend>
+                                    <div className="fi-grid">
+                                      {campos.map(([k, rot, larg]) => <label key={k} className={`fi-c${larg ? ` s${larg}` : ''}`}><span>{rot}</span><input value={tv[k] ?? ''} onChange={(e) => setTribDraft({ ...tribDraft, [k]: e.target.value })} /></label>)}
+                                    </div>
+                                  </fieldset>
+                                ))}
+                                <button type="button" className="bt" disabled={!Object.keys(tribDraft).length || ocupado} onClick={salvarTrib}>✔ Gravar código de tributação (vale para todos os itens com este código)</button>
+                              </>)}
+                              <fieldset className="fi-grupo"><legend>Neste item <small>(calculado; recalculado ao gravar o item)</small></legend>
+                                <div className="fi-grid">
+                                  <label className="fi-c"><span>CFOP do item</span><input value={iv.cfop_codigo ?? ''} readOnly={ro} onChange={(e) => edi('cfop_codigo', e.target.value)} title="Pode diferir do CFOP do tributo conforme a operação" /></label>
+                                  {(simplesNota || txt1(iv.csosn)) && <label className="fi-c"><span>CSOSN</span><input value={iv.csosn ?? ''} readOnly={ro} onChange={(e) => edi('csosn', e.target.value)} /></label>}
+                                  <label className="fi-c"><span>vBC ICMS</span><Num valor={iv.icms_base_calculo} ro /></label>
+                                  <label className="fi-c"><span>vICMS</span><Num valor={iv.icms_valor} ro /></label>
+                                  <label className="fi-c"><span>vPIS</span><Num valor={iv.pis_valor} ro /></label>
+                                  <label className="fi-c"><span>vCOFINS</span><Num valor={iv.cofins_valor} ro /></label>
+                                  <label className="fi-c"><span>Total dos tributos</span><Num valor={iv.valor_trib_prod} ro /></label>
+                                </div>
+                              </fieldset>
                             </section>}
                           </>)}
                         </div>

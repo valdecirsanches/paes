@@ -1020,6 +1020,12 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 305 — Item da NFe: aba Tributos = tela completa do Código de tributação
+
+- `lib/tributoGrupos.js` (GRUPOS) compartilhado entre a tela Tributos e a ficha do item; `PUT /api/nfe/tributos/:id` passa a aceitar todos os campos (mesma validação `limpa` de `routes/tributos.js`).
+- Ficha do item: sai a repetição (CST/alíquotas/NCM do item); ficam CFOP, CSOSN e os valores calculados (somente leitura). Gravar o tributo vale para todos os itens com o código; os valores gravados em itens já existentes só são recalculados quando o item é gravado de novo.
+- ATENÇÃO (pendente de decisão do usuário): `red_aliq` (mostrado no Tributo como "Red. da base" do IBS/CBS) é o que a NFe envia como redução de ICMS no CST 20 (`percentualReducaoBcIcms`, limitado a 99,99), enquanto `impostos()` usa `red_b_c_icms` ("Red. base ICMS"). No tributo 197 são 100 e 61,11. Não alterado; a conferência dos XMLs mostra o que realmente saiu.
+
 ## Fase 304 — Comparação com o Código de tributação à vista
 
 - Ficha do item (NFe.jsx, componente `DoTributo`) e NCM do `ProdutoForm`: ao lado do valor do item/produto aparece o valor do tributo (✓ igual / ⚠ diferente). Campos: NCM, CST ICMS, CST IPI/PIS/COFINS, alíquotas ICMS/PIS/COFINS e CFOP (este continua editável).

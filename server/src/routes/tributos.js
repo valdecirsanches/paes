@@ -19,7 +19,7 @@ const idValido = (v, rotulo = 'Registro') => {
 /** Palavras do filtro (ExtractStrings por espaço): cada uma vira um LIKE %palavra%, sempre parametrizado. */
 const palavras = (t) => String(t ?? '').trim().split(/\s+/).filter(Boolean).slice(0, 12).map((w) => `%${w.replace(/[\\%_]/g, '\\$&')}%`);
 
-function limpa(body, { criando }) {
+export function limpa(body, { criando }) {
   const b = pick(body, CAMPOS);
   for (const k of Object.keys(b)) {
     if (b[k] === null || b[k] === undefined) { b[k] = null; continue; }

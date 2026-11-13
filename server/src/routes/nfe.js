@@ -17,6 +17,7 @@ import { baseGravacao, paraBanco, paraLocal, caminhoXmlLegado, ehCaminhoLegado }
 import { acharArquivoNota, lerArquivoNota, baseArquivos } from '../services/arquivosApi.js';
 import { aplicaReducaoIbs, montaJsonNfe, validaParaAutorizar, dataHoraBr, regimeDoCrt, ehDevolucao } from '../services/nfeJson.js';
 import { registra } from '../services/auditoria.js';
+import { limpa as limpaTributo } from './tributos.js';
 import { auditaTributos } from '../services/auditaTributos.js';
 import { migraPastasXml } from '../services/migraXmlPastas.js';
 import { analisaReferencias, candidatasOriginal, devolucoesDe, errosDaAnalise } from '../services/devolucaoRef.js';
@@ -956,7 +957,6 @@ router.delete('/itens/:itemId', async (req, res) => {
 });
 
 // ------------------------------------------------------------------ tributo do item (qryTrib / dsTrib = tb_tributos, aba IBSCBS)
-const TRIB_CAMPOS = ['cst', 'cClassTrib', 'pIBS', 'pCBS', 'red_aliq', 'cBenef'];
 router.get('/tributos/:tribId', async (req, res) => {
   const [[t]] = await pool.query('select * from tb_tributos where id = ?', [idValido(req.params.tribId, 'Tributo')]);
   if (!t) throw notFound('Tributo');
@@ -964,9 +964,7 @@ router.get('/tributos/:tribId', async (req, res) => {
 });
 router.put('/tributos/:tribId', async (req, res) => {
   const tribId = idValido(req.params.tribId, 'Tributo');
-  const b = pick(req.body, TRIB_CAMPOS);
-  for (const k of ['pIBS', 'pCBS', 'red_aliq']) if (b[k] !== undefined && b[k] !== '' && !Number.isFinite(Number(b[k]))) throw invalid(`Valor inválido (${k}).`);
-  for (const k of Object.keys(b)) if (b[k] === '') b[k] = null;
+  const b = limpaTributo(req.body, { criando: false }); // mesmas regras da tela "Códigos de Tributação": todos os campos do tributo
   if (!Object.keys(b).length) throw invalid('Nada para gravar.');
   const [r] = await pool.query('update tb_tributos set ? where id = ?', [b, tribId]);
   if (!r.affectedRows) throw notFound('Tributo');

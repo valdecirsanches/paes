@@ -3,19 +3,12 @@ import { api } from '../api.js';
 import { Modal } from '../components/ui.jsx';
 import { Toast, confirmar } from '../components/toast.jsx';
 import { useJanela } from '../components/janela.js';
+import { GRUPOS } from '../lib/tributoGrupos.js';
 
 // Colunas do CSV (todas as da tabela); a grade mostra só as essenciais.
 const COLS = ['id', 'descricao', 'aliq_ipi', 'sit_trib', 'cst_icms', 'aliq_icms', 'ncm', 'cest', 'cfop', 'cClassTrib', 'pIBS', 'pCBS', 'red_aliq', 'legislacao', 'red_b_c_icms',
   'cst_ipi', 'cst_pis', 'cst_cofins', 'natureza', 'aliq_pis', 'aliq_cofins', 'base_legal_icms', 'base_legal_pis_cofins', 'cst', 'tipo_trib', 'cBenef'];
 const GRADE = [['id', 'Cód.'], ['descricao', 'Descrição'], ['ncm', 'NCM'], ['cfop', 'CFOP'], ['sit_trib', 'Sit.'], ['aliq_icms', 'ICMS %'], ['aliq_ipi', 'IPI %'], ['cClassTrib', 'cClassTrib'], ['pIBS', 'IBS %'], ['pCBS', 'CBS %']];
-// Formulário do tributo, em grupos: [título, [[campo, rótulo, largura(colunas)]]]
-const GRUPOS = [
-  ['Classificação', [['ncm', 'NCM'], ['cest', 'CEST'], ['cfop', 'CFOP'], ['tipo_trib', 'Tipo de tributação'], ['natureza', 'Natureza', 2]]],
-  ['ICMS / IPI', [['sit_trib', 'Sit. tributária'], ['aliq_icms', 'Alíq. ICMS'], ['red_b_c_icms', 'Red. base ICMS'], ['aliq_ipi', 'Alíq. IPI'], ['cst_ipi', 'CST IPI']]],
-  ['PIS / COFINS', [['cst_pis', 'CST PIS'], ['aliq_pis', 'Alíq. PIS'], ['cst_cofins', 'CST COFINS'], ['aliq_cofins', 'Alíq. COFINS']]],
-  ['IBS / CBS (reforma tributária)', [['cst', 'CST'], ['cClassTrib', 'cClassTrib'], ['pIBS', 'pIBS'], ['pCBS', 'pCBS'], ['red_aliq', 'Red. da base'], ['cBenef', 'cBenef']]],
-  ['Legislação', [['legislacao', 'Legislação', 4], ['base_legal_icms', 'Base legal ICMS', 2], ['base_legal_pis_cofins', 'Base legal PIS/COFINS', 2]]],
-];
 const txt = (v) => (v === null || v === undefined ? '' : String(v));
 
 /** Edição de um tributo (antes pnlEditaTributo): navega entre os tributos da grade, inclui, grava e exclui. */
