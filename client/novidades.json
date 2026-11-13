@@ -1,4 +1,5 @@
 [
+  {"fase": 295, "itens": ["Comandas: ao digitar no filtro de unidade/cliente, a primeira encontrada já é assumida e as comandas aparecem, sem precisar clicar.", "Faturamento: Enter com o código do produto vazio abre a pesquisa de produto (nos dois campos de código, produto e conversão); há também uma lupa ao lado do código."]},
   {"fase": 294, "itens": ["Cadastro de produtos: a descrição para a expedição é preenchida sozinha enquanto você digita a descrição (se estiver vazia); produto novo já nasce com a unidade PC; e a seção Fiscal ficou só com NCM e Tributação (Class. fiscal, IPI, ICMS e S. trib. saíram da tela porque a tributação já define isso)."]},
   {"fase": 293, "itens": ["Cadastro de produtos: Tributação e Cliente também viraram listas com pesquisa (digite para filtrar)."]},
   {"fase": 292, "itens": ["Cadastro de produtos: o campo Referência agora é uma lista com pesquisa (digite parte do código ou da descrição), e a aba Referências da produção também ganhou pesquisa."]},

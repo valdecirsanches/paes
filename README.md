@@ -1020,6 +1020,11 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 295 — Comandas: unidade assumida ao localizar · Faturamento: Enter abre a pesquisa de produto
+
+- **Controle de comandas:** ao digitar no filtro de Unidade/Cliente/Tipo, após ~0,3 s a **primeira unidade encontrada vira a unidade atual** e as comandas já são listadas (como se tivesse clicado). Só reage à digitação no filtro (clicar noutra linha continua valendo) e não interrompe uma comanda em edição.
+- **Faturamento › Edição do item:** nos dois campos de **código de produto** (produto e conversão), **Enter com o campo vazio (ou 0) abre a pesquisa de produto**; com código, localiza o produto. Ao sair do campo só localiza se houver código (não abre mais a janela sozinha ao passar com Tab). Nova **lupa 🔎** ao lado de cada código.
+
 ## Fase 294 — Cadastro de produto: expedição automática, unidade PC e fiscal enxuto
 
 - **Descrição → expedição:** ao digitar a descrição, a "Descrição para a expedição" é preenchida junto enquanto estiver vazia (ou ainda igual à descrição anterior, ou seja, só espelhada); depois de editada à mão, deixa de acompanhar.

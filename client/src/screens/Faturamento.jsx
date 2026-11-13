@@ -28,11 +28,21 @@ const LEGENDA = [
 
 
 const B_UNI = ['unidade_nome', 'cliente_razao_social', 'tipo_faturamento'];
-/** Código de produto com busca ao sair do campo; vazio ou "0" abre a janela de localizar produto. */
-function CodigoProduto({ valor, onMudar, onResolver, className, style }) {
+/** Código de produto: Enter com o campo vazio (ou "0") abre a pesquisa de produto; com código, localiza o produto (também ao sair do campo). A lupa abre a pesquisa. */
+function CodigoProduto({ valor, onMudar, onResolver, onBuscar, className, style }) {
+  const vazio = (t) => !String(t ?? '').trim() || String(t).trim() === '0';
   return (
-    <input className={className} style={style} value={valor ?? ''} onChange={(e) => onMudar(e.target.value)}
-      onBlur={(e) => onResolver(e.target.value.trim())} onKeyDown={(e) => { if (e.key === 'Enter') onResolver(e.currentTarget.value.trim()); }} />
+    <span className="cod-prod" style={{ display: 'flex', gap: 4 }}>
+      <input className={className} style={{ flex: 1, ...style }} value={valor ?? ''} onChange={(e) => onMudar(e.target.value)}
+        onBlur={(e) => { if (!vazio(e.target.value)) onResolver(e.target.value.trim()); }}
+        onKeyDown={(e) => {
+          if (e.key !== 'Enter') return;
+          e.preventDefault(); e.stopPropagation();
+          if (vazio(e.currentTarget.value)) setTimeout(onBuscar, 0); // depois do evento, para o Enter não cair na janela que abre
+          else onResolver(e.currentTarget.value.trim());
+        }} />
+      <button type="button" className="cod-lupa" tabIndex={-1} title="Pesquisar produto" aria-label="Pesquisar produto" onClick={onBuscar}>🔎</button>
+    </span>
   );
 }
 
@@ -73,7 +83,7 @@ function Edicao({ linha, draft, mudar, resolver, comandas, onExcluirComanda, onS
           <section className="cv2-card">
             <h4>Produto / mercadoria</h4>
             <div className="cv2-lin cv2-prod">
-              <Campo rotulo="Código" className="if-cod"><CodigoProduto valor={v.produto_codigo} onMudar={(t) => mudar('produto_codigo', t)} onResolver={(c) => resolver('produto', c)} /></Campo>
+              <Campo rotulo="Código" className="if-cod"><CodigoProduto valor={v.produto_codigo} onMudar={(t) => mudar('produto_codigo', t)} onResolver={(c) => resolver('produto', c)} onBuscar={() => resolver('produto', '')} /></Campo>
               <Campo rotulo="Descrição do produto"><input value={v.produto_descricao_expedicao ?? ''} onChange={(e) => mudar('produto_descricao_expedicao', e.target.value)} /></Campo>
             </div>
             <div className="fe-nums">
@@ -88,7 +98,7 @@ function Edicao({ linha, draft, mudar, resolver, comandas, onExcluirComanda, onS
           <section className="cv2-card cv2-destino">
             <h4>Cobrança — cobrar como</h4>
             <div className="cv2-lin cv2-prod">
-              <Campo rotulo="Código" className="if-cod if-destaque"><CodigoProduto valor={v.conversao_produto_codigo} onMudar={(t) => mudar('conversao_produto_codigo', t)} onResolver={(c) => resolver('conversao', c)} /></Campo>
+              <Campo rotulo="Código" className="if-cod if-destaque"><CodigoProduto valor={v.conversao_produto_codigo} onMudar={(t) => mudar('conversao_produto_codigo', t)} onResolver={(c) => resolver('conversao', c)} onBuscar={() => resolver('conversao', '')} /></Campo>
               <Campo rotulo="Descrição do produto" className="if-destaque"><input value={v.conversao_produto_descricao ?? ''} onChange={(e) => mudar('conversao_produto_descricao', e.target.value)} /></Campo>
             </div>
             <div className="fe-nums">

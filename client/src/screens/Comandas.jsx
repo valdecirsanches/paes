@@ -186,6 +186,13 @@ export default function Comandas({ onFechar }) {
     return () => { window.removeEventListener('nfe-alterada', aoAlterar); clearTimeout(t); };
   }, []);
   const mudarUnidade = (id, publicar = true) => { setUniId(id); setLista(null); setSel(new Set()); setFoco(null); setDados(null); setDisparo((d) => d + 1); if (publicar) publicaUnidade(id, 'cmd'); }; // um clique na unidade já lista as comandas
+  // localizou pelo filtro (unidade/cliente/tipo): assume a primeira encontrada como a unidade e já lista as comandas, sem esperar clique (só reage ao digitar no filtro)
+  const primeira = useRef(null); primeira.current = { id: unisVisiveis[0]?.id ?? null, uniId, edicao };
+  useEffect(() => {
+    if (!fUni.u.trim() && !fUni.c.trim() && !fUni.t.trim()) return undefined;
+    const t = setTimeout(() => { const { id, uniId: atual, edicao: ed } = primeira.current; if (id && id !== atual && !ed) mudarUnidade(id); }, 350);
+    return () => clearTimeout(t);
+  }, [fUni]); // eslint-disable-line react-hooks/exhaustive-deps
   // acompanha a unidade escolhida no Faturamento (não interrompe uma edição de comanda aberta)
   const seguir = useRef(null);
   seguir.current = (id) => { if (id === uniId || !unidades.some((u) => u.id === id) || edicao) return; mudarUnidade(id, false); };
