@@ -1,5 +1,5 @@
 [
-  {"fase": 298, "itens": ["Comandas, Faturamento e Diária: dá para digitar direto na lista de unidades/clientes (sem clicar em campo de pesquisa) — a cada letra a linha que combina já é posicionada e assumida. Backspace apaga, Esc limpa."]},
+  {"fase": 298, "itens": ["Comandas, Faturamento e Diária: sem campo de pesquisa — clique na lista de unidades/clientes e digite: a cada letra a linha que combina já é posicionada e assumida. As setas ↑ ↓ (PgUp/PgDn/Home/End) passam de uma para outra; Backspace apaga e Esc limpa."]},
   {"fase": 297, "itens": ["Comandas: ao incluir/pesquisar produto na comanda, só são aceitos produtos do cliente da comanda (produto de outro cliente é recusado)."]},
   {"fase": 296, "itens": ["Comandas e Faturamento: novo campo de pesquisa acima da lista de unidades (procura em unidade, cliente e tipo); a primeira encontrada já é assumida depois de uma pausa na digitação, e Enter assume na hora."]},
   {"fase": 295, "itens": ["Comandas: ao digitar no filtro de unidade/cliente, a primeira encontrada já é assumida e as comandas aparecem, sem precisar clicar.", "Faturamento: Enter com o código do produto vazio abre a pesquisa de produto (nos dois campos de código, produto e conversão); há também uma lupa ao lado do código."]},
