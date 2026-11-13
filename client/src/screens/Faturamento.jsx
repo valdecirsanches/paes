@@ -317,6 +317,15 @@ export default function Faturamento({ onFechar }) {
       setFoco((f) => (manterFoco && rows.some((r) => r.id === f) ? f : rows[0]?.id ?? null));
     } catch (e) { notificar('erro', e.message); } finally { setOcupado(false); }
   }, [uniId, cbCliente, d1, d2, notificar]);
+  // localizou a unidade (digitando, setas ou clique): já mostra os itens, sem precisar do botão Atualizar (pequena pausa para rajadas de teclas)
+  const autoAtualiza = useRef(false);
+  const atualizarRef = useRef(atualizar); atualizarRef.current = atualizar;
+  useEffect(() => {
+    if (!autoAtualiza.current || !uniId) return undefined;
+    autoAtualiza.current = false;
+    const t = setTimeout(() => atualizarRef.current(false), 250);
+    return () => clearTimeout(t);
+  }, [uniId]);
   // comanda eliminada no Controle de comandas, NFe apagada/emitida: a lista do faturamento acompanha
   const recarga = useRef(null); recarga.current = () => { if (linhas !== null) atualizar(true); };
   useEffect(() => {
@@ -339,7 +348,7 @@ export default function Faturamento({ onFechar }) {
 
   // ---- lista de unidades (gridCliCellClick: trocar de unidade fecha a grade)
   const mudarUnidade = (id) => {
-    const trocar = () => { setUniId(id); setUniDraft({}); setLinhas(null); setFoco(null); setDraft({}); publicaUnidade(id, 'fat'); };
+    const trocar = () => { autoAtualiza.current = true; setUniId(id); setUniDraft({}); setLinhas(null); setFoco(null); setDraft({}); publicaUnidade(id, 'fat'); };
     if (id === uniId) return;
     if (Object.keys(uniDraft).length) perguntar({ texto: 'Há alterações não gravadas nas informações do cliente. Descartar?', opcoes: [{ rotulo: 'Descartar', acao: trocar }, { rotulo: 'Voltar' }] });
     else trocar();

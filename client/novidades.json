@@ -1,4 +1,5 @@
 [
+  {"fase": 300, "itens": ["Faturamento: ao localizar a unidade/cliente (digitando, setas ou clique) os itens já aparecem — não precisa mais clicar em Atualizar."]},
   {"fase": 299, "itens": ["Faturamento: a pesquisa e o código de produto (inclusive \"Cobrar como\") só aceitam produtos do cliente do item; produto de outro cliente é recusado.", "Comandas: removida também a linha de filtros por coluna da lista de unidades — clique na lista e digite."]},
   {"fase": 298, "itens": ["Comandas, Faturamento e Diária: sem campo de pesquisa — clique na lista de unidades/clientes e digite: a cada letra a linha que combina já é posicionada e assumida. As setas ↑ ↓ (PgUp/PgDn/Home/End) passam de uma para outra; Backspace apaga e Esc limpa."]},
   {"fase": 297, "itens": ["Comandas: ao incluir/pesquisar produto na comanda, só são aceitos produtos do cliente da comanda (produto de outro cliente é recusado)."]},
