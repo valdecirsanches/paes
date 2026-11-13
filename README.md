@@ -1020,6 +1020,12 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 290 — Produtos: referência da produção
+
+- O cadastro de produtos engolia em silêncio a falha ao carregar `GET /api/cadastros/produtos/referencias` (campo "Referência a ser produzido" ficava sem opções). Agora a falha aparece como aviso de erro.
+- Se a referência gravada no produto não estiver na lista carregada, ela aparece mesmo assim como "N - (fora da lista)" em vez de o campo ficar vazio.
+- Não consegui reproduzir o problema no ambiente de teste (lista e seleção funcionam); a causa em produção depende do aviso/dado real.
+
 ## Fase 289 — NFe: número e status também no "Dados do corpo da NFe"
 
 - No quadro **Dados do corpo da NFe** (Identificação › Número; Final › Status), o administrador (SANCHES) agora vê esses dois campos **editáveis**, cada um com **Gravar** e ↩ (mesma confirmação e mesma rota `PUT /api/nfe/:id/numero-status` da Fase 288). Para os demais usuários continuam somente leitura.

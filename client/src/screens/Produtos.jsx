@@ -50,7 +50,7 @@ export default function Produtos({ onFechar }) {
   useEffect(() => { const t = setTimeout(() => recarregar(), q ? 300 : 0); return () => clearTimeout(t); }, [recarregar, q]);
   useEffect(() => {
     api.get('/cadastros/clientes').then((c) => { setClientes(c); }).catch(() => {});
-    api.get(`${CAM}/referencias`).then(setReferencias).catch(() => {});
+    api.get(`${CAM}/referencias`).then(setReferencias).catch((e) => notificar('erro', `Não consegui carregar as referências da produção: ${e.message}`));
     api.get('/tributos').then(setTributos).catch(() => {});
   }, []);
 

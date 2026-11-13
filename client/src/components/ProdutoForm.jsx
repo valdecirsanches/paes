@@ -11,6 +11,7 @@ export default function ProdutoForm({ ed, layout = 'tela', clientes = [], refere
   const sel = (k, lista, rot, extra) => (
     <select disabled={off} value={ed.v(k) ?? ''} onChange={(e) => { const n = e.target.value === '' ? null : Number(e.target.value); ed.set(k, n); extra?.(n); }}>
       <option value="" />{lista.map((o) => <option key={o.id} value={o.id}>{rot(o)}</option>)}
+      {ed.v(k) != null && ed.v(k) !== '' && !lista.some((o) => o.id === Number(ed.v(k))) && <option value={ed.v(k)}>{`${ed.v(k)} - (fora da lista)`}</option>}
     </select>
   );
   const num = (k) => <Txt ed={ed} k={k} inputMode="decimal" />;
