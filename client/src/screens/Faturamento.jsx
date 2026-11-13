@@ -344,7 +344,7 @@ export default function Faturamento({ onFechar }) {
 
   // ---- calendários (d1Click / d2Click)
   const clicouD1 = (v) => { setD1(v); if (!cbDatas) { setD2(v); setEmissao(v); } };
-  const clicouD2 = (v) => { setD2(v); if (!cbDatas) setD1(v); };
+  const clicouD2 = (v) => { setD2(v); setEmissao(v); if (!cbDatas) setD1(v); }; // a Saída acompanha a 2ª data
 
   // ---- lista de unidades (gridCliCellClick: trocar de unidade fecha a grade)
   const mudarUnidade = (id) => {
