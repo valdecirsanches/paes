@@ -707,8 +707,8 @@ router.get('/impressos', async (req, res) => {
 });
 /** Diagnóstico: operações de escrita da API (swagger) e quais parecem importar XML autorizado. */
 router.get('/api-rotas', async (_req, res) => {
-  const ops = await api.listaRotas();
-  res.json({ total: ops.length, candidatas: api.candidatasImportacao(ops), todas: ops.map((o) => `${o.metodo} ${o.caminho}`) });
+  const tentativas = []; const ops = await api.listaRotas(tentativas);
+  res.json({ total: ops.length, base: process.env.NFE_API_URL || 'http://127.0.0.1:5240', tentativas, candidatas: api.candidatasImportacao(ops), todas: ops.map((o) => `${o.metodo} ${o.caminho}`) });
 });
 router.get('/:id', async (req, res) => res.json(await getNfe(idValido(req.params.id))));
 /**

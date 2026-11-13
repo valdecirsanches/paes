@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 281 — /api/nfe/api-rotas mostra onde procurou o swagger
+
+- Com `total: 0` não dava para saber por quê. Agora a resposta traz `base` (NFE_API_URL em uso) e `tentativas` (cada endereço de documentação testado e o HTTP devolvido; mais endereços de swagger/OpenAPI além dos 4 anteriores).
+
 ## Fase 280 — Caminho 1: registrar na API a nota autorizada pelo XML
 
 - Nova ação **🔗 Registrar na API** (dados da NFe, ao lado de Anexar XML): envia o XML autorizado à API de NF-e para ela registrar a nota e gerar o DANFE no layout aceito; depois o app baixa XML/DANFE dela (`POST /api/nfe/:id/registrar-na-api`).

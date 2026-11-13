@@ -207,9 +207,11 @@ export async function schemaIbsCbs() {
 
 // ---------------------------------------------------------------- registrar na API uma nota já autorizada (XML)
 /** Lê o swagger/OpenAPI da API e lista as operações de escrita (para achar a que importa um XML já autorizado). */
-export async function listaRotas() {
-  for (const doc of ['/swagger/v1/swagger.json', '/openapi.json', '/swagger.json', '/openapi/v1.json']) {
-    const r = await chamar('GET', doc);
+export const DOCS_API = ['/swagger/v1/swagger.json', '/swagger/v2/swagger.json', '/swagger/docs/v1', '/openapi.json', '/openapi/v1.json', '/swagger.json', '/api-docs', '/v3/api-docs', '/docs/openapi.json', '/api/swagger.json', '/api/openapi.json'];
+export async function listaRotas(tentativas = []) {
+  for (const doc of DOCS_API) {
+    let r; try { r = await chamar('GET', doc); } catch (e) { tentativas.push(`${doc}: ${e.message}`); continue; }
+    tentativas.push(`${doc}: HTTP ${r.status}${r.status === 200 && !r.body?.paths ? ' (sem paths)' : ''}`);
     if (r.status !== 200 || !r.body?.paths) continue;
     const ops = [];
     for (const [caminho, def] of Object.entries(r.body.paths)) {
