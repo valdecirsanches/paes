@@ -2161,3 +2161,5 @@ button.lk-versao{background:none!important;border:0!important;box-shadow:none!im
 .fi-rolagem .fi-compacto{padding-top:4px;padding-bottom:4px}.fi-rolagem .fi-compacto .fi-c *:not(span){min-height:0!important;height:23px!important;box-sizing:border-box;line-height:18px;padding-top:1px!important;padding-bottom:1px!important}
 .fi-rolagem .fi-compacto .fi-grid{gap:0 6px}.fi-rolagem .fi-compacto .fi-grava{margin:2px 0}.fi-rolagem .fi-compacto .fi-calc{padding-top:2px}.fi-rolagem .fi-compacto .fi-c span{margin-bottom:0;line-height:12px}
 .fi-rolagem .fi-compacto .fi-grava{margin:3px 0 0;flex:none}.fi-rolagem .fi-compacto .fi-calc{margin-top:auto}
+/* sem espaço vago: valores calculados e botão colados nos campos */
+.fi-rolagem .fi-compacto{min-height:0}.fi-rolagem .fi-compacto .fi-calc{margin-top:4px}.fi-rolagem .fi-compacto .fi-grava{margin:4px 0 0}

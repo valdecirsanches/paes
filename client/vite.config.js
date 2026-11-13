@@ -14,7 +14,7 @@ const NOVIDADES = (() => {
   return [...ESCRITAS, ...extra].sort((a, b) => b.fase - a.fase);
 })();
 
-const FASE = '312'; // atualizar a cada entrega; aparece no rodapé para conferir se o deploy pegou
+const FASE = '313'; // atualizar a cada entrega; aparece no rodapé para conferir se o deploy pegou
 const quando = new Date(Date.now() - 3 * 3600 * 1000).toISOString().slice(0, 16).replace('T', ' '); // hora de Brasília
 
 const BUILD = `fase ${FASE} · build ${quando}`;

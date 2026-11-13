@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 313 — Ficha Tributos sem espaço vago
+
+- Bloco calculado e botão passam a ficar colados nos campos (sem `margin-top:auto`); substitui a ancoragem no rodapé da Fase 312.
+
 ## Fase 312 — Botão Gravar tributo no fim da ficha
 
 - `useEffect([foco])` volta a ficha do item para a aba Produto ao trocar de nota.

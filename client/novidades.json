@@ -1,4 +1,5 @@
 [
+  {"fase": 313, "itens": ["NFe, aba Tributos do item: sem espaço vago — campos, valores calculados e botão Gravar ficam colados, um logo abaixo do outro."]},
   {"fase": 312, "itens": ["NFe, itens: a Ord. Compra agora pode ser editada na grade também em nota já autorizada (só esse campo; não altera o XML e fica no log).", "NFe, aba Tributos do item: campos maiores, botão Gravar numa linha só e os valores calculados (CFOP, vBC, vICMS, vPIS, vCOFINS, total) fixos na parte de baixo da ficha.", "Aba Tributos do item: o botão Gravar tributo ficou no fim da ficha, sem rolagem.", "NFe: ao carregar/trocar de nota a ficha do item abre sempre na pasta Produto."]},
   {"fase": 310, "itens": ["NFe, grade de itens: a coluna \"Ord. Compra\" agora é editável direto na linha (notas pendentes). Enter grava e passa para a linha de baixo; Esc desfaz."]},
   {"fase": 309, "itens": ["Faturamento: ao mudar a data no segundo calendário, o campo Saída passa para a mesma data (ainda dá para ajustar a Saída depois, à mão)."]},
