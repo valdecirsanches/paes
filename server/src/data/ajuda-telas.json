@@ -2,32 +2,328 @@
   "geral": {
     "titulo": "Sistema Gestor WinBakery (AppBakery)",
     "resumo": "Sistema da padaria: programação de entregas (fixa e diária), produção, mercadorias, cargas, reclamações, faturamento, comandas e emissão de NF-e. Os menus ficam no topo: Programação, Faturamento, Cadastros, Outros e Ferramentas. Cada tela abre numa aba. Máquinas liberadas só para a Fábrica veem uma janela própria, com menos opções e sem alterar preços nem a programação.",
-    "passos": ["Escolha a tela no menu do topo.", "Pressione F1 ou clique no ? para ver a ajuda da tela em que você está.", "No rodapé, o link “O que mudou” mostra o histórico das versões."],
-    "dicas": ["Ctrl+F5 atualiza o sistema quando sai versão nova.", "O rodapé mostra a versão (fase) instalada e o código deste dispositivo."]
+    "passos": [
+      "Escolha a tela no menu do topo.",
+      "Pressione F1 ou clique no ? para ver a ajuda da tela em que você está.",
+      "No rodapé, o link “O que mudou” mostra o histórico das versões."
+    ],
+    "dicas": [
+      "Ctrl+F5 atualiza o sistema quando sai versão nova.",
+      "O rodapé mostra a versão (fase) instalada e o código deste dispositivo."
+    ]
   },
-  "dashboard": { "titulo": "Dashboard", "resumo": "Visão geral do dia: totais da programação e situação das entregas.", "passos": ["Escolha a data para ver os números do dia.", "Use os cartões para ir às telas relacionadas."], "dicas": ["Os números vêm da programação diária."] },
-  "conflitos": { "titulo": "Problemas da programação", "resumo": "Lista inconsistências da programação (itens em conflito, clientes sem itens, horários repetidos) para corrigir antes da produção.", "passos": ["Escolha a data.", "Veja a lista de problemas encontrados.", "Corrija na Programação diária ou fixa."], "dicas": ["Rode esta verificação antes de imprimir cargas e etiquetas."] },
-  "diaria": { "titulo": "Programação diária e fixa", "resumo": "Cadastro do que cada cliente (unidade) recebe: a programação diária do dia escolhido e a fixa, que se repete nos dias da semana. Na lateral ficam o calendário e a lista de clientes; as abas são Programação diária, Programação fixa, Reclamações e Configurações.", "passos": ["Escolha o dia no calendário e o cliente na lista.", "Na aba Programação diária, inclua itens com horário, produto e quantidade.", "Use os botões de status para marcar o movimento (por exemplo, cancelar ou confirmar).", "Na aba Reclamações, registre reclamações e elogios do cliente."], "dicas": ["Na janela da Fábrica a programação é só de consulta: não permite incluir, alterar nem excluir.", "O menu ⚡ Ações do dia reúne tarefas em lote."] },
-  "mercadorias": { "titulo": "Venda de mercadorias", "resumo": "Mercadorias vendidas no dia por cliente, com quantidades e conversões para cobrança. Permite imprimir etiquetas dos itens.", "passos": ["Escolha a data.", "Marque os itens e use os botões para editar ou imprimir etiquetas.", "Na edição, ajuste a conversão do produto cobrado."], "dicas": ["Na Fábrica a edição de preços e as etiquetas de Mercadorias ficam bloqueadas."] },
-  "producao": { "titulo": "Produção", "resumo": "Quantidades a produzir por produto e por cliente, a partir da programação do dia, para a fábrica separar e produzir.", "passos": ["Escolha a data.", "Selecione um produto para ver os clientes que o recebem.", "Navegue pelas linhas com as setas do teclado; a linha atual fica destacada.", "Arraste a barra entre as grades para aumentar ou diminuir a área dos dados dos clientes."], "dicas": ["As colunas dos clientes mostram todos os dados sem precisar rolar a grade."] },
-  "itinerario": { "titulo": "Controle do etinerário", "resumo": "Controle das rotas de entrega do dia: ordem das paradas e motoristas.", "passos": ["Escolha a data e a rota.", "Ajuste a ordem das paradas.", "Imprima a lista de entregas."], "dicas": ["A lista de entregas também está nos relatórios."] },
-  "cargas": { "titulo": "Roteiro de cargas", "resumo": "Roteiro de cargas por região no layout do sistema antigo, com filtro e ordenação por qualquer coluna e o total de pães.", "passos": ["Escolha a data e a região (as que constam na entrega, ou todas).", "Escolha Diária ou Fixa e use o filtro das colunas para pesquisar.", "Clique no cabeçalho de uma coluna para ordenar; use as setas para navegar.", "Imprima a carga ou as etiquetas do item."], "dicas": ["O rodapé mostra o total de pães da lista filtrada."] },
-  "reclamacoes": { "titulo": "Reclamações / Elogios", "resumo": "Todas as reclamações e elogios do período, de todos os clientes. Permite registrar a justificativa (contestação) da fábrica.", "passos": ["Escolha o período De/Até.", "Selecione uma linha para ler a reclamação.", "Escreva a justificativa e clique em Gravar justificativa."], "dicas": ["Para registrar uma nova reclamação use a aba Reclamações da Programação diária."] },
-  "extras": { "titulo": "Pedidos extras", "resumo": "Pedidos fora da programação normal (extras), do dia escolhido, para a fábrica produzir e entregar.", "passos": ["Escolha a data.", "Veja os pedidos extras por cliente e produto."], "dicas": ["Itens especiais e salgados aparecem juntos na lista."] },
-  "faturamento": { "titulo": "Faturamento", "resumo": "Transforma a programação entregue em faturamento: confere itens, preços e totais por cliente e gera as notas e comandas.", "passos": ["Escolha o período e o cliente.", "Confira os itens e valores.", "Gere a NFe ou a comanda."], "dicas": ["O Faturamento fica totalmente liberado nas máquinas autorizadas para essa área."] },
-  "comandas": { "titulo": "Controle de comandas", "resumo": "Comandas de entrega por cliente: consulta, impressão e vínculo com a NF-e.", "passos": ["Escolha a data.", "Selecione a comanda e imprima.", "Veja a NFe ligada à comanda."], "dicas": ["A comanda impressa mostra o preço x quantidade = total de cada item."] },
-  "nfe": { "titulo": "Nota Fiscal Eletrônica", "resumo": "Lista de NF-e com status (pendente, autorizada, cancelada, inutilizada, rejeitada). Permite autorizar, cancelar, imprimir o DANFE, enviar e-mail e consultar na API.", "passos": ["Use os filtros para achar as notas.", "Marque uma ou várias notas. Clique numa nota, role até o fim e use Shift+clique na última para marcar um lote.", "Clique em Autorizar para as pendentes.", "Use 🖨 Danfe para imprimir e ✉ para enviar o e-mail ao cliente.", "Em Mais opções ficam Ajustar NFe, Pastas XML, Criar e Comandas."], "dicas": ["Notas pendentes não podem ser enviadas por e-mail.", "Itens com valor zerado impedem a autorização.", "Se a API não tem a nota, anexe o XML e use 🔗 Registrar na API."] },
-  "tributos": { "titulo": "Códigos de tributação de produtos", "resumo": "Cadastro dos códigos fiscais (NCM, CST, CFOP, alíquotas) usados nos produtos da nota.", "passos": ["Escolha o código na lista.", "Altere os campos e grave."], "dicas": ["Erros nestes códigos causam rejeição da nota na SEFAZ."] },
-  "impressoras": { "titulo": "Configurar impressoras", "resumo": "Cadastro das impressoras desta estação para o agente de impressão (cupom, etiqueta e A4).", "passos": ["Clique em adicionar e escolha o tipo e o transporte.", "Use o teste de letras para conferir o tamanho da letra do cupom.", "Escolha a letra larga adequada à sua impressora matricial."], "dicas": ["Se nada imprimir, confira a fila de impressão do Windows e se o agente está rodando."] },
-  "instalar": { "titulo": "Instalar agente de impressão", "resumo": "Baixa e orienta a instalação do agente que imprime na estação (Windows).", "passos": ["Baixe o pacote.", "Execute o instalador como Administrador.", "Abra o endereço do agente para cadastrar as impressoras."], "dicas": ["O agente sobe sozinho com o Windows e é vigiado a cada 5 minutos."] },
-  "clientes": { "titulo": "Cadastro de clientes", "resumo": "Cadastro de clientes e das unidades de entrega (endereço, contato, regras de cobrança).", "passos": ["Pesquise o cliente.", "Edite e grave.", "Use o navegador de registros para avançar e voltar."], "dicas": ["Dados de endereço aparecem na nota e na comanda."] },
-  "produtos": { "titulo": "Produtos", "resumo": "Cadastro de produtos, preços e dados fiscais.", "passos": ["Pesquise o produto.", "Altere preço, unidade e tributação.", "Grave."], "dicas": ["Mudar preço no cadastro não altera o que já foi faturado."] },
-  "funcionarios": { "titulo": "Cadastro de funcionários", "resumo": "Cadastro de funcionários (motoristas, entregadores) com foto.", "passos": ["Pesquise ou inclua.", "Preencha e grave."], "dicas": ["A foto é enviada pelo próprio cadastro."] },
-  "usuarios": { "titulo": "Cadastro de usuários", "resumo": "Usuários que podem entrar no sistema e suas permissões. Só administradores.", "passos": ["Inclua o usuário e a senha.", "Marque se é administrador."], "dicas": ["A senha é guardada de forma protegida."] },
-  "dispositivos": { "titulo": "Dispositivos autorizados", "resumo": "Controle de quais navegadores/máquinas podem usar o sistema e em quais áreas (Faturamento e/ou Fábrica). Só administradores.", "passos": ["Pesquise pelo código do dispositivo.", "Autorize e escolha as áreas.", "O código deste navegador aparece no rodapé."], "dicas": ["Máquina só da Fábrica entra sem login, numa janela restrita.", "Com as duas áreas, o botão 🏭 Fábrica alterna entre as janelas."] },
-  "auditoria": { "titulo": "Auditoria", "resumo": "Registro de tudo que foi feito no sistema: quem, quando e o que mudou. Só administradores.", "passos": ["Filtre por data, usuário ou ação.", "Abra um registro para ver os detalhes."], "dicas": ["Mudanças de caminhos de arquivo e envios de XML ficam registradas aqui."] },
-  "telaprincipal": { "titulo": "Imagem da tela principal", "resumo": "Escolhe a imagem de fundo da tela principal. Só administradores.", "passos": ["Escolha uma imagem.", "Grave."], "dicas": ["Use uma imagem horizontal."] },
-  "aparencia": { "titulo": "Aparência", "resumo": "Tema de cores e aparência do sistema neste dispositivo.", "passos": ["Escolha o tema.", "Veja o resultado na hora."], "dicas": ["Na Fábrica o tema fica no botão Tema."] },
-  "relnfes": { "titulo": "Relatório de NFEs", "resumo": "Relatório das notas emitidas em um período, com totais.", "passos": ["Escolha o período e os filtros.", "Gere e imprima ou exporte."], "dicas": ["Confira o status das notas antes de usar os totais."] },
-  "nfsconf": { "titulo": "Leitura de NFs confirmadas", "resumo": "Importa e confere notas confirmadas pelos clientes.", "passos": ["Escolha o arquivo ou a pasta.", "Confira a lista lida.", "Confirme."], "dicas": ["Notas já lidas não são importadas de novo."] }
+  "dashboard": {
+    "titulo": "Dashboard",
+    "resumo": "Visão geral do dia: totais da programação e situação das entregas.",
+    "passos": [
+      "Escolha a data para ver os números do dia.",
+      "Use os cartões para ir às telas relacionadas."
+    ],
+    "dicas": [
+      "Os números vêm da programação diária."
+    ]
+  },
+  "conflitos": {
+    "titulo": "Problemas da programação",
+    "resumo": "Lista inconsistências da programação (itens em conflito, clientes sem itens, horários repetidos) para corrigir antes da produção.",
+    "passos": [
+      "Escolha a data.",
+      "Veja a lista de problemas encontrados.",
+      "Corrija na Programação diária ou fixa."
+    ],
+    "dicas": [
+      "Rode esta verificação antes de imprimir cargas e etiquetas."
+    ]
+  },
+  "diaria": {
+    "titulo": "Programação diária e fixa",
+    "resumo": "Cadastro do que cada cliente (unidade) recebe: a programação diária do dia escolhido e a fixa, que se repete nos dias da semana. Na lateral ficam o calendário e a lista de clientes; as abas são Programação diária, Programação fixa, Reclamações e Configurações.",
+    "passos": [
+      "Escolha o dia no calendário e o cliente na lista.",
+      "Na aba Programação diária, inclua itens com horário, produto e quantidade.",
+      "Use os botões de status para marcar o movimento (por exemplo, cancelar ou confirmar).",
+      "Na aba Reclamações, registre reclamações e elogios do cliente."
+    ],
+    "dicas": [
+      "Na janela da Fábrica a programação é só de consulta: não permite incluir, alterar nem excluir.",
+      "O menu ⚡ Ações do dia reúne tarefas em lote."
+    ]
+  },
+  "mercadorias": {
+    "titulo": "Venda de mercadorias",
+    "resumo": "Mercadorias vendidas no dia por cliente, com quantidades e conversões para cobrança. Permite imprimir etiquetas dos itens.",
+    "passos": [
+      "Escolha a data.",
+      "Marque os itens e use os botões para editar ou imprimir etiquetas.",
+      "Na edição, ajuste a conversão do produto cobrado."
+    ],
+    "dicas": [
+      "Na Fábrica a edição de preços e as etiquetas de Mercadorias ficam bloqueadas."
+    ]
+  },
+  "producao": {
+    "titulo": "Produção",
+    "resumo": "Quantidades a produzir por produto e por cliente, a partir da programação do dia, para a fábrica separar e produzir.",
+    "passos": [
+      "Escolha a data.",
+      "Selecione um produto para ver os clientes que o recebem.",
+      "Navegue pelas linhas com as setas do teclado; a linha atual fica destacada.",
+      "Arraste a barra entre as grades para aumentar ou diminuir a área dos dados dos clientes."
+    ],
+    "dicas": [
+      "As colunas dos clientes mostram todos os dados sem precisar rolar a grade."
+    ]
+  },
+  "itinerario": {
+    "titulo": "Controle do etinerário",
+    "resumo": "Controle das rotas de entrega do dia: ordem das paradas e motoristas.",
+    "passos": [
+      "Escolha a data e a rota.",
+      "Ajuste a ordem das paradas.",
+      "Imprima a lista de entregas."
+    ],
+    "dicas": [
+      "A lista de entregas também está nos relatórios."
+    ]
+  },
+  "cargas": {
+    "titulo": "Roteiro de cargas",
+    "resumo": "Roteiro de cargas por região no layout do sistema antigo, com filtro e ordenação por qualquer coluna e o total de pães.",
+    "passos": [
+      "Escolha a data e a região (as que constam na entrega, ou todas).",
+      "Escolha Diária ou Fixa e use o filtro das colunas para pesquisar.",
+      "Clique no cabeçalho de uma coluna para ordenar; use as setas para navegar.",
+      "Imprima a carga ou as etiquetas do item."
+    ],
+    "dicas": [
+      "O rodapé mostra o total de pães da lista filtrada."
+    ]
+  },
+  "reclamacoes": {
+    "titulo": "Reclamações / Elogios",
+    "resumo": "Todas as reclamações e elogios do período, de todos os clientes. Permite registrar a justificativa (contestação) da fábrica.",
+    "passos": [
+      "Escolha o período De/Até.",
+      "Selecione uma linha para ler a reclamação.",
+      "Escreva a justificativa e clique em Gravar justificativa."
+    ],
+    "dicas": [
+      "Para registrar uma nova reclamação use a aba Reclamações da Programação diária."
+    ]
+  },
+  "extras": {
+    "titulo": "Pedidos extras",
+    "resumo": "Pedidos fora da programação normal (extras), do dia escolhido, para a fábrica produzir e entregar.",
+    "passos": [
+      "Escolha a data.",
+      "Veja os pedidos extras por cliente e produto."
+    ],
+    "dicas": [
+      "Itens especiais e salgados aparecem juntos na lista."
+    ]
+  },
+  "faturamento": {
+    "titulo": "Faturamento",
+    "resumo": "Transforma a programação entregue em faturamento: confere itens, preços e totais por cliente e gera as notas e comandas.",
+    "passos": [
+      "Escolha o período e o cliente.",
+      "Confira os itens e valores.",
+      "Gere a NFe ou a comanda."
+    ],
+    "dicas": [
+      "O Faturamento fica totalmente liberado nas máquinas autorizadas para essa área."
+    ]
+  },
+  "comandas": {
+    "titulo": "Controle de comandas",
+    "resumo": "Comandas de entrega por cliente: consulta, impressão e vínculo com a NF-e.",
+    "passos": [
+      "Escolha a data.",
+      "Selecione a comanda e imprima.",
+      "Veja a NFe ligada à comanda."
+    ],
+    "dicas": [
+      "A comanda impressa mostra o preço x quantidade = total de cada item."
+    ]
+  },
+  "nfe": {
+    "titulo": "Nota Fiscal Eletrônica",
+    "resumo": "Lista de NF-e com status (pendente, autorizada, cancelada, inutilizada, rejeitada). Permite autorizar, cancelar, imprimir o DANFE, enviar e-mail e consultar na API.",
+    "passos": [
+      "Use os filtros para achar as notas.",
+      "Marque uma ou várias notas. Clique numa nota, role até o fim e use Shift+clique na última para marcar um lote.",
+      "Clique em Autorizar para as pendentes.",
+      "Use 🖨 Danfe para imprimir e ✉ para enviar o e-mail ao cliente.",
+      "Em Mais opções ficam Ajustar NFe, Pastas XML, Criar e Comandas."
+    ],
+    "dicas": [
+      "Notas pendentes não podem ser enviadas por e-mail.",
+      "Itens com valor zerado impedem a autorização.",
+      "Se a API não tem a nota, anexe o XML e use 🔗 Registrar na API."
+    ]
+  },
+  "tributos": {
+    "titulo": "Códigos de tributação de produtos",
+    "resumo": "Cadastro dos códigos fiscais (NCM, CST, CFOP, alíquotas) usados nos produtos da nota.",
+    "passos": [
+      "Escolha o código na lista.",
+      "Altere os campos e grave."
+    ],
+    "dicas": [
+      "Erros nestes códigos causam rejeição da nota na SEFAZ."
+    ]
+  },
+  "impressoras": {
+    "titulo": "Configurar impressoras",
+    "resumo": "Cadastro das impressoras desta estação para o agente de impressão (cupom, etiqueta e A4).",
+    "passos": [
+      "Clique em adicionar e escolha o tipo e o transporte.",
+      "Use o teste de letras para conferir o tamanho da letra do cupom.",
+      "Escolha a letra larga adequada à sua impressora matricial."
+    ],
+    "dicas": [
+      "Se nada imprimir, confira a fila de impressão do Windows e se o agente está rodando."
+    ]
+  },
+  "instalar": {
+    "titulo": "Instalar agente de impressão",
+    "resumo": "Baixa e orienta a instalação do agente que imprime na estação (Windows).",
+    "passos": [
+      "Baixe o pacote.",
+      "Execute o instalador como Administrador.",
+      "Abra o endereço do agente para cadastrar as impressoras."
+    ],
+    "dicas": [
+      "O agente sobe sozinho com o Windows e é vigiado a cada 5 minutos."
+    ]
+  },
+  "clientes": {
+    "titulo": "Cadastro de clientes",
+    "resumo": "Cadastro de clientes e das unidades de entrega (endereço, contato, regras de cobrança).",
+    "passos": [
+      "Pesquise o cliente.",
+      "Edite e grave.",
+      "Use o navegador de registros para avançar e voltar."
+    ],
+    "dicas": [
+      "Dados de endereço aparecem na nota e na comanda."
+    ]
+  },
+  "produtos": {
+    "titulo": "Produtos",
+    "resumo": "Cadastro de produtos, preços e dados fiscais.",
+    "passos": [
+      "Pesquise o produto.",
+      "Altere preço, unidade e tributação.",
+      "Grave."
+    ],
+    "dicas": [
+      "Mudar preço no cadastro não altera o que já foi faturado."
+    ]
+  },
+  "funcionarios": {
+    "titulo": "Cadastro de funcionários",
+    "resumo": "Cadastro de funcionários (motoristas, entregadores) com foto.",
+    "passos": [
+      "Pesquise ou inclua.",
+      "Preencha e grave."
+    ],
+    "dicas": [
+      "A foto é enviada pelo próprio cadastro."
+    ]
+  },
+  "usuarios": {
+    "titulo": "Cadastro de usuários",
+    "resumo": "Usuários que podem entrar no sistema e suas permissões. Só administradores.",
+    "passos": [
+      "Inclua o usuário e a senha.",
+      "Marque se é administrador."
+    ],
+    "dicas": [
+      "A senha é guardada de forma protegida."
+    ]
+  },
+  "dispositivos": {
+    "titulo": "Dispositivos autorizados",
+    "resumo": "Controle de quais navegadores/máquinas podem usar o sistema e em quais áreas (Faturamento e/ou Fábrica). Só administradores.",
+    "passos": [
+      "Pesquise pelo código do dispositivo.",
+      "Autorize e escolha as áreas.",
+      "O código deste navegador aparece no rodapé."
+    ],
+    "dicas": [
+      "Máquina só da Fábrica entra sem login, numa janela restrita.",
+      "Com as duas áreas, o botão 🏭 Fábrica alterna entre as janelas."
+    ]
+  },
+  "auditoria": {
+    "titulo": "Auditoria",
+    "resumo": "Registro de tudo que foi feito no sistema: quem, quando e o que mudou. Só administradores.",
+    "passos": [
+      "Filtre por data, usuário ou ação.",
+      "Abra um registro para ver os detalhes."
+    ],
+    "dicas": [
+      "Mudanças de caminhos de arquivo e envios de XML ficam registradas aqui."
+    ]
+  },
+  "telaprincipal": {
+    "titulo": "Imagem da tela principal",
+    "resumo": "Escolhe a imagem de fundo da tela principal. Só administradores.",
+    "passos": [
+      "Escolha uma imagem.",
+      "Grave."
+    ],
+    "dicas": [
+      "Use uma imagem horizontal."
+    ]
+  },
+  "aparencia": {
+    "titulo": "Aparência",
+    "resumo": "Tema de cores e aparência do sistema neste dispositivo.",
+    "passos": [
+      "Escolha o tema.",
+      "Veja o resultado na hora."
+    ],
+    "dicas": [
+      "Na Fábrica o tema fica no botão Tema."
+    ]
+  },
+  "relnfes": {
+    "titulo": "Relatório de NFEs",
+    "resumo": "Relatório das notas emitidas em um período, com totais.",
+    "passos": [
+      "Escolha o período e os filtros.",
+      "Gere e imprima ou exporte."
+    ],
+    "dicas": [
+      "Confira o status das notas antes de usar os totais."
+    ]
+  },
+  "nfsconf": {
+    "titulo": "Leitura de NFs confirmadas",
+    "resumo": "Importa e confere notas confirmadas pelos clientes.",
+    "passos": [
+      "Escolha o arquivo ou a pasta.",
+      "Confira a lista lida.",
+      "Confirme."
+    ],
+    "dicas": [
+      "Notas já lidas não são importadas de novo."
+    ]
+  },
+  "vozassistente": {
+    "titulo": "Voz do assistente",
+    "resumo": "Escolhe a voz que narra a ajuda (F1 ou ?). Só o administrador vê esta tela. A voz vale para todos os usuários.",
+    "passos": [
+      "Pesquise e clique numa voz da lista (ou digite o ID de uma voz sua).",
+      "Ajuste modelo, estabilidade, semelhança e velocidade.",
+      "Clique em Testar voz para ouvir.",
+      "Clique em Salvar."
+    ],
+    "dicas": [
+      "Prefira vozes que falem português.",
+      "Precisa da chave da ElevenLabs no servidor."
+    ]
+  }
 }

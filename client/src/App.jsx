@@ -34,6 +34,7 @@ import Aparencia from './screens/Aparencia.jsx';
 import TemaControles from './components/TemaControles.jsx';
 import { carregarTemaDoUsuario } from './lib/tema.js';
 import TelaPrincipal from './screens/TelaPrincipal.jsx';
+import VozAssistente from './screens/VozAssistente.jsx';
 import Usuarios from './screens/Usuarios.jsx';
 import Dispositivos from './screens/Dispositivos.jsx';
 import DispositivoBloqueado from './screens/DispositivoBloqueado.jsx';
@@ -62,6 +63,7 @@ const TELAS = {
   auditoria: { titulo: 'Auditoria', Tela: Auditoria },
   usuarios: { titulo: 'Cadastro de usuários', Tela: Usuarios },
   telaprincipal: { titulo: 'Imagem da tela principal', Tela: TelaPrincipal },
+  vozassistente: { titulo: 'Voz do assistente', Tela: VozAssistente },
   aparencia: { titulo: 'Aparência', Tela: Aparencia },
   funcionarios: { titulo: 'Cadastro de funcionários', Tela: Funcionarios },
   relnfes: { titulo: 'Relatório de NFEs', Tela: RelatorioNfes },
@@ -73,7 +75,7 @@ const MENUS = [
   { id: 'fat', rotulo: 'Faturamento', icone: '💳', itens: [['faturamento', 'Faturamento', '💳'], ['comandas', 'Controle de comandas', '🧾'], ['nfe', 'NFe', '📑'], ['tributos', 'Tributos', '🏷️'], ['quitacao', 'Quitação', '💰']] },
   { id: 'cad', rotulo: 'Cadastros', icone: '👥', itens: [['clientes', 'Clientes', '🏢'], ['produtos', 'Produtos', '🍞'], ['funcionarios', 'Funcionários', '🧑‍🍳'], ['usuarios', 'Usuários', '🔑']] },
   { id: 'outros', rotulo: 'Outros', icone: '📦', itens: [['relnfes', 'Relatório de NFEs', '📊'], ['nfsconf', 'Leitura de NFs confirmadas', '📥']] },
-  { id: 'ferr', rotulo: 'Ferramentas', icone: '🛠️', itens: [['impressoras', 'Configurar impressoras', '🖨️'], ['instalar', 'Instalar agente de impressão', '⬇️'], ['dispositivos', 'Dispositivos autorizados', '🖥'], ['auditoria', 'Auditoria', '🕵️'], ['telaprincipal', 'Imagem da tela principal', '🖼'], ['aparencia', 'Aparência (cores)', '🎨']] },
+  { id: 'ferr', rotulo: 'Ferramentas', icone: '🛠️', itens: [['impressoras', 'Configurar impressoras', '🖨️'], ['instalar', 'Instalar agente de impressão', '⬇️'], ['dispositivos', 'Dispositivos autorizados', '🖥'], ['auditoria', 'Auditoria', '🕵️'], ['telaprincipal', 'Imagem da tela principal', '🖼'], ['vozassistente', 'Voz do assistente', '🔊'], ['aparencia', 'Aparência (cores)', '🎨']] },
 ];
 const MENUS_FUTUROS = [];
 // Dispositivo liberado só para a fábrica (menu do sistema da fábrica): Programação, Produção, Mercadorias, Cargas, Reclamações, Pedidos extras + impressoras.
@@ -182,7 +184,7 @@ export default function App() {
               </button>
               {aberto && (
                 <ul role="menu">
-                  {m.itens.filter(([k]) => !['dispositivos', 'auditoria', 'usuarios', 'telaprincipal'].includes(k) || usuario?.admin).map(([k, r, ic]) => (TELAS[k]
+                  {m.itens.filter(([k]) => !['dispositivos', 'auditoria', 'usuarios', 'telaprincipal', 'vozassistente'].includes(k) || usuario?.admin).map(([k, r, ic]) => (TELAS[k]
                     ? <li key={k} role="none"><button role="menuitem" className={abertas.includes(k) ? 'aberta' : ''} onClick={() => { setMenuAberto(null); abrir(k); }}><span className="mi" aria-hidden="true">{ic}</span><span className="rot">{r}</span>{abertas.includes(k) && <i className="ponto" title="Aberta" />}</button></li>
                     : <li key={k} role="none"><span role="menuitem" aria-disabled="true" className="desab" title="Próxima fase"><span className="mi" aria-hidden="true">{ic}</span><span className="rot">{r}</span><em>em breve</em></span></li>))}
                 </ul>

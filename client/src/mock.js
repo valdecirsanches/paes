@@ -346,6 +346,9 @@ window.fetch = async (url, opts = {}) => {
   } else if (m === 'POST' && p === '/auth/logout') { mockUser = null; r = json({ ok: true }); }
   else if (m === 'GET' && p === '/ajuda/status') r = json({ chat: true, voz: false });
   else if (m === 'GET' && p === '/ajuda/telas') r = json({ geral: { titulo: 'Sistema Gestor WinBakery', resumo: 'Resumo geral do sistema.', passos: ['Escolha a tela no menu.'], dicas: ['F1 abre a ajuda.'] }, diaria: { titulo: 'Programação diária e fixa', resumo: 'Cadastro do que cada cliente recebe.', passos: ['Escolha o dia.', 'Escolha o cliente.'], dicas: ['Na Fábrica é só consulta.'] } });
+  else if (m === 'GET' && p === '/ajuda/voz/config') r = json({ voiceId: 'v2', voiceNome: 'Bia', modelo: 'eleven_multilingual_v2', estabilidade: 0.5, similaridade: 0.75, velocidade: 1, modelos: ['eleven_multilingual_v2', 'eleven_turbo_v2_5', 'eleven_flash_v2_5'], chaveConfigurada: true });
+  else if (m === 'GET' && p === '/ajuda/voz/vozes') r = json([{ id: 'v1', nome: 'Ana', categoria: 'premade', idioma: 'pt', sotaque: 'brasileiro', genero: 'female', descricao: 'calma' }, { id: 'v2', nome: 'Bia', categoria: 'premade', idioma: 'pt', sotaque: 'brasileiro', genero: 'female', descricao: 'clara' }, { id: 'v3', nome: 'Carlos', categoria: 'professional', idioma: 'pt', sotaque: 'brasileiro', genero: 'male', descricao: 'grave' }]);
+  else if (m === 'PUT' && p === '/ajuda/voz/config') r = json({ ...b });
   else if (m === 'POST' && p === '/ajuda/chat') r = json({ resposta: '1. Clique na primeira nota.\n2. Role até a última.\n3. Use Shift+clique.' });
   else if (m === 'POST' && p === '/auth/senha') r = b.nova !== b.confirma ? json({ message: 'A confirmação não confere com a nova senha.' }, 422) : json({ ok: true });
   else if (p.startsWith('/cadastros/') && (r = cadastros(m, p, u, b))) { /* resposta definida */ }

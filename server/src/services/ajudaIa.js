@@ -1,11 +1,12 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { AppError } from '../errors.js';
+import { lerVozCfg } from './ajudaVozStore.js';
 
 /** Base de conhecimento: uma única fonte (data/ajuda-telas.json) usada pela ajuda F1 do app e como contexto da IA. */
 export const TELAS = JSON.parse(readFileSync(new URL('../data/ajuda-telas.json', import.meta.url), 'utf8'));
 
-export const statusIa = () => ({ chat: Boolean(process.env.OPENAI_API_KEY), voz: Boolean(process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_VOICE_ID) });
+export const statusIa = async () => ({ chat: Boolean(process.env.OPENAI_API_KEY), voz: Boolean(process.env.ELEVENLABS_API_KEY && (await lerVozCfg()).voiceId) });
 
 const textoTela = (id) => { const t = TELAS[id]; return t ? `Tela "${t.titulo}": ${t.resumo} Passos: ${t.passos.join(' ')} Dicas: ${t.dicas.join(' ')}` : ''; };
 /** Instruções da IA: só ajuda de uso do sistema, em português, sem inventar. Nenhum dado de clientes/notas é enviado. */
@@ -36,18 +37,20 @@ export async function perguntar(telaId, mensagens) {
 }
 
 const cacheVoz = new Map(); // narrações repetidas (ajuda das telas) não gastam créditos de novo
-export async function narrar(texto) {
-  const chave = process.env.ELEVENLABS_API_KEY, voz = process.env.ELEVENLABS_VOICE_ID;
-  if (!chave || !voz) throw new AppError(503, 'A narração não está configurada: defina ELEVENLABS_API_KEY e ELEVENLABS_VOICE_ID no server/.env.');
+/** Narra com a voz escolhida pelo administrador (ou `ajuste`, para testar uma voz sem gravar). */
+export async function narrar(texto, ajuste = null) {
+  const chave = process.env.ELEVENLABS_API_KEY;
+  const cfg = ajuste ?? await lerVozCfg();
+  if (!chave || !cfg.voiceId) throw new AppError(503, 'A narração não está configurada: defina ELEVENLABS_API_KEY no server/.env e escolha a voz em Ferramentas › Voz do assistente (ou ELEVENLABS_VOICE_ID).');
   const t = String(texto ?? '').replace(/\s+/g, ' ').trim().slice(0, 2500);
   if (!t) throw new AppError(422, 'Sem texto para narrar.');
-  const k = createHash('sha1').update(`${voz}|${t}`).digest('hex');
+  const k = createHash('sha1').update(JSON.stringify([cfg.voiceId, cfg.modelo, cfg.estabilidade, cfg.similaridade, cfg.velocidade, t])).digest('hex');
   if (cacheVoz.has(k)) return cacheVoz.get(k);
   let r;
   try {
-    r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voz)}?output_format=mp3_44100_64`, {
+    r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(cfg.voiceId)}?output_format=mp3_44100_64`, {
       method: 'POST', headers: { 'xi-api-key': chave, 'Content-Type': 'application/json', Accept: 'audio/mpeg' }, signal: AbortSignal.timeout(45000),
-      body: JSON.stringify({ text: t, model_id: process.env.ELEVENLABS_MODEL || 'eleven_multilingual_v2' }),
+      body: JSON.stringify({ text: t, model_id: cfg.modelo, voice_settings: { stability: cfg.estabilidade, similarity_boost: cfg.similaridade, speed: cfg.velocidade } }),
     });
   } catch (e) { throw new AppError(502, `Não consegui falar com a ElevenLabs: ${e.name === 'TimeoutError' ? 'tempo esgotado' : e.message}`); }
   if (!r.ok) throw new AppError(502, `ElevenLabs recusou (HTTP ${r.status}).`);
@@ -55,4 +58,17 @@ export async function narrar(texto) {
   if (cacheVoz.size >= 60) cacheVoz.delete(cacheVoz.keys().next().value);
   cacheVoz.set(k, buf);
   return buf;
+}
+
+/** Vozes disponíveis na conta da ElevenLabs (as da biblioteca e as suas). */
+export async function listarVozes() {
+  const chave = process.env.ELEVENLABS_API_KEY;
+  if (!chave) throw new AppError(503, 'Defina ELEVENLABS_API_KEY no server/.env.');
+  let r;
+  try { r = await fetch('https://api.elevenlabs.io/v1/voices', { headers: { 'xi-api-key': chave }, signal: AbortSignal.timeout(30000) }); }
+  catch (e) { throw new AppError(502, `Não consegui falar com a ElevenLabs: ${e.message}`); }
+  if (!r.ok) throw new AppError(502, `ElevenLabs recusou a lista de vozes (HTTP ${r.status}).`);
+  const j = await r.json().catch(() => ({}));
+  return (j.voices ?? []).map((v) => ({ id: v.voice_id, nome: v.name, categoria: v.category ?? '', idioma: v.labels?.language ?? '', sotaque: v.labels?.accent ?? '', genero: v.labels?.gender ?? '', descricao: v.labels?.description ?? v.description ?? '' }))
+    .sort((a, b) => a.nome.localeCompare(b.nome, 'pt'));
 }

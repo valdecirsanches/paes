@@ -1020,6 +1020,11 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 287 — Ferramentas › Voz do assistente (só o administrador SANCHES)
+
+- Nova tela (menu Ferramentas, só para SANCHES): lista as vozes da conta ElevenLabs (`GET /api/ajuda/voz/vozes`), com pesquisa, ajustes de **modelo, estabilidade, semelhança e velocidade**, campo de ID para uma voz própria e **🔊 Testar voz** (ouve sem gravar). **Salvar** grava em `ajuda-voz.json` (pasta do servidor, fora do git; `AJUDA_DIR` muda o local) e vale para todos os usuários; tem prioridade sobre `ELEVENLABS_VOICE_ID` do `.env`.
+- Rotas `GET/PUT /api/ajuda/voz/config`, `GET /api/ajuda/voz/vozes`, `POST /api/ajuda/voz/teste`: 403 para quem não é SANCHES. Sem voz escolhida e sem `ELEVENLABS_VOICE_ID`, a narração usa a voz do navegador.
+
 ## Fase 286 — Ajuda F1 / "?" com IA (OpenAI) e narração (ElevenLabs)
 
 - **F1** ou o botão **?** (canto inferior direito) abre o painel de ajuda da **tela atual**: resumo, "como usar" e dicas. Funciona também na janela da Fábrica. Texto em `server/src/data/ajuda-telas.json` (fonte única; ao criar/alterar uma tela, atualize-o).
