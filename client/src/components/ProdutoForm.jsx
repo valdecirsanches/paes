@@ -27,7 +27,7 @@ export default function ProdutoForm({ ed, layout = 'tela', clientes = [], refere
   const num = (k) => <Txt ed={ed} k={k} inputMode="decimal" />;
   // o NCM do Código de tributação escolhido vale para o produto (campo do produto fica bloqueado)
   const tribSel = tributos.find((t) => String(t.id) === String(ed.v('id_tributos')));
-  const ncmTrib = (() => { const d = String(tribSel?.ncm ?? '').split('.')[0].replace(/\D/g, ''); return d.length === 8 ? d : ''; })();
+  const ncmTrib = (() => { const t = String(tribSel?.ncm ?? '').trim(); const d = (/^\d{4}\.\d{2}\.\d{2}(\.\d+)?$/.test(t) ? t.replace(/\./g, '').slice(0, 8) : t.split('.')[0]).replace(/\D/g, ''); return d.length === 8 ? d : ''; })();
   return (
     <div className={`cd-secoes${tela ? ' pf2' : ''}`}>
       {tela ? (

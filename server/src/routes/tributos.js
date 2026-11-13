@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { pool, tx } from '../db.js';
 import { AppError, invalid, notFound, pick } from '../errors.js';
-import { ncmDoTributo } from '../services/ncm.js';
+import { ncmDoTributo, ncmLimpo } from '../services/ncm.js';
 
 // Tela "Códigos de Tributação de produtos" (uTributo): cadastro de tb_tributos e vínculo com tb_produtos.id_tributos.
 const router = Router();
@@ -28,6 +28,7 @@ export function limpa(body, { criando }) {
     if (b[k].length > 255) throw invalid(`Texto muito longo (${k}).`);
     if (b[k] === '') b[k] = null;
   }
+  if (b.ncm) b.ncm = ncmLimpo(b.ncm) || b.ncm; // grava só dígitos (sem máscara nem ".0")
   for (const k of NUMERICOS) {
     if (b[k] === undefined || b[k] === null) continue;
     const v = b[k].replace(',', '.');

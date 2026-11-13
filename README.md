@@ -1020,6 +1020,12 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 308 — Tela Tributos enxuta
+
+- `lib/tributoGrupos.js`: só ICMS (NCM, CST, alíq., red. base cálculo, red. ICMS NF-e = `red_aliq`, cBenef), PIS/COFINS e IBS/CBS. Removidos da tela (mantidos no banco e no CSV): cest, tipo_trib, natureza, cfop, aliq_ipi, cst_ipi, legislacao, base_legal_*. `red_aliq` só é lido como redução de ICMS (CST 20) — não é do IBS/CBS, como o rótulo antigo sugeria.
+- Grade da tela: CST, ICMS, Red., PIS, COFINS, cClassTrib, IBS, CBS. `ncmLimpo` normaliza o NCM ao gravar (máscara e ".0").
+- Item da NFe: sai o recolhimento "Outros campos".
+
 ## Fase 307 — Emissão só pelo tributo + aba Tributos compacta
 
 - Conferência: o único dado fiscal que a emissão ainda tirava do produto era o NCM (`geraFatura` usava `limpaMask(pro.ncm)` de reserva; item novo nascia com `p.ncm || '19059090'`). Removido: item novo nasce com NCM '0' e `gravaItem` preenche do tributo; `geraFatura` usa só `ncmDoTributo`. Os campos fiscais de `tb_produtos` (aliq_icms, aliq_ipi, classif_fiscal, sit_tributaria) nunca foram lidos na emissão (só a validação "não pode ser nulo").

@@ -14,3 +14,9 @@ test('extrai os campos fiscais do item do XML', () => {
   assert.equal(i.cst_ipi, '53'); assert.equal(i.cst_pis, '06'); assert.equal(i.cst_cofins, '01'); assert.equal(i.aliq_cofins, 7.6);
   assert.equal(i.cst_ibs, '200'); assert.equal(i.cClassTrib, '200003'); assert.equal(i.pIBS, 0.1); assert.equal(i.pCBS, 0.9);
 });
+
+import { ncmLimpo, ncmDoTributo } from '../src/services/ncm.js';
+test('NCM do tributo: máscara e ".0" do cadastro', () => {
+  assert.equal(ncmLimpo('1905.90.90'), '19059090'); assert.equal(ncmLimpo('19059090.0'), '19059090'); assert.equal(ncmLimpo('19059090'), '19059090');
+  assert.equal(ncmDoTributo({ ncm: '19059090.0' }), '19059090'); assert.equal(ncmDoTributo({ ncm: '1905' }), '');
+});

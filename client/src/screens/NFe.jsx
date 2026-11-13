@@ -1,9 +1,8 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../api.js';
 import { Modal } from '../components/ui.jsx';
-import { GRUPOS as GRUPOS_TRIB, NAO_USADOS_NFE } from '../lib/tributoGrupos.js';
 // campos do tributo que a emissão lê, na ordem de uso, com rótulo curto: [campo, rótulo, dica]
-const COMPACTOS = [['ncm', 'NCM', 'NCM (vale para o item e o produto)'], ['sit_trib', 'CST ICMS', 'Situação tributária do ICMS'], ['aliq_icms', 'Alíq. ICMS', 'Alíquota de ICMS %'], ['red_b_c_icms', 'Red. base ICMS', 'Redução da base do ICMS % (usada no cálculo da base)'], ['red_aliq', 'Red. da base', 'red_aliq: percentual enviado como redução de ICMS no CST 20 / IBS-CBS'], ['cBenef', 'cBenef', 'Código de benefício fiscal'], ['cst_pis', 'CST PIS', ''], ['aliq_pis', 'Alíq. PIS', 'Alíquota de PIS %'], ['cst_cofins', 'CST COFINS', ''], ['aliq_cofins', 'Alíq. COFINS', 'Alíquota de COFINS %'], ['cst', 'CST IBS/CBS', ''], ['cClassTrib', 'cClassTrib', 'Classificação tributária IBS/CBS (6 dígitos)'], ['pIBS', 'pIBS %', ''], ['pCBS', 'pCBS %', '']];
+const COMPACTOS = [['ncm', 'NCM', 'NCM (vale para o item e o produto)'], ['sit_trib', 'CST ICMS', 'Situação tributária do ICMS'], ['aliq_icms', 'Alíq. ICMS', 'Alíquota de ICMS %'], ['red_b_c_icms', 'Red. base (cálc.)', 'Redução da base do ICMS % usada no cálculo da base/valor do item'], ['red_aliq', 'Red. ICMS NF-e', 'Percentual de redução de ICMS enviado na NF-e (CST 20)'], ['cBenef', 'cBenef', 'Código de benefício fiscal'], ['cst_pis', 'CST PIS', ''], ['aliq_pis', 'Alíq. PIS', 'Alíquota de PIS %'], ['cst_cofins', 'CST COFINS', ''], ['aliq_cofins', 'Alíq. COFINS', 'Alíquota de COFINS %'], ['cst', 'CST IBS/CBS', ''], ['cClassTrib', 'cClassTrib', 'Classificação tributária IBS/CBS (6 dígitos)'], ['pIBS', 'pIBS %', ''], ['pCBS', 'pCBS %', '']];
 import EnvioEmail from '../components/EnvioEmail.jsx';
 import NcmCampo from '../components/NcmCampo.jsx';
 import NfeFiscal, { EventosTabela, abrirArquivo } from '../components/NfeFiscal.jsx';
@@ -154,7 +153,7 @@ const ST_INICIAL = { PENDENTE: true, AUTORIZADA: false, CANCELADA: false, INUTIL
 
 /** Valor do Código de tributação para comparar com o do item: mostra "Tributo: x" e destaca quando difere. */
 const igualTrib = (a, b) => { const na = Number(String(a ?? '').replace(',', '.')); const nb = Number(String(b ?? '').replace(',', '.')); return String(a ?? '').trim() !== '' && String(b ?? '').trim() !== '' && Number.isFinite(na) && Number.isFinite(nb) ? Math.abs(na - nb) < 0.005 : String(a ?? '').trim() === String(b ?? '').trim(); };
-const ncmTrib8 = (v) => { const d = String(v ?? '').split('.')[0].replace(/\D/g, ''); return d.length === 8 ? d : ''; };
+const ncmTrib8 = (v) => { const t = String(v ?? '').trim(); const d = (/^\d{4}\.\d{2}\.\d{2}(\.\d+)?$/.test(t) ? t.replace(/\./g, '').slice(0, 8) : t.split('.')[0]).replace(/\D/g, ''); return d.length === 8 ? d : ''; };
 function DoTributo({ atual, trib, valor, norm = (x) => x }) {
   if (!trib) return null;
   const t = norm(valor); const a = norm(atual);
@@ -963,12 +962,6 @@ export default function NFe({ onFechar }) {
                                 <label className="fi-c"><span>vCOFINS</span><Num valor={iv.cofins_valor} ro /></label>
                                 <label className="fi-c"><span>Tot. tributos</span><Num valor={iv.valor_trib_prod} ro /></label>
                               </div>
-                              {trib && <details className="fi-nao-usa">
-                                <summary>Outros campos do cadastro <small>(não vão na NFe)</small></summary>
-                                <div className="fi-grid">
-                                  {GRUPOS_TRIB.flatMap(([, campos]) => campos).filter(([k]) => NAO_USADOS_NFE.has(k)).map(([k, rot]) => <label key={k} className="fi-c"><span>{rot}</span><input value={tv[k] ?? ''} onChange={(e) => setTribDraft({ ...tribDraft, [k]: e.target.value })} /></label>)}
-                                </div>
-                              </details>}
                             </section>}
                           </>)}
                         </div>

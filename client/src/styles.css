@@ -2149,3 +2149,5 @@ button.lk-versao{background:none!important;border:0!important;box-shadow:none!im
 .fi-rolagem .fi-compacto .fi-c input,.fi-rolagem .fi-compacto .fi-c .num,.fi-rolagem .fi-compacto .fi-c>*:not(span){height:22px!important;min-height:0!important;padding-top:1px!important;padding-bottom:1px!important;font-size:12px!important;line-height:18px}
 .fi-rolagem .fi-compacto .fi-grava{height:24px;min-height:0;padding:0 6px;margin:3px 0}
 .fi-rolagem .fi-compacto .fi-nao-usa summary{padding:2px 0}
+.trb2-grupos{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}.trb2-grupos .trb2-g6{grid-column:1/-1}.trb2-edita .trb2-grid{gap:6px 10px}.trb2-edita input{padding:4px 7px}
+@media (max-width:760px){.trb2-grupos{grid-template-columns:1fr}}

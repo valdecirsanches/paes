@@ -3,12 +3,12 @@ import { api } from '../api.js';
 import { Modal } from '../components/ui.jsx';
 import { Toast, confirmar } from '../components/toast.jsx';
 import { useJanela } from '../components/janela.js';
-import { GRUPOS, NAO_USADOS_NFE } from '../lib/tributoGrupos.js';
+import { GRUPOS } from '../lib/tributoGrupos.js';
 
 // Colunas do CSV (todas as da tabela); a grade mostra só as essenciais.
 const COLS = ['id', 'descricao', 'aliq_ipi', 'sit_trib', 'cst_icms', 'aliq_icms', 'ncm', 'cest', 'cfop', 'cClassTrib', 'pIBS', 'pCBS', 'red_aliq', 'legislacao', 'red_b_c_icms',
   'cst_ipi', 'cst_pis', 'cst_cofins', 'natureza', 'aliq_pis', 'aliq_cofins', 'base_legal_icms', 'base_legal_pis_cofins', 'cst', 'tipo_trib', 'cBenef'];
-const GRADE = [['id', 'Cód.'], ['descricao', 'Descrição'], ['ncm', 'NCM'], ['cfop', 'CFOP'], ['sit_trib', 'Sit.'], ['aliq_icms', 'ICMS %'], ['aliq_ipi', 'IPI %'], ['cClassTrib', 'cClassTrib'], ['pIBS', 'IBS %'], ['pCBS', 'CBS %']];
+const GRADE = [['id', 'Cód.'], ['descricao', 'Descrição'], ['ncm', 'NCM'], ['sit_trib', 'CST'], ['aliq_icms', 'ICMS %'], ['red_b_c_icms', 'Red. %'], ['aliq_pis', 'PIS %'], ['aliq_cofins', 'COFINS %'], ['cClassTrib', 'cClassTrib'], ['pIBS', 'IBS %'], ['pCBS', 'CBS %']];
 const txt = (v) => (v === null || v === undefined ? '' : String(v));
 
 /** Edição de um tributo (antes pnlEditaTributo): navega entre os tributos da grade, inclui, grava e exclui. */
@@ -47,13 +47,15 @@ function EditaTributo({ tributos, foco, setFoco, recarregar, aviso, onFechar, in
     <Modal titulo={novo ? 'Novo tributo' : `Tributo ${atual?.id ?? ''}`} onFechar={fechar} largo>
       <div className="trb2-edita">
         <label className="trb2-desc"><span>Descrição</span><input value={v('descricao')} disabled={vazio} onChange={(e) => mudar('descricao', e.target.value)} autoFocus /></label>
-        {GRUPOS.map(([titulo, campos]) => (
-          <fieldset key={titulo}><legend>{titulo}</legend>
-            <div className="trb2-grid">
-              {campos.map(([k, r, w = 1]) => <label key={k} style={{ gridColumn: `span ${w}` }}><span>{r}{NAO_USADOS_NFE.has(k) && <i title="Não é lido na emissão da NFe (só cadastro)" style={{ color: '#9a8f78', fontWeight: 400 }}> · não vai na NFe</i>}</span><input value={v(k)} disabled={vazio} onChange={(e) => mudar(k, e.target.value)} /></label>)}
-            </div>
-          </fieldset>
-        ))}
+        <div className="trb2-grupos">
+          {GRUPOS.map(([titulo, cols, campos]) => (
+            <fieldset key={titulo} className={`trb2-g${cols}`}><legend>{titulo}</legend>
+              <div className="trb2-grid" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+                {campos.map(([k, r, dica]) => <label key={k} title={dica}><span>{r}</span><input value={v(k)} disabled={vazio} onChange={(e) => mudar(k, e.target.value)} /></label>)}
+              </div>
+            </fieldset>
+          ))}
+        </div>
         <div className="trb2-edita-rod">
           <div className="trb2-nav">
             <button type="button" title="Anterior" disabled={sujo || idx <= 0} onClick={() => ir(idx - 1)}>◀</button>

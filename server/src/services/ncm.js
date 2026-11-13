@@ -93,8 +93,14 @@ export async function pesquisaNcm(q, limite = 40, hoje = new Date().toISOString(
   return { itens: [], fonte: null, motivo: 'Não foi possível consultar a tabela de NCM agora.' };
 }
 
-/** NCM (8 dígitos) do Código de tributação. O cadastro às vezes guarda "19059090.0": o que vem depois do ponto é descartado. Vazio se inválido. */
+/** NCM só com dígitos: aceita máscara (1905.90.90) e descarta o ".0" que o cadastro às vezes guarda ("19059090.0"). */
+export function ncmLimpo(v) {
+  const t = String(v ?? '').trim();
+  const sem = /^\d{4}\.\d{2}\.\d{2}(\.\d+)?$/.test(t) ? t.replace(/\./g, '').slice(0, 8) : t.split('.')[0];
+  return sem.replace(/\D/g, '');
+}
+/** NCM (8 dígitos) do Código de tributação. Vazio se inválido. */
 export function ncmDoTributo(trib) {
-  const d = String(trib?.ncm ?? '').split('.')[0].replace(/\D/g, '');
+  const d = ncmLimpo(trib?.ncm);
   return d.length === 8 ? d : '';
 }
