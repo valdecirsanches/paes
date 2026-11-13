@@ -8,7 +8,7 @@ import { isIsoDate } from '../rules.js';
 import * as api from '../services/nfeApi.js';
 import { consultaNcm, pesquisaNcm } from '../services/ncm.js';
 import { lerDanfeCfg, gravarDanfeCfg, gravarLogo, lerLogo, removerLogo, ORIENTACOES } from '../services/danfeStore.js';
-import { danfeDoXml, achaXmlLocal } from '../services/danfeLocal.js';
+import { danfeDoXml, danfeLocalLigado, achaXmlLocal } from '../services/danfeLocal.js';
 import { lerA3, gravarA3, limparA3 } from '../services/a3Store.js';
 import { impostos, usuarioNfe } from '../services/geraFatura.js';
 import { destinatarios, assuntoPadrao, mensagemPadrao, assuntoCancelamento, mensagemCancelamento, assuntoInutilizacao, mensagemInutilizacao, assuntoRejeicao, mensagemRejeicao, enviaEmail, criaTransporte, listaEmails } from '../services/emailNfe.js';
@@ -394,7 +394,7 @@ async function sincronizaArquivos(nfe, cfg, docId, orientacao) {
       if (r.status !== 200 || !r.buffer?.length) {
         const l = await consultaPastaApi(nfe, cfg, tipo).catch(() => ({}));
         if (l.buffer?.length) r = { status: 200, buffer: l.buffer };
-        else if (tipo === 'pdf' && arqApp(nfe, 'nfe_xml_file')) {
+        else if (tipo === 'pdf' && danfeLocalLigado() && arqApp(nfe, 'nfe_xml_file')) {
           try { r = { status: 200, buffer: await danfeDoXml(await readFile(paraLocal(arqApp(nfe, 'nfe_xml_file'))), { logo: await lerLogo(), cancelada: nfe.status_e === 'CANCELADA' }) }; }
           catch { feito[tipo] = r.erro || `HTTP ${r.status}`; continue; }
         } else { feito[tipo] = r.erro || `HTTP ${r.status}${l.motivo ? ` — ${l.motivo}` : ''}`; continue; }
@@ -1250,7 +1250,7 @@ async function buscaArquivo(nfe, cfg, campo, nomeExt, baixa, orientacao) {
     if (x?.length) { await guarda(x); return x; }
   }
   // plano B silencioso: sem o PDF, busca o XML e gera o DANFE localmente
-  if (nomeExt === 'pdf') {
+  if (nomeExt === 'pdf' && danfeLocalLigado()) {
     try {
       const xml = viaChave?.xml?.length ? viaChave.xml : await buscaArquivo(nfe, cfg, 'nfe_xml_file', 'xml', (d) => api.xmlAutorizado(d));
       const pdf = await danfeDoXml(xml, { logo: await lerLogo(), cancelada: nfe.status_e === 'CANCELADA' });

@@ -1020,6 +1020,12 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 277 — DANFE: acabou o desenho "esporádico" (gerador local desligado)
+
+- Causa do DANFE com layout diferente (canhoto no topo, "NF-e", blocos IBS/CBS): quando a API de NF-e não entregava o PDF (erro 502, empresa/pasta não encontrada), o app gerava o DANFE sozinho a partir do XML (biblioteca `node-pdf-nfe`, desenho próprio) e **guardava** esse PDF no campo do app — então a nota ficava com o layout errado mesmo depois da API voltar.
+- Agora o gerador local fica **desligado** (só liga com `DANFE_LOCAL=1` no `server/.env`). Sem o PDF da API ou do disco, o app avisa o erro em vez de trocar o desenho.
+- Notas que já guardaram o DANFE local: **Ajustar NFe** esvazia o PDF do app e busca de novo na API.
+
 ## Fase 276 — Agente de impressão sobe sozinho todo dia
 
 - O instalador (`agente-impressao/instalar-windows.ps1`) criava a tarefa só "ao entrar um usuário": se o servidor de impressão reiniciasse (atualização do Windows, queda de energia) e ninguém fizesse login, o agente não subia. Agora a tarefa inicia **com o Windows** (conta SYSTEM, sem precisar de login), ao entrar um usuário e **a cada 5 minutos** (vigia: sobe de novo se caiu; se já está rodando, ignora).

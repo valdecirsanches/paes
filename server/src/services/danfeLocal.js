@@ -3,6 +3,9 @@ import { writeFile, rm, mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
+/** O DANFE local tem outro desenho (canhoto no topo, blocos IBS/CBS) que o da API. Fica DESLIGADO: só liga com DANFE_LOCAL=1 no server/.env. */
+export const danfeLocalLigado = () => process.env.DANFE_LOCAL === '1';
+
 /** XML (Buffer/string) → PDF (Buffer). `logo` é um Buffer opcional; `cancelada` marca a nota como cancelada. */
 export async function danfeDoXml(xml, { logo = null, cancelada = false } = {}) {
   const txt = Buffer.isBuffer(xml) ? xml.toString('utf8') : String(xml ?? '');
