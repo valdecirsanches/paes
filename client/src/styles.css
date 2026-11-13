@@ -2131,3 +2131,5 @@ button.lk-versao{background:none!important;border:0!important;box-shadow:none!im
 .cb-lista li{padding:5px 8px;cursor:pointer;border-radius:4px}.cb-lista li.on{background:#1f5fa8;color:#fff}.cb-lista li[aria-selected=true]:not(.on){font-weight:700}
 .cb-vazio,.cb-nada{opacity:.7;font-style:italic}
 .cod-lupa{border:1px solid #8aa;border-radius:6px;background:transparent;cursor:pointer;padding:0 6px}
+.cm2-geral{display:flex;align-items:center;gap:8px;padding:6px 8px}.cm2-geral input{flex:1;padding:7px 10px;font-size:14px}.cm2-geral small{opacity:.75;white-space:nowrap}
+.cmd-g-uni .cm2-geral{position:sticky;top:0;z-index:3;background:var(--painel,#f4f6f8)}

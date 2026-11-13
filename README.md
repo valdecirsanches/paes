@@ -1020,6 +1020,13 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 296 — Pesquisa de unidade: campo acima da lista, assume a primeira encontrada
+
+- **Comandas**: novo campo de pesquisa geral acima da lista de unidades (procura em unidade, cliente e tipo), com foco automático; Enter assume a primeira, e após 600 ms sem digitar a primeira encontrada já vira a unidade atual.
+- **Faturamento**: o campo "Pesquisar unidade/cliente…" ganhou o mesmo comportamento (Enter / pausa na digitação assume a primeira).
+- Foco removido do filtro da coluna Cliente, que disputava o teclado com o campo de pesquisa.
+- Testado no preview com dados simulados (digitação contínua preservada após a seleção automática); não testado com o MySQL real.
+
 ## Fase 295 — Comandas: unidade assumida ao localizar · Faturamento: Enter abre a pesquisa de produto
 
 - **Controle de comandas:** ao digitar no filtro de Unidade/Cliente/Tipo, após ~0,3 s a **primeira unidade encontrada vira a unidade atual** e as comandas já são listadas (como se tivesse clicado). Só reage à digitação no filtro (clicar noutra linha continua valendo) e não interrompe uma comanda em edição.

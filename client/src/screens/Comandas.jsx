@@ -114,11 +114,11 @@ function PreviaComanda({ dados, unidadeNome, onFechar, notificar }) {
 
 export default function Comandas({ onFechar }) {
   const [unidades, setUnidades] = useState([]);
-  const [fUni, setFUni] = useState({ u: '', c: '', t: '' }); // filtros nas colunas da própria grade
+  const [fUni, setFUni] = useState({ g: '', u: '', c: '', t: '' }); // g = pesquisa geral (acima da grade); u/c/t = filtros nas colunas
   const unisVisiveis = useMemo(() => {
-    const k = { u: semAcento(fUni.u).split(/\s+/).filter(Boolean), c: semAcento(fUni.c).split(/\s+/).filter(Boolean), t: semAcento(fUni.t).split(/\s+/).filter(Boolean) };
-    if (!k.u.length && !k.c.length && !k.t.length) return unidades;
-    return unidades.filter((x) => { const a = semAcento(x.unidade_nome); const b = semAcento(x.cliente_razao_social); const c = semAcento(x.tipo_faturamento); return k.u.every((w) => a.includes(w)) && k.c.every((w) => b.includes(w)) && k.t.every((w) => c.includes(w)); });
+    const k = { g: semAcento(fUni.g).split(/\s+/).filter(Boolean), u: semAcento(fUni.u).split(/\s+/).filter(Boolean), c: semAcento(fUni.c).split(/\s+/).filter(Boolean), t: semAcento(fUni.t).split(/\s+/).filter(Boolean) };
+    if (!k.g.length && !k.u.length && !k.c.length && !k.t.length) return unidades;
+    return unidades.filter((x) => { const a = semAcento(x.unidade_nome); const b = semAcento(x.cliente_razao_social); const c = semAcento(x.tipo_faturamento); const tudo = `${a} ${b} ${c}`; return k.g.every((w) => tudo.includes(w)) && k.u.every((w) => a.includes(w)) && k.c.every((w) => b.includes(w)) && k.t.every((w) => c.includes(w)); });
   }, [unidades, fUni]);
   const [uniId, setUniId] = useState(null);
   const [usaEmissao, setUsaEmissao] = useState(false);
@@ -189,8 +189,8 @@ export default function Comandas({ onFechar }) {
   // localizou pelo filtro (unidade/cliente/tipo): assume a primeira encontrada como a unidade e já lista as comandas, sem esperar clique (só reage ao digitar no filtro)
   const primeira = useRef(null); primeira.current = { id: unisVisiveis[0]?.id ?? null, uniId, edicao };
   useEffect(() => {
-    if (!fUni.u.trim() && !fUni.c.trim() && !fUni.t.trim()) return undefined;
-    const t = setTimeout(() => { const { id, uniId: atual, edicao: ed } = primeira.current; if (id && id !== atual && !ed) mudarUnidade(id); }, 350);
+    if (!fUni.g.trim() && !fUni.u.trim() && !fUni.c.trim() && !fUni.t.trim()) return undefined;
+    const t = setTimeout(() => { const { id, uniId: atual, edicao: ed } = primeira.current; if (id && id !== atual && !ed) mudarUnidade(id); }, 600);
     return () => clearTimeout(t);
   }, [fUni]); // eslint-disable-line react-hooks/exhaustive-deps
   // acompanha a unidade escolhida no Faturamento (não interrompe uma edição de comanda aberta)
@@ -322,6 +322,12 @@ export default function Comandas({ onFechar }) {
           </table>
         </div>
         <div className="rolagem cmd-g-uni" ref={rolaUni}>
+          <div className="cm2-geral">
+            <input type="search" value={fUni.g} placeholder="🔎 Localizar unidade / cliente (a primeira encontrada já é assumida)…" aria-label="Localizar unidade ou cliente" autoFocus
+              onChange={(e) => setFUni((x) => ({ ...x, g: e.target.value }))}
+              onKeyDown={(e) => { if (e.key === 'Enter' && unisVisiveis[0]) { e.preventDefault(); mudarUnidade(unisVisiveis[0].id); } }} />
+            {fUni.g.trim() && <small>{unisVisiveis.length} de {unidades.length}</small>}
+          </div>
           <table className="grade">
             <thead>
               <tr><th className="ind">✱</th><th>Unidade ⏶</th><th>Cliente</th><th>Faturamento</th></tr>
@@ -330,7 +336,7 @@ export default function Comandas({ onFechar }) {
                 {[['u', 'Unidade…'], ['c', 'Cliente…'], ['t', 'Tipo…']].map(([k, ph], i) => (
                   <th key={k}><input type="search" value={fUni[k]} placeholder={ph} aria-label={`Filtrar por ${ph.replace('…', '').toLowerCase()}`}
                     onChange={(e) => setFUni((x) => ({ ...x, [k]: e.target.value }))}
-                    onKeyDown={(e) => { if (e.key === 'Enter' && unisVisiveis[0]) { e.preventDefault(); mudarUnidade(unisVisiveis[0].id); } }} autoFocus={i === 1} /></th>
+                    onKeyDown={(e) => { if (e.key === 'Enter' && unisVisiveis[0]) { e.preventDefault(); mudarUnidade(unisVisiveis[0].id); } }} /></th>
                 ))}
               </tr>
             </thead>

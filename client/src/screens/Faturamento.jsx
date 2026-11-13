@@ -269,6 +269,7 @@ export default function Faturamento({ onFechar }) {
   const [mudarLinha, setMudarLinha] = useState(false);
   const [unidades, setUnidades] = useState([]);
   const buscaUni = useBusca(unidades, B_UNI);
+  const primeiraUni = useRef(null);
   const [uniId, setUniId] = useState(null);
   const [uniDraft, setUniDraft] = useState({});
   const [linhas, setLinhas] = useState(null); // null = grade fechada (prr.close)
@@ -342,6 +343,13 @@ export default function Faturamento({ onFechar }) {
     if (Object.keys(uniDraft).length) perguntar({ texto: 'Há alterações não gravadas nas informações do cliente. Descartar?', opcoes: [{ rotulo: 'Descartar', acao: trocar }, { rotulo: 'Voltar' }] });
     else trocar();
   };
+  // digitou na pesquisa de unidade/cliente: depois de uma pausa, a primeira encontrada vira a unidade atual (sem esperar clique)
+  primeiraUni.current = { id: buscaUni.visiveis[0]?.id ?? null, uniId, mudarUnidade };
+  useEffect(() => {
+    if (!buscaUni.termo.trim()) return undefined;
+    const t = setTimeout(() => { const { id, uniId: atual, mudarUnidade: mu } = primeiraUni.current; if (id && id !== atual) mu(id); }, 600);
+    return () => clearTimeout(t);
+  }, [buscaUni.termo]); // eslint-disable-line react-hooks/exhaustive-deps
   // acompanha a unidade escolhida no Controle de comandas (só se não houver edição pendente aqui)
   const seguir = useRef(null);
   seguir.current = (id) => { if (id === uniId || !unidades.some((u) => u.id === id) || Object.keys(uniDraft).length || Object.keys(draft).length) return; setUniId(id); setLinhas(null); setFoco(null); };
@@ -532,7 +540,7 @@ export default function Faturamento({ onFechar }) {
               </section>
               <section className="fp-card fp-unis">
                 <h4>🏢 Unidades <small>{unidades.length ? `${unidades.length} no período` : ''}</small></h4>
-                <div className="busca-lateral"><Busca busca={buscaUni} total={unidades.length} placeholder="Pesquisar unidade/cliente…" /></div>
+                <div className="busca-lateral" onKeyDown={(e) => { if (e.key === 'Enter' && buscaUni.termo.trim() && buscaUni.visiveis[0]) { e.preventDefault(); mudarUnidade(buscaUni.visiveis[0].id); } }}><Busca busca={buscaUni} total={unidades.length} placeholder="Pesquisar unidade/cliente… (Enter assume a primeira)" /></div>
                 <div className="rolagem fp-lista" ref={rolaUni}>
                   <table className="grade">
                     <thead><tr><th className="ind" /><th>Unidade <i className="ord">⏶</i></th><th>Faturamento</th><th title="Comanda diária">CM</th></tr></thead>
