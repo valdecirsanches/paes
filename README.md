@@ -1020,6 +1020,11 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 276 — Agente de impressão sobe sozinho todo dia
+
+- O instalador (`agente-impressao/instalar-windows.ps1`) criava a tarefa só "ao entrar um usuário": se o servidor de impressão reiniciasse (atualização do Windows, queda de energia) e ninguém fizesse login, o agente não subia. Agora a tarefa inicia **com o Windows** (conta SYSTEM, sem precisar de login), ao entrar um usuário e **a cada 5 minutos** (vigia: sobe de novo se caiu; se já está rodando, ignora).
+- Se as impressoras estiverem instaladas só para o seu usuário (SYSTEM não as enxerga), execute o instalador com `-ComoUsuarioAtual`.
+
 ## Fase 275 — NF-e: e-mail de nota que não está na lista · Reclamações: gravação mais robusta
 
 - **Enviar NF-e (e-mail)**: o diálogo podia tentar enviar uma nota que já não estava na lista (linha "em foco" de uma consulta anterior). Agora só vale a nota visível; ao recarregar a lista o foco antigo é descartado.
