@@ -6,3 +6,7 @@ export const GRUPOS = [
   ['IBS / CBS (reforma tributária)', [['cst', 'CST'], ['cClassTrib', 'cClassTrib'], ['pIBS', 'pIBS'], ['pCBS', 'pCBS'], ['red_aliq', 'Red. da base'], ['cBenef', 'cBenef']]],
   ['Legislação', [['legislacao', 'Legislação', 4], ['base_legal_icms', 'Base legal ICMS', 2], ['base_legal_pis_cofins', 'Base legal PIS/COFINS', 2]]],
 ];
+
+/** Campos do tributo que a emissão da NFe NÃO lê (conferido no código: nfeJson/geraFatura/nfe.js). Ficam no cadastro, mas fora do caminho do usuário.
+ *  IPI: o JSON da NFe não envia IPI. CFOP do tributo: o CFOP do item vem da operação/nota. */
+export const NAO_USADOS_NFE = new Set(['cest', 'tipo_trib', 'natureza', 'cfop', 'aliq_ipi', 'cst_ipi', 'legislacao', 'base_legal_icms', 'base_legal_pis_cofins']);

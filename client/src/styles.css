@@ -2142,3 +2142,4 @@ button.lk-versao{background:none!important;border:0!important;box-shadow:none!im
 .fi-trib{display:block;font-size:11px;color:#2f7a3b;margin-top:2px}.fi-trib.dif{color:#b45309;font-weight:600}
 .fi-grupo{border:1px solid #e3dccf;border-radius:8px;margin:8px 0;padding:4px 8px 8px}.fi-grupo legend{font-weight:600;font-size:12px;color:#7a5a1e;padding:0 6px}.fi-grupo legend small{font-weight:400;color:#6b5d44}
 .fi-grid .s3{grid-column:span 3}.fi-grid .s4{grid-column:span 4}
+.fi-nao-usa summary{cursor:pointer;font-size:12px;color:#7a5a1e}.fi-nao-usa summary small{color:#6b5d44}

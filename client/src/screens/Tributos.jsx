@@ -3,7 +3,7 @@ import { api } from '../api.js';
 import { Modal } from '../components/ui.jsx';
 import { Toast, confirmar } from '../components/toast.jsx';
 import { useJanela } from '../components/janela.js';
-import { GRUPOS } from '../lib/tributoGrupos.js';
+import { GRUPOS, NAO_USADOS_NFE } from '../lib/tributoGrupos.js';
 
 // Colunas do CSV (todas as da tabela); a grade mostra só as essenciais.
 const COLS = ['id', 'descricao', 'aliq_ipi', 'sit_trib', 'cst_icms', 'aliq_icms', 'ncm', 'cest', 'cfop', 'cClassTrib', 'pIBS', 'pCBS', 'red_aliq', 'legislacao', 'red_b_c_icms',
@@ -50,7 +50,7 @@ function EditaTributo({ tributos, foco, setFoco, recarregar, aviso, onFechar, in
         {GRUPOS.map(([titulo, campos]) => (
           <fieldset key={titulo}><legend>{titulo}</legend>
             <div className="trb2-grid">
-              {campos.map(([k, r, w = 1]) => <label key={k} style={{ gridColumn: `span ${w}` }}><span>{r}</span><input value={v(k)} disabled={vazio} onChange={(e) => mudar(k, e.target.value)} /></label>)}
+              {campos.map(([k, r, w = 1]) => <label key={k} style={{ gridColumn: `span ${w}` }}><span>{r}{NAO_USADOS_NFE.has(k) && <i title="Não é lido na emissão da NFe (só cadastro)" style={{ color: '#9a8f78', fontWeight: 400 }}> · não vai na NFe</i>}</span><input value={v(k)} disabled={vazio} onChange={(e) => mudar(k, e.target.value)} /></label>)}
             </div>
           </fieldset>
         ))}

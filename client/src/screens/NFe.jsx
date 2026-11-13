@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../api.js';
 import { Modal } from '../components/ui.jsx';
-import { GRUPOS as GRUPOS_TRIB } from '../lib/tributoGrupos.js';
+import { GRUPOS as GRUPOS_TRIB, NAO_USADOS_NFE } from '../lib/tributoGrupos.js';
 import EnvioEmail from '../components/EnvioEmail.jsx';
 import NcmCampo from '../components/NcmCampo.jsx';
 import NfeFiscal, { EventosTabela, abrirArquivo } from '../components/NfeFiscal.jsx';
@@ -953,13 +953,18 @@ export default function NFe({ onFechar }) {
                                 {!trib && <p className="vazio s4">Item sem código de tributação (id_tributo): a nota não poderá ser autorizada.</p>}
                               </div>
                               {trib && (<>
-                                {GRUPOS_TRIB.map(([titulo, campos]) => (
+                                {GRUPOS_TRIB.map(([titulo, campos]) => { const usados = campos.filter(([k]) => !NAO_USADOS_NFE.has(k)); return usados.length ? (
                                   <fieldset key={titulo} className="fi-grupo"><legend>{titulo}</legend>
                                     <div className="fi-grid">
-                                      {campos.map(([k, rot, larg]) => <label key={k} className={`fi-c${larg ? ` s${larg}` : ''}`}><span>{rot}</span><input value={tv[k] ?? ''} onChange={(e) => setTribDraft({ ...tribDraft, [k]: e.target.value })} /></label>)}
+                                      {usados.map(([k, rot, larg]) => <label key={k} className={`fi-c${larg ? ` s${larg}` : ''}`}><span>{rot}</span><input value={tv[k] ?? ''} onChange={(e) => setTribDraft({ ...tribDraft, [k]: e.target.value })} /></label>)}
                                     </div>
-                                  </fieldset>
-                                ))}
+                                  </fieldset>) : null; })}
+                                <details className="fi-grupo fi-nao-usa">
+                                  <summary>Outros campos do cadastro <small>(não são lidos na emissão da NFe)</small></summary>
+                                  <div className="fi-grid">
+                                    {GRUPOS_TRIB.flatMap(([, campos]) => campos).filter(([k]) => NAO_USADOS_NFE.has(k)).map(([k, rot, larg]) => <label key={k} className={`fi-c${larg ? ` s${larg}` : ''}`}><span>{rot}</span><input value={tv[k] ?? ''} onChange={(e) => setTribDraft({ ...tribDraft, [k]: e.target.value })} /></label>)}
+                                  </div>
+                                </details>
                                 <button type="button" className="bt" disabled={!Object.keys(tribDraft).length || ocupado} onClick={salvarTrib}>✔ Gravar código de tributação (vale para todos os itens com este código)</button>
                               </>)}
                               <fieldset className="fi-grupo"><legend>Neste item <small>(calculado; recalculado ao gravar o item)</small></legend>

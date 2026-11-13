@@ -1020,6 +1020,11 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 306 — Campos do tributo que não vão na NFe
+
+- Levantamento no código (nfeJson, geraFatura, nfe.js): lidos na emissão = ncm, sit_trib, aliq_icms, red_b_c_icms (base calculada), red_aliq (percentualReducaoBcIcms), cst_pis/aliq_pis, cst_cofins/aliq_cofins, cst, cClassTrib, pIBS, pCBS, cBenef. NÃO lidos = cest, tipo_trib, natureza, cfop (do tributo), aliq_ipi, cst_ipi (a NFe não envia IPI), legislacao, base_legal_icms, base_legal_pis_cofins.
+- `NAO_USADOS_NFE` (lib/tributoGrupos.js): fora da ficha do item (ficam em "Outros campos do cadastro") e marcados na tela Tributos. Nada removido do banco.
+
 ## Fase 305 — Item da NFe: aba Tributos = tela completa do Código de tributação
 
 - `lib/tributoGrupos.js` (GRUPOS) compartilhado entre a tela Tributos e a ficha do item; `PUT /api/nfe/tributos/:id` passa a aceitar todos os campos (mesma validação `limpa` de `routes/tributos.js`).
