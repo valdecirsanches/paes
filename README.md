@@ -1020,6 +1020,13 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 307 — Emissão só pelo tributo + aba Tributos compacta
+
+- Conferência: o único dado fiscal que a emissão ainda tirava do produto era o NCM (`geraFatura` usava `limpaMask(pro.ncm)` de reserva; item novo nascia com `p.ncm || '19059090'`). Removido: item novo nasce com NCM '0' e `gravaItem` preenche do tributo; `geraFatura` usa só `ncmDoTributo`. Os campos fiscais de `tb_produtos` (aliq_icms, aliq_ipi, classif_fiscal, sit_tributaria) nunca foram lidos na emissão (só a validação "não pode ser nulo").
+- Autorização (`routes/nfe.js`): antes de montar o JSON, todo item com `id_tributo` passa por `gravaItem(…, {})` (recalcula do tributo; CFOP/CSOSN do item preservados).
+- `GET/POST /api/tributos/migrar-ncm` (só SANCHES; GET = simulação): copia o NCM dos produtos para tributos sem NCM válido; não altera quem já tem; conflito (produtos com NCMs diferentes) é listado e não gravado. Botão "NCM dos produtos → tributos" na tela Tributos.
+- Ficha do item › Tributos: grade de 4 colunas, rótulos curtos, sem descrição/textos; campos não usados recolhidos.
+
 ## Fase 306 — Campos do tributo que não vão na NFe
 
 - Levantamento no código (nfeJson, geraFatura, nfe.js): lidos na emissão = ncm, sit_trib, aliq_icms, red_b_c_icms (base calculada), red_aliq (percentualReducaoBcIcms), cst_pis/aliq_pis, cst_cofins/aliq_cofins, cst, cClassTrib, pIBS, pCBS, cBenef. NÃO lidos = cest, tipo_trib, natureza, cfop (do tributo), aliq_ipi, cst_ipi (a NFe não envia IPI), legislacao, base_legal_icms, base_legal_pis_cofins.

@@ -2143,3 +2143,9 @@ button.lk-versao{background:none!important;border:0!important;box-shadow:none!im
 .fi-grupo{border:1px solid #e3dccf;border-radius:8px;margin:8px 0;padding:4px 8px 8px}.fi-grupo legend{font-weight:600;font-size:12px;color:#7a5a1e;padding:0 6px}.fi-grupo legend small{font-weight:400;color:#6b5d44}
 .fi-grid .s3{grid-column:span 3}.fi-grid .s4{grid-column:span 4}
 .fi-nao-usa summary{cursor:pointer;font-size:12px;color:#7a5a1e}.fi-nao-usa summary small{color:#6b5d44}
+.fi-compacto .fi-grid{grid-template-columns:repeat(4,1fr);gap:3px 5px}.fi-compacto .fi-c span{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fi-compacto .fi-c input{padding:2px 4px;height:22px;font-size:12px;min-width:0}
+.fi-compacto .fi-grava{margin:5px 0;width:100%;padding:3px 6px;font-size:12px}.fi-compacto .fi-calc{border-top:1px dashed #d8cfba;padding-top:4px;margin-top:2px}.fi-compacto .fi-nao-usa{margin-top:4px}
+.fi-rolagem .fi-compacto .fi-grid{gap:2px 5px}
+.fi-rolagem .fi-compacto .fi-c input,.fi-rolagem .fi-compacto .fi-c .num,.fi-rolagem .fi-compacto .fi-c>*:not(span){height:22px!important;min-height:0!important;padding-top:1px!important;padding-bottom:1px!important;font-size:12px!important;line-height:18px}
+.fi-rolagem .fi-compacto .fi-grava{height:24px;min-height:0;padding:0 6px;margin:3px 0}
+.fi-rolagem .fi-compacto .fi-nao-usa summary{padding:2px 0}

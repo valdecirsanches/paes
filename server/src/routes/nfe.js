@@ -937,7 +937,7 @@ router.post('/:id/itens', async (req, res) => {
     const [[p]] = await c.query('select * from tb_produtos where codigo = ?', [codigo]);
     if (!p) throw notFound('Produto');
     const [r] = await c.query('insert into tb_nfe_itens set ?', [{
-      id_nfe: id, id_produto: p.id, produto_codigo: codigo, preco: trunc3(p.preco), produto_descricao: p.descricao, produto_ncm: p.ncm || '19059090', un: p.un, id_tributo: p.id_tributos, qtde, produto_origem: 'NACIONAL',
+      id_nfe: id, id_produto: p.id, produto_codigo: codigo, preco: trunc3(p.preco), produto_descricao: p.descricao, produto_ncm: '0', un: p.un, id_tributo: p.id_tributos, qtde, produto_origem: 'NACIONAL',
     }]);
     return gravaItem(c, r.insertId, {});
   });
@@ -1100,6 +1100,10 @@ async function autorizaUma(id, usuario, ibsCbs) {
   const nfe = await getNfe(id);
   if (nfe.status_e !== 'PENDENTE') return { id, ok: false, log: [`Nota ${id} não está PENDENTE (${nfe.status_e}).`] };
   const cfg = await getCfg();
+  // a emissão usa SÓ o Código de tributação: antes de montar o JSON, os itens com tributo são recalculados a partir dele (NCM, CSTs, alíquotas, base e valores),
+  // para não irem valores antigos copiados do produto ou de uma versão anterior do tributo. CFOP e CSOSN digitados no item são preservados.
+  const [comTrib] = await pool.query('select id from tb_nfe_itens where id_nfe = ? and id_tributo > 0', [id]);
+  for (const { id: itemId } of comTrib) await tx((c) => gravaItem(c, itemId, {}));
   // IBS/CBS e cBenef vêm de tb_tributos (aba IBSCBS do item = dsTrib)
   const [itens] = await pool.query(
     `select i.*, t.cBenef, t.cst, t.cClassTrib, t.pIBS, t.pCBS, t.red_aliq
@@ -1127,7 +1131,7 @@ async function autorizaUma(id, usuario, ibsCbs) {
   const ncmsRuins = [];
   for (const n of [...new Set(itens.map((i) => String(i.produto_ncm ?? '').replace(/\D/g, '')))]) {
     const r = await consultaNcm(n);
-    if (r.ok === false) ncmsRuins.push(`${r.motivo} Itens: ${itens.filter((i) => String(i.produto_ncm ?? '').replace(/\D/g, '') === n).map((i) => i.produto_codigo).join(', ')}. Corrija o NCM do produto (cadastro) e do item.`);
+    if (r.ok === false) ncmsRuins.push(`${r.motivo} Itens: ${itens.filter((i) => String(i.produto_ncm ?? '').replace(/\D/g, '') === n).map((i) => i.produto_codigo).join(', ')}. Corrija o NCM no Código de tributação do produto.`);
   }
   if (ncmsRuins.length) return { id, ok: false, log: ncmsRuins };
   await pool.query('update tb_nfe set nfe_numero = ? where id = ?', [numero, id]); // como no Delphi: grava o número antes, para busca posterior

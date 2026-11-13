@@ -99,7 +99,7 @@ export async function geraFatura(c, { comandas, idCliente, idUnidade, saida, usu
     await c.query('insert into tb_nfe_itens set ?', [{
       id_nfe: idNfe, produto_codigo: d.produto_codigo, id_tributo: pro?.id_tributos ?? 0, id_produto: pro?.id ?? 0,
       produto_descricao: d.descricao || ' ', situacao_tributaria: trib?.sit_trib ?? '', cfop_cst_icms: trib?.sit_trib ?? '', id_pedido: 0,
-      preco: trunc3(d.preco), preco_total: vr, qtde: qt, peso: qt, peso_total: 0, produto_ncm: ncmDoTributo(trib) || limpaMask(pro?.ncm), un: 'PC',
+      preco: trunc3(d.preco), preco_total: vr, qtde: qt, peso: qt, peso_total: 0, produto_ncm: ncmDoTributo(trib) || '0', // só o NCM do tributo vale (sem reserva do produto) un: 'PC',
       icms_base_calculo: r6(t.bIcms), valor_bc_pis_cofins: r6(t.bc), icms_red_base_calculo: t.red, icms_aliquota: num(trib?.aliq_icms),
       icms_valor: r6(t.icms), pis_aliquota: num(trib?.aliq_pis), pis_valor: r6(t.pis), cofins_aliquota: num(trib?.aliq_cofins),
       cofins_valor: r6(t.cofins), valor_trib_prod: r6(t.pis + t.cofins + t.icms),

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { pool, tx } from '../db.js';
-import { invalid, notFound, pick } from '../errors.js';
+import { AppError, invalid, notFound, pick } from '../errors.js';
+import { ncmDoTributo } from '../services/ncm.js';
 
 // Tela "Códigos de Tributação de produtos" (uTributo): cadastro de tb_tributos e vínculo com tb_produtos.id_tributos.
 const router = Router();
@@ -79,6 +80,31 @@ router.post('/', async (req, res) => {
   const [[novo]] = await pool.query('select * from tb_tributos where id = ?', [r.insertId]);
   res.status(201).json(novo);
 });
+
+/**
+ * A emissão da NFe usa SÓ o NCM do tributo. Onde o tributo está sem NCM válido, traz o NCM dos produtos ligados a ele (o que antes valia como reserva).
+ * ?aplicar=1 grava; sem isso só mostra o que faria. Só o administrador. Não mexe em tributo que já tem NCM; conflito (produtos com NCMs diferentes) não é gravado.
+ */
+async function migraNcm(aplicar) {
+  const [tribs] = await pool.query('select id, descricao, ncm from tb_tributos order by id');
+  const [prods] = await pool.query("select id_tributos, ncm from tb_produtos where id_tributos is not null and coalesce(ncm,'') <> ''");
+  const porTrib = new Map();
+  for (const p of prods) { const d = String(p.ncm).split('.')[0].replace(/\D/g, ''); if (d.length !== 8) continue; const m = porTrib.get(p.id_tributos) ?? new Map(); m.set(d, (m.get(d) ?? 0) + 1); porTrib.set(p.id_tributos, m); }
+  const r = { tributos: tribs.length, jaTemNcm: 0, aMigrar: [], conflitos: [], semProdutoComNcm: [], gravados: 0 };
+  for (const t of tribs) {
+    if (ncmDoTributo(t)) { r.jaTemNcm += 1; continue; }
+    const m = porTrib.get(t.id);
+    if (!m) { r.semProdutoComNcm.push({ id: t.id, descricao: t.descricao }); continue; }
+    if (m.size > 1) { r.conflitos.push({ id: t.id, descricao: t.descricao, ncms: Object.fromEntries(m) }); continue; }
+    const ncm = [...m.keys()][0];
+    r.aMigrar.push({ id: t.id, descricao: t.descricao, ncm, produtos: m.get(ncm) });
+    if (aplicar) { await pool.query('update tb_tributos set ncm = ? where id = ?', [ncm, t.id]); r.gravados += 1; }
+  }
+  return r;
+}
+const soAdmin = (req) => { if (String(req.user?.usuario ?? '').toUpperCase() !== 'SANCHES') throw new AppError(403, 'Só o administrador faz esta migração.'); };
+router.get('/migrar-ncm', async (req, res) => { soAdmin(req); res.json(await migraNcm(false)); });
+router.post('/migrar-ncm', async (req, res) => { soAdmin(req); res.json(await migraNcm(true)); });
 
 router.put('/:id', async (req, res) => {
   const id = idValido(req.params.id, 'Tributo');

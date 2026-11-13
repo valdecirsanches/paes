@@ -149,6 +149,17 @@ export default function Tributos() {
       setMarcados(new Set());
     } catch (e) { notificar('erro', e.message); }
   };
+  // A NFe usa só o NCM do tributo: traz para o tributo o NCM dos produtos ligados a ele, onde o tributo está sem NCM (só administrador; mostra antes de gravar)
+  const migrarNcm = async () => {
+    try {
+      const p = await api.get('/tributos/migrar-ncm');
+      if (!p.aMigrar.length) { notificar('ok', `Nada a migrar: ${p.jaTemNcm} tributo(s) já têm NCM${p.conflitos.length ? `; ${p.conflitos.length} com produtos de NCMs diferentes (resolver à mão)` : ''}${p.semProdutoComNcm.length ? `; ${p.semProdutoComNcm.length} sem NCM e sem produto com NCM` : ''}.`); return; }
+      const lista = p.aMigrar.slice(0, 12).map((x) => `${x.id} - ${x.descricao}: ${x.ncm}`).join('\n');
+      if (!(await confirmar(`Gravar o NCM dos produtos em ${p.aMigrar.length} tributo(s) sem NCM?\n${lista}${p.aMigrar.length > 12 ? '\n…' : ''}${p.conflitos.length ? `\n\n${p.conflitos.length} tributo(s) têm produtos com NCMs diferentes e NÃO serão alterados.` : ''}`))) return;
+      const r = await api.post('/tributos/migrar-ncm', {});
+      notificar('ok', `${r.gravados} tributo(s) receberam o NCM.`); carregaTributos();
+    } catch (e) { notificar('erro', e.message); }
+  };
   // O Delphi abria o Excel por OLE; aqui baixa um CSV (o Excel abre direto).
   const exportar = () => {
     const celula = (v) => `"${txt(v).replace(/"/g, '""')}"`;
@@ -204,6 +215,7 @@ export default function Tributos() {
           <div className="trb2-acoes">
             <button type="button" className="trb2-btn" onClick={novoTributo}>＋ Novo</button>
             <button type="button" className="trb2-btn" disabled={!tribAtual} onClick={() => setEditando('editar')}>✎ Editar</button>
+            <button type="button" className="trb2-btn" onClick={migrarNcm} title="Traz o NCM dos produtos para os tributos que estão sem NCM (a NFe usa só o NCM do tributo)">NCM dos produtos → tributos</button>
             <button type="button" className="trb2-btn" onClick={exportar} title="Baixa todos os campos em CSV (abre no Excel)">⇩ Exportar</button>
           </div>
         </header>

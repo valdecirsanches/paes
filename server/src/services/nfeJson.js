@@ -57,7 +57,7 @@ export function validaParaAutorizar(nfe, itens, cfg, { vencimentos = [], hoje = 
   if (doc.length !== 14 && doc.length !== 11) e.push('CNPJ/CPF do destinatário inválido.');
   if (!txt(nfe.cliente_razao_social)) e.push('Razão social do destinatário não informada.');
   for (const [i, it] of itens.entries()) {
-    if (dig(it.produto_ncm).length !== 8) e.push(`Item ${i + 1} (${it.produto_codigo}): NCM inválido.`);
+    if (dig(it.produto_ncm).length !== 8) e.push(`Item ${i + 1} (${it.produto_codigo}): NCM inválido — informe no Código de tributação do produto.`);
     if (!(n(it.qtde) > 0) || !(n(it.preco) > 0)) e.push(`Item ${i + 1} (${it.produto_codigo}): quantidade/preço zerado ou negativo.`);
     else if (it.preco_total != null && String(it.preco_total).trim() !== '' && !(n(it.preco_total) > 0)) e.push(`Item ${i + 1} (${it.produto_codigo}): valor total do item zerado.`);
     const rot = `Item ${i + 1} (${it.produto_codigo})`;

@@ -2,6 +2,8 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../api.js';
 import { Modal } from '../components/ui.jsx';
 import { GRUPOS as GRUPOS_TRIB, NAO_USADOS_NFE } from '../lib/tributoGrupos.js';
+// campos do tributo que a emissão lê, na ordem de uso, com rótulo curto: [campo, rótulo, dica]
+const COMPACTOS = [['ncm', 'NCM', 'NCM (vale para o item e o produto)'], ['sit_trib', 'CST ICMS', 'Situação tributária do ICMS'], ['aliq_icms', 'Alíq. ICMS', 'Alíquota de ICMS %'], ['red_b_c_icms', 'Red. base ICMS', 'Redução da base do ICMS % (usada no cálculo da base)'], ['red_aliq', 'Red. da base', 'red_aliq: percentual enviado como redução de ICMS no CST 20 / IBS-CBS'], ['cBenef', 'cBenef', 'Código de benefício fiscal'], ['cst_pis', 'CST PIS', ''], ['aliq_pis', 'Alíq. PIS', 'Alíquota de PIS %'], ['cst_cofins', 'CST COFINS', ''], ['aliq_cofins', 'Alíq. COFINS', 'Alíquota de COFINS %'], ['cst', 'CST IBS/CBS', ''], ['cClassTrib', 'cClassTrib', 'Classificação tributária IBS/CBS (6 dígitos)'], ['pIBS', 'pIBS %', ''], ['pCBS', 'pCBS %', '']];
 import EnvioEmail from '../components/EnvioEmail.jsx';
 import NcmCampo from '../components/NcmCampo.jsx';
 import NfeFiscal, { EventosTabela, abrirArquivo } from '../components/NfeFiscal.jsx';
@@ -945,39 +947,28 @@ export default function NFe({ onFechar }) {
                                 <label className="fi-c"><span>Nº item</span><input value={iv.item ?? ''} readOnly={ro} onChange={(e) => edi('item', e.target.value)} /></label>
                               </div>
                             </section>}
-                            {itemTab === 'trib' && <section className="fi-sec fi-trib">
-                              <h5>🏷 Código de tributação <small>(vale p/ todos os itens com este código — é a fonte de NCM, CSTs, alíquotas e IBS/CBS)</small></h5>
+                            {itemTab === 'trib' && <section className="fi-sec fi-trib fi-compacto">
+                              {!trib && <p className="vazio">Item sem código de tributação (id_tributo): a nota não poderá ser autorizada.</p>}
                               <div className="fi-grid">
-                                <label className="fi-c"><span>Código (id)</span><input value={iv.id_tributo ?? ''} readOnly={ro} onChange={(e) => edi('id_tributo', e.target.value)} title="id_tributo (tb_tributos)" /></label>
-                                <label className="fi-c s3"><span>Descrição do tributo</span><input value={tv.descricao ?? ''} readOnly={!trib} onChange={(e) => setTribDraft({ ...tribDraft, descricao: e.target.value })} /></label>
-                                {!trib && <p className="vazio s4">Item sem código de tributação (id_tributo): a nota não poderá ser autorizada.</p>}
+                                <label className="fi-c" title="id_tributo (tb_tributos) — vale para todos os itens com este código"><span>Tributo (id)</span><input value={iv.id_tributo ?? ''} readOnly={ro} onChange={(e) => edi('id_tributo', e.target.value)} /></label>
+                                {trib && COMPACTOS.map(([k, rot, dica]) => <label key={k} className="fi-c" title={dica}><span>{rot}</span><input value={tv[k] ?? ''} onChange={(e) => setTribDraft({ ...tribDraft, [k]: e.target.value })} /></label>)}
                               </div>
-                              {trib && (<>
-                                {GRUPOS_TRIB.map(([titulo, campos]) => { const usados = campos.filter(([k]) => !NAO_USADOS_NFE.has(k)); return usados.length ? (
-                                  <fieldset key={titulo} className="fi-grupo"><legend>{titulo}</legend>
-                                    <div className="fi-grid">
-                                      {usados.map(([k, rot, larg]) => <label key={k} className={`fi-c${larg ? ` s${larg}` : ''}`}><span>{rot}</span><input value={tv[k] ?? ''} onChange={(e) => setTribDraft({ ...tribDraft, [k]: e.target.value })} /></label>)}
-                                    </div>
-                                  </fieldset>) : null; })}
-                                <details className="fi-grupo fi-nao-usa">
-                                  <summary>Outros campos do cadastro <small>(não são lidos na emissão da NFe)</small></summary>
-                                  <div className="fi-grid">
-                                    {GRUPOS_TRIB.flatMap(([, campos]) => campos).filter(([k]) => NAO_USADOS_NFE.has(k)).map(([k, rot, larg]) => <label key={k} className={`fi-c${larg ? ` s${larg}` : ''}`}><span>{rot}</span><input value={tv[k] ?? ''} onChange={(e) => setTribDraft({ ...tribDraft, [k]: e.target.value })} /></label>)}
-                                  </div>
-                                </details>
-                                <button type="button" className="bt" disabled={!Object.keys(tribDraft).length || ocupado} onClick={salvarTrib}>✔ Gravar código de tributação (vale para todos os itens com este código)</button>
-                              </>)}
-                              <fieldset className="fi-grupo"><legend>Neste item <small>(calculado; recalculado ao gravar o item)</small></legend>
+                              {trib && <button type="button" className="bt fi-grava" disabled={!Object.keys(tribDraft).length || ocupado} onClick={salvarTrib}>✔ Gravar tributo (vale p/ todos os itens com este código)</button>}
+                              <div className="fi-grid fi-calc" title="Calculado a partir do tributo; recalculado ao gravar o item e na autorização">
+                                <label className="fi-c"><span>CFOP item</span><input value={iv.cfop_codigo ?? ''} readOnly={ro} onChange={(e) => edi('cfop_codigo', e.target.value)} title="Pode diferir do CFOP do tributo conforme a operação" /></label>
+                                {(simplesNota || txt1(iv.csosn)) && <label className="fi-c"><span>CSOSN</span><input value={iv.csosn ?? ''} readOnly={ro} onChange={(e) => edi('csosn', e.target.value)} /></label>}
+                                <label className="fi-c"><span>vBC ICMS</span><Num valor={iv.icms_base_calculo} ro /></label>
+                                <label className="fi-c"><span>vICMS</span><Num valor={iv.icms_valor} ro /></label>
+                                <label className="fi-c"><span>vPIS</span><Num valor={iv.pis_valor} ro /></label>
+                                <label className="fi-c"><span>vCOFINS</span><Num valor={iv.cofins_valor} ro /></label>
+                                <label className="fi-c"><span>Tot. tributos</span><Num valor={iv.valor_trib_prod} ro /></label>
+                              </div>
+                              {trib && <details className="fi-nao-usa">
+                                <summary>Outros campos do cadastro <small>(não vão na NFe)</small></summary>
                                 <div className="fi-grid">
-                                  <label className="fi-c"><span>CFOP do item</span><input value={iv.cfop_codigo ?? ''} readOnly={ro} onChange={(e) => edi('cfop_codigo', e.target.value)} title="Pode diferir do CFOP do tributo conforme a operação" /></label>
-                                  {(simplesNota || txt1(iv.csosn)) && <label className="fi-c"><span>CSOSN</span><input value={iv.csosn ?? ''} readOnly={ro} onChange={(e) => edi('csosn', e.target.value)} /></label>}
-                                  <label className="fi-c"><span>vBC ICMS</span><Num valor={iv.icms_base_calculo} ro /></label>
-                                  <label className="fi-c"><span>vICMS</span><Num valor={iv.icms_valor} ro /></label>
-                                  <label className="fi-c"><span>vPIS</span><Num valor={iv.pis_valor} ro /></label>
-                                  <label className="fi-c"><span>vCOFINS</span><Num valor={iv.cofins_valor} ro /></label>
-                                  <label className="fi-c"><span>Total dos tributos</span><Num valor={iv.valor_trib_prod} ro /></label>
+                                  {GRUPOS_TRIB.flatMap(([, campos]) => campos).filter(([k]) => NAO_USADOS_NFE.has(k)).map(([k, rot]) => <label key={k} className="fi-c"><span>{rot}</span><input value={tv[k] ?? ''} onChange={(e) => setTribDraft({ ...tribDraft, [k]: e.target.value })} /></label>)}
                                 </div>
-                              </fieldset>
+                              </details>}
                             </section>}
                           </>)}
                         </div>
