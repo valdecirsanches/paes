@@ -6,7 +6,7 @@ import { pool, tx } from '../db.js';
 import { AppError, invalid, notFound, pick } from '../errors.js';
 import { isIsoDate } from '../rules.js';
 import * as api from '../services/nfeApi.js';
-import { consultaNcm, pesquisaNcm } from '../services/ncm.js';
+import { consultaNcm, pesquisaNcm, ncmDoTributo } from '../services/ncm.js';
 import { lerDanfeCfg, gravarDanfeCfg, gravarLogo, lerLogo, removerLogo, ORIENTACOES } from '../services/danfeStore.js';
 import { danfeDoXml, danfeLocalLigado, achaXmlLocal } from '../services/danfeLocal.js';
 import { lerA3, gravarA3, limparA3 } from '../services/a3Store.js';
@@ -898,10 +898,12 @@ export async function gravaItem(c, itemId, campos) {
       icms_base_calculo: r2(t.bIcms), valor_bc_pis_cofins: r2(t.bc), icms_red_base_calculo: r2(t.red),
       icms_aliquota: trib.aliq_icms, icms_valor: r2(t.icms), pis_aliquota: trib.aliq_pis, pis_valor: r2(t.pis), cofins_aliquota: trib.aliq_cofins, cofins_valor: r2(t.cofins),
       valor_trib_prod: r2(t.pis + t.cofins + t.icms), cfop_cst_pis: trib.cst_pis, cfop_cst_cofins: trib.cst_cofins, cst_ipi: trib.cst_ipi, cfop_cst_ipi: trib.cst_ipi, csosn: it.nfe_csosn,
+      cfop_cst_icms: trib.sit_trib ?? '', situacao_tributaria: trib.sit_trib ?? '',
+      ...(ncmDoTributo(trib) ? { produto_ncm: ncmDoTributo(trib) } : {}),
     });
   }
-  // o que o usuário digitou na ficha prevalece sobre o recálculo pelo código de tributação (antes o CFOP e os impostos voltavam ao valor do cadastro)
-  if (trib) for (const k of ['cfop_codigo', 'csosn', 'icms_base_calculo', 'icms_aliquota', 'icms_valor', 'pis_aliquota', 'pis_valor', 'cofins_aliquota', 'cofins_valor', 'cfop_cst_pis', 'cfop_cst_cofins', 'cst_ipi']) if (campos[k] !== undefined) b[k] = campos[k] === '' ? null : campos[k];
+  // com código de tributação, tudo que existe nele (NCM, CSTs, alíquotas, base e valores) vem dele; só o CFOP (varia por operação) e o CSOSN seguem editáveis na ficha
+  if (trib) for (const k of ['cfop_codigo', 'csosn']) if (campos[k] !== undefined) b[k] = campos[k] === '' ? null : campos[k];
   if (!Object.keys(b).length) throw invalid('Nada para gravar.');
   await c.query('update tb_nfe_itens set ? where id = ?', [b, itemId]);
   // CalculaProduto

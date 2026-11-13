@@ -1020,6 +1020,17 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 304 — Comparação com o Código de tributação à vista
+
+- Ficha do item (NFe.jsx, componente `DoTributo`) e NCM do `ProdutoForm`: ao lado do valor do item/produto aparece o valor do tributo (✓ igual / ⚠ diferente). Campos: NCM, CST ICMS, CST IPI/PIS/COFINS, alíquotas ICMS/PIS/COFINS e CFOP (este continua editável).
+
+## Fase 303 — Tributo é a fonte: campos duplicados do item e do produto bloqueados
+
+- `gravaItem`: com `id_tributo`, NCM (`ncmDoTributo`: descarta o ".0" de "19059090.0"), CST ICMS, CST IPI/PIS/COFINS, alíquotas, base e valores vêm sempre do tributo; só `cfop_codigo` e `csosn` aceitam edição na ficha. `geraFatura` também usa o NCM do tributo.
+- Produto: ao salvar com tributação, `ncm` = NCM do tributo (`validaProduto`); no `ProdutoForm` o NCM fica bloqueado quando a tributação tem NCM válido.
+- Ficha do item (NFe.jsx): campos acima somente leitura quando há tributo.
+- Não testado com MySQL real.
+
 ## Fase 302 — NFe: abas de item unificadas e conferência dos tributos pelos XMLs
 
 - Ficha do item: 4 abas → 2 (Produto e Tributos; ICMS, IPI/PIS/COFINS e Código de tributação ficam empilhados). Os valores de ICMS/PIS/COFINS/IPI continuam sendo recalculados no servidor a partir do tributo (`gravaItem`).

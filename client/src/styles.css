@@ -2139,3 +2139,4 @@ button.lk-versao{background:none!important;border:0!important;box-shadow:none!im
 .cd-uni{grid-template-columns:minmax(340px,1fr) minmax(440px,1.05fr)}
 .cd-busca-uni{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.cd-busca-uni .cad-busca-cx{flex:1;min-width:200px}
 .nf2-audit table{width:100%}.nf2-audit td small{color:#6b5d44}
+.fi-trib{display:block;font-size:11px;color:#2f7a3b;margin-top:2px}.fi-trib.dif{color:#b45309;font-weight:600}

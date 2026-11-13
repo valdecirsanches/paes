@@ -25,6 +25,9 @@ export default function ProdutoForm({ ed, layout = 'tela', clientes = [], refere
     if (!String(exp).trim() || exp === antes) ed.set('descricao_expedicao', novo);
   }} />;
   const num = (k) => <Txt ed={ed} k={k} inputMode="decimal" />;
+  // o NCM do Código de tributação escolhido vale para o produto (campo do produto fica bloqueado)
+  const tribSel = tributos.find((t) => String(t.id) === String(ed.v('id_tributos')));
+  const ncmTrib = (() => { const d = String(tribSel?.ncm ?? '').split('.')[0].replace(/\D/g, ''); return d.length === 8 ? d : ''; })();
   return (
     <div className={`cd-secoes${tela ? ' pf2' : ''}`}>
       {tela ? (
@@ -58,7 +61,7 @@ export default function ProdutoForm({ ed, layout = 'tela', clientes = [], refere
         {tela && <Campo rotulo="Qtde emb." span={2}>{num('qtde_embalagem')}</Campo>}
       </Secao>
       <Secao titulo="Fiscal" icone="📑">
-        <Campo rotulo="NCM" span={tela ? 4 : 12}><NcmCampo valor={ed.v('ncm')} aoMudar={(x) => ed.set('ncm', x)} desabilitado={off} /></Campo>
+        <Campo rotulo={ncmTrib ? 'NCM (vem da tributação)' : 'NCM'} span={tela ? 4 : 12}><NcmCampo valor={ncmTrib || ed.v('ncm')} aoMudar={(x) => ed.set('ncm', x)} desabilitado={off || !!ncmTrib} />{tribSel && <small className={`fi-trib${ncmTrib && String(ed.v('ncm') ?? '').replace(/\D/g, '') !== ncmTrib ? ' dif' : ''}`}>Produto: {String(ed.v('ncm') ?? '') || '—'} · Tributo: {ncmTrib || '—'}</small>}</Campo>
         {tela && <Campo rotulo="Tributação (define CST, ICMS, IPI, PIS e CFOP)" span={8}>{comb('id_tributos', tributos, (t) => `${t.id} - ${t.descricao}`)}</Campo>}
       </Secao>
       <Secao titulo="Opções do produto" icone="🥖">

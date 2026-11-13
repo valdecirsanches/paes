@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { pool } from '../db.js';
 import { invalid, notFound } from '../errors.js';
-import { consultaNcm, pesquisaNcm } from '../services/ncm.js';
+import { consultaNcm, ncmDoTributo, pesquisaNcm } from '../services/ncm.js';
 import { emUso, idValido, limpaCampos } from '../services/campos.js';
 import { SQL_ATIVO } from '../services/produtosAtivo.js';
 
@@ -86,7 +86,7 @@ async function validaProduto(c, b, { criando, id }) {
     if (r.ok === false) throw invalid(r.motivo);
   }
   if ('divisor_basico' in b && !(b.divisor_basico > 0)) throw invalid('"Cada" deve ser maior que zero.');
-  if (b.id_tributos) { const [[t]] = await c.query('select id from tb_tributos where id = ?', [b.id_tributos]); if (!t) throw invalid('Tributação inexistente.'); }
+  if (b.id_tributos) { const [[t]] = await c.query('select * from tb_tributos where id = ?', [b.id_tributos]); if (!t) throw invalid('Tributação inexistente.'); if (ncmDoTributo(t)) b.ncm = ncmDoTributo(t); } // o NCM do Código de tributação vale para o produto
   if (b.id_referencia) { const [[t]] = await c.query('select id from tb_referencias where id = ?', [b.id_referencia]); if (!t) throw invalid('Referência inexistente.'); }
   if (b.id_cliente) { const [[t]] = await c.query('select id from tb_clientes where id = ?', [b.id_cliente]); if (!t) throw invalid('Cliente inexistente.'); }
 }

@@ -149,6 +149,16 @@ const UFS = ['', 'RO', 'AC', 'AM', 'RR', 'PA', 'AP', 'TO', 'MA', 'PI', 'CE', 'RN
 const ST = [['AUTORIZADA', 'Autorizadas'], ['CANCELADA', 'Canceladas'], ['PENDENTE', 'Pendentes'], ['INUTILIZADA', 'Inutilizadas'], ['DEVOLVIDO', 'Devolvidas']];
 const ST_INICIAL = { PENDENTE: true, AUTORIZADA: false, CANCELADA: false, INUTILIZADA: false, DEVOLVIDO: false };
 
+/** Valor do Código de tributação para comparar com o do item: mostra "Tributo: x" e destaca quando difere. */
+const igualTrib = (a, b) => { const na = Number(String(a ?? '').replace(',', '.')); const nb = Number(String(b ?? '').replace(',', '.')); return String(a ?? '').trim() !== '' && String(b ?? '').trim() !== '' && Number.isFinite(na) && Number.isFinite(nb) ? Math.abs(na - nb) < 0.005 : String(a ?? '').trim() === String(b ?? '').trim(); };
+const ncmTrib8 = (v) => { const d = String(v ?? '').split('.')[0].replace(/\D/g, ''); return d.length === 8 ? d : ''; };
+function DoTributo({ atual, trib, valor, norm = (x) => x }) {
+  if (!trib) return null;
+  const t = norm(valor); const a = norm(atual);
+  const dif = !igualTrib(a, t);
+  return <small className={`fi-trib${dif ? ' dif' : ''}`} title="Valor no Código de tributação (é ele que vale)">{dif ? '⚠ ' : '✓ '}Tributo: {String(t ?? '') === '' ? '—' : String(t)}</small>;
+}
+
 export default function NFe({ onFechar }) {
   const [f, setF] = useState({ periodo: true, campo: 'emissao', d1: hoje(), d2: hoje(), cli: false, cliente: '', st: ST_INICIAL, nfe1: '', nfe2: '', ref: '' });
   const [clientes, setClientes] = useState([]);
@@ -924,7 +934,7 @@ export default function NFe({ onFechar }) {
                               <h5>📦 Produto <small>{iv.produto_codigo ?? ''}</small></h5>
                               <div className="fi-grid">
                                 <label className="fi-c s2"><span>Descrição</span><input value={iv.produto_descricao ?? ''} readOnly={ro} onChange={(e) => edi('produto_descricao', e.target.value)} /></label>
-                                <div className="fi-c"><span>NCM</span><NcmCampo valor={iv.produto_ncm} aoMudar={(x) => edi('produto_ncm', x)} desabilitado={ro} /></div>
+                                <div className="fi-c"><span>NCM</span><NcmCampo valor={iv.produto_ncm} aoMudar={(x) => edi('produto_ncm', x)} desabilitado={ro || !!trib} /><DoTributo atual={iv.produto_ncm} trib={trib} valor={trib?.ncm} norm={ncmTrib8} /></div>
                                 <label className="fi-c"><span>UN</span><input value={iv.un ?? ''} readOnly={ro} onChange={(e) => edi('un', e.target.value)} /></label>
                                 <label className="fi-c s2"><span>EAN</span><input value={iv.produto_ean ?? ''} readOnly={ro} onChange={(e) => edi('produto_ean', e.target.value)} /></label>
                                 <label className="fi-c"><span>Qtde</span><Num valor={iv.qtde} dec={3} ro={ro} onMudar={(n) => edi('qtde', n)} /></label>
@@ -937,25 +947,25 @@ export default function NFe({ onFechar }) {
                             {itemTab === 'trib' && <section className="fi-sec">
                               <h5>🏛 ICMS do item <small>(calculado pelo código de tributação)</small></h5>
                               <div className="fi-grid">
-                                <label className="fi-c"><span>CFOP</span><input value={iv.cfop_codigo ?? ''} readOnly={ro} onChange={(e) => edi('cfop_codigo', e.target.value)} /></label>
-                                {(!simplesNota || txt1(iv.cfop_cst_icms)) && <label className="fi-c"><span>CST</span><input value={iv.cfop_cst_icms ?? ''} readOnly={ro} onChange={(e) => edi('cfop_cst_icms', e.target.value)} /></label>}
+                                <label className="fi-c"><span>CFOP</span><input value={iv.cfop_codigo ?? ''} readOnly={ro} onChange={(e) => edi('cfop_codigo', e.target.value)} /><DoTributo atual={iv.cfop_codigo} trib={trib} valor={trib?.cfop} /></label>
+                                {(!simplesNota || txt1(iv.cfop_cst_icms)) && <label className="fi-c"><span>CST</span><input value={iv.cfop_cst_icms ?? ''} readOnly={ro || !!trib} onChange={(e) => edi('cfop_cst_icms', e.target.value)} /><DoTributo atual={iv.cfop_cst_icms} trib={trib} valor={trib?.sit_trib} /></label>}
                                 {(simplesNota || txt1(iv.csosn)) && <label className="fi-c"><span>CSOSN</span><input value={iv.csosn ?? ''} readOnly={ro} onChange={(e) => edi('csosn', e.target.value)} /></label>}
-                                <label className="fi-c"><span>vBC (base)</span><Num valor={iv.icms_base_calculo} ro={ro} onMudar={(n) => edi('icms_base_calculo', n)} /></label>
-                                <label className="fi-c"><span>pICMS</span><Num valor={iv.icms_aliquota} sufixo=" %" ro={ro} onMudar={(n) => edi('icms_aliquota', n)} /></label>
-                                <label className="fi-c"><span>vICMS</span><Num valor={iv.icms_valor} ro={ro} onMudar={(n) => edi('icms_valor', n)} /></label>
+                                <label className="fi-c"><span>vBC (base)</span><Num valor={iv.icms_base_calculo} ro={ro || !!trib} onMudar={(n) => edi('icms_base_calculo', n)} /></label>
+                                <label className="fi-c"><span>pICMS</span><Num valor={iv.icms_aliquota} sufixo=" %" ro={ro || !!trib} onMudar={(n) => edi('icms_aliquota', n)} /><DoTributo atual={iv.icms_aliquota} trib={trib} valor={trib?.aliq_icms} /></label>
+                                <label className="fi-c"><span>vICMS</span><Num valor={iv.icms_valor} ro={ro || !!trib} onMudar={(n) => edi('icms_valor', n)} /></label>
                               </div>
                             </section>}
                             {itemTab === 'trib' && <section className="fi-sec">
                               <h5>🧮 IPI · PIS · COFINS <small>(calculado pelo código de tributação)</small></h5>
                               <div className="fi-grid">
-                                <label className="fi-c"><span>CST IPI</span><input value={iv.cst_ipi ?? ''} readOnly={ro} onChange={(e) => edi('cst_ipi', e.target.value)} /></label>
-                                <label className="fi-c"><span>CST PIS</span><input value={iv.cfop_cst_pis ?? ''} readOnly={ro} onChange={(e) => edi('cfop_cst_pis', e.target.value)} /></label>
-                                <label className="fi-c"><span>CST Cofins</span><input value={iv.cfop_cst_cofins ?? ''} readOnly={ro} onChange={(e) => edi('cfop_cst_cofins', e.target.value)} /></label>
-                                <label className="fi-c"><span>pPIS</span><Num valor={iv.pis_aliquota} sufixo=" %" ro={ro} onMudar={(n) => edi('pis_aliquota', n)} /></label>
-                                <label className="fi-c"><span>vPIS</span><Num valor={iv.pis_valor} ro={ro} onMudar={(n) => edi('pis_valor', n)} /></label>
+                                <label className="fi-c"><span>CST IPI</span><input value={iv.cst_ipi ?? ''} readOnly={ro || !!trib} onChange={(e) => edi('cst_ipi', e.target.value)} /><DoTributo atual={iv.cst_ipi} trib={trib} valor={trib?.cst_ipi} /></label>
+                                <label className="fi-c"><span>CST PIS</span><input value={iv.cfop_cst_pis ?? ''} readOnly={ro || !!trib} onChange={(e) => edi('cfop_cst_pis', e.target.value)} /><DoTributo atual={iv.cfop_cst_pis} trib={trib} valor={trib?.cst_pis} /></label>
+                                <label className="fi-c"><span>CST Cofins</span><input value={iv.cfop_cst_cofins ?? ''} readOnly={ro || !!trib} onChange={(e) => edi('cfop_cst_cofins', e.target.value)} /><DoTributo atual={iv.cfop_cst_cofins} trib={trib} valor={trib?.cst_cofins} /></label>
+                                <label className="fi-c"><span>pPIS</span><Num valor={iv.pis_aliquota} sufixo=" %" ro={ro || !!trib} onMudar={(n) => edi('pis_aliquota', n)} /><DoTributo atual={iv.pis_aliquota} trib={trib} valor={trib?.aliq_pis} /></label>
+                                <label className="fi-c"><span>vPIS</span><Num valor={iv.pis_valor} ro={ro || !!trib} onMudar={(n) => edi('pis_valor', n)} /></label>
                                 <span />
-                                <label className="fi-c"><span>pCOFINS</span><Num valor={iv.cofins_aliquota} sufixo=" %" ro={ro} onMudar={(n) => edi('cofins_aliquota', n)} /></label>
-                                <label className="fi-c"><span>vCOFINS</span><Num valor={iv.cofins_valor} ro={ro} onMudar={(n) => edi('cofins_valor', n)} /></label>
+                                <label className="fi-c"><span>pCOFINS</span><Num valor={iv.cofins_aliquota} sufixo=" %" ro={ro || !!trib} onMudar={(n) => edi('cofins_aliquota', n)} /><DoTributo atual={iv.cofins_aliquota} trib={trib} valor={trib?.aliq_cofins} /></label>
+                                <label className="fi-c"><span>vCOFINS</span><Num valor={iv.cofins_valor} ro={ro || !!trib} onMudar={(n) => edi('cofins_valor', n)} /></label>
                               </div>
                             </section>}
                             {itemTab === 'trib' && <section className="fi-sec fi-trib">
