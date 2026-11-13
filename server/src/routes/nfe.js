@@ -830,6 +830,31 @@ router.put('/:id/arquivos', async (req, res) => {
   registra({ idUsuario: req.user?.id, usuario: req.user?.usuario ?? '', metodo: 'PUT', rota: req.originalUrl, entidade: 'nfe', acao: 'Caminho de arquivo da NFe alterado', idRegistro: id, status: 200, detalhes: { antes: { nfe_xml_file: n.nfe_xml_file, nfe_pdf_file: n.nfe_pdf_file, nfe_xml_app: n.nfe_xml_app, nfe_pdf_app: n.nfe_pdf_app }, depois: b }, origem: 'api' }); // valor anterior, para poder reverter
   res.json(await getNfe(id));
 });
+/** Correção manual do número e/ou do status da nota (qualquer status). Só o administrador; fica na auditoria. */
+router.put('/:id/numero-status', async (req, res) => {
+  if (String(req.user?.usuario ?? '').toUpperCase() !== 'SANCHES') throw new AppError(403, 'Só o administrador altera o número e o status da NFe.');
+  const id = idValido(req.params.id);
+  const n = await getNfe(id);
+  const b = {};
+  if (req.body?.nfe_numero !== undefined) {
+    const num = Number(req.body.nfe_numero);
+    if (!Number.isInteger(num) || num < 0) throw invalid('Número da NFe inválido.');
+    if (num > 0) {
+      const [[dup]] = await pool.query('select id from tb_nfe where nfe_numero = ? and nfe_serie = ? and id <> ? limit 1', [num, n.nfe_serie, id]);
+      if (dup) throw invalid(`Já existe a NFe ${num} (série ${n.nfe_serie}) no cadastro (registro ${dup.id}).`);
+    }
+    b.nfe_numero = num;
+  }
+  if (req.body?.status_e !== undefined) {
+    const st = String(req.body.status_e).toUpperCase();
+    if (!STATUS.includes(st)) throw invalid(`Status inválido. Use: ${STATUS.join(', ')}.`);
+    b.status_e = st;
+  }
+  if (!Object.keys(b).length) throw invalid('Nada para gravar.');
+  await pool.query('update tb_nfe set ? where id = ?', [b, id]);
+  registra({ idUsuario: req.user?.id, usuario: req.user?.usuario ?? '', metodo: 'PUT', rota: req.originalUrl, entidade: 'nfe', acao: 'NFe: número/status alterado manualmente', idRegistro: id, status: 200, detalhes: { de: { nfe_numero: n.nfe_numero, status_e: n.status_e }, para: b } });
+  res.json(await getNfe(id));
+});
 router.put('/:id', async (req, res) => {
   const id = idValido(req.params.id);
   const n = await getNfe(id);

@@ -1020,6 +1020,11 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 288 — NFe: número e status editáveis (administrador)
+
+- Novo cartão **🔧 Número e status** na lateral dos dados da NFe (aparece só para SANCHES): altera o **Nº da NF-e** e o **Status** de uma nota em **qualquer status** (a edição normal só vale para PENDENTE). Pede confirmação, mostra "de → para" e grava só o cadastro (não fala com SEFAZ nem com a API).
+- `PUT /api/nfe/:id/numero-status` (403 para quem não é SANCHES; recusa número já usado na mesma série e status fora da lista). Cada alteração fica na **Auditoria** com o valor antigo e o novo.
+
 ## Fase 287 — Ferramentas › Voz do assistente (só o administrador SANCHES)
 
 - Nova tela (menu Ferramentas, só para SANCHES): lista as vozes da conta ElevenLabs (`GET /api/ajuda/voz/vozes`), com pesquisa, ajustes de **modelo, estabilidade, semelhança e velocidade**, campo de ID para uma voz própria e **🔊 Testar voz** (ouve sem gravar). **Salvar** grava em `ajuda-voz.json` (pasta do servidor, fora do git; `AJUDA_DIR` muda o local) e vale para todos os usuários; tem prioridade sobre `ELEVENLABS_VOICE_ID` do `.env`.

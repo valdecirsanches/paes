@@ -523,6 +523,19 @@ export default function NFe({ onFechar }) {
     setLinhas((ls) => ls.map((r) => (r.id === novo.id ? { ...r, ...novo } : r))); setCompleta(novo); setDraft({}); notificar('ok', 'Nota gravada.');
   });
   const ed = (k, val) => setDraft((d) => ({ ...d, [k]: val }));
+  // ----- número e status (qualquer status; só o administrador)
+  const [admin, setAdmin] = useState(false);
+  const [ns, setNs] = useState({ numero: '', status: '' });
+  useEffect(() => { api.get('/auth/me').then((u) => setAdmin(Boolean(u.admin))).catch(() => {}); }, []);
+  useEffect(() => { setNs({ numero: nota?.nfe_numero ?? '', status: nota?.status_e ?? '' }); }, [nota?.id, nota?.nfe_numero, nota?.status_e]);
+  const nsMudou = nota && (String(ns.numero) !== String(nota.nfe_numero ?? '') || ns.status !== (nota.status_e ?? ''));
+  const gravarNumStatus = () => setConfirma({
+    texto: `Alterar manualmente a NFe ${nota.nfe_numero || nota.id}: número ${nota.nfe_numero ?? '—'} → ${ns.numero}, status ${nota.status_e} → ${ns.status}? Isso não conversa com a SEFAZ nem com a API: só corrige o cadastro.`,
+    ok: () => acao(async () => {
+      const novo = await api.put(`/nfe/${nota.id}/numero-status`, { nfe_numero: Number(ns.numero), status_e: ns.status });
+      setLinhas((ls) => ls.map((r) => (r.id === novo.id ? { ...r, ...novo } : r))); setCompleta(novo); notificar('ok', 'Número e status gravados.');
+    }),
+  });
   const destinatario = () => {
     if (!pendente) { notificar('erro', 'Só é possível alterar notas PENDENTES.'); return; }
     setDialogo({ titulo: 'Razao social do destinatário', campos: [{ k: 'razao_social', rotulo: 'Digite:', valor: v.cliente_razao_social ?? '' }],
@@ -762,6 +775,17 @@ export default function NFe({ onFechar }) {
       <div className="nfe-geral">
         {/* cxTabControl5: painel da esquerda */}
         <aside className="nf2-lat">
+          {admin && nota && (
+            <div className="nf2-card nf2-ns">
+              <div className="nf2-card-t">🔧 Número e status <small>(administrador)</small></div>
+              <label className="nf2-c"><span>Nº da NF-e</span><input type="number" min="0" value={ns.numero} onChange={(e) => setNs({ ...ns, numero: e.target.value })} aria-label="Número da NFe" /></label>
+              <label className="nf2-c"><span>Status</span>
+                <select value={ns.status} onChange={(e) => setNs({ ...ns, status: e.target.value })} aria-label="Status da NFe">
+                  {['PENDENTE', 'AUTORIZADA', 'CANCELADA', 'INUTILIZADA', 'DEVOLVIDO', 'REJEITADA'].map((x) => <option key={x} value={x}>{x}</option>)}
+                </select></label>
+              <button type="button" className="bt" disabled={ocupado || !nsMudou || ns.numero === ''} onClick={gravarNumStatus}>💾 Gravar número/status</button>
+            </div>
+          )}
           <div className="nf2-card nf2-es">
             <div className="nf2-card-t">↔ Tipo de operação</div>
             <div className="dnf-orient" role="radiogroup" aria-label="Saída ou entrada">
