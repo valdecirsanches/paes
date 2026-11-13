@@ -705,6 +705,11 @@ router.get('/impressos', async (req, res) => {
   const [r] = await pool.query("select id from tb_nfe where id in (?) and nfe_impresso in ('True', '1', 'true')", [ids]);
   res.json({ impressos: r.map((x) => x.id) });
 });
+/** Diagnóstico: operações de escrita da API (swagger) e quais parecem importar XML autorizado. */
+router.get('/api-rotas', async (_req, res) => {
+  const ops = await api.listaRotas();
+  res.json({ total: ops.length, candidatas: api.candidatasImportacao(ops), todas: ops.map((o) => `${o.metodo} ${o.caminho}`) });
+});
 router.get('/:id', async (req, res) => res.json(await getNfe(idValido(req.params.id))));
 /**
  * Tudo da nota em foco numa única chamada (antes eram 6–8 chamadas em sequência a cada clique na grade, cada uma
@@ -767,6 +772,23 @@ router.post('/:id/xml-upload', async (req, res) => {
   await pool.query("update tb_nfe set nfe_pdf_app = '', nfe_chave = if(nfe_chave is null or nfe_chave = '', ?, nfe_chave) where id = ?", [chave, nfe.id]); // o DANFE é refeito do XML na próxima impressão
   registra({ idUsuario: req.user?.id, usuario: req.user?.usuario ?? '', metodo: 'POST', rota: req.originalUrl, entidade: 'nfe', acao: 'XML anexado manualmente à NFe', idRegistro: nfe.id, status: 200, detalhes: { chave, arquivo: p, antes: { nfe_xml_app: nfe.nfe_xml_app, nfe_xml_file: nfe.nfe_xml_file } }, origem: 'api' });
   res.json({ ok: true, chave, arquivo: p, nota: await getNfe(nfe.id) });
+});
+
+/** Caminho 1: registra na API a nota já autorizada (XML) para ela gerar o DANFE no layout aceito; depois baixa XML/DANFE da API. */
+router.post('/:id/registrar-na-api', async (req, res) => {
+  const nfe = await getNfe(idValido(req.params.id)); const cfg = await getCfg();
+  const f = arqApp(nfe, 'nfe_xml_file');
+  if (!f || !existsSync(paraLocal(f))) throw invalid('Esta nota não tem XML em disco. Anexe o XML autorizado primeiro (📎 Anexar XML).');
+  const xml = await readFile(paraLocal(f));
+  const empId = await api.empresaId(cfg.cnpj);
+  const r = await api.importarXml(empId, xml, `${nfe.nfe_chave || 'nfe'}-procNFe.xml`);
+  registra({ idUsuario: req.user?.id, usuario: req.user?.usuario ?? '', metodo: 'POST', rota: req.originalUrl, entidade: 'nfe', acao: 'NFe registrada na API pelo XML', idRegistro: nfe.id, status: r.status, detalhes: { rota: r.rota } });
+  if (r.status >= 300) throw new AppError(r.status === 404 ? 404 : 502, `A API recusou o XML (${r.rota}, HTTP ${r.status}): ${JSON.stringify(r.body ?? '').slice(0, 300)}`);
+  await pool.query("update tb_nfe set nfe_pdf_app = '' where id = ?", [nfe.id]);
+  nfe.nfe_pdf_app = '';
+  const { docId } = await docDaNota(nfe, cfg).catch(() => ({}));
+  const arquivos = docId ? await sincronizaArquivos(nfe, cfg, docId) : { pdf: 'a API aceitou o XML mas ainda não localiza a nota' };
+  res.json({ ok: arquivos.pdf === 'ok', rota: r.rota, arquivos });
 });
 
 /** Corrige XML gravado em pasta com dia (11112026) para a pasta do mês (202611). ?simular=1 só conta; sem isso move os arquivos e acerta o banco. */

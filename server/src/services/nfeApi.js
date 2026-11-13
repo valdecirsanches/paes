@@ -204,3 +204,48 @@ export async function schemaIbsCbs() {
   }
   return { schema: null, folhas: [] };
 }
+
+// ---------------------------------------------------------------- registrar na API uma nota já autorizada (XML)
+/** Lê o swagger/OpenAPI da API e lista as operações de escrita (para achar a que importa um XML já autorizado). */
+export async function listaRotas() {
+  for (const doc of ['/swagger/v1/swagger.json', '/openapi.json', '/swagger.json', '/openapi/v1.json']) {
+    const r = await chamar('GET', doc);
+    if (r.status !== 200 || !r.body?.paths) continue;
+    const ops = [];
+    for (const [caminho, def] of Object.entries(r.body.paths)) {
+      for (const [metodo, op] of Object.entries(def)) {
+        if (!['put', 'post', 'patch'].includes(metodo)) continue;
+        const cont = op.requestBody?.content ?? {};
+        const tipo = Object.keys(cont).find((t) => /multipart/.test(t)) ?? Object.keys(cont)[0] ?? null;
+        let sch = cont[tipo]?.schema ?? {};
+        if (sch.$ref) sch = r.body.components?.schemas?.[sch.$ref.split('/').pop()] ?? {};
+        const props = Object.entries(sch.properties ?? {});
+        ops.push({ metodo: metodo.toUpperCase(), caminho, resumo: op.summary ?? op.description ?? '', tipo, props: props.map(([k, v]) => ({ nome: k, formato: v.format ?? v.type ?? '' })) });
+      }
+    }
+    return ops;
+  }
+  return [];
+}
+/** Operações que parecem importar/registrar um XML já autorizado. */
+export const candidatasImportacao = (ops) => ops.filter((o) => /(import|registr|legad|existente|xml)/i.test(`${o.caminho} ${o.resumo}`) && !/cancel|inutiliz|carta|logo|certific|danfe/i.test(o.caminho));
+
+/** Envia o XML autorizado à API. Rota: NFE_API_IMPORTAR_XML="POST /api/empresas/{empresaId}/nfe/importar" (e NFE_API_IMPORTAR_XML_CORPO=multipart|json|raw; padrão: pelo swagger). */
+export async function importarXml(empId, xml, nomeArquivo = 'nfe.xml') {
+  let metodo, caminho, corpo = process.env.NFE_API_IMPORTAR_XML_CORPO || '', campo = 'arquivo';
+  const cfg = String(process.env.NFE_API_IMPORTAR_XML || '').trim();
+  if (cfg) [metodo, caminho] = cfg.split(/\s+/);
+  else {
+    const c = candidatasImportacao(await listaRotas());
+    const forte = c.filter((o) => /import/i.test(o.caminho));
+    const uma = c.length === 1 ? c[0] : forte.length === 1 ? forte[0] : null;
+    if (!uma) throw Object.assign(new AppError(409, c.length ? 'Há mais de uma rota candidata na API; defina NFE_API_IMPORTAR_XML no server/.env com a certa.' : 'A API não tem rota de importação de XML autorizado (nada parecido no swagger).'), { extra: { candidatas: c } });
+    metodo = uma.metodo; caminho = uma.caminho;
+    if (!corpo) corpo = /multipart/.test(uma.tipo ?? '') ? 'multipart' : /json/.test(uma.tipo ?? '') ? 'json' : 'raw';
+    campo = (uma.props.find((p) => p.formato === 'binary') ?? uma.props.find((p) => /xml|arquivo|file/i.test(p.nome)) ?? { nome: 'arquivo' }).nome;
+  }
+  caminho = caminho.replace(/\{[^}]*\}/, empId);
+  if (corpo === 'multipart') { const form = new FormData(); form.append(campo, new Blob([xml], { type: 'application/xml' }), nomeArquivo); return { rota: `${metodo} ${caminho}`, ...(await chamar(metodo, caminho, { form })) }; }
+  if (corpo === 'json') return { rota: `${metodo} ${caminho}`, ...(await chamar(metodo, caminho, { json: { xmlBase64: Buffer.from(xml).toString('base64'), xml: Buffer.from(xml).toString('utf8') } })) };
+  return { rota: `${metodo} ${caminho}`, ...(await chamar(metodo, caminho, { json: undefined, form: new Blob([xml], { type: 'application/xml' }) })) };
+}

@@ -1020,6 +1020,11 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 280 — Caminho 1: registrar na API a nota autorizada pelo XML
+
+- Nova ação **🔗 Registrar na API** (dados da NFe, ao lado de Anexar XML): envia o XML autorizado à API de NF-e para ela registrar a nota e gerar o DANFE no layout aceito; depois o app baixa XML/DANFE dela (`POST /api/nfe/:id/registrar-na-api`).
+- A rota de importação da API ainda **não é conhecida**: o app a procura no swagger. `GET /api/nfe/api-rotas` lista as operações de escrita da API e as candidatas; se houver uma só, é usada; senão defina `NFE_API_IMPORTAR_XML="POST /api/empresas/{empresaId}/..."` (e `NFE_API_IMPORTAR_XML_CORPO=multipart|json|raw`) no `server/.env`. Se a API não tiver essa rota, a ação avisa.
+
 ## Fase 279 — DANFE de nota que a API não conhece, mas tem XML anexado
 
 - Nas Fases 277/278 o gerador local ficou desligado e a nota com XML anexado à mão (a API não a conhece) passou a dar "não achei o XML". Agora, **só como último recurso** (a API não entregou o PDF e não há PDF antigo do sistema), o DANFE é gerado do XML — **sem guardar em disco**. Assim o layout aceito da API volta sozinho assim que ela passar a entregar o PDF, e o layout da biblioteca local nunca fica "grudado" na nota.
