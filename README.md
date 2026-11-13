@@ -1020,6 +1020,11 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 285 — Link "O que mudou" e histórico de versões
+
+- Link **O que mudou** ao lado da versão: no rodapé, na tela de login e na janela da Fábrica. Abre o **histórico de versões** (da mais nova para a mais antiga).
+- O histórico usa os textos de `client/novidades.json` e, para as fases sem texto próprio, o título da nota do README (`## Fase NNN — título`), embutidos no build (`/version.json`).
+
 ## Fase 284 — Atualizações dizem o que mudou
 
 - `client/novidades.json` guarda, por fase, o que mudou em linguagem de usuário. O build o publica em `/version.json`.

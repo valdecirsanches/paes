@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 const BUILD = typeof __BUILD__ === 'string' ? __BUILD__ : '';
 const FASE = typeof __FASE__ === 'number' ? __FASE__ : 0;
 const NOVIDADES = typeof __NOVIDADES__ === 'object' ? __NOVIDADES__ : [];
+/** Abre o histórico de versões (usado pelo link "O que mudou" do rodapé e do login). */
+export const abrirHistorico = () => window.dispatchEvent(new Event('abrir-historico'));
 const INTERVALO = 2 * 60 * 1000;
 const CHAVE = 'paes_fase_vista';
 
@@ -26,6 +28,8 @@ function Lista({ itens }) {
 export default function NovaVersao() {
   const [nova, setNova] = useState(null); // { build, fase, novidades }
   const [aberto, setAberto] = useState(false);
+  const [historico, setHistorico] = useState(false);
+  useEffect(() => { const abre = () => setHistorico(true); window.addEventListener('abrir-historico', abre); return () => window.removeEventListener('abrir-historico', abre); }, []);
   const [recem, setRecem] = useState(() => { // acabou de atualizar: novidades entre a última fase vista e a atual
     const vista = lerVista();
     return vista > 0 && vista < FASE ? novidadesEntre(NOVIDADES, vista, FASE).slice(0, 12) : [];
@@ -48,9 +52,19 @@ export default function NovaVersao() {
     checar();
     return () => { vivo = false; clearInterval(t); document.removeEventListener('visibilitychange', vis); };
   }, []);
+  const fechaHistorico = () => { setHistorico(false); gravaVista(FASE); };
   const fechaRecem = () => { gravaVista(FASE); setRecem([]); };
   return (
     <>
+      {historico && (
+        <div className="nv-fundo" role="dialog" aria-label="Histórico de versões" onClick={fechaHistorico}>
+          <div className="nv-caixa" onClick={(e) => e.stopPropagation()}>
+            <h3>📜 Histórico de versões <small>(atual: fase {FASE})</small></h3>
+            {NOVIDADES.length ? <Lista itens={NOVIDADES} /> : <p>Sem histórico disponível.</p>}
+            <div className="nv-bt"><button type="button" onClick={fechaHistorico}>Fechar</button></div>
+          </div>
+        </div>
+      )}
       {recem.length > 0 && (
         <div className="nv-fundo" role="dialog" aria-label="O que mudou">
           <div className="nv-caixa">

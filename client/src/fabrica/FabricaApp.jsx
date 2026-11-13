@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { abrirHistorico } from '../components/NovaVersao.jsx';
 import Diaria from '../screens/Diaria.jsx';
 import Mercadorias from '../screens/Mercadorias.jsx';
 import Cargas from '../screens/Cargas.jsx';
@@ -66,7 +67,7 @@ export default function FabricaApp({ saude, onVoltar = null, dispositivo = '' })
         })}
       </div>
       <div className="fb-status">
-        <span><i>Compilação:</i> <b className="v">{VERSAO}</b></span>
+        <span><i>Compilação:</i> <b className="v">{VERSAO}</b> <button type="button" className="lk-versao" onClick={abrirHistorico}>O que mudou</button></span>
         <span><i>Host:</i> <b className="h">{saude?.ok ? `${saude.host}/${saude.banco}` : ''}</b></span>
         <span title="Código deste navegador (liberação em Dispositivos autorizados)"><i>Dispositivo:</i> <b className="h">{dispositivo || '—'}</b></span>
         <span><b className="m">Mensagem:</b> {msg}</span>

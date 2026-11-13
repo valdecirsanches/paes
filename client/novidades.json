@@ -1,4 +1,5 @@
 [
+  {"fase": 285, "itens": ["No rodapé e na tela de login há o link “O que mudou”, que mostra o histórico de todas as versões."]},
   {"fase": 284, "itens": ["Atualizações agora avisam o que mudou: o aviso de nova versão tem o botão “O que mudou?” e, depois de atualizar, aparece um quadro com as novidades."]},
   {"fase": 283, "itens": ["NFe: Shift+clique marca um lote de notas (na linha ou na caixinha), até o fim da lista."]},
   {"fase": 282, "itens": ["NFe: novo botão “🔗 Registrar na API”, que envia o XML autorizado à API para ela gerar o DANFE no layout aceito."]},

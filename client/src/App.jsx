@@ -1,4 +1,5 @@
 import { sincronizaLayout } from './lib/ajustes.js';
+import { abrirHistorico } from './components/NovaVersao.jsx';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, imagemApi } from './api.js';
 import Diaria from './screens/Diaria.jsx';
@@ -242,7 +243,7 @@ export default function App() {
 
       <footer className="rodape">
         <span><b>Host:</b> {saude ? (saude.ok ? `${saude.host}/${saude.banco}` : <em className="falha">sem conexão com o banco</em>) : '…'}</span>
-        <span title="Se após o deploy este texto não mudou, o navegador/Cloudflare está com a versão antiga ou o build não foi refeito"><b>Versão:</b> {typeof __VERSAO__ === 'string' ? __VERSAO__ : '1.0'} · {typeof __BUILD__ === 'string' ? __BUILD__ : ''}</span>
+        <span title="Se após o deploy este texto não mudou, o navegador/Cloudflare está com a versão antiga ou o build não foi refeito"><b>Versão:</b> {typeof __VERSAO__ === 'string' ? __VERSAO__ : '1.0'} · {typeof __BUILD__ === 'string' ? __BUILD__ : ''} · <button type="button" className="lk-versao" onClick={abrirHistorico}>O que mudou</button></span>
         <span title="Código deste navegador: é o que aparece em Ferramentas → Dispositivos autorizados"><b>Dispositivo:</b> <code>{codDisp || '—'}</code></span>
         <span><b>Usuário:</b> {usuario ? usuario.nome || usuario.usuario : ''}</span>
         {saude && !saude.ok && <span className="falha">{saude.message}</span>}

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { abrirHistorico } from '../components/NovaVersao.jsx';
 import { api } from '../api.js';
 import { mensagem } from '../components/toast.jsx';
 
@@ -52,7 +53,7 @@ export default function Login({ onEntrou, saude }) {
                   <label className="lg-s">Senha:<span className="lg-olho"><input type={ver ? 'text' : 'password'} value={senha} maxLength={100} autoComplete="current-password" disabled={saiu} onChange={(e) => setSenha(e.target.value)} /><button type="button" tabIndex={-1} aria-label={ver ? 'Ocultar senha' : 'Mostrar senha'} title={ver ? 'Ocultar senha' : 'Mostrar senha'} aria-pressed={ver} onClick={() => setVer((x) => !x)}>{ver ? '🙈' : '👁'}</button></span></label>
                   <button type="submit" className="lg-bt lg-acessar" disabled={ocupado || saiu}>🔑 Acessar</button>
                   <button type="button" className="lg-bt lg-sair" onClick={sair}>🚪 Sair</button>
-                  <span className="lg-versao">versão {typeof __VERSAO__ === 'string' ? __VERSAO__ : '1.0'} · {typeof __BUILD__ === 'string' ? __BUILD__ : ''}</span>
+                  <span className="lg-versao">versão {typeof __VERSAO__ === 'string' ? __VERSAO__ : '1.0'} · {typeof __BUILD__ === 'string' ? __BUILD__ : ''} · <button type="button" className="lk-versao" onClick={abrirHistorico}>O que mudou</button></span>
                 </form>
               ) : (
                 <div className="lg-srv">
