@@ -48,5 +48,5 @@ export function useDigitaNaLista({ itens, texto, onAchar, idAtual, pausa = 1800 
     e.preventDefault();
     define(buf.current + e.key);
   }, [define]);
-  return { digitado, props: { tabIndex: 0, onKeyDown } };
+  return { digitado, props: { tabIndex: 0, onKeyDown, 'data-foco-inicial': '' } };
 }

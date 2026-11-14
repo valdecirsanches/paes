@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 316 — Foco inicial na lista de unidades
+
+- `useDigitaNaLista` marca o contêiner com `data-foco-inicial`; `App.jsx` foca o da aba ativa ao abrir/trocar de aba (250 ms e 1,2 s, sem roubar o foco de um campo de texto da tela).
+
 ## Fase 315 — Edita/Desconto: foco nos campos numéricos
 
 - Causa: `Num` era um componente criado dentro do render de `EditaDesconto`; a cada tecla o React recriava o input (perdia o foco). Agora é chamado como função; Enter em Qtde/Cada vai ao Preço e Enter no Preço aplica. Mesmo ajuste em `Barra` (VozAssistente).

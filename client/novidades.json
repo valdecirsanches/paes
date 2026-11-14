@@ -1,4 +1,5 @@
 [
+  {"fase": 316, "itens": ["Programação diária, Comandas e Faturamento: ao abrir a tela (ou voltar para a aba) o foco já fica na lista de unidades/clientes — é só começar a digitar para localizar; ↑ ↓ passam de um para outro."]},
   {"fase": 315, "itens": ["Comandas › Edita/Desconto: corrigido o campo Qtde (e Cada/Preço) que aceitava 1 dígito e perdia o foco. Agora só sai do campo com Enter (Qtde/Cada → Preço; Enter no Preço aplica) ou ao clicar em outro lugar.", "Voz do assistente: mesma correção nos controles deslizantes."]},
   {"fase": 314, "itens": ["Comandas: botões \"Editar item\" e \"Incluir item\" na barra (além do clique duplo na linha). Dá para incluir produto mesmo em comanda sem itens; Edita/Desconto continua com Qtde, Cada, Preço, Excluir e Aplicar."]},
   {"fase": 313, "itens": ["NFe, aba Tributos do item: sem espaço vago — campos, valores calculados e botão Gravar ficam colados, um logo abaixo do outro."]},

@@ -89,6 +89,18 @@ export default function App() {
   const carregaFundo = useCallback(async () => { try { const i = await api.get('/tela-principal'); const u = i.personalizada ? await imagemApi(`/tela-principal/imagem?v=${i.versao}`) : null; setFundo(u ?? '/principal-paes.jpg'); } catch { /* fica a imagem atual */ } }, []);
   useEffect(() => { window.addEventListener('tela-principal-alterada', carregaFundo); return () => window.removeEventListener('tela-principal-alterada', carregaFundo); }, [carregaFundo]);
   const [ativa, setAtiva] = useState(null);
+  // ao abrir/voltar para uma tela com lista de unidades/clientes (Diária, Comandas, Faturamento) o foco vai para a lista:
+  // o usuário já começa a digitar para localizar, sem clicar antes (tenta de novo após o carregamento)
+  useEffect(() => {
+    if (!ativa) return undefined;
+    const foca = () => {
+      const a = document.activeElement;
+      if (a && a.closest?.('.slot:not([hidden])') && a.matches?.('input, select, textarea')) return; // já está digitando num campo
+      document.querySelector('.slot:not([hidden]) [data-foco-inicial]')?.focus({ preventScroll: true });
+    };
+    const t1 = setTimeout(foca, 250); const t2 = setTimeout(foca, 1200);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [ativa]);
   const [saude, setSaude] = useState(null);
   const [impr, setImpr] = useState(null); // estado do agente de impressão desta estação
   const [ambiente, setAmbiente] = useState(null); // 1 produção · 2 homologação (emissão de NFe)
