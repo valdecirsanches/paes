@@ -43,7 +43,7 @@ export default function VozAssistente() {
   };
 
   if (!cfg) return <section className="va"><h2>🔊 Voz do assistente</h2>{msg ? <p className="va-erro">{msg.m}</p> : <p>Carregando…</p>}</section>;
-  const Barra = ({ rot, k, min, max, passo }) => (
+  const Barra = ({ rot, k, min, max, passo }) => ( // chamado como função (não <Barra/>) para o slider não ser recriado a cada mudança
     <label className="va-bar">{rot}: <b>{Number(cfg[k]).toFixed(2)}</b>
       <input type="range" min={min} max={max} step={passo} value={cfg[k]} onChange={(e) => muda({ [k]: Number(e.target.value) })} />
     </label>
@@ -72,9 +72,9 @@ export default function VozAssistente() {
           <legend>Ajustes</legend>
           <p>Voz escolhida: <b>{cfg.voiceNome || cfg.voiceId || '—'}</b></p>
           <label>Modelo: <select value={cfg.modelo} onChange={(e) => muda({ modelo: e.target.value })}>{cfg.modelos.map((m) => <option key={m} value={m}>{m}</option>)}</select></label>
-          <Barra rot="Estabilidade" k="estabilidade" min={0} max={1} passo={0.05} />
-          <Barra rot="Semelhança" k="similaridade" min={0} max={1} passo={0.05} />
-          <Barra rot="Velocidade" k="velocidade" min={0.7} max={1.2} passo={0.05} />
+          {Barra({ rot: "Estabilidade", k: "estabilidade", min: 0, max: 1, passo: 0.05 })}
+          {Barra({ rot: "Semelhança", k: "similaridade", min: 0, max: 1, passo: 0.05 })}
+          {Barra({ rot: "Velocidade", k: "velocidade", min: 0.7, max: 1.2, passo: 0.05 })}
           <label>Texto de teste:<textarea rows={3} value={texto} maxLength={300} onChange={(e) => setTexto(e.target.value)} /></label>
           <div className="va-bt">
             <button type="button" className="bt" onClick={testar} disabled={!!ocupado || !cfg.voiceId}>{ocupado === 'teste' ? 'Gerando…' : '🔊 Testar voz'}</button>

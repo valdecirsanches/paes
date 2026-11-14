@@ -34,6 +34,7 @@ function EditaDesconto({ item: itemIn, comandaId, inicio = 'editar', onFechar, o
   const [ocupado, setOcupado] = useState(false);
   const refQtde = useRef(null);
   const refProduto = useRef(null);
+  const refPreco = useRef(null);
   useEffect(() => { const r = inicio === 'incluir' ? refProduto : refQtde; r.current?.focus(); r.current?.select(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const n = (t) => { const v = parseBr(t); return Number.isNaN(v) ? 0 : v ?? 0; };
@@ -51,6 +52,7 @@ function EditaDesconto({ item: itemIn, comandaId, inicio = 'editar', onFechar, o
       const p = await api.get(`/comandas/produto/${encodeURIComponent(produto.trim())}?comanda=${comandaId}`);
       setResolvido(true); setProduto(p.codigo); setDescricao(p.descricao ?? ''); setQtde('1');
       setPreco(fmtBr(p.preco, 3)); setCada(fmtBr(Number(p.divisor_basico) || 1, 0, 3)); setErro('');
+      setTimeout(() => { refQtde.current?.focus(); refQtde.current?.select(); }, 0); // produto localizado: cursor na Qtde
     } catch {
       setDescricao('Produto não encontrado!'); setErro('Produto não encontrado para este cliente.'); refProduto.current?.select();
     }
@@ -67,8 +69,10 @@ function EditaDesconto({ item: itemIn, comandaId, inicio = 'editar', onFechar, o
     } catch (e) { setErro(e.message); setOcupado(false); }
   };
 
-  const Num = ({ valor, set, refe, w = 80 }) => (
-    <input ref={refe} className="cmd-ed-num" style={{ width: w }} value={valor} onChange={(e) => set(e.target.value)} onFocus={(e) => e.target.select()} />
+  // atenção: chamado como função (não como <Num/>), senão o campo é recriado a cada tecla e perde o foco
+  const Num = ({ valor, set, refe, w = 80, aoEnter }) => (
+    <input ref={refe} className="cmd-ed-num" style={{ width: w }} value={valor} onChange={(e) => set(e.target.value)} onFocus={(e) => e.target.select()}
+      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); aoEnter?.(); } }} />
   );
   return (
     <Modal titulo="Edita/Desconto" onFechar={onFechar}>
@@ -83,9 +87,9 @@ function EditaDesconto({ item: itemIn, comandaId, inicio = 'editar', onFechar, o
           <input value={descricao} readOnly={modo !== 'incluir'} tabIndex={-1} style={{ width: 330 }} onChange={(e) => setDescricao(e.target.value)} />
         </label>
         <div className="cmd-ed-nums">
-          <label>Qtde:<Num valor={qtde} set={setQtde} refe={refQtde} /></label>
-          <label>Cada:<Num valor={cada} set={setCada} w={60} /></label>
-          <label>Preço:<Num valor={preco} set={setPreco} /></label>
+          <label>Qtde:{Num({ valor: qtde, set: setQtde, refe: refQtde, aoEnter: () => refPreco.current?.focus() })}</label>
+          <label>Cada:{Num({ valor: cada, set: setCada, w: 60, aoEnter: () => refPreco.current?.focus() })}</label>
+          <label>Preço:{Num({ valor: preco, set: setPreco, refe: refPreco, aoEnter: aplicar })}</label>
           <label className="cmd-ed-tot">Valor total:<input readOnly tabIndex={-1} value={f2(total)} style={{ width: 120 }} /></label>
         </div>
         {erro && <p className="cmd-ed-erro">{erro}</p>}
