@@ -19,20 +19,22 @@ const qt = (n) => fmtBr(n ?? 0, 0, 3);
 
 
 /** f_comanda_desconto: edita qtde/preço do item, inclui produto ou marca para exclusão. */
-function EditaDesconto({ item, comandaId, onFechar, onAplicado }) {
-  const [modo, setModo] = useState('editar'); // editar | incluir
-  const [produto, setProduto] = useState(item.produto_codigo ?? '');
-  const [descricao, setDescricao] = useState(item.descricao_generica ?? '');
-  const [qtde, setQtde] = useState(fmtBr(item.new_qtde, 0, 3));
-  const [cada, setCada] = useState(fmtBr(Number(item.preco_cada) || 1, 0, 3));
-  const [preco, setPreco] = useState(fmtBr(item.preco, 3));
+function EditaDesconto({ item: itemIn, comandaId, inicio = 'editar', onFechar, onAplicado }) {
+  const item = itemIn ?? { id: null, produto_codigo: '', descricao_generica: '', new_qtde: 0, preco_cada: 1, preco: 0 };
+  const [modo, setModo] = useState(inicio); // editar | incluir
+  const novoIni = inicio === 'incluir';
+  const [produto, setProduto] = useState(novoIni ? '' : item.produto_codigo ?? '');
+  const [descricao, setDescricao] = useState(novoIni ? '' : item.descricao_generica ?? '');
+  const [qtde, setQtde] = useState(novoIni ? '0' : fmtBr(item.new_qtde, 0, 3));
+  const [cada, setCada] = useState(novoIni ? '0' : fmtBr(Number(item.preco_cada) || 1, 0, 3));
+  const [preco, setPreco] = useState(novoIni ? '0,000' : fmtBr(item.preco, 3));
   const [excluir, setExcluir] = useState(false);
   const [resolvido, setResolvido] = useState(false); // cod = 'OK' do Delphi
   const [erro, setErro] = useState('');
   const [ocupado, setOcupado] = useState(false);
   const refQtde = useRef(null);
   const refProduto = useRef(null);
-  useEffect(() => { refQtde.current?.focus(); refQtde.current?.select(); }, []);
+  useEffect(() => { const r = inicio === 'incluir' ? refProduto : refQtde; r.current?.focus(); r.current?.select(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const n = (t) => { const v = parseBr(t); return Number.isNaN(v) ? 0 : v ?? 0; };
   // Item existente: valor real da linha (qtde × preço, na unidade de preço_cada). Item novo: preço × qtde × cada.
@@ -89,7 +91,7 @@ function EditaDesconto({ item, comandaId, onFechar, onAplicado }) {
         {erro && <p className="cmd-ed-erro">{erro}</p>}
         <div className="rodape-modal">
           <button type="button" className="bt" onClick={incluir} disabled={ocupado}>Incluir</button>
-          <button type="button" className="bt cmd-excluir" onClick={() => setExcluir((x) => !x)} disabled={ocupado || modo === 'incluir'}>Excluir</button>
+          <button type="button" className="bt cmd-excluir" onClick={() => setExcluir((x) => !x)} disabled={ocupado || modo === 'incluir' || !item.id}>Excluir</button>
           <button type="button" className="bt" onClick={aplicar} disabled={ocupado}>Aplicar</button>
           <button type="button" className="bt" onClick={onFechar}>Cancelar</button>
         </div>
@@ -266,8 +268,15 @@ export default function Comandas({ onFechar }) {
 
   const itemAtual = dados?.itens.find((i) => i.id === itemSel) ?? null;
   const bloqueada = dados && (String(dados.comanda.status).toUpperCase() === 'FATURADO' || Number(dados.comanda.id_nota_fiscal) > 0);
+  const [inicioEd, setInicioEd] = useState('editar');
+  const abreInclusao = () => {
+    if (!dados) { notificar('erro', 'Selecione uma comanda.'); return; }
+    if (bloqueada) { notificar('erro', 'Esta comanda já foi faturada e não pode ser alterada.'); return; }
+    setInicioEd('incluir'); setEdicao(true);
+  };
   const abreEdicao = () => {
-    if (!itemAtual) return;
+    if (!itemAtual) { notificar('erro', 'Selecione um item da comanda (ou use Incluir item).'); return; }
+    setInicioEd('editar');
     if (bloqueada) { notificar('erro', 'Esta comanda já foi faturada e não pode ser alterada.'); return; }
     setEdicao(true);
   };
@@ -298,6 +307,8 @@ export default function Comandas({ onFechar }) {
         <button type="button" className="bt cmd-bt" disabled={ocupado || !alvos.length} onClick={imprimir}><span className="fat-ic">🖨</span>Imprimir</button>
         <button type="button" className="bt cmd-bt" title="Click aqui para selecionar todas as comandas" disabled={!lista?.length}
           onClick={() => setSel(new Set((lista ?? []).map((r) => r.id)))}><span className="fat-ic">☑</span>Selecionar tudo</button>
+        <button type="button" className="bt cmd-bt" title="Edita/Desconto do item selecionado (ou clique duplo na linha)" disabled={ocupado || !itemAtual || bloqueada} onClick={abreEdicao}><span className="fat-ic">✎</span>Editar item</button>
+        <button type="button" className="bt cmd-bt" title="Inclui um produto na comanda selecionada" disabled={ocupado || !dados || bloqueada} onClick={abreInclusao}><span className="fat-ic">➕</span>Incluir item</button>
         <button type="button" className="bt cmd-bt" title="Excluir comanda" disabled={ocupado || !alvos.length} onClick={excluir}><span className="fat-ic x">✖</span>Excluir Comanda</button>
         <fieldset className="cmd-emis">
           <label>Saída:</label>
@@ -392,9 +403,9 @@ export default function Comandas({ onFechar }) {
 
       {previa && dados && <PreviaComanda dados={dados} unidadeNome={unidade?.unidade_nome} notificar={notificar} onFechar={() => setPrevia(false)} />}
       {confirma && <Confirma texto={confirma.texto} onSim={confirma.sim} onFechar={() => setConfirma(null)} />}
-      {edicao && itemAtual && (
-        <EditaDesconto item={itemAtual} comandaId={dados.comanda.id} onFechar={() => setEdicao(false)}
-          onAplicado={async (manter) => { setEdicao(false); await atualizar(true); await carregaComanda(foco, true); if (manter == null) setItemSel(null); notificar('ok', 'Item atualizado.'); }} />
+      {edicao && dados && (inicioEd === 'incluir' || itemAtual) && (
+        <EditaDesconto key={`${inicioEd}-${itemAtual?.id}`} item={inicioEd === 'incluir' ? null : itemAtual} inicio={inicioEd} comandaId={dados.comanda.id} onFechar={() => setEdicao(false)}
+          onAplicado={async (manter) => { setEdicao(false); await atualizar(true); await carregaComanda(foco, true); if (manter == null) setItemSel(null); notificar('ok', 'Comanda atualizada.'); }} />
       )}
     </div>
   );
