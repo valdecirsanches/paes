@@ -27,7 +27,9 @@ export default function Diaria({ onFechar }) {
   const gravaItem = useRef(null); // o item em edição se registra aqui; ao trocar de cliente a alteração pendente é gravada antes (nada se perde)
   const trocaClienteClique = async (id) => {
     if (id === selId) return;
-    if (editandoItem && gravaItem.current && !(await gravaItem.current())) return; // falhou a gravação (ex.: campo inválido): fica no cliente atual
+    if (editandoItem && gravaItem.current && !(await gravaItem.current())) { // não deu para gravar (ex.: campo inválido): pergunta, para o usuário nunca ficar travado
+      if (!(await confirmar('O item em edição não pode ser gravado.\nDescartar a alteração e passar para o outro cliente?'))) return;
+    }
     setSelId(id);
   };
   const painelAberto = useRef(false); // painel de edição do item: continua aberto ao passar de um cliente para outro
@@ -88,14 +90,15 @@ export default function Diaria({ onFechar }) {
 
   const sel = lista.find((r) => r.id === selId) || null;
   // digitar direto na lista de clientes: posiciona a unidade/cliente que combina
-  const digCli = useDigitaNaLista({ itens: busca.visiveis, texto: (r) => `${r.unidade_nome} ${r.cliente_razao_social ?? ''}`, idAtual: selId, onAchar: (r) => { if (editandoItem) return; setSelId(r.id); requestAnimationFrame(() => document.querySelector('.dr2-cli.atual')?.scrollIntoView({ block: 'nearest' })); } });
+  const digCli = useDigitaNaLista({ itens: busca.visiveis, texto: (r) => `${r.unidade_nome} ${r.cliente_razao_social ?? ''}`, idAtual: selId, onAchar: (r) => { trocaClienteClique(r.id); requestAnimationFrame(() => document.querySelector('.dr2-cli.atual')?.scrollIntoView({ block: 'nearest' })); } });
   // ↑ ↓ PageUp PageDown Home End trocam o cliente selecionado: com o foco na lista/pesquisa OU em qualquer ponto da tela
   // (fora de campos de formulário); não vale com o item em edição.
   const raiz = useRef(null);
   const trocaCliente = (e) => {
     const passo = { ArrowDown: 1, ArrowUp: -1, PageDown: 8, PageUp: -8, Home: -Infinity, End: Infinity }[e.key];
-    if (passo === undefined || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || editandoItem) return;
+    if (passo === undefined || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
     const t = e.target;
+    if (editandoItem && !t?.closest?.('.dr2-lista')) return; // em edição, as setas do restante da tela são do item; na lista de clientes trocam de cliente
     if (t?.closest?.('select, textarea, [contenteditable=true], dialog, [role=menu], .dr2-mais, .cal')) return;
     if (t?.tagName === 'INPUT' && !t.closest('.dr2-lista') && t.type !== 'checkbox') return; // outros campos mantêm as setas
     if (t?.tagName === 'INPUT' && (e.key === 'Home' || e.key === 'End')) return; // na pesquisa, Home/End movem o cursor do texto
@@ -104,7 +107,7 @@ export default function Diaria({ onFechar }) {
     const i = v.findIndex((r) => r.id === selId);
     const n = v[Math.min(v.length - 1, Math.max(0, i < 0 ? (passo > 0 ? 0 : v.length - 1) : i + passo))];
     const dobotao = t?.tagName === 'BUTTON' && t.closest('.dr2-lista');
-    setSelId(n.id);
+    trocaClienteClique(n.id);
     requestAnimationFrame(() => { const b = document.querySelector('.dr2-cli.atual'); b?.scrollIntoView({ block: 'nearest' }); if (dobotao) b?.focus({ preventScroll: true }); });
   };
   const trocaRef = useRef(trocaCliente); trocaRef.current = trocaCliente;

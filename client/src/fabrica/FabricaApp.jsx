@@ -65,7 +65,7 @@ export default function FabricaApp({ saude, onVoltar = null, dispositivo = '' })
       <div className="fb-area">
         {abertas.map((k) => {
           const { Tela, claro } = TELAS[k];
-          return <div key={k} className={`fb-slot${claro ? ' claro' : ''}`} hidden={ativa !== k}><Tela onFechar={() => fechar(k)} abrirTela={abrir} /></div>;
+          return <div key={k} className={`fb-slot${claro ? ' claro' : ''}`} hidden={ativa !== k}><Tela onFechar={() => fechar(k)} abrirTela={abrir} ativa={ativa === k} /></div>;
         })}
       </div>
       <div className="fb-status">

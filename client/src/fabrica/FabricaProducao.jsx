@@ -2,11 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../api.js';
 import Calendario from '../components/Calendario.jsx';
 import { brData, hoje } from '../lib/rules.js';
+import { useDigitaNaLista } from '../lib/digitaNaLista.js';
 
 // Tela "Produção" do sistema da fábrica (u_producao), refeita igual à original: mesma disposição, cores e comportamento.
-// Cores do OnCustomDrawCell: horário 1 = $0080FFFF (amarelo) + azul; 2 = $0080FF80 (verde) + azul; 3 = azul + branco; selecionada = vermelho + amarelo negrito.
-const COR = { 1: { bg: '#ffff80', fg: '#0000ff' }, 2: { bg: '#80ff80', fg: '#0000ff' }, 3: { bg: '#0000ff', fg: '#ffffff' } };
-const SEL = { bg: '#ff0000', fg: '#ffff00' };
+// Fundo branco; só o horário leva cor (1 = amarelo, 2 = verde, 3 = azul) e a linha atual fica destacada.
 const REFRESH_MS = 120000; // Timer1 do original: recarrega a aba ativa a cada 2 minutos
 const fonteInicial = () => { try { const n = Number(localStorage.getItem('fab_producao_fonte')); return n >= 8 && n <= 60 ? n : 16; } catch { return 16; } };
 const cmp = (a, b) => (typeof a === 'number' && typeof b === 'number' ? a - b : String(a ?? '').localeCompare(String(b ?? ''), 'pt-BR'));
@@ -68,6 +67,8 @@ function Aba({ tipo, data, recarga, ativa, fonte, onCarga }) {
     const n = linhasM[Math.min(linhasM.length - 1, Math.max(0, i + (e.key === 'ArrowDown' ? 1 : -1)))];
     if (n) setSel(chave(n));
   };
+    const dig = useDigitaNaLista({ itens: linhasM.map((r) => ({ ...r, id: chave(r) })), texto: (r) => `${r.descricao ?? r.referencia_descricao ?? ''} ${r.codigo_referencia ?? ''}`, idAtual: sel, onAchar: (r) => { setSel(r.id); setTimeout(() => corpo.current?.querySelector('tr.sel-l')?.scrollIntoView({ block: 'nearest' }), 0); } });
+  const teclaGrade = (e) => { tecla(e); dig.props.onKeyDown(e); }; // setas já tratadas acima; letras montam a pesquisa direto na grade
   useEffect(() => { setSelD(0); }, [sel, destinos]);
   useEffect(() => { if (ativa) corpo.current?.querySelector('tr.sel-l')?.scrollIntoView({ block: 'nearest' }); }, [ativa, sel]); // setas: mantém a linha atual à vista
   useEffect(() => { if (ativa) corpo.current?.focus({ preventScroll: true }); }, [ativa, sel]);
@@ -76,19 +77,18 @@ function Aba({ tipo, data, recarga, ativa, fonte, onCarga }) {
 
   return (
     <div className="fbp-aba" hidden={!ativa}>
-      <div className="fbp-grade" style={{ fontSize: `${fonte * 4 / 3}px` }} tabIndex={0} ref={corpo} onKeyDown={tecla}>
+      <div className="fbp-grade" style={{ fontSize: `${fonte * 4 / 3}px` }} tabIndex={0} ref={corpo} onKeyDown={teclaGrade} title="Clique na grade e digite para localizar pela descrição; ↑ ↓ passam de um para outro">
+        {dig.digitado && <div className="fbp-busca">🔎 {dig.digitado}</div>}
         <table>
           <thead><tr><th className="ind" /><th style={{ width: '11%' }}>Horário</th><th style={{ width: '14%' }}>Qtde</th><th>Descrição do produto</th></tr></thead>
           <tbody>
             {linhasM.map((r) => {
-              const k = chave(r); const ehSel = k === sel; const base = COR[r.producao_turno] ?? COR[1];
+              const k = chave(r); const ehSel = k === sel;
               return (
                 <tr key={k} className={ehSel ? 'sel-l' : ''} onClick={() => setSel(k)}>
                   <td className={`ind${ehSel ? ' on' : ''}`}>{ehSel ? '▸' : ''}</td>
-                  {[r.producao_turno, num(r.producao_qtde), r.descricao ?? r.referencia_descricao].map((v, i) => {
-                    const s = ehSel ? SEL : base; // linha toda marcada (a coluna atual só ganha um contorno)
-                    return <td key={i} className={i === 1 ? 'n' : ''} onClick={() => setCol(i)} style={{ background: s.bg, color: s.fg, fontWeight: 'bold', ...(ehSel && i === col ? { boxShadow: 'inset 0 0 0 2px #000' } : {}) }}>{v}</td>;
-                  })}
+                  {[r.producao_turno, num(r.producao_qtde), r.descricao ?? r.referencia_descricao].map((v, i) => (
+                    <td key={i} className={`${i === 0 ? `hor t${r.producao_turno}` : ''}${i === 1 ? ' n' : ''}`} onClick={() => setCol(i)}>{v}</td>))}
                 </tr>);
             })}
             {!linhasM.length && <tr><td className="ind" /><td colSpan={3} className="fbp-vazio">&lt;Não há informações&gt;</td></tr>}
@@ -121,7 +121,7 @@ function Aba({ tipo, data, recarga, ativa, fonte, onCarga }) {
   );
 }
 
-export default function FabricaProducao() {
+export default function FabricaProducao({ ativa = true }) {
   const [data, setData] = useState(hoje());
   const [aba, setAba] = useState('salgados');
   const [recarga, setRecarga] = useState({ salgados: 0, especiais: 0 });
@@ -141,6 +141,7 @@ export default function FabricaProducao() {
     const fora = (e) => { if (ref.current && !ref.current.contains(e.target)) setCal(false); };
     document.addEventListener('pointerdown', fora); return () => document.removeEventListener('pointerdown', fora);
   }, [cal]);
+  useEffect(() => { if (ativa) setData(hoje()); }, [ativa]); // ao entrar (ou voltar para a aba) reposiciona na data de hoje
   const muda = (n) => setFonte((f) => Math.min(60, Math.max(8, f + n)));
 
   return (

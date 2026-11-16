@@ -1,4 +1,5 @@
 [
+  {"fase": 319, "itens": ["Programação diária: com o item em edição dá para passar para outro cliente (clique, setas ou digitando na lista); a alteração é gravada antes e, se não puder ser gravada, o sistema pergunta se descarta — não trava mais.", "Fábrica › Produção: fundo branco (só o horário tem cor, linha atual em azul claro), pesquisa por descrição digitando direto na grade e a data volta para hoje sempre que a tela é aberta."]},
   {"fase": 318, "itens": ["Programação diária: ao gravar um item (Enter no último campo, Extra/Cada ou F5) a edição continua aberta; quem fecha é o usuário (Esc)."]},
   {"fase": 317, "itens": ["Programação diária, mercadoria (999.999): ao digitar a \"Descrição da comanda / nota fiscal\" e apertar Enter, o texto volta a ser transportado para \"Descrição para expedição\" (junto das opções marcadas). Também acontece ao sair do campo se a expedição estiver vazia."]},
   {"fase": 316, "itens": ["Programação diária, Comandas e Faturamento: ao abrir a tela (ou voltar para a aba) o foco já fica na lista de unidades/clientes — é só começar a digitar para localizar; ↑ ↓ passam de um para outro."]},

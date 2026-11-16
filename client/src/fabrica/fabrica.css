@@ -56,3 +56,24 @@
 .fb-tema-pop{position:fixed;z-index:71;min-width:300px;max-width:min(92vw,420px);background:#fff;color:#111;border:1px solid #7a7ab8;box-shadow:2px 4px 10px #0007;padding:8px;font:12px Tahoma,Arial,sans-serif}
 .fb-tema-pop>button{margin-top:6px;font:12px Tahoma,Arial,sans-serif;padding:2px 10px;cursor:pointer}
 .fbp-grade tr.sel-l{scroll-margin-top:40px;scroll-margin-bottom:4px}
+
+/* Produção: fundo branco; só o horário tem cor */
+.fbp-corpo,.fbp-grade,.fbp-dest,.fbp-dest-g{background:#fff}
+.fbp-grade{position:relative;color:#111}
+.fbp-grade thead th,.fbp-dest thead th{background:#e8ecf2;color:#333;border-color:#c9d0da}
+.fbp-grade .ind{background:#e8ecf2;color:#c62828;border-color:#c9d0da}
+.fbp-grade td{background:#fff;color:#111;font-weight:600;border-color:#e1e5eb}
+.fbp-grade td.hor{text-align:center;font-weight:700}
+.fbp-grade td.hor.t1{background:#fff2a8;color:#7a6400}.fbp-grade td.hor.t2{background:#cdeec6;color:#2f6b1f}.fbp-grade td.hor.t3{background:#0000ff;color:#fff}
+.fbp-grade tbody tr:hover td:not(.hor){background:#f3f6fb}
+.fbp-grade tr.sel-l td:not(.hor){background:#cfe4ff;color:#0b2a5c;font-weight:800}
+.fbp-grade tr.sel-l td.ind{background:#cfe4ff}
+.fbp-vazio{color:#666!important}
+.fbp-dest{border-left-color:#c9d0da}.fbp-dest-t{background:#e8ecf2;color:#333;border-color:#c9d0da}
+.fbp-dest-g{border-color:#c9d0da}
+.fbp-dest td{color:#111;border-bottom-color:#e1e5eb;background:#fff}
+.fbp-dest tfoot td{background:#e8ecf2;color:#111;border-top-color:#c9d0da}
+.fbp-dest tbody tr.atual td{background:#cfe4ff;color:#0b2a5c;font-weight:bold}
+.fbp-dest-g:not(:focus) tbody tr.atual td{background:#e3edf9}
+.fbp-sep{background:#d5dbe4;border-color:#c9d0da}.fbp-sep:hover{background:#aab4c3}
+.fbp-busca{position:sticky;top:0;float:right;z-index:3;background:#0b2a5c;color:#fff;padding:2px 10px;font:600 14px Tahoma,Arial,sans-serif;border-radius:0 0 0 6px}
