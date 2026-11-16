@@ -47,7 +47,11 @@ function Aba({ tipo, data, recarga, ativa, fonte, onCarga }) {
     return () => { vivo = false; };
   }, [tipo, data, atual?.producao_turno, atual?.id_referencia, atual?.producao_qtde]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const linhasM = useMemo(() => [...mestre].sort((a, b) => cmp(a.producao_turno, b.producao_turno) || cmp(a.id_referencia, b.id_referencia)), [mestre]);
+  const [ordM, setOrdM] = useState([['producao_turno', 1], ['id_referencia', 1]]); // padrão: horário, depois referência; clique no título ordena
+  const valM = (r, c) => (c === 'producao_qtde' || c === 'producao_turno' || c === 'id_referencia' ? Number(r[c]) || 0 : c === 'descricao' ? (r.descricao ?? r.referencia_descricao ?? '') : r[c]);
+  const linhasM = useMemo(() => [...mestre].sort((a, b) => { for (const [c, d] of ordM) { const r = cmp(valM(a, c), valM(b, c)) * d; if (r) return r; } return 0; }), [mestre, ordM]);
+  const alternaM = (c) => setOrdM((o) => (o[0]?.[0] === c ? [[c, -o[0][1]], ...o.slice(1)] : [[c, 1], ['producao_turno', 1], ['id_referencia', 1]]));
+  const setaM = (c) => (ordM[0]?.[0] === c ? (ordM[0][1] === 1 ? '▲' : '▼') : '');
   const linhasD = useMemo(() => [...destinos].sort((a, b) => { for (const [c, d] of ordD) { const r = cmp(a[c], b[c]) * d; if (r) return r; } return 0; }), [destinos, ordD]);
   const alterna = (c) => setOrdD((o) => (o[0]?.[0] === c ? [[c, -o[0][1]]] : [[c, 1]]));
   const seta = (c) => (ordD[0]?.[0] === c ? (ordD[0][1] === 1 ? '▲' : '▼') : '');
@@ -80,7 +84,7 @@ function Aba({ tipo, data, recarga, ativa, fonte, onCarga }) {
       <div className="fbp-grade" style={{ fontSize: `${fonte * 4 / 3}px` }} tabIndex={0} ref={corpo} onKeyDown={teclaGrade} title="Clique na grade e digite para localizar pela descrição; ↑ ↓ passam de um para outro">
         {dig.digitado && <div className="fbp-busca">🔎 {dig.digitado}</div>}
         <table>
-          <thead><tr><th className="ind" /><th style={{ width: '11%' }}>Horário</th><th style={{ width: '14%' }}>Qtde</th><th>Descrição do produto</th></tr></thead>
+          <thead><tr><th className="ind" /><th className="ord" style={{ width: '11%' }} onClick={() => alternaM('producao_turno')}>Horário <i>{setaM('producao_turno')}</i></th><th className="ord" style={{ width: '14%' }} onClick={() => alternaM('producao_qtde')}>Qtde <i>{setaM('producao_qtde')}</i></th><th className="ord" onClick={() => alternaM('descricao')}>Descrição do produto <i>{setaM('descricao')}</i></th></tr></thead>
           <tbody>
             {linhasM.map((r) => {
               const k = chave(r); const ehSel = k === sel;

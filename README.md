@@ -1020,6 +1020,9 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 320 — Produção da Fábrica: ordenar pelos títulos
+Lista mestre ordena por Horário/Qtde/Descrição (padrão horário+referência). Não testado com dados reais.
+
 ## Fase 319 — Diária sem trava ao trocar de cliente; Produção da Fábrica clara
 Diaria.jsx: `trocaClienteClique` usado também por digitação/setas na lista; falha ao gravar pergunta se descarta. FabricaProducao.jsx: cores via CSS (fundo branco), `useDigitaNaLista` na grade, `ativa` (prop de FabricaApp) → `setData(hoje())`. Não testado com dados reais.
 

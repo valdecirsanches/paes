@@ -77,3 +77,4 @@
 .fbp-dest-g:not(:focus) tbody tr.atual td{background:#e3edf9}
 .fbp-sep{background:#d5dbe4;border-color:#c9d0da}.fbp-sep:hover{background:#aab4c3}
 .fbp-busca{position:sticky;top:0;float:right;z-index:3;background:#0b2a5c;color:#fff;padding:2px 10px;font:600 14px Tahoma,Arial,sans-serif;border-radius:0 0 0 6px}
+.fbp-grade thead th.ord{cursor:pointer;user-select:none}.fbp-grade thead th.ord:hover{background:#d8dfe9}.fbp-grade thead th i{font-style:normal;font-size:.6em;color:#0b2a5c}
