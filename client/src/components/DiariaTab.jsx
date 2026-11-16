@@ -337,7 +337,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
           return;
         }
       }
-      if (e.key === 'F5') { e.preventDefault(); if (editando && !ocupado) gravarRef.current?.(); return; } // F5 grava (e fecha a edição)
+      if (e.key === 'F5') { e.preventDefault(); if (editando && !ocupado) gravarRef.current?.(true); return; } // F5 grava e mantém a edição aberta
       if (e.key === 'Escape' && (editando || painel) && !document.querySelector('dialog[open]')) { e.preventDefault(); setDraft(null); setPainel(false); return; } // Esc cancela e fecha a edição
       if (ehFabrica() && e.key === 'F2' && (e.altKey || e.ctrlKey)) return; // fábrica não ajusta preço
       if (e.key === 'F2' && e.altKey && e.shiftKey) { e.preventDefault(); ajustaTudo(); return; }
@@ -367,12 +367,12 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
     }
     const campos = [...e.currentTarget.querySelectorAll('input:not([disabled]):not([readonly]):not([tabindex="-1"]), select, textarea')];
     if (e.currentTarget === painelRef.current && editando && (e.target === refs.current.extra || e.target === refs.current.cada)) { // Enter no campo Extra ou Cada grava o item (e fecha a edição)
-      e.target.blur(); setTimeout(() => gravarRef.current?.(), 60); return;
+      e.target.blur(); setTimeout(() => gravarRef.current?.(true), 60); return;
     }
     const prox = e.target.dataset.ultimo ? null : campos[campos.indexOf(e.target) + 1]; // "Informe p/ produção" é o último campo do fluxo: grava
     e.target.blur();
     if (prox) setTimeout(() => prox.focus(), 0);
-    else if (e.currentTarget === painelRef.current && editando) setTimeout(() => gravarRef.current?.(), 60); // Enter no último campo grava o item
+    else if (e.currentTarget === painelRef.current && editando) setTimeout(() => gravarRef.current?.(true), 60); // Enter no último campo grava o item
   };
   const gravarRef = useRef(null); gravarRef.current = gravar;
   useEffect(() => { registraGravar?.(() => gravarRef.current?.(true)); return () => registraGravar?.(null); }, []); // eslint-disable-line react-hooks/exhaustive-deps

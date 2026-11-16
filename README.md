@@ -1020,6 +1020,9 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 318 — Diária: edição do item continua aberta após gravar
+Enter (último campo/Extra/Cada) e F5 gravam com `gravar(true)`; o painel só fecha com Esc. Não testado contra MySQL real.
+
 ## Fase 317 — Mercadoria: descrição digitada vai para a expedição
 
 - `DiariaTab.jsx`: Enter no campo `produto_descricao` (e blur com expedição vazia), em item mercadoria, grava `produto_descricao_expedicao = descricaoExpedicao(texto, item)` e `referencia_descricao`. Não testado com dados reais.
