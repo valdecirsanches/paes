@@ -117,6 +117,12 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
   const v = draft ?? (item ? hidratar(item) : null);
   const mostrarPainel = !consulta && painel && (!!v);
   const mercadoria = v && !bool(v.produto_producao);
+  // Mercadoria (999.999): o que foi digitado em "Descrição da comanda / nota fiscal" vai, no Enter, para "Descrição para expedição" (junto das opções marcadas)
+  const transportaMercadoria = (texto) => {
+    const t = String(texto ?? '').trim();
+    if (!t) return;
+    editar({ produto_descricao: t, referencia_descricao: t, produto_descricao_expedicao: descricaoExpedicao(t, v) });
+  };
 
   useEffect(() => { ultimoCodigo.current = draft ? draft.produto_codigo ?? '' : item?.produto_codigo ?? ''; }, [draft?.id, novo, item?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -408,7 +414,9 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
                   onBlur={(e) => resolverCodigo(e.target.value)} onDoubleClick={() => setModal({ tipo: 'busca', alvo: 'prod' })} title="Duplo clique pesquisa o produto" /></Campo>
               </div>
               <Campo rotulo="Descrição original do produto" className="if-orig leg-a"><input readOnly tabIndex={-1} value={v.produto_descricao_original ?? ''} /></Campo>
-              <Campo rotulo="Descrição da comanda / nota fiscal" className="leg-a"><input ref={ref('nf')} value={v.produto_descricao ?? ''} onChange={set('produto_descricao')} /></Campo>
+              <Campo rotulo="Descrição da comanda / nota fiscal" className="leg-a"><input ref={ref('nf')} value={v.produto_descricao ?? ''} onChange={set('produto_descricao')}
+                onKeyDown={(e) => { if (e.key === 'Enter' && mercadoria) transportaMercadoria(e.currentTarget.value); }}
+                onBlur={(e) => { if (mercadoria && !String(v.produto_descricao_expedicao ?? '').trim()) transportaMercadoria(e.currentTarget.value); }} /></Campo>
               <Campo rotulo="Descrição para expedição" className="if-destaque leg-v"><input value={v.produto_descricao_expedicao ?? ''} onChange={set('produto_descricao_expedicao')} /></Campo>
               <div className="if-nums">
                 <Campo rotulo="Qtde fixa" className="leg-a"><Num className="if-n" casas={[1, 3]} disabled title="A quantidade fixa vem da Programação fixa e não pode ser alterada na diária; use Extra" value={v.qtde_original} onChange={() => {}} /></Campo>
