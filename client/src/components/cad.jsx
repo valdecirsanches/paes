@@ -75,8 +75,15 @@ export function useEdicao({ lista, foco, setFoco, caminho, recarregar, aviso, co
 }
 
 /** Campo de texto ligado ao rascunho. */
-export const Txt = forwardRef(function Txt({ ed, k, desabilitado, ...p }, ref) {
-  return <input ref={ref} value={ed.v(k)} disabled={desabilitado ?? (!ed.atual && !ed.novo)} onChange={(e) => ed.set(k, e.target.value)} {...p} />;
+/** Texto em MAIÚSCULAS ao digitar/colar, sem o cursor pular para o fim. Devolve o valor já convertido. */
+export function emMaiusculas(e) {
+  const el = e.target; const ini = el.selectionStart; const fim = el.selectionEnd; const v = el.value.toUpperCase();
+  if (v !== el.value) { el.value = v; try { el.setSelectionRange(ini, fim); } catch { /* tipo sem seleção */ } }
+  return v;
+}
+export const Txt = forwardRef(function Txt({ ed, k, desabilitado, maiusculas = false, ...p }, ref) {
+  return <input ref={ref} value={ed.v(k)} disabled={desabilitado ?? (!ed.atual && !ed.novo)} style={maiusculas ? { textTransform: 'uppercase' } : undefined}
+    onChange={(e) => ed.set(k, maiusculas ? emMaiusculas(e) : e.target.value)} {...p} />;
 });
 export const Marca = ({ ed, k, rotulo, sim = 'True', nao = 'False' }) => (
   <label className="cad-chk"><input type="checkbox" disabled={!ed.atual && !ed.novo} checked={String(ed.v(k)) === sim} onChange={(e) => ed.set(k, e.target.checked ? sim : nao)} />{rotulo}</label>

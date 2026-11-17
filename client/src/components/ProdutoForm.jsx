@@ -1,4 +1,4 @@
-import { Campo, Chave, Secao, Txt } from './cad.jsx';
+import { Campo, Chave, Secao, Txt, emMaiusculas } from './cad.jsx';
 import NcmCampo from './NcmCampo.jsx';
 import ComboBusca from './ComboBusca.jsx';
 
@@ -19,8 +19,8 @@ export default function ProdutoForm({ ed, layout = 'tela', clientes = [], refere
   // listas com pesquisa (digite para filtrar): cliente e tributação
   const comb = (k, lista, rot, extra) => <ComboBusca valor={ed.v(k)} lista={lista} rotulo={rot} disabled={off} onEscolher={(n) => { ed.set(k, n); extra?.(n); }} />;
   // Descrição → expedição: enquanto a expedição estiver vazia (ou ainda igual à descrição anterior, i.e. só espelhada), acompanha o que se digita
-  const descricao = <Txt ed={ed} k="descricao" onChange={(e) => {
-    const novo = e.target.value, antes = ed.v('descricao') ?? '', exp = ed.v('descricao_expedicao') ?? '';
+  const descricao = <Txt ed={ed} k="descricao" maiusculas onChange={(e) => {
+    const novo = emMaiusculas(e), antes = ed.v('descricao') ?? '', exp = ed.v('descricao_expedicao') ?? '';
     ed.set('descricao', novo);
     if (!String(exp).trim() || exp === antes) ed.set('descricao_expedicao', novo);
   }} />;
@@ -33,27 +33,27 @@ export default function ProdutoForm({ ed, layout = 'tela', clientes = [], refere
       {tela ? (
         <Secao titulo="Produto" icone="🏷️" className="pf-full">
           <Campo rotulo="ID" span={1}><input readOnly tabIndex={-1} value={ed.novo ? '' : ed.atual?.id ?? ''} /></Campo>
-          <Campo rotulo="Código" span={2}><Txt ed={ed} k="codigo" /></Campo>
+          <Campo rotulo="Código" span={2}><Txt ed={ed} k="codigo" maiusculas /></Campo>
           <Campo rotulo="Cliente" span={5}>{comb('id_cliente', clientes, (x) => x.razao_social, aoMudarCliente)}</Campo>
           <Campo rotulo="Referência a ser produzido" span={4}>{refCombo}</Campo>
           <Campo rotulo="Descrição impressa na nota fiscal e na comanda" span={6}>{descricao}</Campo>
-          <Campo rotulo="Descrição para a expedição" span={6}><Txt ed={ed} k="descricao_expedicao" /></Campo>
+          <Campo rotulo="Descrição para a expedição" span={6}><Txt ed={ed} k="descricao_expedicao" maiusculas /></Campo>
         </Secao>
       ) : (
         <>
           <Secao titulo="Identificação" icone="🏷️">
-            <Campo rotulo="Código" span={4}><Txt ed={ed} k="codigo" /></Campo>
+            <Campo rotulo="Código" span={4}><Txt ed={ed} k="codigo" maiusculas /></Campo>
             <Campo rotulo="Referência (produção)" span={8}>{refCombo}</Campo>
             <Campo rotulo="Cliente" span={12}>{comb('id_cliente', clientes, (x) => x.razao_social, aoMudarCliente)}</Campo>
           </Secao>
           <Secao titulo="Descrições" icone="📝">
             <Campo rotulo="Descrição impressa na nota fiscal e na comanda" span={12}>{descricao}</Campo>
-            <Campo rotulo="Descrição para a expedição" span={12}><Txt ed={ed} k="descricao_expedicao" /></Campo>
+            <Campo rotulo="Descrição para a expedição" span={12}><Txt ed={ed} k="descricao_expedicao" maiusculas /></Campo>
           </Secao>
         </>
       )}
       <Secao titulo="Preço e medidas" icone="⚖️">
-        <Campo rotulo="Un." span={2}><Txt ed={ed} k="un" /></Campo>
+        <Campo rotulo="Un." span={2}><Txt ed={ed} k="un" maiusculas /></Campo>
         <Campo rotulo="Preço unit." span={tela ? 2 : 3}>{num('preco')}</Campo>
         <Campo rotulo="Cada" span={2}>{num('divisor_basico')}</Campo>
         <Campo rotulo="Peso líq." span={2}>{num('peso')}</Campo>
@@ -72,8 +72,8 @@ export default function ProdutoForm({ ed, layout = 'tela', clientes = [], refere
       </Secao>
       {tela && (
         <Secao titulo="Ingredientes e validade" icone="📋" className="pf-full">
-          <Campo rotulo="Ingredientes" span={9}><textarea rows={2} disabled={off} value={ed.v('ingredientes') ?? ''} onChange={(e) => ed.set('ingredientes', e.target.value)} /></Campo>
-          <Campo rotulo="Validade" span={3}><Txt ed={ed} k="validade" /></Campo>
+          <Campo rotulo="Ingredientes" span={9}><textarea rows={2} disabled={off} value={ed.v('ingredientes') ?? ''} style={{ textTransform: 'uppercase' }} onChange={(e) => ed.set('ingredientes', emMaiusculas(e))} /></Campo>
+          <Campo rotulo="Validade" span={3}><Txt ed={ed} k="validade" maiusculas /></Campo>
         </Secao>
       )}
       {children}

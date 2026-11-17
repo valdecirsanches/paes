@@ -70,7 +70,12 @@ router.get('/proximo-codigo', async (req, res) => {
   res.json({ codigo: `${cli}.${r?.x ?? 1}` });
 });
 
+// cadastro de produto: textos sempre em MAIÚSCULAS (também no servidor, para qualquer origem: tela, importação, API)
+const MAIUSCULOS = ['codigo', 'descricao', 'descricao_expedicao', 'un', 'ingredientes', 'validade'];
+export const emMaiusculasProduto = (b) => { for (const k of MAIUSCULOS) if (typeof b[k] === 'string') b[k] = b[k].toUpperCase(); return b; };
+
 async function validaProduto(c, b, { criando, id }) {
+  emMaiusculasProduto(b);
   if (criando || 'codigo' in b) {
     if (!b.codigo) throw invalid('Informe o código do produto.');
     const [[dup]] = await c.query('select id from tb_produtos where codigo = ? and id <> ? limit 1', [b.codigo, id ?? 0]);

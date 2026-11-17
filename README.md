@@ -1020,6 +1020,9 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 339 — Produto em MAIÚSCULAS
+`emMaiusculas` (cad.jsx) mantém o cursor; `Txt maiusculas`; servidor: `emMaiusculasProduto` em `validaProduto` (POST/PUT). Não testado contra MySQL real.
+
 ## Fase 338 — Produção em uma linha (e reversão da 337)
 A 337 mexeu no Faturamento por engano (o pedido era a tela Produção): revertida. Producao.jsx: `pr2-linha` (calendário + grupos com "Ver produção" no lugar das abas), CSS no fim de styles.css. Conferido no mock.
 
