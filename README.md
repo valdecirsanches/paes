@@ -1020,6 +1020,9 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 326 — Produção da Fábrica: digitar filtra
+`busca` (sem acento, todas as palavras) filtra `linhasM`; seleção acompanha o filtro. Não testado com dados reais.
+
 ## Fase 325 — NFe: AF para todos os itens; Faturamento: duplo clique abre a edição
 NFe.jsx `transportaAf` (após gravar `ordem_compra` na grade ou na ficha; PUT item a item). Faturamento.jsx: `tdEd` virou `<td>` simples (sem edição na célula). Não testado contra MySQL real.
 

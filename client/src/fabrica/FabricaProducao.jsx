@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../api.js';
 import Calendario from '../components/Calendario.jsx';
 import { brData, hoje } from '../lib/rules.js';
-import { useDigitaNaLista } from '../lib/digitaNaLista.js';
 
 // Tela "Produção" do sistema da fábrica (u_producao), refeita igual à original: mesma disposição, cores e comportamento.
 // Fundo branco; só o horário leva cor (1 = amarelo, 2 = verde, 3 = azul) e a linha atual fica destacada.
@@ -49,7 +48,9 @@ function Aba({ tipo, data, recarga, ativa, fonte, onCarga }) {
 
   const [ordM, setOrdM] = useState([['producao_turno', 1], ['id_referencia', 1]]); // padrão: horário, depois referência; clique no título ordena
   const valM = (r, c) => (c === 'producao_qtde' || c === 'producao_turno' || c === 'id_referencia' ? Number(r[c]) || 0 : c === 'descricao' ? (r.descricao ?? r.referencia_descricao ?? '') : r[c]);
-  const linhasM = useMemo(() => [...mestre].sort((a, b) => { for (const [c, d] of ordM) { const r = cmp(valM(a, c), valM(b, c)) * d; if (r) return r; } return 0; }), [mestre, ordM]);
+  const [busca, setBusca] = useState(''); // texto digitado na grade: filtra a lista (Backspace apaga, Esc limpa)
+  const semAc = (t) => String(t ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const linhasM = useMemo(() => { const ws = semAc(busca).split(/\s+/).filter(Boolean); return [...mestre].filter((r) => { const t = semAc(`${r.descricao ?? r.referencia_descricao ?? ''} ${r.codigo_referencia ?? ''}`); return ws.every((w) => t.includes(w)); }).sort((a, b) => { for (const [c, d] of ordM) { const r = cmp(valM(a, c), valM(b, c)) * d; if (r) return r; } return 0; }); }, [mestre, ordM, busca]);
   const alternaM = (c) => setOrdM((o) => (o[0]?.[0] === c ? [[c, -o[0][1]], ...o.slice(1)] : [[c, 1], ['producao_turno', 1], ['id_referencia', 1]]));
   const setaM = (c) => (ordM[0]?.[0] === c ? (ordM[0][1] === 1 ? '▲' : '▼') : '');
   const linhasD = useMemo(() => [...destinos].sort((a, b) => { for (const [c, d] of ordD) { const r = cmp(a[c], b[c]) * d; if (r) return r; } return 0; }), [destinos, ordD]);
@@ -71,8 +72,16 @@ function Aba({ tipo, data, recarga, ativa, fonte, onCarga }) {
     const n = linhasM[Math.min(linhasM.length - 1, Math.max(0, i + (e.key === 'ArrowDown' ? 1 : -1)))];
     if (n) setSel(chave(n));
   };
-    const dig = useDigitaNaLista({ itens: linhasM.map((r) => ({ ...r, id: chave(r) })), texto: (r) => `${r.descricao ?? r.referencia_descricao ?? ''} ${r.codigo_referencia ?? ''}`, idAtual: sel, onAchar: (r) => { setSel(r.id); setTimeout(() => corpo.current?.querySelector('tr.sel-l')?.scrollIntoView({ block: 'nearest' }), 0); } });
-  const teclaGrade = (e) => { tecla(e); dig.props.onKeyDown(e); }; // setas já tratadas acima; letras montam a pesquisa direto na grade
+    const teclaGrade = (e) => {
+    if (e.key === 'Escape' && busca) { e.preventDefault(); setBusca(''); return; }
+    if (e.key === 'Backspace' && busca) { e.preventDefault(); setBusca((b) => b.slice(0, -1)); return; }
+    if (!e.ctrlKey && !e.metaKey && !e.altKey && e.key.length === 1 && !(e.key === ' ' && !busca)) { e.preventDefault(); setBusca((b) => b + e.key); return; }
+    tecla(e);
+  };
+  useEffect(() => { // a seleção acompanha o filtro: se a linha atual saiu da lista, vai para a primeira que sobrou
+    if (!linhasM.length) return;
+    if (!linhasM.some((r) => chave(r) === sel)) setSel(chave(linhasM[0]));
+  }, [linhasM]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { setSelD(0); }, [sel, destinos]);
   useEffect(() => { if (ativa) corpo.current?.querySelector('tr.sel-l')?.scrollIntoView({ block: 'nearest' }); }, [ativa, sel]); // setas: mantém a linha atual à vista
   useEffect(() => { if (ativa) corpo.current?.focus({ preventScroll: true }); }, [ativa, sel]);
@@ -81,8 +90,8 @@ function Aba({ tipo, data, recarga, ativa, fonte, onCarga }) {
 
   return (
     <div className="fbp-aba" hidden={!ativa}>
-      <div className="fbp-grade" style={{ fontSize: `${fonte * 4 / 3}px` }} tabIndex={0} ref={corpo} onKeyDown={teclaGrade} title="Clique na grade e digite para localizar pela descrição; ↑ ↓ passam de um para outro">
-        {dig.digitado && <div className="fbp-busca">🔎 {dig.digitado}</div>}
+      <div className="fbp-grade" style={{ fontSize: `${fonte * 4 / 3}px` }} tabIndex={0} ref={corpo} onKeyDown={teclaGrade} title="Clique na grade e digite para filtrar pela descrição; Esc limpa; ↑ ↓ passam de um para outro">
+        {busca && <div className="fbp-busca">🔎 {busca} <button type="button" onClick={() => setBusca('')} title="Limpar filtro (Esc)">✕</button></div>}
         <table>
           <thead><tr><th className="ind" /><th className="ord" style={{ width: '11%' }} onClick={() => alternaM('producao_turno')}>Horário <i>{setaM('producao_turno')}</i></th><th className="ord" style={{ width: '14%' }} onClick={() => alternaM('producao_qtde')}>Qtde <i>{setaM('producao_qtde')}</i></th><th className="ord" onClick={() => alternaM('descricao')}>Descrição do produto <i>{setaM('descricao')}</i></th></tr></thead>
           <tbody>
@@ -95,7 +104,7 @@ function Aba({ tipo, data, recarga, ativa, fonte, onCarga }) {
                     <td key={i} className={`${i === 0 ? `hor t${r.producao_turno}` : ''}${i === 1 ? ' n' : ''}`} onClick={() => setCol(i)}>{v}</td>))}
                 </tr>);
             })}
-            {!linhasM.length && <tr><td className="ind" /><td colSpan={3} className="fbp-vazio">&lt;Não há informações&gt;</td></tr>}
+            {!linhasM.length && <tr><td className="ind" /><td colSpan={3} className="fbp-vazio">&lt;{busca ? 'Nada encontrado para o filtro' : 'Não há informações'}&gt;</td></tr>}
           </tbody>
         </table>
       </div>

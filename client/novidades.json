@@ -1,4 +1,5 @@
 [
+  {"fase": 326, "itens": ["Fábrica › Produção: clicar na grade e digitar agora FILTRA a lista mostrando só os produtos que combinam com o digitado (Backspace apaga, Esc ou ✕ limpa)."]},
   {"fase": 325, "itens": ["NFe: ao digitar/gravar o Nº AF de um item (na grade ou na ficha do item) o sistema pergunta se quer transportar a mesma AF para todos os itens da nota.", "Faturamento: a grade não edita mais nada na linha; o duplo clique em qualquer parte do item abre a edição."]},
   {"fase": 324, "itens": ["Programação diária: a lista de clientes do dia tem uma única ordem, por nome (sem o botão Entrega/Nome)."]},
   {"fase": 323, "itens": ["Programação diária: empresas que têm programação na data mas estavam com a unidade marcada como inativa voltam a aparecer na lista, como no sistema antigo."]},
