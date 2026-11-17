@@ -6,7 +6,8 @@ import { limpaMask } from './geraFatura.js';
  * Substitui ModeloIniNFe (INI do ACBrMonitor). Função pura: devolve { json, erros } e não toca em banco/rede.
  */
 const dig = (s) => String(s ?? '').replace(/\D/g, '');
-const txt = (s) => String(s ?? '').trim();
+// texto livre para o XML: quebra de linha/tabulação/controle NÃO é aceita pelo schema (rejeição 225) — vira espaço; espaços repetidos viram um só
+const txt = (s) => String(s ?? '').replace(/[\u0000-\u001f\u007f-\u009f]+/g, ' ').replace(/ {2,}/g, ' ').trim();
 const n = (v) => { const x = Number(String(v ?? '').replace(',', '.')); return Number.isFinite(x) ? x : 0; };
 /** Inscrição estadual para o XSD: só dígitos (sem máscara); "ISENTO" é mantido. */
 export const ieLimpa = (v) => { const t = txt(v); return /isento/i.test(t) ? 'ISENTO' : dig(t); };
@@ -232,7 +233,7 @@ export function montaJsonNfe(nfe, itens, cfg, { numero, ibsCbs = true, agora = n
     pesoLiquido: n(nfe.peso_liquido) > 0 ? Math.round(n(nfe.peso_liquido) * 1000) / 1000 : undefined,
     pesoBruto: n(nfe.peso_bruto) > 0 ? Math.round(n(nfe.peso_bruto) * 1000) / 1000 : undefined,
     pagamentos: [{ meio: txt(nfe.forma_pagamento).padStart(2, '0'), valor: txt(nfe.forma_pagamento).padStart(2, '0') === '90' ? 0 : total }], // 90 = sem pagamento: valor 0,00
-    informacoesComplementares: txt(nfe.texto_corpo) || undefined,
+    informacoesComplementares: txt(nfe.texto_corpo).slice(0, 5000) || undefined,
   };
   // duplicatas (tb_receita da nota): [{ vencimento: 'aaaa-mm-dd', valor }], em ordem de vencimento
   // à vista (vencimento no dia da emissão): não envia duplicatas/fatura; só a forma de pagamento

@@ -1020,6 +1020,9 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 334 — NFe: sem quebra de linha nos textos enviados (rejeição 225)
+A nota 71745 foi rejeitada com cStat 225; o JSON tinha `\n` em `informacoesComplementares` (vindo de `informacoes_nf2`/texto_corpo). `txt()` em nfeJson.js agora troca controles/quebras por espaço. Causa provável, não confirmada pelo XML. Teste em test/nfe.test.js.
+
 ## Fase 333 — Hora com ":00" automático
 ItemForm.jsx: `CampoHora` (texto, só dígitos; hora ≤ 23, 1º dígito do minuto ≤ 5) substitui o `input type=time` em HoraGrande (diária e fixa). Testado no mock com Playwright.
 

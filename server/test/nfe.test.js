@@ -220,3 +220,9 @@ test('autorização barra item com valor zerado ou negativo', () => {
   assert.equal(msg({ preco: -3 }).length, 1);
   assert.equal(msg({ preco_total: 0 }).length, 1);
 });
+
+test('texto livre sem quebra de linha (SEFAZ 225 — falha no schema do XML)', () => {
+  const j = montaJsonNfe({ ...nfe, texto_corpo: 'CONDICOES;AF 6256249-\n Entrega: JADLOG\r\n\tREF  16/11' }, itens, cfg, { numero: 1 });
+  assert.equal(j.informacoesComplementares, 'CONDICOES;AF 6256249- Entrega: JADLOG REF 16/11');
+  assert.ok(!/\\[nrt]/.test(JSON.stringify(j)), 'nenhum \\n, \\r ou \\t no JSON enviado');
+});
