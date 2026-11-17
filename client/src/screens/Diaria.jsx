@@ -1,7 +1,7 @@
 import { ehFabrica } from '../lib/perfil.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../api.js';
-import { lerOrdem, gravaOrdem, ordenaPor } from '../lib/ordena.js';
+import { ordenaPor } from '../lib/ordena.js';
 import { aoPedirDiaria, pedeAbrirConflitos, pegaPedidoDiaria } from '../lib/navega.js';
 import { FILTROS, STATUS, diaExtenso, hoje } from '../lib/rules.js';
 import Calendario from '../components/Calendario.jsx';
@@ -34,9 +34,7 @@ export default function Diaria({ onFechar }) {
     setSelId(id);
   };
   const painelAberto = useRef(false); // painel de edição do item: continua aberto ao passar de um cliente para outro
-  const [ord, setOrd] = useState(() => lerOrdem('clientes', { campo: 'entrega', dir: 1 })); // campo: entrega | nome; dir: 1 crescente, -1 decrescente
-  const mudaOrdem = (campo) => setOrd((o) => { const n = { campo, dir: o.campo === campo ? -o.dir : 1 }; gravaOrdem('clientes', n); return n; });
-  const ordem = ord.campo;
+  // lista de clientes: uma única ordem, por nome da unidade
   const [lista, setLista] = useState([]);
   const busca = useBusca(lista, B_DIA);
   const [selId, setSelId] = useState(null);
@@ -60,7 +58,7 @@ export default function Diaria({ onFechar }) {
   }, [aviso]);
 
   const carregarLista = useCallback(async () => {
-    const rows = ordenaPor(await api.get(`/status?data=${data}&filtro=${filtro}`), ord.campo === 'nome' ? (r) => r.nome : (r) => r.primeira_entrega, ord.dir);
+    const rows = ordenaPor(await api.get(`/status?data=${data}&filtro=${filtro}`), (r) => r.nome, 1);
     setLista(rows);
     const a = alvoAbrir.current;
     if (a) { // veio de "Verificar problemas": posiciona exatamente na empresa do problema (pelo id do status; senão pela unidade)
@@ -70,7 +68,7 @@ export default function Diaria({ onFechar }) {
     }
     // ao trocar a data os ids de status mudam: mantém a MESMA unidade/cliente selecionada (se ela existir no novo dia)
     setSelId((id) => (rows.some((r) => r.id === id) ? id : (rows.find((r) => uniSel.current != null && r.id_unidade === uniSel.current) ?? rows[0])?.id ?? null));
-  }, [data, filtro, ord]);
+  }, [data, filtro]);
 
   // "Verificar problemas" pede para abrir esta tela numa data/empresa (também se a tela acabou de ser aberta)
   useEffect(() => {
@@ -201,17 +199,13 @@ export default function Diaria({ onFechar }) {
           </div>
           <div className="dr2-card dr2-lista">
             <div className="dr2-t">Clientes do dia <small>{lista.length}</small>
-              <span className="dr2-ordem" role="group" aria-label="Ordem dos clientes">
-                <button type="button" className={ordem === 'entrega' ? 'on' : ''} aria-pressed={ordem === 'entrega'} onClick={() => mudaOrdem('entrega')} title="Pelo primeiro horário de entrega do dia (clique de novo para inverter)">🕒 Entrega{ord.campo === 'entrega' ? (ord.dir > 0 ? ' ▲' : ' ▼') : ''}</button>
-                <button type="button" className={ordem === 'nome' ? 'on' : ''} aria-pressed={ordem === 'nome'} onClick={() => mudaOrdem('nome')} title="Por nome (clique de novo para inverter)">Nome{ord.campo === 'nome' ? (ord.dir > 0 ? ' ▲' : ' ▼') : ''}</button>
-              </span>
             </div>
                         {digCli.digitado && <div className="dg-badge" role="status">⌨ {digCli.digitado}</div>}
             <ul className="dr2-clientes" aria-label="Clientes do dia" {...digCli.props} title="Clique e digite para localizar; ↑ ↓ passam de um cliente para outro">
               {busca.visiveis.map((r) => (
                 <li key={r.id}>
                   <button type="button" className={`dr2-cli s${r.status}${r.id === selId ? ' atual' : ''}`} onClick={() => trocaClienteClique(r.id)} title={STATUS[r.status]}>
-                    <i className="dr2-dot" />{ordem === 'entrega' && r.primeira_entrega && <b className="dr2-hr">{String(r.primeira_entrega).slice(0, 5)}</b>}{r.unidade_nome}
+                    <i className="dr2-dot" />{r.unidade_nome}
                   </button>
                 </li>
               ))}
