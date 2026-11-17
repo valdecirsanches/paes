@@ -2202,15 +2202,15 @@ button.lk-versao{background:none!important;border:0!important;box-shadow:none!im
 .pr-dest .pr2-fl-ord span{display:none}.pr-dest .pr2-fl-busca{flex:1 1 110px}.pr-dest .pr2-fl-dir{padding:4px 8px}
 
 /* Roteiro de cargas (fase 342): abas laterais ocupando a altura toda, título/fechar numa faixa fina, filtros e dados mais compactos — o espaço vai para a grade */
-.cg-lado{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto 1fr;gap:4px 8px;padding:6px 10px}
-.cg-lado .cg-topo{display:contents}
-.cg-lado .dr2-abas{grid-column:1;grid-row:1 / span 2;align-self:stretch;flex-direction:column;flex-wrap:nowrap;gap:4px}
-.cg-lado .dr2-abas button{writing-mode:vertical-rl;transform:rotate(180deg);border-radius:0 10px 10px 0;padding:14px 6px;font-size:12.5px;white-space:nowrap}
-.cg-lado .cg-tit{grid-column:2;grid-row:1;flex-direction:row;align-items:baseline;gap:10px;display:flex;padding-right:90px}
+.cg-lado{display:flex;flex-direction:column;gap:4px;padding:6px 10px}
+.cg-lado .cg-topo{display:flex;align-items:flex-end;gap:14px;flex:none;flex-wrap:nowrap;padding:4px 10px 0;border-radius:10px}
+.cg-lado .dr2-abas{flex-direction:row;gap:3px;align-self:flex-end}
+.cg-lado .dr2-abas button{writing-mode:horizontal-tb;transform:none;border-radius:8px 8px 0 0;padding:5px 16px;font-size:12.5px;white-space:nowrap}
+.cg-lado .cg-tit{flex-direction:row;align-items:baseline;gap:10px;display:flex}
 .cg-lado .cg-tit small{font-size:11px}.cg-lado .cg-tit b{font-size:14px}
-.cg-lado .cg-topo>.trb2-btn{grid-column:2;grid-row:1;justify-self:end;align-self:center;padding:2px 12px}
-.cg-lado .cg-esp{display:none}
-.cg-lado .cg-conteudo{grid-column:2;grid-row:2;min-height:0;min-width:0;display:flex;flex-direction:column}
+.cg-lado .cg-topo>.trb2-btn{padding:2px 12px;align-self:center}
+.cg-lado .cg-esp{display:block;flex:1}
+.cg-lado .cg-conteudo{min-height:0;min-width:0;flex:1;display:flex;flex-direction:column}
 .cg-lado .cg-aba{gap:6px;flex:1;min-height:0}
 .cg-lado .cg-filtros{padding:5px 10px;gap:4px 12px;border-radius:10px}
 .cg-lado .cg-barra{padding:3px 8px;gap:6px}
