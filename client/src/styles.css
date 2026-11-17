@@ -2163,3 +2163,13 @@ button.lk-versao{background:none!important;border:0!important;box-shadow:none!im
 .fi-rolagem .fi-compacto .fi-grava{margin:3px 0 0;flex:none}.fi-rolagem .fi-compacto .fi-calc{margin-top:auto}
 /* sem espaço vago: valores calculados e botão colados nos campos */
 .fi-rolagem .fi-compacto{min-height:0}.fi-rolagem .fi-compacto .fi-calc{margin-top:4px}.fi-rolagem .fi-compacto .fi-grava{margin:4px 0 0}
+
+/* Produção (fase 338): uma linha só — calendário maior + grupos Salgados/Especiais com os botões pertinentes, todos no mesmo padrão */
+.pr2-linha{display:flex;gap:12px;align-items:stretch;flex:none}
+.pr2-cal{flex-direction:column;align-items:stretch;gap:6px}.pr2-cal-t{font-weight:700;font-size:15px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}.pr2-cal-t span{font-weight:400;text-transform:capitalize;color:#6f5d42;font-size:13px}
+.pr2-cal .cal{width:280px;font-size:16px}.pr2-cal .cal button,.pr2-cal .cal td,.pr2-cal .cal th{font-size:16px}
+.pr2-gb{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.pr2-bt{min-height:48px;font-size:14px;font-weight:600;text-align:center;padding:6px 8px;line-height:1.15}
+.pr2-bt.on{background:var(--cor-btn);border-color:var(--cor-btn);color:#fff;font-weight:700}
+.pr2-acoes{grid-template-columns:1fr;align-content:center}
+.pr2-x{align-self:flex-start;min-height:36px}
+@media(max-width:1100px){.pr2-gb{grid-template-columns:1fr 1fr}}

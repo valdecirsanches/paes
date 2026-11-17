@@ -215,29 +215,25 @@ export default function Producao({ onFechar }) {
   return (
     <div className="tela producao pr2">
       <Toast aviso={aviso} />
-      <header className="pr2-topo">
-        <div className="pr2-tit"><h1>🍞 Produção</h1><span className="pr2-data">{diaExtenso(data)}</span></div>
-        <button type="button" className="pr2-x" title="Fechar esta tela" onClick={() => onFechar?.()}>✕ Fechar</button>
-      </header>
-      <section className="pr2-painel">
-        <div className="pr2-card pr2-cal"><Calendario data={data} onChange={setData} /></div>
+      <section className="pr2-linha">
+        <div className="pr2-card pr2-cal">
+          <div className="pr2-cal-t">🍞 Produção <span>{diaExtenso(data)}</span></div>
+          <Calendario data={data} onChange={setData} />
+        </div>
         <div className="pr2-card pr2-acoes">
           {[['salgados', '🥐', 'Salgados'], ['especiais', '⭐', 'Especiais']].map(([tipo, ico, nome]) => (
             <div key={tipo} className={`pr2-grupo ${tipo}`}>
               <div className="pr2-gt"><span>{ico}</span>{nome}</div>
-              <div className="pr2-gb">
+              <div className="pr2-gb" role="tablist">
+                <button type="button" role="tab" aria-selected={aba === tipo} className={`pr2-bt${aba === tipo ? ' on' : ''}`} title={`Mostra a produção de ${nome.toLowerCase()} (recarrega)`} onClick={() => abrirAba(tipo)}>📋 Ver produção</button>
                 <button type="button" className="pr2-bt" disabled={ocupado} title={`Imprime o resumo da produção de ${nome.toLowerCase()}`} onClick={() => imprimir(tipo, 'resumo')}>🖨 Resumo</button>
                 <button type="button" className="pr2-bt" disabled={ocupado} title={`Imprime a entrega de ${nome.toLowerCase()} por destino`} onClick={() => imprimir(tipo, 'entrega')}>🖨 Entrega por destino</button>
               </div>
             </div>
           ))}
         </div>
+        <button type="button" className="pr2-bt pr2-x" title="Fechar esta tela" onClick={() => onFechar?.()}>✕ Fechar</button>
       </section>
-
-      <div className="pr2-abas" role="tablist">
-        <button role="tab" aria-selected={aba === 'salgados'} className={aba === 'salgados' ? 'on' : ''} onClick={() => abrirAba('salgados')}>🥐 Produção salgados</button>
-        <button role="tab" aria-selected={aba === 'especiais'} className={aba === 'especiais' ? 'on' : ''} onClick={() => abrirAba('especiais')}>⭐ Produção especial</button>
-      </div>
       <div className="pr-corpo">
         <Painel tipo="salgados" data={data} recarga={recarga.salgados} ativo={aba === 'salgados'} onAviso={onAviso} />
         <Painel tipo="especiais" data={data} recarga={recarga.especiais} ativo={aba === 'especiais'} onAviso={onAviso} />
