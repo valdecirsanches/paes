@@ -441,6 +441,8 @@ export default function NFe({ onFechar }) {
   const autorizar = async () => {
     const ids = [...alvo].filter((id) => statusDe(id) === 'PENDENTE');
     if (ids.length === 0) { notificar('erro', 'Selecione uma NFe PENDENTE.'); return; }
+    const dataOutra = ids.map((id) => (linhas ?? []).find((r) => r.id === id)).filter((r) => r?.data_emissao && String(r.data_emissao).slice(0, 10) < hoje());
+    if (dataOutra.length && !(await confirmar(`A data de emissão de ${dataOutra.length === 1 ? 'esta nota é' : 'estas notas é'} ANTERIOR a hoje:\n${dataOutra.map((r) => `NF ${r.nfe_numero || r.id}: ${brData(r.data_emissao)}`).join('\n')}\n\nA NF-e será emitida com essa data. Continuar?`))) return;
     if (ambienteAtual === 1 && !(await confirmar(`⚠ AMBIENTE DE PRODUÇÃO\n\n${ids.length} nota(s) serão autorizadas na SEFAZ com VALOR FISCAL REAL.\n\nDeseja continuar?`))) return;
     return acao(async () => {
       setLog([]); setSubNfe('nfe'); setProgresso(10);
@@ -858,6 +860,8 @@ export default function NFe({ onFechar }) {
               <div className="nf2-lin"><input value={v.transportadora_veiculo_placa ?? ''} readOnly={ro} onChange={(e) => ed('transportadora_veiculo_placa', e.target.value)} aria-label="Placa" />
                 <select className="uf" value={v.transportadora_veiculo_uf ?? ''} disabled={ro} onChange={(e) => ed('transportadora_veiculo_uf', e.target.value)} aria-label="UF do veículo">{UFS.map((u) => <option key={u} value={u}>{u}</option>)}</select></div>
             </label>
+            <label className="nf2-c"><span>Data de emissão</span>
+              <input type="date" value={String(v.data_emissao ?? '').slice(0, 10)} readOnly={ro} onChange={(e) => ed('data_emissao', e.target.value)} aria-label="Data de emissão" title="Data que vai na NF-e. Passada: vale a data escolhida com a hora atual. Hoje ou futura: usa o momento da emissão." /></label>
             <label className="nf2-c"><span>Saída da mercadoria</span>
               <input type="date" value={String(v.data_saida ?? '').slice(0, 10)} readOnly={ro} onChange={(e) => ed('data_saida', e.target.value)} aria-label="Saída da mercadoria" /></label>
             <label className="nf2-c"><span>Hora da saída</span>

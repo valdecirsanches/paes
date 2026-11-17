@@ -152,6 +152,11 @@ export function duplicatasJson(linhas = []) {
   return linhas.map((d) => ({ vencimento: iso(d.vencto), valor: Math.round((Number(String(d.valor ?? 0).replace(',', '.')) || 0) * 100) / 100 }))
     .filter((d) => d.vencimento && d.valor > 0).sort((a, b) => a.vencimento.localeCompare(b.vencimento));
 }
+/** dhEmi: a data escolhida na NF-e (se for anterior a hoje) com a hora atual de Brasília; vazia, de hoje ou futura → agora (a SEFAZ rejeita emissão no futuro). */
+export function dataEmissaoNfe(nfe, agora = new Date()) {
+  const ag = agoraBrasilia(agora); const escolhida = iso(nfe?.data_emissao);
+  return escolhida && escolhida < ag.slice(0, 10) ? `${escolhida}${ag.slice(10)}` : ag;
+}
 export function montaJsonNfe(nfe, itens, cfg, { numero, ibsCbs = true, agora = new Date(), referencias = [], orientacao = 'retrato', duplicatas = [] } = {}) {
   const regime = regimeDoCrt(cfg.nfe_crt);
   const simples = regime === 1 || regime === 2;
@@ -215,7 +220,7 @@ export function montaJsonNfe(nfe, itens, cfg, { numero, ibsCbs = true, agora = n
     emitente,
     serie: Number(nfe.nfe_serie) || 1,
     numero,
-    dataEmissao: agoraBrasilia(agora),
+    dataEmissao: dataEmissaoNfe(nfe, agora),
     dataSaidaEntrada: nfe.data_saida ? `${String(nfe.data_saida).slice(0, 10)}T${String(nfe.hora_saida || '00:00:00').slice(0, 8)}-03:00` : undefined,
     tipoEmissao: 1,
     finalidade: ehDevolucao(nfe) ? 4 : 1,

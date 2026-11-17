@@ -1020,6 +1020,9 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 336 — NFe: data de emissão editável
+Campo na ficha (NFe.jsx, ao lado de Saída); `dataEmissaoNfe` (nfeJson.js) usa `data_emissao` quando < hoje (hora de Brasília atual), senão agora. `autorizar` confirma quando há nota com data anterior a hoje. A SEFAZ pode rejeitar data muito antiga. Não testado na SEFAZ.
+
 ## Fase 335 — Produto: IPI/ICMS nulos viram 0
 routes/produtos.js `validaProduto`: `aliq_ipi`/`aliq_icms` ausentes ou null → 0 (campos fora da tela; a Tributação manda). Peso continua obrigatório. Não testado contra MySQL real.
 

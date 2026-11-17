@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { montaJsonNfe, validaParaAutorizar, regimeDoCrt, modalidadeFrete, dataHoraBr, normalizaCst, ieLimpa } from '../src/services/nfeJson.js';
+import { montaJsonNfe, validaParaAutorizar, regimeDoCrt, modalidadeFrete, dataHoraBr, normalizaCst, ieLimpa, dataEmissaoNfe } from '../src/services/nfeJson.js';
 
 const cfg = { cnpj: '67.570.036/0001-81', razao: 'LEVPAO LTDA', ie: '123456789', nfe_crt: 'REGIME NORMAL', endereco: 'Rua A', endereco_numero: '10', bairro: 'Centro', cidade: 'SÃO PAULO', uf: 'SP', cep: '01001-000', cst_pis_cofins: '01', nfe_configuracoes_webservice_ambiente: '2' };
 const nfe = { cfop_codigo: '5102', cfop_descricao: 'VENDA NO ESTADO', nfe_serie: '001', nfe_modelo: '55', movimento_es: '1', cliente_cnpj: '11.222.333/0001-81', cliente_razao_social: 'PADARIA ESTRELA', cliente_ie: '111222333', cliente_uf: 'SP',
@@ -225,4 +225,12 @@ test('texto livre sem quebra de linha (SEFAZ 225 — falha no schema do XML)', (
   const j = montaJsonNfe({ ...nfe, texto_corpo: 'CONDICOES;AF 6256249-\n Entrega: JADLOG\r\n\tREF  16/11' }, itens, cfg, { numero: 1 });
   assert.equal(j.informacoesComplementares, 'CONDICOES;AF 6256249- Entrega: JADLOG REF 16/11');
   assert.ok(!/\\[nrt]/.test(JSON.stringify(j)), 'nenhum \\n, \\r ou \\t no JSON enviado');
+});
+
+test('data de emissão escolhida na NFe vai para o dhEmi (só se anterior a hoje)', () => {
+  const agora = new Date('2026-11-17T18:38:30Z'); // 15:38:30 em Brasília
+  assert.equal(dataEmissaoNfe({ data_emissao: '2026-11-15' }, agora), '2026-11-15T15:38:30-03:00');
+  assert.equal(dataEmissaoNfe({ data_emissao: '2026-11-17' }, agora), '2026-11-17T15:38:30-03:00');
+  assert.equal(dataEmissaoNfe({ data_emissao: '2026-11-20' }, agora), '2026-11-17T15:38:30-03:00');
+  assert.equal(dataEmissaoNfe({}, agora), '2026-11-17T15:38:30-03:00');
 });
