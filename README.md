@@ -1020,6 +1020,9 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 323 — Lista do dia não filtra mais por unidade ativa
+O sistema antigo mostra todo `tb_status` da data; o filtro `u.ativo='True'` escondia empresas com programação (ex.: ESC. DO FUTURO). `GET /status` exige só que a unidade exista. Não testado contra MySQL real.
+
 ## Fase 322 — Diagnóstico mostra também registros escondidos
 `GET /status/ausentes` agora devolve `{total_status, ausentes, ocultos}` (ocultos = tb_status da data cuja unidade está inativa/inexistente). Não testado contra MySQL real.
 

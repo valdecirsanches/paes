@@ -1,4 +1,5 @@
 [
+  {"fase": 323, "itens": ["Programação diária: empresas que têm programação na data mas estavam com a unidade marcada como inativa voltam a aparecer na lista, como no sistema antigo."]},
   {"fase": 322, "itens": ["Programação diária › Ações do dia › \"Empresas que não aparecem na lista do dia…\": agora também mostra o total de registros da data × quantos a lista exibe e as empresas escondidas por terem a unidade inativa/inexistente."]},
   {"fase": 321, "itens": ["Programação diária › Ações do dia › \"Empresas que não aparecem na lista do dia…\": mostra cada unidade ativa que está fora da lista da data, o motivo (cliente com programação desligada, cliente inativo, movimento não ativado) e inclui as marcadas com um clique."]},
   {"fase": 320, "itens": ["Fábrica › Produção: clique no título (Horário, Qtde, Descrição) para ordenar a lista; o detalhamento de destino já ordenava por todos os campos."]},

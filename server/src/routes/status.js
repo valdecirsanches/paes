@@ -38,7 +38,7 @@ router.get('/', async (req, res) => {
        from tb_status ps
        left join tb_unidades u on u.id = ps.id_unidade
        left join tb_clientes c on c.id = ps.id_cliente
-      where ps.data = ? and u.ativo = 'True' and ${FILTROS[filtro]}
+      where ps.data = ? and u.id is not null and ${FILTROS[filtro]}
       order by ${ordem === 'entrega' ? 'primeira_entrega is null, primeira_entrega, u.nome' : 'u.nome'}`, [data]);
   res.json(rows.map((r) => ({ ...r, status_descricao: STATUS[r.status] ?? 'NADA' })));
 });
