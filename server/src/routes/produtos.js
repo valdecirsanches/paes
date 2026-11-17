@@ -77,10 +77,9 @@ async function validaProduto(c, b, { criando, id }) {
     if (dup) throw invalid(`Já existe um produto com o código ${b.codigo} (ID ${dup.id}).`);
   }
   if (criando || 'descricao' in b) if (!b.descricao) throw invalid('Informe a descrição do produto.');
-  // BeforePost do Delphi: peso e alíquotas de IPI/ICMS não podem ser nulos
-  for (const k of ['peso', 'aliq_ipi', 'aliq_icms']) {
-    if ((criando && (b[k] === undefined || b[k] === null)) || (k in b && b[k] === null)) throw invalid(`Impossível salvar produto: "${ROT[k] ?? k}" não pode ser nulo.`);
-  }
+  // BeforePost do Delphi: o peso não pode ser nulo. IPI % e ICMS % não aparecem mais na tela (quem manda é a Tributação): ficam 0 quando não informados
+  for (const k of ['aliq_ipi', 'aliq_icms']) if ((criando && b[k] === undefined) || (k in b && b[k] === null)) b[k] = 0;
+  if ((criando && (b.peso === undefined || b.peso === null)) || ('peso' in b && b.peso === null)) throw invalid(`Impossível salvar produto: "${ROT.peso}" não pode ser nulo.`);
   if ('ncm' in b && b.ncm && String(b.ncm).replace(/\D/g, '').length) { // NCM informado: precisa existir (se a tabela não puder ser consultada, não bloqueia)
     const r = await consultaNcm(b.ncm);
     if (r.ok === false) throw invalid(r.motivo);

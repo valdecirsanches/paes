@@ -1,4 +1,5 @@
 [
+  {"fase": 335, "itens": ["Cadastro de produto: não bloqueia mais o salvamento com \"IPI % não pode ser nulo\" (campo que não aparece na tela); IPI % e ICMS % ficam 0 quando não informados — quem define os impostos é a Tributação."]},
   {"fase": 334, "itens": ["NFe: textos livres (informações complementares, descrições, nomes) deixam de seguir quebras de linha para a SEFAZ — causa provável da rejeição 225 \"Falha no Schema XML do lote de NFe\"."]},
   {"fase": 333, "itens": ["Programação (diária e fixa): o horário da entrega se digita só com números e o \":00\" já vem preenchido — 6 → 06:00, 07 → 07:00, 073 → 07:30, 0745 → 07:45; Backspace apaga o último dígito."]},
   {"fase": 332, "itens": ["Programação diária: com a edição do item aberta, letras digitadas no campo Extra (ou Cada) não entram mais nele — vão para a pesquisa na lista de clientes; só números ficam no campo."]},
