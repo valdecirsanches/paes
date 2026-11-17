@@ -79,3 +79,15 @@
 .fbp-busca{position:sticky;top:0;float:right;z-index:3;background:#0b2a5c;color:#fff;padding:2px 10px;font:600 14px Tahoma,Arial,sans-serif;border-radius:0 0 0 6px}
 .fbp-grade thead th.ord{cursor:pointer;user-select:none}.fbp-grade thead th.ord:hover{background:#d8dfe9}.fbp-grade thead th i{font-style:normal;font-size:.6em;color:#0b2a5c}
 .fbp-busca button{background:none;border:0;color:#fff;cursor:pointer;margin-left:6px;font-size:13px}
+/* Produção: faixa do topo (data, Especiais, Salgados, tamanho da letra) também branca */
+.fbp-topo{background:#fff;border-bottom:1px solid #c9d0da}
+.fbp-data-txt{background:#fff;border-color:#c9d0da;color:#111}
+.fbp-data-seta{background:linear-gradient(#f7f9fc,#e3e8f0);border-color:#c9d0da;color:#333}
+.fbp-bt{background:linear-gradient(#fdfdfe,#e8ecf2);border-color:#c9d0da;color:#111}
+.fbp-bt:hover{background:linear-gradient(#fff,#dde5f0)}
+.fbp-bt.on{outline:1px dotted #0b2a5c;background:linear-gradient(#e3edf9,#cfe4ff)}
+.fbp-spin{background:#fff;border-color:#c9d0da}
+.fbp-spin input{color:#111}
+.fbp-spin span button{background:#e8ecf2;border-color:#c9d0da;color:#333}
+.fbp-carregando{color:#0b2a5c}
+.fbp-corpo{border-color:#c9d0da}
