@@ -1,5 +1,4 @@
 [
-  {"fase": 337, "itens": ["Faturamento › Parâmetros: layout em uma linha só — calendários maiores, cada um com o botão pertinente embaixo (Atualizar sob o 1º, Saída sob o 2º); filtros, Gerar comanda/Demonstrativo/Auditoria e valor total juntos num cartão; informações do cliente dentro do cartão das unidades. Botões no mesmo padrão."]},
   {"fase": 336, "itens": ["NFe: novo campo \"Data de emissão\" na ficha (notas PENDENTES). Data anterior a hoje vale na NF-e (com a hora atual) e o sistema pede confirmação ao autorizar; hoje ou futura usa o momento da emissão."]},
   {"fase": 335, "itens": ["Cadastro de produto: não bloqueia mais o salvamento com \"IPI % não pode ser nulo\" (campo que não aparece na tela); IPI % e ICMS % ficam 0 quando não informados — quem define os impostos é a Tributação."]},
   {"fase": 334, "itens": ["NFe: textos livres (informações complementares, descrições, nomes) deixam de seguir quebras de linha para a SEFAZ — causa provável da rejeição 225 \"Falha no Schema XML do lote de NFe\"."]},

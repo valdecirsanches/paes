@@ -1020,9 +1020,6 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
-## Fase 337 — Faturamento › Parâmetros mais compacto
-Faturamento.jsx: `fat-cal-col` (calendário + botão), cartão `fp-fa` (filtros+ações+valor), `fp-cli-in` dentro de Unidades; a linha `fp-barra` saiu. CSS no fim de styles.css. Conferido no mock (1366 e 1700 px).
-
 ## Fase 336 — NFe: data de emissão editável
 Campo na ficha (NFe.jsx, ao lado de Saída); `dataEmissaoNfe` (nfeJson.js) usa `data_emissao` quando < hoje (hora de Brasília atual), senão agora. `autorizar` confirma quando há nota com data anterior a hoje. A SEFAZ pode rejeitar data muito antiga. Não testado na SEFAZ.
 
