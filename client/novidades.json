@@ -1,4 +1,5 @@
 [
+  {"fase": 342, "itens": ["Roteiro de cargas: tela remodelada para dar o máximo de espaço à grade — abas Carga diária/fixa na lateral, título e Fechar numa faixa fina, filtros (Tipo, Embalagem, Programação, Carga, Expedição, Ítens, Extra, Região) bem mais comprimidos numa só linha, barras de ação e editor compactos e linhas da grade mais densas."]},
   {"fase": 341, "itens": ["Produção: barra de filtro e ordenação em cada lista (produtos e destinos) — campo para filtrar digitando, escolha da coluna e botão Crescente/Decrescente; o clique no título da coluna continua valendo."]},
   {"fase": 340, "itens": ["Produção: faixa única e compacta como na Fábrica — data grande com calendário que abre ao clicar, e os grupos Salgados/Especiais com Ver, Resumo e Entrega lado a lado; a lista ganhou bastante espaço.", "NFe: a data de emissão também pode ser corrigida em nota REJEITADA, e a nota rejeitada pode ser autorizada de novo (só PENDENTE e REJEITADA)."]},
   {"fase": 339, "itens": ["Cadastro de produto: código, descrições, unidade, ingredientes e validade só aceitam MAIÚSCULAS (convertidas ao digitar e também no servidor)."]},

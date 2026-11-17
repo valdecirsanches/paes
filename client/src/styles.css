@@ -2200,3 +2200,34 @@ button.lk-versao{background:none!important;border:0!important;box-shadow:none!im
 .pr2-fl-ord select{height:34px;border:1px solid #d8cdbb;border-radius:9px;background:#fff;padding:0 8px;font-size:14px;color:#3b2d18;text-transform:none}
 .pr2-fl-dir{min-height:34px !important;white-space:nowrap}
 .pr-dest .pr2-fl-ord span{display:none}.pr-dest .pr2-fl-busca{flex:1 1 110px}.pr-dest .pr2-fl-dir{padding:4px 8px}
+
+/* Roteiro de cargas (fase 342): abas laterais ocupando a altura toda, título/fechar numa faixa fina, filtros e dados mais compactos — o espaço vai para a grade */
+.cg-lado{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto 1fr;gap:4px 8px;padding:6px 10px}
+.cg-lado .cg-topo{display:contents}
+.cg-lado .dr2-abas{grid-column:1;grid-row:1 / span 2;align-self:stretch;flex-direction:column;flex-wrap:nowrap;gap:4px}
+.cg-lado .dr2-abas button{writing-mode:vertical-rl;transform:rotate(180deg);border-radius:0 10px 10px 0;padding:14px 6px;font-size:12.5px;white-space:nowrap}
+.cg-lado .cg-tit{grid-column:2;grid-row:1;flex-direction:row;align-items:baseline;gap:10px;display:flex;padding-right:90px}
+.cg-lado .cg-tit small{font-size:11px}.cg-lado .cg-tit b{font-size:14px}
+.cg-lado .cg-topo>.trb2-btn{grid-column:2;grid-row:1;justify-self:end;align-self:center;padding:2px 12px}
+.cg-lado .cg-esp{display:none}
+.cg-lado .cg-conteudo{grid-column:2;grid-row:2;min-height:0;min-width:0;display:flex;flex-direction:column}
+.cg-lado .cg-aba{gap:6px;flex:1;min-height:0}
+.cg-lado .cg-filtros{padding:5px 10px;gap:4px 12px;border-radius:10px}
+.cg-lado .cg-barra{padding:3px 8px;gap:6px}
+.cg-lado .cg-editor{padding:3px 10px;gap:6px;border-radius:10px}.cg-lado .cg-editor select{min-width:150px}
+.cg-lado .cg-meio{min-height:0}
+.cg-lado .cg-grade td{padding:1px 6px;line-height:1.15;font-size:12px}
+.cg-lado .cg-grade th{padding:3px 6px;font-size:11.5px}
+.cg-lado .cg-lista footer{padding:2px 10px;font-size:11.5px}
+/* escolhas (filtros) mais comprimidas: cabem numa linha */
+.cg-lado .cg-filtros{flex-wrap:wrap;gap:2px 8px;align-items:flex-end;padding:4px 8px}
+.cg-lado .cg-gr{gap:1px}.cg-lado .cg-rot{font-size:9px;line-height:1}
+.cg-lado .nf2-seg label{padding:3px 7px;font-size:11.5px;line-height:1.2}
+.cg-lado input[type=date],.cg-lado .cg-filtros select{height:24px;font-size:11.5px;padding:0 4px}
+.cg-lado .cg-filtros input[type=date]{width:112px}.cg-lado .cg-filtros select{min-width:0;width:78px}
+.cg-lado .cg-filtros .trb2-btn.principal{padding:3px 10px;height:24px;font-size:12px}
+.cg-lado .cg-barra .trb2-btn,.cg-lado .cg-barra .trb2-chip{padding:2px 8px;font-size:11.5px}.cg-lado .cg-bip{height:24px;width:190px;font-size:11.5px}
+.cg-lado .cg-editor select{width:120px;min-width:0;height:24px;font-size:11.5px}.cg-lado .cg-editor .trb2-btn{padding:2px 8px;font-size:11.5px}
+.cg-lado .nf2-seg label{padding:2px 5px;font-size:11px}
+.cg-lado .cg-filtros{gap:2px 5px}
+.cg-lado .cg-filtros input[type=date]{width:100px}.cg-lado .cg-filtros select{width:66px}

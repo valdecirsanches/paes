@@ -445,7 +445,7 @@ export default function Cargas({ onFechar, ativa = true }) {
   useEffect(() => { api.get('/cargas/roteiros').then(setRoteiros).catch((e) => notificar('erro', e.message)); }, [notificar]);
   const abas = useMemo(() => [['diaria', '🚚 Carga diária'], ['fixa', '📌 Carga fixa']], []);
   return (
-    <div className={`cg${ehFabrica() ? ' cg-fab' : ''}`}>
+    <div className={`cg${ehFabrica() ? ' cg-fab' : ' cg-lado'}`}>
       <Toast aviso={aviso} />
       <header className="cg-topo">
         <div className="cg-tit"><b>🚚 Roteiro de cargas</b><small>Acomodação, etinerário e etiquetas da expedição</small></div>
@@ -453,7 +453,9 @@ export default function Cargas({ onFechar, ativa = true }) {
         <span className="cg-esp" />
         <button type="button" className="trb2-btn" onClick={onFechar}>Fechar</button>
       </header>
-      {aba === 'diaria' ? <CargaDiaria key={reinicio} roteiros={roteiros} notificar={notificar} /> : <CargaFixa key={reinicio} roteiros={roteiros} notificar={notificar} />}
+      <div className="cg-conteudo">
+        {aba === 'diaria' ? <CargaDiaria key={reinicio} roteiros={roteiros} notificar={notificar} /> : <CargaFixa key={reinicio} roteiros={roteiros} notificar={notificar} />}
+      </div>
     </div>
   );
 }
