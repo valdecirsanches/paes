@@ -446,15 +446,8 @@ export default function Faturamento({ onFechar }) {
     }
     setCel(null);
   };
-  // td editável: mostra o input quando a célula está em edição
-  const tdEd = (r, campo, conteudo, cls = '') => (
-    cel && cel.id === r.id && cel.campo === campo
-      ? <td className={`${cls} edit-cel`} onClick={(e) => e.stopPropagation()} onDoubleClick={(e) => e.stopPropagation()}>
-          <input autoFocus className={NUM_CEL.has(campo) ? 'n' : ''} value={cel.texto} onChange={(e) => setCel({ ...cel, texto: e.target.value })}
-            onFocus={(e) => e.target.select()} onKeyDown={(e) => teclaCel(e, r)} onBlur={() => { if (cel && cel.campo === campo && cel.id === r.id) { const t = cel.texto; setCel(null); gravarCel(r, campo, t); } }} />
-        </td>
-      : <td className={`${cls} editavel`} title="Duplo clique para editar" onDoubleClick={(e) => { e.stopPropagation(); iniciarCel(r, campo); }}>{conteudo}</td>
-  );
+  // a grade não edita mais nada na linha: duplo clique em qualquer parte do item abre a edição (duploClique, no <tr>)
+  const tdEd = (r, campo, conteudo, cls = '') => <td className={cls}>{conteudo}</td>;
 
   // ---- edição do item (dsprrDataChange)
   const mudar = (k, v) => setDraft((d) => ({ ...d, [k]: v }));

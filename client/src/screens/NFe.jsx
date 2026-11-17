@@ -579,15 +579,29 @@ export default function NFe({ onFechar }) {
   const edi = (k, val) => setItemDraft((d) => ({ ...d, [k]: val }));
   const itemSujo = Object.keys(itemDraft).length > 0;
   const aplicaNota = (n) => { if (!n) return; setLinhas((ls) => ls.map((r) => (r.id === foco ? { ...r, valor_produtos: n.valor_produtos, nf_valor_total: n.nf_valor_total } : r))); setCompleta((c) => (c?.id === foco ? { ...c, valor_produtos: n.valor_produtos, nf_valor_total: n.nf_valor_total } : c)); };
+  // AF (Nº do acordo / ordem de compra) digitada: oferece levar o mesmo número para os demais itens da nota
+  const transportaAf = async (idOrigem, valor) => {
+    const af = String(valor ?? '').trim();
+    const outros = itens.filter((x) => x.id !== idOrigem && String(x.ordem_compra ?? '') !== af);
+    if (!af || !outros.length) return;
+    if (!(await confirmar(`Transportar a AF "${af}" para todos os itens da nota?\n(${outros.length} outro(s) item(ns) serão alterados)`))) return;
+    try {
+      let nota2 = null;
+      for (const x of outros) { const { _nota } = await api.put(`/nfe/itens/${x.id}`, { ordem_compra: af }); nota2 = _nota ?? nota2; }
+      setItens((is) => is.map((i) => ({ ...i, ordem_compra: af }))); aplicaNota(nota2); notificar('ok', `AF ${af} aplicada a todos os itens.`);
+    } catch (e) { notificar('erro', e.message); }
+  };
   const salvarItem = () => acao(async () => {
     const { _nota, ...novo } = await api.put(`/nfe/itens/${itemSel}`, itemDraft);
+    const mudouAf = 'ordem_compra' in itemDraft;
     setItens((is) => is.map((i) => (i.id === novo.id ? { ...i, ...novo } : i))); setItemDraft({}); aplicaNota(_nota); notificar('ok', 'Item gravado.');
+    if (mudouAf) await transportaAf(novo.id, novo.ordem_compra);
   });
   // grade de itens: Ord. Compra editável direto, mesmo em nota emitida; Enter grava
   const gravaOc = async (id, valor) => {
     try {
       const { _nota, ...novo } = await api.put(`/nfe/itens/${id}`, { ordem_compra: valor });
-      setItens((is) => is.map((i) => (i.id === novo.id ? { ...i, ...novo } : i))); aplicaNota(_nota); notificar('ok', 'Ord. compra gravada.'); return true;
+      setItens((is) => is.map((i) => (i.id === novo.id ? { ...i, ...novo } : i))); aplicaNota(_nota); notificar('ok', 'Ord. compra gravada.'); await transportaAf(id, novo.ordem_compra); return true;
     } catch (e) { notificar('erro', e.message); return false; }
   };
   const novoItem = () => {
