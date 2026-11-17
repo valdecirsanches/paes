@@ -22,8 +22,13 @@ function Relogio() {
 }
 
 const B_DIA = ['unidade_nome', 'cliente_razao_social'];
-export default function Diaria({ onFechar }) {
+export default function Diaria({ onFechar, ativa = true }) {
   const [data, setData] = useState(hoje());
+  const jaAtiva = useRef(false);
+  useEffect(() => { // Fábrica: sempre que a tela é aberta (ou volta a ser a aba ativa) reposiciona na data de hoje
+    if (ativa && jaAtiva.current && ehFabrica()) setData(hoje());
+    jaAtiva.current = true;
+  }, [ativa]);
   const [filtro, setFiltro] = useState('todas');
   const gravaItem = useRef(null); // o item em edição se registra aqui; ao trocar de cliente a alteração pendente é gravada antes (nada se perde)
   const trocaClienteClique = async (id) => {

@@ -1,4 +1,5 @@
 [
+  {"fase": 330, "itens": ["Fábrica › Programação: sempre que a tela é aberta (ou volta a ser a aba ativa) a data volta para hoje, como na Produção."]},
   {"fase": 329, "itens": ["Fábrica › Produção: o campo de pesquisa fica sempre visível acima da grade, com o mesmo tamanho de letra da grade (continua dá para clicar na grade e digitar)."]},
   {"fase": 328, "itens": ["Fábrica › Produção: a linha inteira da grade usa a cor do horário (1 amarelo, 2 verde, 3 azul) com letras de bom contraste; a linha atual fica mais forte e com moldura vermelha."]},
   {"fase": 327, "itens": ["Fábrica › Produção: a faixa preta do topo (data, Especiais, Salgados, tamanho da letra) agora é branca, como o restante da tela."]},
