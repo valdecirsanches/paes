@@ -538,11 +538,35 @@ export default function Faturamento({ onFechar }) {
             <div className="fp-linha fp-topo">
               <section className="fp-card fp-per">
                 <h4>📅 Período</h4>
-                <div className="fat-cals"><Calendario data={d1} onChange={clicouD1} /><Calendario data={d2} onChange={clicouD2} /></div>
+                <div className="fat-cals">
+                  <div className="fat-cal-col"><Calendario data={d1} onChange={clicouD1} />
+                    <button type="button" className="cv2-bt prim fp-bt" disabled={ocupado} onClick={() => atualizar(false)}>🔄 <u>A</u>tualizar</button></div>
+                  <div className="fat-cal-col"><Calendario data={d2} onChange={clicouD2} />
+                    <label className="fp-saida"><span>Saída (data da NF)</span><input type="date" value={emissao} onChange={(e) => e.target.value && setEmissao(e.target.value)} /></label></div>
+                </div>
                 <div className="fp-conecta">
                   <Pilula marcado={cbCliente} onChange={(e) => setCbCliente(e.target.checked)}>Conectar cliente</Pilula>
                   <Pilula marcado={cbDatas} onChange={(e) => setCbDatas(e.target.checked)}>Conectar período</Pilula>
                 </div>
+              </section>
+              <section className="fp-card fp-fa">
+                <h4>⚙ Filtros e ações</h4>
+                <div className="fp-filtros">
+                  <div className="fp-grupo"><span>Produtos</span><div className="seg">{['Mercadorias', 'Pães', 'Todos'].map((r, i) => <label key={r}><input type="radio" name="fat-prod" checked={rgMerc === i} onChange={() => setRgMerc(i)} /><span>{r}</span></label>)}</div></div>
+                <div className="fp-grupo"><span>Programação</span><div className="seg">{['Fixas', 'Extras', 'Todas'].map((r, i) => <label key={r}><input type="radio" name="fat-tipo" checked={rgTipo === i} onChange={() => setRgTipo(i)} /><span>{r}</span></label>)}</div></div>
+                <div className="fp-grupo"><span>Status</span><div className="seg">{['Pendentes', 'Cobrados', 'Descontos', 'Cancelados', 'Todos'].map((r, i) => <label key={r}><input type="radio" name="fat-stat" checked={rgStatus === i} onChange={() => setRgStatus(i)} /><span>{r}</span></label>)}</div></div>
+                </div>
+                <div className="fp-bts">
+                  <button type="button" className="cv2-bt fp-bt" disabled={!temItens || ocupado} onClick={gerarComanda}>📝 Gerar comanda</button>
+                  <button type="button" className="cv2-bt fp-bt" disabled={!temItens || ocupado} onClick={demonstrativo}>✅ Demonstrativo</button>
+                  <button type="button" className="cv2-bt fp-bt" disabled={!temItens || ocupado} onClick={auditoria}>🔎 Auditoria</button>
+                </div>
+                <div className="fp-valor-in">
+                {mostrarValor && <><span className="fp-vr-r">Valor total da comanda / N. Fiscal</span><div className="fp-vr">R$ {fmt(totais.valor, 2, 3)}</div></>}
+                <ul className="fat-legenda">
+                  {LEGENDA.map(([cor, r]) => <li key={r}><i style={{ background: SUAVES.get(cor)?.[0] ?? cor, boxShadow: `inset 3px 0 0 ${cor}` }} />{r}</li>)}
+                </ul>
+              </div>
               </section>
               <section className="fp-card fp-unis">
                 <h4>🏢 Unidades <small>{unidades.length ? `${unidades.length} no período` : ''}</small></h4>
@@ -562,8 +586,7 @@ export default function Faturamento({ onFechar }) {
                     </tbody>
                   </table>
                 </div>
-              </section>
-              <section className="fp-card fp-cli">
+              <div className="fp-cli-in">
                 <h4>🧾 Informações do cliente</h4>
                 <label className="fp-lb">Tipo de faturamento (Nota Fiscal)</label>
                 <select value={uniV?.tipo_faturamento ?? ''} disabled={!unidade} onChange={(e) => setUniDraft((d) => ({ ...d, tipo_faturamento: e.target.value }))}>
@@ -577,31 +600,10 @@ export default function Faturamento({ onFechar }) {
                   <button type="button" className="cv2-bt" disabled={!Object.keys(uniDraft).length} onClick={() => setUniDraft({})}>✘ Descartar</button>
                 </div>
                 {unidade && !verdadeiro(uniV.emite_comanda_diaria) && <div className="fp-aviso">Não emitir comanda diária para {unidade.nome}</div>}
+              </div>
               </section>
             </div>
 
-            <div className="fp-linha fp-barra">
-              <section className="fp-card fp-filtros">
-                <div className="fp-grupo"><span>Produtos</span><div className="seg">{['Mercadorias', 'Pães', 'Todos'].map((r, i) => <label key={r}><input type="radio" name="fat-prod" checked={rgMerc === i} onChange={() => setRgMerc(i)} /><span>{r}</span></label>)}</div></div>
-                <div className="fp-grupo"><span>Programação</span><div className="seg">{['Fixas', 'Extras', 'Todas'].map((r, i) => <label key={r}><input type="radio" name="fat-tipo" checked={rgTipo === i} onChange={() => setRgTipo(i)} /><span>{r}</span></label>)}</div></div>
-                <div className="fp-grupo"><span>Status</span><div className="seg">{['Pendentes', 'Cobrados', 'Descontos', 'Cancelados', 'Todos'].map((r, i) => <label key={r}><input type="radio" name="fat-stat" checked={rgStatus === i} onChange={() => setRgStatus(i)} /><span>{r}</span></label>)}</div></div>
-              </section>
-              <section className="fp-card fp-acoes">
-                <button type="button" className="fp-atu" disabled={ocupado} onClick={() => atualizar(false)}>🔄 <u>A</u>tualizar</button>
-                <label className="fp-saida"><span>Saída</span><input type="date" value={emissao} onChange={(e) => e.target.value && setEmissao(e.target.value)} /></label>
-                <div className="fp-bts">
-                  <button type="button" className="cv2-bt" disabled={!temItens || ocupado} onClick={gerarComanda}>📝 Gerar comanda</button>
-                  <button type="button" className="cv2-bt" disabled={!temItens || ocupado} onClick={demonstrativo}>✅ Demonstrativo</button>
-                  <button type="button" className="cv2-bt" disabled={!temItens || ocupado} onClick={auditoria}>🔎 Auditoria</button>
-                </div>
-              </section>
-              <section className="fp-card fp-valor">
-                {mostrarValor && <><span className="fp-vr-r">Valor total da comanda / N. Fiscal</span><div className="fp-vr">R$ {fmt(totais.valor, 2, 3)}</div></>}
-                <ul className="fat-legenda">
-                  {LEGENDA.map(([cor, r]) => <li key={r}><i style={{ background: SUAVES.get(cor)?.[0] ?? cor, boxShadow: `inset 3px 0 0 ${cor}` }} />{r}</li>)}
-                </ul>
-              </section>
-            </div>
           </div>
 
           <div className="fat-pagina" hidden={aba !== 'edicao'}>

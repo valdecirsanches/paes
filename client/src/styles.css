@@ -2163,3 +2163,22 @@ button.lk-versao{background:none!important;border:0!important;box-shadow:none!im
 .fi-rolagem .fi-compacto .fi-grava{margin:3px 0 0;flex:none}.fi-rolagem .fi-compacto .fi-calc{margin-top:auto}
 /* sem espaço vago: valores calculados e botão colados nos campos */
 .fi-rolagem .fi-compacto{min-height:0}.fi-rolagem .fi-compacto .fi-calc{margin-top:4px}.fi-rolagem .fi-compacto .fi-grava{margin:4px 0 0}
+
+/* Faturamento › Parâmetros (fase 337): calendários maiores, cada um com o botão pertinente embaixo; filtros, ações e valor num só cartão ao lado */
+.fp-topo{align-items:stretch}
+.fat-cals{display:flex;gap:12px;align-items:flex-start}.fat-cal-col{display:flex;flex-direction:column;gap:8px}
+.fp-per .fat-cals .cal,.fat-cals .cal{width:270px;font-size:15px}
+.fp-per .fat-cals .cal button,.fp-per .fat-cals .cal td,.fp-per .fat-cals .cal th{font-size:15px}
+.fp-bt,.fp-saida{height:40px}
+.fp-bt.cv2-bt{font-size:14px;font-weight:700;white-space:nowrap;padding:0 10px;border-radius:10px}
+.fp-saida{display:flex;flex-direction:row;align-items:center;gap:8px;font-size:12px;color:#8b7a60;text-transform:uppercase;border:1px solid #d8cdbb;border-radius:10px;padding:0 8px;background:#fff}
+.fp-saida span{white-space:nowrap}.fp-saida input{flex:1;min-width:0;height:30px;font-size:14px;font-weight:700}
+.fp-fa{flex:1 1 400px;display:flex;flex-direction:column;gap:8px}.fp-fa .fp-filtros{flex:none;gap:6px}
+.fp-fa .fp-bts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.fp-valor-in{display:flex;flex-direction:column;gap:4px}.fp-valor-in .fat-legenda{margin:0}
+.fp-valor-in .fp-vr{font-size:30px;padding:4px 12px}
+
+.fp-cli-in{display:flex;flex-direction:column;gap:6px;margin-top:8px;border-top:1px dashed #e2d8c5;padding-top:8px}
+.fp-cli-in h4{margin:0}.fp-unis{flex:1 1 300px}.fp-lista{max-height:170px;min-height:110px}
+.fp-fa .fp-bts .fp-bt{font-size:13px;padding:0 4px}.fp-fa{flex:1 1 360px}
+.fat-cals .cal,.fp-per .fat-cals .cal{width:256px}
