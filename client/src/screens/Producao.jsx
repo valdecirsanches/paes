@@ -9,6 +9,24 @@ import { Toast } from '../components/toast.jsx';
 const nomeTipo = { salgados: 'Salgados', especiais: 'Especiais' };
 const chaveMestre = (r) => `${r.producao_turno}-${r.id_referencia}`;
 const chaveDestino = (r) => `${r.id_unidade}|${r.data}|${r.hora}|${r.id_referencia}|${r.producao_turno}`;
+const semAc = (t) => String(t ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const filtra = (rows, termo, campos) => { const ws = semAc(termo).split(/\s+/).filter(Boolean); return !ws.length ? rows : rows.filter((r) => { const t = campos.map((c) => semAc(r[c])).join(' '); return ws.every((w) => t.includes(w)); }); };
+/** Barra de filtro + ordenação (botões visíveis, além do clique no título da coluna). */
+function BarraFiltro({ termo, setTermo, ordem, opcoes, placeholder }) {
+  return (
+    <div className="pr2-filtro">
+      <label className="pr2-fl-busca"><span aria-hidden="true">🔎</span>
+        <input type="search" value={termo} placeholder={placeholder} aria-label={placeholder} onChange={(e) => setTermo(e.target.value)} onKeyDown={(e) => { if (e.key === 'Escape') setTermo(''); }} />
+        {termo && <button type="button" className="pr2-fl-x" title="Limpar filtro" onClick={() => setTermo('')}>✕</button>}
+      </label>
+      <label className="pr2-fl-ord"><span>Ordenar</span>
+        <select value={ordem.campo ?? ''} onChange={(e) => ordem.definir(e.target.value)}>{opcoes.map(([c, r]) => <option key={c} value={c}>{r}</option>)}</select>
+      </label>
+      <button type="button" className="pr2-bt pr2-fl-dir" title={ordem.dir === 1 ? 'Crescente (clique para inverter)' : 'Decrescente (clique para inverter)'} onClick={ordem.inverte}>{ordem.dir === 1 ? '⏶ Crescente' : '⏷ Decrescente'}</button>
+    </div>
+  );
+}
+
 const cmp = (a, b) => (typeof a === 'number' && typeof b === 'number' ? a - b : String(a ?? '').localeCompare(String(b ?? ''), 'pt-BR'));
 
 /** Ordenação por clique no cabeçalho, como nas grades do sistema antigo (padrão: Hora, depois Destino). */
@@ -17,7 +35,10 @@ function useOrdem(padrao) {
   const alternar = (col) => setOrd((o) => (o[0]?.[0] === col ? [[col, -o[0][1]]] : [[col, 1]]));
   const ordenar = (rows) => [...rows].sort((a, b) => { for (const [c, d] of ord) { const r = cmp(a[c], b[c]) * d; if (r) return r; } return 0; });
   const seta = (col) => (ord[0]?.[0] === col ? (ord[0][1] === 1 ? ' ⏶' : ' ⏷') : '');
-  return { alternar, ordenar, seta };
+  const campo = ord[0]?.[0]; const dir = ord[0]?.[1] ?? 1;
+  const definir = (col) => setOrd([[col, dir]]);
+  const inverte = () => setOrd([[campo, -dir]]);
+  return { alternar, ordenar, seta, campo, dir, definir, inverte };
 }
 
 /** Uma aba (Produção salgados / Produção especial): lista por horário × referência + detalhamento de destino. */
@@ -32,9 +53,10 @@ function Painel({ tipo, data, recarga, ativo, onAviso }) {
   const ordM = useOrdem([['producao_turno', 1]]);
   const ordD = useOrdem([['hora', 1], ['cliente_nome', 1]]);
   const sal = tipo === 'salgados';
+  const [fM, setFM] = useState(''); const [fD, setFD] = useState('');
 
-  const linhasM = useMemo(() => ordM.ordenar(mestre), [mestre, ordM.ordenar]); // eslint-disable-line react-hooks/exhaustive-deps
-  const linhasD = useMemo(() => ordD.ordenar(destinos), [destinos, ordD.ordenar]); // eslint-disable-line react-hooks/exhaustive-deps
+  const linhasM = useMemo(() => ordM.ordenar(filtra(mestre, fM, ['descricao', 'codigo_referencia'])), [mestre, fM, ordM.ordenar]); // eslint-disable-line react-hooks/exhaustive-deps
+  const linhasD = useMemo(() => ordD.ordenar(filtra(destinos, fD, ['cliente_nome'])), [destinos, fD, ordD.ordenar]); // eslint-disable-line react-hooks/exhaustive-deps
   const atual = mestre.find((r) => chaveMestre(r) === sel) ?? null;
 
   const carregarMestre = useCallback(async () => {
@@ -108,6 +130,8 @@ function Painel({ tipo, data, recarga, ativo, onAviso }) {
   return (
     <div className="pr-painel" hidden={!ativo}>
       <div className={`pr2-card pr-mestre ${sal ? 'sal' : 'esp'}`} tabIndex={0} onKeyDown={teclaMestre}>
+        <BarraFiltro termo={fM} setTermo={setFM} ordem={ordM} placeholder="Filtrar produto ou referência…"
+          opcoes={[['producao_turno', 'Horário'], ['producao_qtde', 'Qtde'], ['descricao', 'Descrição'], ['codigo_referencia', 'Referência']]} />
         <table className="grade pr-grade">
           <thead>
             <tr>
@@ -138,6 +162,8 @@ function Painel({ tipo, data, recarga, ativo, onAviso }) {
 
       <fieldset className={`pr2-card pr-dest ${sal ? 'sal' : 'esp'}`}>
         <legend>Detalhamento de destino{atual ? ` — ${atual.descricao}` : ''}</legend>
+        <BarraFiltro termo={fD} setTermo={setFD} ordem={ordD} placeholder="Filtrar destino…"
+          opcoes={[['cliente_nome', 'Destino'], ['hora', 'Hora'], ['qtde_producao', 'Qtde'], ['data', 'Entrega']]} />
         <div className="pr-dest-rolagem" onContextMenu={(e) => e.preventDefault()}>
           <table className="grade pr-grade-d">
             <thead>
