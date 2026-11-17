@@ -2173,3 +2173,20 @@ button.lk-versao{background:none!important;border:0!important;box-shadow:none!im
 .pr2-acoes{grid-template-columns:1fr;align-content:center}
 .pr2-x{align-self:flex-start;min-height:36px}
 @media(max-width:1100px){.pr2-gb{grid-template-columns:1fr 1fr}}
+
+/* Produção (fase 340): faixa única e compacta, data com calendário flutuante como na Fábrica */
+.pr2-linha{align-items:center;gap:10px;flex-wrap:wrap;padding:6px 8px;background:#fffdf8;border:1px solid #e2d8c5;border-radius:12px}
+.sd{position:relative;display:flex;flex:none}
+.sd-txt{height:52px;padding:0 14px;border:1px solid #d8cdbb;border-right:0;border-radius:10px 0 0 10px;background:#fff;color:#3b2d18;font:800 34px/1 Arial,sans-serif;cursor:pointer;letter-spacing:.5px}
+.sd-seta{width:30px;height:52px;border:1px solid #d8cdbb;border-radius:0 10px 10px 0;background:#f6ecdb;color:#6f5d42;font-size:14px;cursor:pointer}
+.sd-txt:hover,.sd-seta:hover{background:#f6ecdb}
+.sd-pop{position:absolute;left:0;top:calc(100% + 4px);z-index:40;background:#fffdf8;border:1px solid #d8cdbb;border-radius:12px;padding:10px;box-shadow:0 8px 24px rgba(60,40,10,.25)}
+.sd-pop .cal{width:290px;font-size:16px}.sd-pop .cal button,.sd-pop .cal td,.sd-pop .cal th{font-size:16px}
+.sd-bt{display:flex;margin-top:8px}.sd-bt button{flex:1;height:36px;border:1px solid var(--cor-btn);background:var(--cor-btn);color:#fff;border-radius:9px;font-weight:700;cursor:pointer}
+.pr2-linha .pr2-grupo{flex:1 1 300px;flex-direction:row;align-items:center;gap:8px;padding:6px 10px;min-width:0}
+.pr2-linha .pr2-gt{font-size:15px;white-space:nowrap}.pr2-linha .pr2-gt span{font-size:20px}
+.pr2-linha .pr2-gb{flex:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.pr2-linha .pr2-bt{min-height:40px;font-size:13.5px;padding:4px 6px}
+.pr2-dia{text-transform:capitalize;color:#6f5d42;font-size:13px;white-space:nowrap}
+.pr2-linha .pr2-x{margin-left:auto;align-self:center}
+@media(max-width:1200px){.pr2-dia{display:none}}

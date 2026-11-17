@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../api.js';
-import Calendario from '../components/Calendario.jsx';
+import SeletorData from '../components/SeletorData.jsx';
 import { Modal } from '../components/ui.jsx';
 import { imprimirHtml, producaoEntrega, producaoResumo } from '../lib/print.js';
 import { brData, diaExtenso, fmtQtde, hoje } from '../lib/rules.js';
@@ -216,22 +216,18 @@ export default function Producao({ onFechar }) {
     <div className="tela producao pr2">
       <Toast aviso={aviso} />
       <section className="pr2-linha">
-        <div className="pr2-card pr2-cal">
-          <div className="pr2-cal-t">🍞 Produção <span>{diaExtenso(data)}</span></div>
-          <Calendario data={data} onChange={setData} />
-        </div>
-        <div className="pr2-card pr2-acoes">
-          {[['salgados', '🥐', 'Salgados'], ['especiais', '⭐', 'Especiais']].map(([tipo, ico, nome]) => (
-            <div key={tipo} className={`pr2-grupo ${tipo}`}>
-              <div className="pr2-gt"><span>{ico}</span>{nome}</div>
-              <div className="pr2-gb" role="tablist">
-                <button type="button" role="tab" aria-selected={aba === tipo} className={`pr2-bt${aba === tipo ? ' on' : ''}`} title={`Mostra a produção de ${nome.toLowerCase()} (recarrega)`} onClick={() => abrirAba(tipo)}>📋 Ver produção</button>
-                <button type="button" className="pr2-bt" disabled={ocupado} title={`Imprime o resumo da produção de ${nome.toLowerCase()}`} onClick={() => imprimir(tipo, 'resumo')}>🖨 Resumo</button>
-                <button type="button" className="pr2-bt" disabled={ocupado} title={`Imprime a entrega de ${nome.toLowerCase()} por destino`} onClick={() => imprimir(tipo, 'entrega')}>🖨 Entrega por destino</button>
-              </div>
+        <SeletorData data={data} onChange={setData} />
+        {[['salgados', '🥐', 'Salgados'], ['especiais', '⭐', 'Especiais']].map(([tipo, ico, nome]) => (
+          <div key={tipo} className={`pr2-grupo ${tipo}`}>
+            <div className="pr2-gt" title={diaExtenso(data)}><span>{ico}</span>{nome}</div>
+            <div className="pr2-gb" role="tablist">
+              <button type="button" role="tab" aria-selected={aba === tipo} className={`pr2-bt${aba === tipo ? ' on' : ''}`} title={`Mostra a produção de ${nome.toLowerCase()} (recarrega)`} onClick={() => abrirAba(tipo)}>📋 Ver</button>
+              <button type="button" className="pr2-bt" disabled={ocupado} title={`Imprime o resumo da produção de ${nome.toLowerCase()}`} onClick={() => imprimir(tipo, 'resumo')}>🖨 Resumo</button>
+              <button type="button" className="pr2-bt" disabled={ocupado} title={`Imprime a entrega de ${nome.toLowerCase()} por destino`} onClick={() => imprimir(tipo, 'entrega')}>🖨 Entrega</button>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
+        <span className="pr2-dia">{diaExtenso(data)}</span>
         <button type="button" className="pr2-bt pr2-x" title="Fechar esta tela" onClick={() => onFechar?.()}>✕ Fechar</button>
       </section>
       <div className="pr-corpo">

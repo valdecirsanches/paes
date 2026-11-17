@@ -864,8 +864,9 @@ router.put('/:id/numero-status', async (req, res) => {
 router.put('/:id', async (req, res) => {
   const id = idValido(req.params.id);
   const n = await getNfe(id);
-  if (n.status_e !== 'PENDENTE') throw invalid('Só é possível editar notas PENDENTES.');
-  const b = pick(req.body, NFE_EDITAVEIS);
+  const rej = n.status_e === 'REJEITADA'; // nota rejeitada: só as datas/hora de emissão e saída podem ser corrigidas (para reemitir)
+  if (n.status_e !== 'PENDENTE' && !rej) throw invalid('Só é possível editar notas PENDENTES.');
+  const b = pick(req.body, rej ? ['data_emissao', 'data_saida', 'hora_saida'] : NFE_EDITAVEIS);
   for (const k of ['data_emissao', 'data_saida']) if (b[k] !== undefined && !isIsoDate(String(b[k]).slice(0, 10))) throw invalid(`Data inválida (${k}).`);
   if (!Object.keys(b).length) throw invalid('Nada para gravar.');
   await pool.query('update tb_nfe set ? where id = ?', [b, id]);
@@ -1110,7 +1111,7 @@ async function completaReferenciaDevolucao(id, nfe, referencias) {
 async function autorizaUma(id, usuario, ibsCbs) {
   const log = [];
   const nfe = await getNfe(id);
-  if (nfe.status_e !== 'PENDENTE') return { id, ok: false, log: [`Nota ${id} não está PENDENTE (${nfe.status_e}).`] };
+  if (nfe.status_e !== 'PENDENTE' && nfe.status_e !== 'REJEITADA') return { id, ok: false, log: [`Nota ${id} não está PENDENTE (${nfe.status_e}).`] };
   const cfg = await getCfg();
   // a emissão usa SÓ o Código de tributação: antes de montar o JSON, os itens com tributo são recalculados a partir dele (NCM, CSTs, alíquotas, base e valores),
   // para não irem valores antigos copiados do produto ou de uma versão anterior do tributo. CFOP e CSOSN digitados no item são preservados.

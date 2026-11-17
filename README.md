@@ -1020,6 +1020,9 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 340 — Produção compacta (SeletorData) e emissão liberada em REJEITADA
+components/SeletorData.jsx (data grande + calendário flutuante); Producao.jsx `pr2-linha` numa faixa só. NFe: PUT aceita só datas/hora em REJEITADA e `autorizaUma` aceita REJEITADA. O campo de emissão só é bloqueado em AUTORIZADA/CANCELADA/INUTILIZADA/DEVOLVIDO (o XML já tem a data). Conferido no mock.
+
 ## Fase 339 — Produto em MAIÚSCULAS
 `emMaiusculas` (cad.jsx) mantém o cursor; `Txt maiusculas`; servidor: `emMaiusculasProduto` em `validaProduto` (POST/PUT). Não testado contra MySQL real.
 
