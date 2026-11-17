@@ -140,7 +140,7 @@ export default function Diaria({ onFechar }) {
     ['Ativar programação FIXA para todas as empresas', async () => (await confirmar(`Ativar todas as empresas que possuem programação fixa, para ${diaExtenso(data)}?`))
       && executar(() => api.post('/status/fixa-todas', { data }), (r) => (r.falhas.length
         ? `${r.criados} itens criados. Falhou em ${r.falhas.length} empresa(s).` : `Programação fixa ativada (${r.criados} itens).`))],
-    ['Empresas que não aparecem na lista do dia…', async () => { try { setAusentes({ lista: await api.get(`/status/ausentes?data=${data}`), marc: new Set() }); } catch (e) { notify.erro(e.message); } }],
+    ['Empresas que não aparecem na lista do dia…', async () => { try { { const r = await api.get(`/status/ausentes?data=${data}`); setAusentes({ lista: r.ausentes, ocultos: r.ocultos, total: r.total_status, marc: new Set() }); }; } catch (e) { notify.erro(e.message); } }],
     ['Verificar possíveis problemas de programação', () => pedeAbrirConflitos({ data })],
     ['Verificar integridade de status', () => executar(() => api.post('/status/recalcular', { data }), (r) => `${r.verificados} status verificados.`)],
     ...(ehFabrica() ? [] : [['Ajustar preços de todos os itens do dia', async () => (await confirmar('Trazer o preço atual do cadastro para todos os itens do dia?'))
@@ -166,6 +166,12 @@ export default function Diaria({ onFechar }) {
       {ausentes && (
         <Modal titulo={`Empresas que não aparecem em ${diaExtenso(data)}`} onFechar={() => setAusentes(null)} largo>
           <div style={{ padding: '6px 10px', maxWidth: 900 }}>
+            <p style={{ margin: '0 0 6px' }}><b>{ausentes.total}</b> registro(s) de programação existem nesta data; a lista mostra {lista.length}.</p>
+            {ausentes.ocultos.length > 0 && (<>
+              <p style={{ margin: '0 0 4px' }}><b>Escondidas pela lista</b> (têm programação na data, mas a unidade está inativa/inexistente):</p>
+              <table className="grade" style={{ marginBottom: 8 }}><thead><tr><th>Cliente</th><th>Unidade</th><th>Motivo</th></tr></thead>
+                <tbody>{ausentes.ocultos.map((r) => <tr key={r.id}><td>{r.cliente_nome ?? '—'}</td><td>{r.unidade_nome ?? `#${r.id_unidade}`}</td><td>{r.motivo}</td></tr>)}</tbody></table>
+            </>)}
             {ausentes.lista.length === 0 ? <p>Todas as unidades ativas já estão na lista deste dia.</p> : (<>
               <p style={{ margin: '0 0 6px' }}>Unidades ativas sem registro neste dia, e o motivo. Marque e inclua para aparecerem na programação.</p>
               <div style={{ maxHeight: '55vh', overflow: 'auto', border: '1px solid #ccc' }}>

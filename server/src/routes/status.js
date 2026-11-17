@@ -57,7 +57,17 @@ router.get('/ausentes', async (req, res) => {
     : String(r.programacao_ativo) !== 'True' ? 'Cliente com "programação ativa" desligada (Cadastro de Clientes › Dados do cliente)'
       : r.cliente_ativo !== 'ATIVO' ? 'Cliente INATIVO'
         : 'Movimento do dia ainda não ativado para esta unidade');
-  res.json(rows.map((r) => ({ ...r, motivo: motivo(r), cliente_desligado: r.cliente_nome != null && String(r.programacao_ativo) !== 'True' })));
+  // Registros que EXISTEM na data mas a lista do dia esconde (unidade inativa/inexistente): é o que faz uma empresa "sumir" mesmo com movimento ativado
+  const [ocultos] = await pool.query(
+    `select ps.id, ps.id_unidade, ps.id_cliente, ps.status, u.nome as unidade_nome, u.ativo as unidade_ativa, c.razao_social as cliente_nome
+       from tb_status ps left join tb_unidades u on u.id = ps.id_unidade left join tb_clientes c on c.id = ps.id_cliente
+      where ps.data = ? and (u.id is null or u.ativo is null or u.ativo <> 'True') order by c.razao_social, u.nome`, [data]);
+  const [[tot]] = await pool.query('select count(*) as n from tb_status where data = ?', [data]);
+  res.json({
+    total_status: tot.n,
+    ausentes: rows.map((r) => ({ ...r, motivo: motivo(r), cliente_desligado: r.cliente_nome != null && String(r.programacao_ativo) !== 'True' })),
+    ocultos: ocultos.map((r) => ({ ...r, motivo: r.unidade_nome == null ? 'Registro aponta para uma unidade que não existe mais' : `Unidade INATIVA no cadastro (ativo = ${r.unidade_ativa ?? 'vazio'}) — a lista só mostra unidades ativas` })),
+  });
 });
 
 // Inclui na lista do dia as unidades escolhidas (cria o registro de status); com ativar_cliente liga também a programação do cliente
