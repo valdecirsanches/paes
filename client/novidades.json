@@ -1,4 +1,5 @@
 [
+  {"fase": 321, "itens": ["Programação diária › Ações do dia › \"Empresas que não aparecem na lista do dia…\": mostra cada unidade ativa que está fora da lista da data, o motivo (cliente com programação desligada, cliente inativo, movimento não ativado) e inclui as marcadas com um clique."]},
   {"fase": 320, "itens": ["Fábrica › Produção: clique no título (Horário, Qtde, Descrição) para ordenar a lista; o detalhamento de destino já ordenava por todos os campos."]},
   {"fase": 319, "itens": ["Programação diária: com o item em edição dá para passar para outro cliente (clique, setas ou digitando na lista); a alteração é gravada antes e, se não puder ser gravada, o sistema pergunta se descarta — não trava mais.", "Fábrica › Produção: fundo branco (só o horário tem cor, linha atual em azul claro), pesquisa por descrição digitando direto na grade e a data volta para hoje sempre que a tela é aberta."]},
   {"fase": 318, "itens": ["Programação diária: ao gravar um item (Enter no último campo, Extra/Cada ou F5) a edição continua aberta; quem fecha é o usuário (Esc)."]},

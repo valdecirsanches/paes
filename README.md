@@ -1020,6 +1020,9 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 321 — Diária: diagnóstico/inclusão de empresas fora da lista
+A lista do dia mostra só quem tem registro em `tb_status` na data e unidade ativa; o "Ativar movimento do dia" só cria registro se `tb_clientes.programacao_ativo='True'`. Novas rotas `GET /status/ausentes?data` (com motivo) e `POST /status/incluir` (cria o status; opcional liga a programação do cliente). Não testado contra MySQL real.
+
 ## Fase 320 — Produção da Fábrica: ordenar pelos títulos
 Lista mestre ordena por Horário/Qtde/Descrição (padrão horário+referência). Não testado com dados reais.
 

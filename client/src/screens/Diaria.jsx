@@ -10,6 +10,7 @@ import FixaTab from '../components/FixaTab.jsx';
 import ReclamacoesTab from '../components/ReclamacoesTab.jsx';
 import ConfigTab from '../components/ConfigTab.jsx';
 import { Toast } from '../components/toast.jsx';
+import { Modal } from '../components/ui.jsx';
 import { useDigitaNaLista } from '../lib/digitaNaLista.js';
 import { useBusca } from '../components/cad.jsx';
 import { confirmar } from '../components/toast.jsx';
@@ -139,12 +140,21 @@ export default function Diaria({ onFechar }) {
     ['Ativar programação FIXA para todas as empresas', async () => (await confirmar(`Ativar todas as empresas que possuem programação fixa, para ${diaExtenso(data)}?`))
       && executar(() => api.post('/status/fixa-todas', { data }), (r) => (r.falhas.length
         ? `${r.criados} itens criados. Falhou em ${r.falhas.length} empresa(s).` : `Programação fixa ativada (${r.criados} itens).`))],
+    ['Empresas que não aparecem na lista do dia…', async () => { try { setAusentes({ lista: await api.get(`/status/ausentes?data=${data}`), marc: new Set() }); } catch (e) { notify.erro(e.message); } }],
     ['Verificar possíveis problemas de programação', () => pedeAbrirConflitos({ data })],
     ['Verificar integridade de status', () => executar(() => api.post('/status/recalcular', { data }), (r) => `${r.verificados} status verificados.`)],
     ...(ehFabrica() ? [] : [['Ajustar preços de todos os itens do dia', async () => (await confirmar('Trazer o preço atual do cadastro para todos os itens do dia?'))
       && executar(() => api.post('/diaria/ajusta-preco-lote', { data }), (r) => `${r.atualizados} itens atualizados.`)]]),
   ];
   const [menuAberto, setMenuAberto] = useState(false);
+  const [ausentes, setAusentes] = useState(null); // { lista, marc } — empresas fora da lista do dia
+  const incluirAusentes = async () => {
+    const ids = [...ausentes.marc]; if (!ids.length) return;
+    const desligados = ausentes.lista.some((r) => ids.includes(r.id_unidade) && r.cliente_desligado);
+    const ativar = desligados && (await confirmar('Algumas empresas marcadas estão com a "programação ativa" desligada no cadastro do cliente.\nLigar a programação desses clientes também (senão o "Ativar movimento do dia" continuará pulando-os)?'));
+    setAusentes(null);
+    executar(() => api.post('/status/incluir', { data, unidades: ids, ativar_cliente: ativar }), (r) => `${r.criados} empresa(s) incluída(s) na lista de ${diaExtenso(data)}.`);
+  };
   const contagem = useMemo(() => { const c = [0, 0, 0, 0]; lista.forEach((r) => { c[r.status] = (c[r.status] || 0) + 1; }); return c; }, [lista]);
   const [diaSem, diaMes] = (() => { const d = new Date(`${data}T12:00:00`); return [d.toLocaleDateString('pt-BR', { weekday: 'long' }), d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })]; })();
   const ABAS = [['diaria', '📋 Programação diária'], ['fixa', '📌 Programação fixa'], ['rcm', '💬 Reclamações'], ...(ehFabrica() ? [] : [['cfg', '⚙ Configurações']])];
@@ -153,6 +163,24 @@ export default function Diaria({ onFechar }) {
     <div className="tela dr2" ref={raiz}>
 
       <Toast aviso={aviso} />
+      {ausentes && (
+        <Modal titulo={`Empresas que não aparecem em ${diaExtenso(data)}`} onFechar={() => setAusentes(null)} largo>
+          <div style={{ padding: '6px 10px', maxWidth: 900 }}>
+            {ausentes.lista.length === 0 ? <p>Todas as unidades ativas já estão na lista deste dia.</p> : (<>
+              <p style={{ margin: '0 0 6px' }}>Unidades ativas sem registro neste dia, e o motivo. Marque e inclua para aparecerem na programação.</p>
+              <div style={{ maxHeight: '55vh', overflow: 'auto', border: '1px solid #ccc' }}>
+                <table className="grade"><thead><tr><th><input type="checkbox" aria-label="Marcar todas" checked={ausentes.marc.size === ausentes.lista.length} onChange={(e) => setAusentes((a) => ({ ...a, marc: e.target.checked ? new Set(a.lista.map((r) => r.id_unidade)) : new Set() }))} /></th><th>Cliente</th><th>Unidade</th><th>Motivo</th></tr></thead>
+                  <tbody>{ausentes.lista.map((r) => (
+                    <tr key={r.id_unidade}><td><input type="checkbox" checked={ausentes.marc.has(r.id_unidade)} onChange={() => setAusentes((a) => { const m = new Set(a.marc); if (m.has(r.id_unidade)) m.delete(r.id_unidade); else m.add(r.id_unidade); return { ...a, marc: m }; })} /></td>
+                      <td>{r.cliente_nome ?? '—'}</td><td>{r.unidade_nome}</td><td>{r.motivo}</td></tr>))}</tbody></table>
+              </div>
+            </>)}
+            <div className="rodape-modal" style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8 }}>
+              {ausentes.lista.length > 0 && <button type="button" className="bt" disabled={!ausentes.marc.size} onClick={incluirAusentes}>Incluir marcadas na lista do dia</button>}
+              <button type="button" className="bt" onClick={() => setAusentes(null)}>Fechar</button>
+            </div>
+          </div>
+        </Modal>)}
 
       <div className={`dr2-corpo${editandoItem ? ' editando' : ''}`}>
         <aside className="dr2-lado">

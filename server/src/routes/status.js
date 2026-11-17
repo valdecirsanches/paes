@@ -43,6 +43,42 @@ router.get('/', async (req, res) => {
   res.json(rows.map((r) => ({ ...r, status_descricao: STATUS[r.status] ?? 'NADA' })));
 });
 
+// Empresas que NÃO aparecem na lista do dia e o motivo (a lista só mostra quem tem registro de status na data e unidade ativa)
+router.get('/ausentes', async (req, res) => {
+  const { data } = req.query;
+  exigeData(data);
+  const [rows] = await pool.query(
+    `select u.id as id_unidade, u.nome as unidade_nome, u.id_cliente, c.razao_social as cliente_nome, c.ativo as cliente_ativo, c.programacao_ativo,
+            u.ativo as unidade_ativa, (select count(*) from tb_status s where s.data = ? and s.id_unidade = u.id) as tem_status
+       from tb_unidades u left join tb_clientes c on c.id = u.id_cliente
+      where u.ativo = 'True' and not exists (select 1 from tb_status s where s.data = ? and s.id_unidade = u.id)
+      order by c.razao_social, u.nome`, [data, data]);
+  const motivo = (r) => (r.cliente_nome == null ? 'Unidade sem cliente válido'
+    : String(r.programacao_ativo) !== 'True' ? 'Cliente com "programação ativa" desligada (Cadastro de Clientes › Dados do cliente)'
+      : r.cliente_ativo !== 'ATIVO' ? 'Cliente INATIVO'
+        : 'Movimento do dia ainda não ativado para esta unidade');
+  res.json(rows.map((r) => ({ ...r, motivo: motivo(r), cliente_desligado: r.cliente_nome != null && String(r.programacao_ativo) !== 'True' })));
+});
+
+// Inclui na lista do dia as unidades escolhidas (cria o registro de status); com ativar_cliente liga também a programação do cliente
+router.post('/incluir', async (req, res) => {
+  const { data, unidades, ativar_cliente: ativar } = req.body;
+  exigeData(data);
+  if (!Array.isArray(unidades) || !unidades.length) throw invalid('Escolha ao menos uma empresa.');
+  const ids = unidades.map(Number).filter((n) => Number.isInteger(n) && n > 0);
+  if (!ids.length) throw invalid('Empresas inválidas.');
+  let criados = 0;
+  await tx(async (c) => {
+    if (ativar) await c.query("update tb_clientes set programacao_ativo = 'True' where id in (select id_cliente from tb_unidades where id in (?))", [ids]);
+    const [r] = await c.query(
+      `insert into tb_status (id_cliente, id_unidade, data, status, status_fixa)
+       select u.id_cliente, u.id, ?, 0, 'NADA' from tb_unidades u join tb_clientes c on c.id = u.id_cliente
+        where u.id in (?) and u.ativo = 'True' and not exists (select 1 from tb_status s where s.data = ? and s.id_unidade = u.id)`, [data, ids, data]);
+    criados = r.affectedRows;
+  });
+  res.json({ criados });
+});
+
 // "Ativar movimento do dia": cria o tb_status de quem ainda não tem, em uma única consulta.
 router.post('/movimento-dia', async (req, res) => {
   const { data } = req.body;
