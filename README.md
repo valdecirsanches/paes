@@ -1020,6 +1020,9 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 333 — Hora com ":00" automático
+ItemForm.jsx: `CampoHora` (texto, só dígitos; hora ≤ 23, 1º dígito do minuto ≤ 5) substitui o `input type=time` em HoraGrande (diária e fixa). Testado no mock com Playwright.
+
 ## Fase 332 — Diária: letras no Extra/Cada vão para a pesquisa de clientes
 DiariaTab.jsx: no handler global de teclado, tecla não numérica com foco em Extra/Cada é redirecionada (foco + keydown sintético) para `ul.dr2-clientes` (type-ahead). Testado no mock com Playwright.
 
