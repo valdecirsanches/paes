@@ -1020,6 +1020,9 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 329 — Produção da Fábrica: campo de pesquisa sempre visível
+`.fbp-pesq` (input) acima da grade, `fontSize` igual ao da grade; Esc limpa, ↓/Enter vai para a grade. Não conferido no navegador.
+
 ## Fase 328 — Produção da Fábrica: linha na cor do horário
 `tr.rt1/rt2/rt3` + CSS no fim de fabrica.css; contraste: texto escuro em amarelo/verde, branco no azul. Não conferido no navegador.
 

@@ -90,8 +90,14 @@ function Aba({ tipo, data, recarga, ativa, fonte, onCarga }) {
 
   return (
     <div className="fbp-aba" hidden={!ativa}>
+      <div className="fbp-esq">
+      <div className="fbp-pesq" style={{ fontSize: `${fonte * 4 / 3}px` }}>
+        <span aria-hidden="true">🔎</span>
+        <input value={busca} placeholder="Pesquisar produto (ou clique na grade e digite)" aria-label="Pesquisar produto" onChange={(e) => setBusca(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Escape') { e.preventDefault(); setBusca(''); } else if (e.key === 'ArrowDown' || e.key === 'Enter') { e.preventDefault(); corpo.current?.focus(); } }} />
+        {busca && <button type="button" onClick={() => { setBusca(''); corpo.current?.focus(); }} title="Limpar filtro (Esc)">✕</button>}
+      </div>
       <div className="fbp-grade" style={{ fontSize: `${fonte * 4 / 3}px` }} tabIndex={0} ref={corpo} onKeyDown={teclaGrade} title="Clique na grade e digite para filtrar pela descrição; Esc limpa; ↑ ↓ passam de um para outro">
-        {busca && <div className="fbp-busca">🔎 {busca} <button type="button" onClick={() => setBusca('')} title="Limpar filtro (Esc)">✕</button></div>}
         <table>
           <thead><tr><th className="ind" /><th className="ord" style={{ width: '11%' }} onClick={() => alternaM('producao_turno')}>Horário <i>{setaM('producao_turno')}</i></th><th className="ord" style={{ width: '14%' }} onClick={() => alternaM('producao_qtde')}>Qtde <i>{setaM('producao_qtde')}</i></th><th className="ord" onClick={() => alternaM('descricao')}>Descrição do produto <i>{setaM('descricao')}</i></th></tr></thead>
           <tbody>
@@ -107,6 +113,7 @@ function Aba({ tipo, data, recarga, ativa, fonte, onCarga }) {
             {!linhasM.length && <tr><td className="ind" /><td colSpan={3} className="fbp-vazio">&lt;{busca ? 'Nada encontrado para o filtro' : 'Não há informações'}&gt;</td></tr>}
           </tbody>
         </table>
+      </div>
       </div>
       <div className="fbp-sep" role="separator" aria-orientation="vertical" title="Arraste para aumentar ou diminuir o detalhamento" onPointerDown={arrasta} />
       <div className="fbp-dest" style={{ width: larg }}>
