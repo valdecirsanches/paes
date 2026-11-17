@@ -1020,6 +1020,9 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 331 — Fábrica: data de hoje ao entrar em todas as telas com data
+Novo hook `useAoReativar` (lib/dataHoje.js): Mercadorias, Reclamações, Conflitos e Cargas (remonta as abas via `key`). Pedidos extras não tem filtro de data (o novo pedido já nasce com hoje). Não conferido no navegador.
+
 ## Fase 330 — Programação da Fábrica: data de hoje ao entrar
 Diaria.jsx recebe `ativa` (FabricaApp) e faz `setData(hoje())` nas reativações quando `ehFabrica()`. Não conferido no navegador.
 

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useAoReativar } from '../lib/dataHoje.js';
 import { api } from '../api.js';
 import { brData, hoje, somaDias } from '../lib/rules.js';
 import { aoPedirConflitos, pedeAbrirDiaria, pegaPedidoConflitos } from '../lib/navega.js';
@@ -7,9 +8,10 @@ import { imprimirHtml } from '../lib/print.js';
 const GRAV = { erro: ['Erro', '⛔'], aviso: ['Atenção', '⚠️'], info: ['Informação', 'ℹ️'] };
 
 /** "Verificar possíveis problemas de programação": confere o que foi lançado e lista o que costuma ser erro de operador. */
-export default function Conflitos({ onFechar, abrirTela }) {
+export default function Conflitos({ onFechar, abrirTela, ativa = true }) {
   const [de, setDe] = useState(hoje());
   const [ate, setAte] = useState(hoje());
+  useAoReativar(ativa, () => { setDe(hoje()); setAte(hoje()); });
   const [r, setR] = useState(null);
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);

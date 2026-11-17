@@ -1,4 +1,5 @@
 [
+  {"fase": 331, "itens": ["Fábrica: Mercadorias, Cargas (diária e fixa), Reclamações e Problemas da programação também voltam para a data de hoje sempre que a tela é aberta ou volta a ser a aba ativa."]},
   {"fase": 330, "itens": ["Fábrica › Programação: sempre que a tela é aberta (ou volta a ser a aba ativa) a data volta para hoje, como na Produção."]},
   {"fase": 329, "itens": ["Fábrica › Produção: o campo de pesquisa fica sempre visível acima da grade, com o mesmo tamanho de letra da grade (continua dá para clicar na grade e digitar)."]},
   {"fase": 328, "itens": ["Fábrica › Produção: a linha inteira da grade usa a cor do horário (1 amarelo, 2 verde, 3 azul) com letras de bom contraste; a linha atual fica mais forte e com moldura vermelha."]},

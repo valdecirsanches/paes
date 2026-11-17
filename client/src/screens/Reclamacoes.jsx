@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useAoReativar } from '../lib/dataHoje.js';
 import { api } from '../api.js';
 import { Toast } from '../components/toast.jsx';
 import { brData, hhmm, hoje } from '../lib/rules.js';
 
 /** Reclamações/elogios de todos os clientes no período (u_reclamações da fábrica). A justificativa pode ser registrada aqui. */
-export default function Reclamacoes({ onFechar }) {
+export default function Reclamacoes({ onFechar, ativa = true }) {
   const [de, setDe] = useState(hoje());
   const [ate, setAte] = useState(hoje());
+  useAoReativar(ativa, () => { setDe(hoje()); setAte(hoje()); });
   const [linhas, setLinhas] = useState([]);
   const [sel, setSel] = useState(null);
   const [just, setJust] = useState('');

@@ -5,6 +5,7 @@ import { useJanela, ALT_LINHA } from '../components/janela.js';
 import { etiquetaCarga } from '../lib/print.js';
 import { imprimirDocumento, temDestino } from '../lib/impressora.js';
 import { ehFabrica } from '../lib/perfil.js';
+import { useAoReativar } from '../lib/dataHoje.js';
 import { bool, brData, fmtQtde, hhmm, hoje, semanaDia } from '../lib/rules.js';
 
 const ACOMOD = [['SACARIA', 'Sacaria'], ['CAIXA BRANCA', 'Caixa branca'], ['CAIXA QUADRADA', 'Caixa quadrada'], ['CAIXA AMARELINHA', 'Caixa amarelinha']];
@@ -433,8 +434,10 @@ function CargaFixa({ roteiros, notificar }) {
 }
 
 /** Roteiro de cargas (u_cargas) */
-export default function Cargas({ onFechar }) {
+export default function Cargas({ onFechar, ativa = true }) {
   const [aba, setAba] = useState('diaria');
+  const [reinicio, setReinicio] = useState(0); // muda a chave das abas: voltam à data/dia de hoje
+  useAoReativar(ativa, () => setReinicio((n) => n + 1));
   const [roteiros, setRoteiros] = useState([]);
   const [aviso, setAviso] = useState(null);
   const notificar = useCallback((tipo, m) => setAviso({ tipo, m }), []);
@@ -450,7 +453,7 @@ export default function Cargas({ onFechar }) {
         <span className="cg-esp" />
         <button type="button" className="trb2-btn" onClick={onFechar}>Fechar</button>
       </header>
-      {aba === 'diaria' ? <CargaDiaria roteiros={roteiros} notificar={notificar} /> : <CargaFixa roteiros={roteiros} notificar={notificar} />}
+      {aba === 'diaria' ? <CargaDiaria key={reinicio} roteiros={roteiros} notificar={notificar} /> : <CargaFixa key={reinicio} roteiros={roteiros} notificar={notificar} />}
     </div>
   );
 }

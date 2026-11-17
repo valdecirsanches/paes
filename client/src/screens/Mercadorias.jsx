@@ -1,4 +1,5 @@
 import { ehFabrica } from '../lib/perfil.js';
+import { useAoReativar } from '../lib/dataHoje.js';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useJanela } from '../components/janela.js';
 import { api } from '../api.js';
@@ -189,8 +190,9 @@ const Linha = memo(function Linha({ r, i, marcado, foco, onClick, onDuplo }) {
   );
 });
 
-export default function Mercadorias({ onFechar }) {
+export default function Mercadorias({ onFechar, ativa = true }) {
   const [data, setData] = useState(hoje());
+  useAoReativar(ativa, () => setData(hoje()));
   const [itens, setItens] = useState([]);
   const [marcados, setMarcados] = useState(() => new Set());
   const [foco, setFoco] = useState(null);
