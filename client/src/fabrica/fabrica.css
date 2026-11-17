@@ -91,3 +91,16 @@
 .fbp-spin span button{background:#e8ecf2;border-color:#c9d0da;color:#333}
 .fbp-carregando{color:#0b2a5c}
 .fbp-corpo{border-color:#c9d0da}
+/* linha inteira na cor do horário, com letras de bom contraste; a linha atual ganha tom mais forte + moldura */
+.fbp-grade tr.rt1 td{background:#fff2a8;color:#3d3300}
+.fbp-grade tr.rt2 td{background:#cdeec6;color:#123d08}
+.fbp-grade tr.rt3 td{background:#1f3fd6;color:#fff}
+.fbp-grade tr.rt1 td.hor{background:#ffd940;color:#3d3300}
+.fbp-grade tr.rt2 td.hor{background:#8fd47f;color:#0b2d04}
+.fbp-grade tr.rt3 td.hor{background:#0b1fa0;color:#fff}
+.fbp-grade tbody tr.rt1:hover td{background:#ffec7a}.fbp-grade tbody tr.rt2:hover td{background:#b6e5ab}.fbp-grade tbody tr.rt3:hover td{background:#3552e6}
+.fbp-grade tr.sel-l.rt1 td{background:#ffcc00;color:#000}
+.fbp-grade tr.sel-l.rt2 td{background:#5fc24a;color:#000}
+.fbp-grade tr.sel-l.rt3 td{background:#000c6b;color:#fff}
+.fbp-grade tr.sel-l td{font-weight:800;border-top:2px solid #c62828;border-bottom:2px solid #c62828}
+.fbp-grade tr.sel-l td.ind{color:#c62828;background:#fff}

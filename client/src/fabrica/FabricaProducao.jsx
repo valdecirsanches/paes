@@ -98,7 +98,7 @@ function Aba({ tipo, data, recarga, ativa, fonte, onCarga }) {
             {linhasM.map((r) => {
               const k = chave(r); const ehSel = k === sel;
               return (
-                <tr key={k} className={ehSel ? 'sel-l' : ''} onClick={() => setSel(k)}>
+                <tr key={k} className={`rt${r.producao_turno}${ehSel ? ' sel-l' : ''}`} onClick={() => setSel(k)}>
                   <td className={`ind${ehSel ? ' on' : ''}`}>{ehSel ? '▸' : ''}</td>
                   {[r.producao_turno, num(r.producao_qtde), r.descricao ?? r.referencia_descricao].map((v, i) => (
                     <td key={i} className={`${i === 0 ? `hor t${r.producao_turno}` : ''}${i === 1 ? ' n' : ''}`} onClick={() => setCol(i)}>{v}</td>))}
