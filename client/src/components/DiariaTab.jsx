@@ -319,6 +319,17 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
   useEffect(() => {
     const tecla = (e) => {
       if (modal || consulta) return;
+      // Extra/Cada só aceitam número: ao digitar uma letra/texto ali, a digitação vai para a pesquisa na lista de clientes (type-ahead)
+      if (e.key.length === 1 && /[^\d.,\-+\s]/.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey && !e._redirecionada
+        && (e.target === refs.current.extra || e.target === refs.current.cada)) {
+        const lista = document.querySelector('ul.dr2-clientes');
+        if (lista) {
+          e.preventDefault(); e.target.blur?.(); lista.focus();
+          const ev = new KeyboardEvent('keydown', { key: e.key, bubbles: true, cancelable: true }); ev._redirecionada = true;
+          lista.dispatchEvent(ev);
+          return;
+        }
+      }
       // painel de alteração aberto: ↑ ↓ passam para o item vizinho, GRAVAM a alteração feita (se houver) e a edição continua aberta no Extra.
       // Sem mudanças, vale em qualquer campo do painel; com mudanças, só nos campos Extra e Cada (nos demais as setas ficam com o campo).
       if (painel && !ocupado && (e.key === 'ArrowDown' || e.key === 'ArrowUp') && !e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey && !document.querySelector('dialog[open]')) {
