@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 357 — Fábrica: clientes da diária 70% maiores
+
+`.dr2-lista-fab .dr2-cli{font-size:20.4px}` (só Fábrica).
+
 ## Fase 356 — Diária aceita código de produto de qualquer cliente
 
 `produtoPorCodigo(c, codigo, idCliente)` prefere o produto do cliente e cai para qualquer ativo; `GET /produtos/codigo/:c?cliente=`; `BuscaProduto` liga "todos" quando o cliente não tem resultado.

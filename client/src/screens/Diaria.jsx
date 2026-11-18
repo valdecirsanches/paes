@@ -210,7 +210,7 @@ export default function Diaria({ onFechar, ativa = true }) {
               ))}
             </div>
           </div>
-          <div className="dr2-card dr2-lista">
+          <div className={`dr2-card dr2-lista${ehFabrica() ? ' dr2-lista-fab' : ''}`}>
             <div className="dr2-t">Clientes do dia <small>{lista.length}</small>
             </div>
                         {digCli.digitado && <div className="dg-badge" role="status">⌨ {digCli.digitado}</div>}
