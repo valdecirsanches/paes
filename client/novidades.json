@@ -1,4 +1,5 @@
 [
+  {"fase": 345, "itens": ["Programação diária/fixa: o item cancelado fica cinza na hora, mesmo com a edição aberta nele (antes continuava amarelo); ao desfazer o cancelamento volta à cor normal."]},
   {"fase": 344, "itens": ["Controle de comandas: a lista de comandas pode ser ordenada clicando nos títulos Comanda, Emissão, Responsável, Valor e Status (clique de novo inverte; a seta mostra a ordem)."]},
   {"fase": 343, "itens": ["Roteiro de cargas: as abas Carga diária / Carga fixa voltaram para o topo, na horizontal, como no sistema antigo, na mesma faixa do título."]},
   {"fase": 342, "itens": ["Roteiro de cargas: tela remodelada para dar o máximo de espaço à grade — abas Carga diária/fixa na lateral, título e Fechar numa faixa fina, filtros (Tipo, Embalagem, Programação, Carga, Expedição, Ítens, Extra, Região) bem mais comprimidos numa só linha, barras de ação e editor compactos e linhas da grade mais densas."]},
