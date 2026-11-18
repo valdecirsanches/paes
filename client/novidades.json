@@ -1,4 +1,5 @@
 [
+  {"fase": 353, "itens": ["Fábrica: a coluna Cobrança (preço/valor) da Programação diária não aparece mais — só no sistema principal.", "Programação diária: o painel \"Empresa selecionada\" mostra o endereço completo da unidade (rua, número, complemento, bairro, cidade/UF e CEP).", "Reclamações: corrigido o erro \"Unknown column usuario_id\" ao salvar — o sistema descobre no banco o nome da coluna do usuário (ou não grava o usuário se ela não existir)."]},
   {"fase": 352, "itens": ["Programação diária: ao cancelar (ou desfazer o cancelamento de) um item, a linha muda de cor imediatamente, sem esperar o servidor; em seguida a tela confirma com o banco e, se der erro, volta ao que era."]},
   {"fase": 351, "itens": ["Programação diária: as colunas Preço e Valor total viraram um campo único \"Cobrança\", no formato R$ 13,57/33 = R$ 4,11 (preço / cada = valor do item; o \"/cada\" só aparece quando for diferente de 1)."]},
   {"fase": 350, "itens": ["Programação diária: a grade dos itens ganhou as colunas Preço (unitário) e Valor total do item, logo depois de Fixo + Extra = Total."]},

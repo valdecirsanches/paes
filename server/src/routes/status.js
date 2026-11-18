@@ -30,6 +30,7 @@ router.get('/', async (req, res) => {
   const [rows] = await pool.query(
     `select distinct ps.id, ps.data, ps.id_cliente, ps.id_unidade, ps.status, ps.id_comanda,
             u.nome, u.verificar_pasta, u.imprimir_toda_programacao,
+            u.endereco, u.numero as endereco_numero, u.complemento, u.bairro, u.cidade, u.uf, u.cep,
             c.razao_social as cliente_nome,
             (select min(d.hora) from tb_diaria d where d.id_status = ps.id and coalesce(d.cancelado, 'False') <> 'True' and d.hora is not null) as primeira_entrega,
             concat(u.nome, ' ', c.id, '/', u.id,

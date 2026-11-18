@@ -35,6 +35,17 @@ router.get('/status/:id/reclamacoes', async (req, res) => {
   res.json(rows);
 });
 
+let _colUsuario;
+async function colunaUsuario() {
+  if (_colUsuario !== undefined) return _colUsuario;
+  try {
+    const [rs] = await pool.query("select column_name as c from information_schema.columns where table_schema = database() and table_name = 'tb_reclamacoes'");
+    const nomes = rs.map((r) => String(r.c ?? r.COLUMN_NAME).toLowerCase());
+    _colUsuario = ['id_usuario', 'usuario_id', 'id_user', 'usuario'].find((n) => nomes.includes(n)) ?? null;
+  } catch { _colUsuario = null; }
+  return _colUsuario;
+}
+
 // tbrcmNewRecord: data = dia da tela, hora = agora, cliente/unidade do movimento
 router.post('/status/:id/reclamacoes', async (req, res) => {
   const st = await statusDe(req.params.id);
@@ -43,7 +54,9 @@ router.post('/status/:id/reclamacoes', async (req, res) => {
   const agora = new Date();
   const hora = [agora.getHours(), agora.getMinutes(), agora.getSeconds()].map((n) => String(n).padStart(2, '0')).join(':');
   const reg = { ...c, data: String(st.data).slice(0, 10), hora, id_cliente: st.id_cliente, id_unidade: st.id_unidade };
-  if (req.userId) reg.usuario_id = req.userId; // sem usuário (ex.: falha ao criar o "fabrica") não manda NULL: a gravação não pode falhar por isso
+  // a coluna do usuário varia entre bancos (id_usuario / usuario_id…): descobre no esquema e, se não houver, simplesmente não grava o usuário
+  const colUsuario = await colunaUsuario();
+  if (req.userId && colUsuario) reg[colUsuario] = req.userId;
   for (const k of ['telefone', 'reclamacao', 'explicacao']) reg[k] ??= '';
   const [r] = await pool.query('insert into tb_reclamacoes set ?', [reg]);
   res.status(201).json({ id: r.insertId });

@@ -2240,3 +2240,4 @@ button.lk-versao{background:none!important;border:0!important;box-shadow:none!im
 .cg-lado .cgf-dd:hover,.cg-lado th.filtrada .cgf-dd{background:#d8731a;color:#fff;opacity:1}
 /* diária: colunas Preço e Valor total do item (fase 350) */
 .diaria .grade th.n,.diaria .grade td.n{text-align:right;white-space:nowrap;padding-right:10px;font-variant-numeric:tabular-nums}
+.dr2-sel .dr2-end{display:block;font-size:11px;font-weight:500;color:#6b5a4a;line-height:1.25;margin-top:2px}

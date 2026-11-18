@@ -22,6 +22,14 @@ function Relogio() {
 }
 
 const B_DIA = ['unidade_nome', 'cliente_razao_social'];
+/** "Rua X, 123 - compl - Bairro - Cidade/UF - CEP" (só o que estiver preenchido) */
+const enderecoCompleto = (u) => {
+  const via = [u.endereco, u.endereco_numero].map((x) => String(x ?? '').trim()).filter(Boolean).join(', ');
+  const cid = [String(u.cidade ?? '').trim(), String(u.uf ?? '').trim()].filter(Boolean).join('/');
+  const cep = String(u.cep ?? '').trim();
+  return [via, String(u.complemento ?? '').trim(), String(u.bairro ?? '').trim(), cid, cep && `CEP ${cep}`].filter(Boolean).join(' - ');
+};
+
 export default function Diaria({ onFechar, ativa = true }) {
   const [data, setData] = useState(hoje());
   const jaAtiva = useRef(false);
@@ -241,6 +249,7 @@ export default function Diaria({ onFechar, ativa = true }) {
               <small>Empresa selecionada</small>
               <b>{sel ? sel.unidade_nome : '— nenhuma —'}</b>
               {sel?.cliente_razao_social && sel.cliente_razao_social !== sel.unidade_nome && <span>{sel.cliente_razao_social}</span>}
+              {sel && enderecoCompleto(sel) && <span className="dr2-end" title="Endereço da unidade">📍 {enderecoCompleto(sel)}</span>}
             </div>
             <div className="dr2-seg" role="group" aria-label="Status">
               {[0, 1, 2, 3].map((s) => (
