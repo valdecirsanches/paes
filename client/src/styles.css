@@ -2238,3 +2238,5 @@ button.lk-versao{background:none!important;border:0!important;box-shadow:none!im
 /* setas de filtro dos títulos mais visíveis no Roteiro de cargas (fase 348) */
 .cg-lado .cgf-dd{background:#fff;color:#8a4b12;border:1px solid #c9a36f;font-size:10px;padding:0 4px;opacity:.9}
 .cg-lado .cgf-dd:hover,.cg-lado th.filtrada .cgf-dd{background:#d8731a;color:#fff;opacity:1}
+/* diária: colunas Preço e Valor total do item (fase 350) */
+.diaria .grade th.n,.diaria .grade td.n{text-align:right;white-space:nowrap;padding-right:10px;font-variant-numeric:tabular-nums}
