@@ -152,11 +152,23 @@ router.patch('/:id', async (req, res) => {
   if (![0, 1, 2, 3].includes(status)) throw invalid('Status inválido.');
   await tx(async (c) => {
     const st = await getStatus(c, req.params.id);
-    await c.query('update tb_status set status = ? where id = ?', [status, st.id]);
+    const eraCancelada = Number(st.status) === 3;
+    if (status === 3) { // CANCELADA: cancela todos os itens do dia desta unidade (as cores da grade passam a cinza)
+      await c.query("update tb_diaria set cancelado = 'True', registro_alterado = 1 where id_status = ?", [st.id]);
+      await c.query('update tb_status set status = 3 where id = ?', [st.id]);
+    } else if (eraCancelada) { // desfez o cancelamento: devolve os itens ao normal e recalcula o status pelos itens
+      await c.query("update tb_diaria set cancelado = 'False', registro_alterado = 1 where id_status = ?", [st.id]);
+      await c.query('update tb_status set status = 0 where id = ?', [st.id]);
+      await atualizaStatus(c, st.id);
+    } else {
+      await c.query('update tb_status set status = ? where id = ?', [status, st.id]);
+    }
     const [[item]] = await c.query('select min(id) as id from tb_diaria where id_status = ?', [st.id]);
     if (item.id) {
       await logDiaria(c, item.id, req.userId,
-        `Mudou o status de toda a programação diária para "${STATUS[status]}"`);
+        status === 3 ? 'Cancelou toda a programação diária (todos os itens)'
+          : eraCancelada ? `Desfez o cancelamento de toda a programação diária (itens restaurados; status "${STATUS[status]}" recalculado)`
+            : `Mudou o status de toda a programação diária para "${STATUS[status]}"`);
     }
   });
   res.json({ ok: true });

@@ -134,7 +134,7 @@ export default function Diaria({ onFechar, ativa = true }) {
     if (!sel) return;
     if ((novo === 0 || novo === 3)
       && !(await confirmar('Você confirma esta alteração?\nEm caso de transtornos aos procedimentos você será o responsável. Certifique-se!'))) return;
-    executar(() => api.patch(`/status/${sel.id}`, { status: novo }), () => `Status: ${STATUS[novo]}`);
+    executar(() => api.patch(`/status/${sel.id}`, { status: novo }), () => (novo === 3 ? 'Programação cancelada (todos os itens).' : sel.status === 3 ? 'Cancelamento desfeito: itens restaurados.' : `Status: ${STATUS[novo]}`)).then(() => setRecarga((n) => n + 1)); // recarrega a grade para atualizar as cores
   };
 
   const acoes = [
