@@ -67,13 +67,17 @@ export function derivados(f) {
     conversao_produto_valor: arred(num(f.conversao_produto_qtde) * (num(f.conversao_produto_preco) / cada(f.conversao_produto_preco_cada))),
   };
 }
-/** Código do produto "cobrar como" achado no cadastro: preenche descrição, preço, cada e a quantidade equivalente. */
+/** Quantidade ainda por cobrar do item: total (fixa + extra) menos o que já foi cobrado em comandas. */
+export const qtdePendente = (f) => Math.max(0, arred(num(f.qtde_original) + num(f.qtde_alterada) - num(f.qtde_cobrado)));
+/** Código do produto "cobrar como" achado no cadastro: preenche descrição, preço, cada e a quantidade equivalente.
+ *  A conversão vale só para a quantidade PENDENTE (o que já foi cobrado não entra de novo). */
 export function aplicaConversao(f, p) {
   const preco = num(p.preco);
+  const valorPendente = qtdePendente(f) * (num(f.produto_preco) / cada(f.produto_preco_cada));
   const mud = {
     conversao_id_produto: p.id, conversao_produto_codigo: p.codigo, conversao_produto_descricao: p.descricao,
     conversao_produto_preco: preco, conversao_produto_preco_cada: p.divisor_basico,
-    conversao_produto_qtde: Math.round(num(f.preco_total) / ((preco / cada(p.divisor_basico)) || 1)),
+    conversao_produto_qtde: Math.round(valorPendente / ((preco / cada(p.divisor_basico)) || 1)),
   };
   if (!num(f.produto_preco)) mud.produto_preco = preco;
   return mud;

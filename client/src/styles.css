@@ -2235,3 +2235,6 @@ button.lk-versao{background:none!important;border:0!important;box-shadow:none!im
 .grade tr.edit.l-canc td,.diaria .grade tr.edit.l-canc td,.fixa .grade tr.edit.l-canc td,.diaria.fixa .grade tr.edit.l-canc td{background:#c0c0c0!important;color:#808080!important;font-weight:600}
 .grade tr.edit.l-canc td.ind{background:#808080!important;color:#fff!important;animation:none}
 .grade tr.edit.l-canc td:not(.ind){box-shadow:inset 0 2px 0 #666,inset 0 -2px 0 #666}
+/* setas de filtro dos títulos mais visíveis no Roteiro de cargas (fase 348) */
+.cg-lado .cgf-dd{background:#fff;color:#8a4b12;border:1px solid #c9a36f;font-size:10px;padding:0 4px;opacity:.9}
+.cg-lado .cgf-dd:hover,.cg-lado th.filtrada .cgf-dd{background:#d8731a;color:#fff;opacity:1}

@@ -357,8 +357,9 @@ function CargaDiaria({ roteiros, notificar }) {
 
       <div className="cg-meio">
         <section className="trb2-card cg-lista">
-          <Grade cols={COLS_DIARIA} rows={rows} sel={sel} ordem={ordem} classe={classeDiaria} vazio={carregando ? 'Carregando…' : 'Nenhum item para este filtro'} onKeyDown={teclas} />
+          <Grade cols={COLS_DIARIA} rows={rows} sel={sel} ordem={ordem} classe={classeDiaria} vazio={carregando ? 'Carregando…' : 'Nenhum item para este filtro'} onKeyDown={teclas} fcol={fcol} fonte={brutas} />
           <footer>{rows.length} item(ns){rows.length >= 5000 ? ' — lista limitada; refine o filtro' : ''} '· Enter imprime a etiqueta do item'</footer>
+          <div className="cgf-expr"><button type="button" className="x" onClick={fcol.limpa} disabled={!fcol.temFiltro} title="Limpar o filtro">✕</button><input type="checkbox" checked={fcol.ligado} onChange={(e) => fcol.setLigado(e.target.checked)} aria-label="Filtro ligado" title="Filtro ligado/desligado" /><span className="txt" title={fcol.expr}>{fcol.expr || 'Filtre pelo ▼ no título de qualquer coluna (Descrição do produto, Hora, Saída…)'}</span></div>
         </section>
         <aside className="trb2-card cg-log">
           <header><div><h3>Log de impressão de etiquetas</h3><p>{item ? item.unidade_nome : 'Escolha um item'}</p></div></header>
@@ -423,10 +424,10 @@ function CargaFixa({ roteiros, notificar }) {
       <EditorItem tabela="fixa" item={item} roteiros={roteiros} aoGravar={carrega} notificar={notificar} />
       <div className="cg-meio">
         <section className="trb2-card cg-lista">
-          <Grade cols={COLS_FIXA} rows={rows} sel={sel} ordem={ordem} classe={() => ''} vazio={carregando ? 'Carregando…' : 'Nenhuma programação fixa para este filtro'} fcol={fab ? fcol : undefined} fonte={brutas} />
+          <Grade cols={COLS_FIXA} rows={rows} sel={sel} ordem={ordem} classe={() => ''} vazio={carregando ? 'Carregando…' : 'Nenhuma programação fixa para este filtro'} fcol={fcol} fonte={brutas} />
           {!fab && <footer>{rows.length} item(ns)</footer>}
           {fab && <div className="cgf-total"><span>{rows.length} item(ns)</span><span>Total de pães:</span><b>{fmtQtde(rows.reduce((t, r) => t + (Number(r.qtde_total) || 0), 0))}</b></div>}
-          {fab && <div className="cgf-expr"><button type="button" className="x" onClick={fcol.limpa} disabled={!fcol.temFiltro} title="Limpar o filtro">✕</button><input type="checkbox" checked={fcol.ligado} onChange={(e) => fcol.setLigado(e.target.checked)} aria-label="Filtro ligado" /><span className="txt" title={fcol.expr}>{fcol.expr || 'Filtre pelo ▼ no título de qualquer coluna'}</span></div>}
+          <div className="cgf-expr"><button type="button" className="x" onClick={fcol.limpa} disabled={!fcol.temFiltro} title="Limpar o filtro">✕</button><input type="checkbox" checked={fcol.ligado} onChange={(e) => fcol.setLigado(e.target.checked)} aria-label="Filtro ligado" title="Filtro ligado/desligado" /><span className="txt" title={fcol.expr}>{fcol.expr || 'Filtre pelo ▼ no título de qualquer coluna (Descrição do produto, Hora, Saída…)'}</span></div>
         </section>
       </div>
     </div>
