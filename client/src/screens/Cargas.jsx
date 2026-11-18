@@ -122,10 +122,17 @@ function useFiltroCol(brutas, cols) {
     return brutas.filter((r) => ativos.every(([k, v]) => cm[k] && v.has(textoCel(cm[k], r))));
   }, [brutas, cols, ativos, ligado]);
   const expr = ativos.map(([k, v]) => { const t = cols.find((c) => c[0] === k)?.[1] ?? k; return `(${[...v].map((x) => `(${t} = ${x})`).join(' or ')})`; }).join(' and ');
+  // valores oferecidos no ▼ de uma coluna: só os que existem nas linhas que passam pelos DEMAIS filtros (contexto), mais os já marcados nela
+  const contexto = (k) => {
+    const cm = Object.fromEntries(cols.map((c) => [c[0], c]));
+    const outros = ligado ? ativos.filter(([c]) => c !== k && cm[c]) : [];
+    const base = outros.length ? brutas.filter((r) => outros.every(([c, v]) => v.has(textoCel(cm[c], r)))) : brutas;
+    return [...new Set([...base.map((r) => textoCel(cm[k], r)), ...(fil[k] ?? [])])];
+  };
   const alterna = (k, valor) => setFil((o) => { const n = new Set(o[k] ?? []); if (n.has(valor)) n.delete(valor); else n.add(valor); return { ...o, [k]: n }; });
   const limpaCol = (k) => setFil((o) => ({ ...o, [k]: new Set() }));
   const limpa = () => setFil({});
-  return { rows, fil, expr, ligado, setLigado, alterna, limpaCol, limpa, temFiltro: ativos.length > 0 };
+  return { rows, fil, expr, contexto, ligado, setLigado, alterna, limpaCol, limpa, temFiltro: ativos.length > 0 };
 }
 function ListaValores({ col, valores, marcados, pos, onAlterna, onLimpa, onFecha }) {
   return (
@@ -168,7 +175,7 @@ function Grade({ cols, rows, sel, classe, vazio, onKeyDown, ordem, fcol, fonte }
           {rows.length === 0 && <tr><td colSpan={cols.length + 1} className="trb2-vazio">{vazio}</td></tr>}
         </tbody>
       </table>
-      {pop && (() => { const col = cols.find((c) => c[0] === pop.k); return <ListaValores col={col} valores={[...new Set((fonte ?? rows).map((r) => textoCel(col, r)))].sort((a, b) => cmpOrdem(a, b))} marcados={fcol.fil[pop.k] ?? new Set()} pos={pop} onAlterna={(v) => fcol.alterna(pop.k, v)} onLimpa={() => fcol.limpaCol(pop.k)} onFecha={() => setPop(null)} />; })()}
+      {pop && (() => { const col = cols.find((c) => c[0] === pop.k); return <ListaValores col={col} valores={(fcol.contexto ? fcol.contexto(pop.k) : [...new Set((fonte ?? rows).map((r) => textoCel(col, r)))]).sort((a, b) => cmpOrdem(a, b))} marcados={fcol.fil[pop.k] ?? new Set()} pos={pop} onAlterna={(v) => fcol.alterna(pop.k, v)} onLimpa={() => fcol.limpaCol(pop.k)} onFecha={() => setPop(null)} />; })()}
     </div>
   );
 }

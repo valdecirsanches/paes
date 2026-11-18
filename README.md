@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 349 — Filtro por coluna em cascata
+
+`useFiltroCol.contexto(k)`: valores do ▼ = linhas filtradas pelos outros campos (+ os já marcados no próprio).
+
 ## Fase 348 — Conversão só do pendente + filtros por coluna nas cargas
 
 `aplicaConversao` usa `qtdePendente` (total − cobrado) × preço do item; teste em faturamento.test.js. Observação: o servidor usa na comanda o `conversao_produto_qtde` gravado no item — itens já convertidos sobre o total precisam ser reaplicados. Cargas diária/fixa (app principal) ganharam o filtro por coluna (▼) antes só da Fábrica.
