@@ -1085,7 +1085,7 @@ async function gravaAutorizada(id, cfg, doc, { ambiente, numero, usuario, increm
       nfe_xml_file: xmlFile, nfe_pdf_file: pdfFile, nfe_xml_app: xmlFile, nfe_pdf_app: pdfFile, nfe: txt(doc.motivoRetorno) || 'Autorizado o uso da NF-e', nfe_chave: doc.chaveAcesso, status_e: 'AUTORIZADA',
       nfe_numero: Number(String(doc.chaveAcesso).slice(25, 34)) || numero, usuario_autorizacao_nfe: await usuarioNfe(pool, usuario), nfe_recibo_datahora: quando, nfe_protocolo: txt(doc.protocolo), nfe_protocolo_data_hora: quando,
     }, id]);
-    if (incrementa) await c.query('update tb_nfe_config set nfe_numero = ? where id = ?', [numero, cfg.id]); // incrementa o número da nota fiscal
+    if (incrementa) await c.query('update tb_nfe_config set nfe_numero = greatest(nfe_numero, ?) where id = ?', [numero, cfg.id]); // incrementa o número da nota fiscal
     await evento(c, id, 'AUTORIZACAO', { resposta: txt(doc.motivoRetorno) || 'Autorizado o uso da NF-e', retorno: JSON.stringify({ ...doc, xmlBase64: undefined, danfePdfBase64: undefined }), obs: `NFe ${numero}`, xml: xmlFile });
   });
   if ((!xmlFile || !pdfFile) && doc.id) { // a resposta veio sem XML ou DANFE: busca na API para o sistema antigo achar os dois arquivos nos campos da nota
@@ -1134,13 +1134,22 @@ async function autorizaUma(id, usuario, ibsCbs) {
   if (a3.certificadoId && a3.online === false) {
     return { id, ok: false, temporario: true, log: ['Agente do certificado A3 OFFLINE. Ligue a máquina do token (token plugado e NFeAgenteA3 rodando) e tente de novo.', 'Nenhum número foi consumido; a nota continua PENDENTE.'], resumo: { status: 503, resposta: { tipo: 'AgenteCertificadoException', origem: 'verificação prévia' } } };
   }
-  const numero = Number(cfg.nfe_numero || 0) + 1;
   const serie = Number(nfe.nfe_serie) || 1;
-  // a numeração é nossa: confere se a API já tem esse número antes de usar
-  const pn = await api.porNumero(empId, numero, serie);
-  if (pn.body?.existe && ['Autorizado', 'Cancelado'].includes(pn.body.status)) {
-    return { id, ok: false, log: [`O número ${numero} (série ${serie}) já existe na API como ${pn.body.status}. Ajuste "Número da última NFe emitida" em Configurações e tente de novo.`] };
-  }
+  // a numeração é nossa e pode haver outro terminal emitindo ao mesmo tempo (ou o sistema antigo): a partir do "último + 1", pula sozinho
+  // qualquer número que a API ou o banco já tenham usado (autorizado, cancelado, inutilizado, denegado), em vez de acusar duplicidade
+  const ocupado = async (n) => {
+    const pn = await api.porNumero(empId, n, serie);
+    if (pn.body?.existe && ['Autorizado', 'Cancelado', 'Inutilizado', 'Denegado'].includes(pn.body.status)) return `API (${pn.body.status})`;
+    const [[l]] = await pool.query("select id from tb_nfe where nfe_numero = ? and nfe_serie = ? and id <> ? and status_e in ('AUTORIZADA','CANCELADA','INUTILIZADA','DEVOLVIDA') limit 1", [n, serie, id]);
+    return l ? `nota ${l.id} do sistema` : null;
+  };
+  const livre = async (ini) => {
+    let n = ini; const pulados = [];
+    for (let k = 0; k < 30; k++, n++) { const o = await ocupado(n); if (!o) return { n, pulados }; pulados.push(`${n} (${o})`); }
+    throw invalid(`Encontrei 30 números seguidos já usados a partir de ${ini}. Confira "Número da última NFe emitida" em Configurações.`);
+  };
+  let { n: numero, pulados } = await livre(Number(cfg.nfe_numero || 0) + 1);
+  if (pulados.length) log.push(`Número(s) já usado(s) por outro terminal, pulado(s): ${pulados.join(', ')}. Usando ${numero}.`);
   const ncmsRuins = [];
   for (const n of [...new Set(itens.map((i) => String(i.produto_ncm ?? '').replace(/\D/g, '')))]) {
     const r = await consultaNcm(n);
@@ -1148,11 +1157,25 @@ async function autorizaUma(id, usuario, ibsCbs) {
   }
   if (ncmsRuins.length) return { id, ok: false, log: ncmsRuins };
   await pool.query('update tb_nfe set nfe_numero = ? where id = ?', [numero, id]); // como no Delphi: grava o número antes, para busca posterior
-  const json = montaJsonNfe(nfe, itens, cfg, { numero, ibsCbs, referencias, duplicatas: dup, orientacao: (await lerDanfeCfg()).orientacao });
-  if (ibsCbs && json.itens.some((i) => i.ibsCbs && ['200', '210'].includes(i.ibsCbs.cst))) {
-    aplicaReducaoIbs(json, []); // nomes documentados pela API (reducaoAliquotaIbsUf, aliquotaEfetivaIbsUf, reducaoAliquotaCbs, aliquotaEfetivaCbs)
+  const orientacao = (await lerDanfeCfg()).orientacao;
+  const monta = () => {
+    const j = montaJsonNfe(nfe, itens, cfg, { numero, ibsCbs, referencias, duplicatas: dup, orientacao });
+    if (ibsCbs && j.itens.some((i) => i.ibsCbs && ['200', '210'].includes(i.ibsCbs.cst))) {
+      aplicaReducaoIbs(j, []); // nomes documentados pela API (reducaoAliquotaIbsUf, aliquotaEfetivaIbsUf, reducaoAliquotaCbs, aliquotaEfetivaCbs)
+    }
+    return j;
+  };
+  let json = monta();
+  let r = await api.emitir(empId, json, `nfe-${id}-${numero}`);
+  // duplicidade (SEFAZ 204/539) porque outro terminal pegou o mesmo número no meio do caminho: confere, avança e tenta de novo (até 3 vezes)
+  for (let t = 0; t < 3 && r.status === 422 && ['204', '539'].includes(String(r.body?.codigoStatusRetorno ?? '')) && await ocupado(numero); t++) {
+    const prox = await livre(numero + 1);
+    log.push(`Duplicidade no número ${numero} (outro terminal): avançando para ${prox.n}.`);
+    numero = prox.n;
+    await pool.query('update tb_nfe set nfe_numero = ? where id = ?', [numero, id]);
+    json = monta();
+    r = await api.emitir(empId, json, `nfe-${id}-${numero}`);
   }
-  const r = await api.emitir(empId, json, `nfe-${id}-${numero}`);
   const doc = r.body ?? {};
   if (r.status === 503 && /AgenteCertificado/i.test(String(doc.tipo ?? ''))) {
     // certificado A3: o agente da máquina do token está offline. Nada foi gravado na API (nenhum número consumido): falha temporária.
