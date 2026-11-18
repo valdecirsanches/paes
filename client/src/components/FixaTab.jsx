@@ -102,7 +102,7 @@ export default function FixaTab({ status, roteiros, onChanged, notify, onEditand
     const c = String(codigo ?? '').trim();
     if (!c || c === '0') { setModal({ tipo: 'busca' }); return; }
     if (c === (item?.produto_codigo ?? '') && !novo) return;
-    try { aplicarProduto(await api.get(`/produtos/codigo/${encodeURIComponent(c)}`)); } catch { notify.erro('Produto não encontrado!!!'); foca('codigo'); }
+    try { aplicarProduto(await api.get(`/produtos/codigo/${encodeURIComponent(c)}${status?.id_cliente ? `?cliente=${status.id_cliente}` : ""}`)); } catch { notify.erro('Produto não encontrado!!!'); foca('codigo'); }
   };
 
   /* ----- botões ----- */

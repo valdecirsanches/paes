@@ -457,8 +457,7 @@ export default function Faturamento({ onFechar }) {
     const campo = alvo === 'produto' ? 'produto_codigo' : 'conversao_produto_codigo';
     if (String(atual[campo] ?? '') === codigo && draft[campo] === undefined) return;
     try {
-      const p = await api.get(`/produtos/codigo/${encodeURIComponent(codigo)}`);
-      if (atual.id_cliente != null && Number(p.id_cliente) !== Number(atual.id_cliente)) { notificar('erro', 'Este produto não pertence ao cliente do item.'); return; }
+      const p = await api.get(`/produtos/codigo/${encodeURIComponent(codigo)}${atual.id_cliente ? `?cliente=${atual.id_cliente}` : ''}`);
       setDraft((d) => {
         const f = { ...atual, ...d };
         return { ...d, ...(alvo === 'produto' ? aplicaProduto(p) : aplicaConversao({ ...f, ...derivados(f) }, p)) };
@@ -654,7 +653,7 @@ export default function Faturamento({ onFechar }) {
 
       {pergunta && <Pergunta {...pergunta} onFechar={() => setPergunta(null)} />}
       {busca && (
-        <BuscaProduto onFechar={() => setBusca(null)} cliente={atual?.id_cliente} soCliente
+        <BuscaProduto onFechar={() => setBusca(null)} cliente={atual?.id_cliente}
           onEscolher={(codigo) => { const a = busca; setBusca(null); mudar(a === 'produto' ? 'produto_codigo' : 'conversao_produto_codigo', codigo); resolver(a, codigo); }} />
       )}
     </div>

@@ -1,4 +1,5 @@
 [
+  {"fase": 358, "itens": ["Faturamento (item da programação e \"Cobrar como\"), Comandas e Programação fixa: o código de produto de OUTRO cliente passa a ser aceito (some a mensagem \"Este produto não pertence ao cliente\"). Se o código existir para mais de um cliente, usa o do cliente do item; a janela Localizar produto do Faturamento também lista produtos de qualquer cliente."]},
   {"fase": 357, "itens": ["Fábrica › Programação diária: a fonte dos clientes da lista ficou 70% maior (de 12 para 20,4 px). O resto da tela não mudou."]},
   {"fase": 356, "itens": ["Programação diária: o código de produto digitado é aceito mesmo que não seja do cliente selecionado (qualquer produto ativo). Se o mesmo código existir para mais de um cliente, usa o do cliente; e na janela Localizar produto, se o cliente não tiver nenhum resultado, ela passa sozinha a mostrar os de qualquer cliente."]},
   {"fase": 355, "itens": ["NFe: as AFs digitadas nos itens agora vão para os dados adicionais (informações complementares) como \"AF: 123, 456\", sem repetir — AFs iguais nos itens aparecem uma vez e as que já estiverem escritas no texto da nota não são acrescentadas de novo."]},

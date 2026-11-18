@@ -92,7 +92,7 @@ router.get('/status/:id/pasta', async (req, res) => {
 router.post('/status/:id/fixa', async (req, res) => {
   const id = await tx(async (c) => {
     const st = await getStatus(c, req.params.id);
-    const p = await produtoPorCodigo(c, req.body.produto_codigo);
+    const p = await produtoPorCodigo(c, req.body.produto_codigo, st.id_cliente);
     if (!p) throw invalid('Produto não encontrado!!!');
     const b = pick(req.body, CAMPOS);
     if (!b.hora) throw invalid('Informe a hora da entrega.');
@@ -126,7 +126,7 @@ router.put('/fixa/:id', async (req, res) => {
     let novo = pick(req.body, CAMPOS);
     if (novo.hora) novo.hora = hhmmss(novo.hora);
     if (req.body.produto_codigo && req.body.produto_codigo !== atual.produto_codigo) {
-      const p = await produtoPorCodigo(c, req.body.produto_codigo);
+      const p = await produtoPorCodigo(c, req.body.produto_codigo, atual.id_cliente);
       if (!p) throw invalid('Produto não encontrado!!!');
       novo = { ...camposDoProduto(p), ...novo };
     }

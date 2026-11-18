@@ -83,10 +83,9 @@ router.post('/:id/itens', async (req, res) => {
   const descricao = b.descricao === undefined ? null : String(b.descricao).trim().slice(0, 100);
   const out = await tx(async (c) => {
     await comandaEditavel(c, id);
-    const p = await produtoPorCodigo(c, codigo);
-    if (!p) throw invalid('Produto não encontrado!');
     const [[cm]] = await c.query('select id_cliente from tb_comandas where id = ?', [id]);
-    if (cm && Number(p.id_cliente) !== Number(cm.id_cliente)) throw invalid('Este produto não pertence ao cliente da comanda.');
+    const p = await produtoPorCodigo(c, codigo, cm?.id_cliente); // produto de qualquer cliente é aceito (prefere o do cliente da comanda)
+    if (!p) throw invalid('Produto não encontrado!');
     const qtdeBanco = r6(qtde * cada);
     const total = r6(preco * qtdeBanco);
     const [r] = await c.query(
