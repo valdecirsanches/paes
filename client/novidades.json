@@ -1,4 +1,5 @@
 [
+  {"fase": 351, "itens": ["Programação diária: as colunas Preço e Valor total viraram um campo único \"Cobrança\", no formato R$ 13,57/33 = R$ 4,11 (preço / cada = valor do item; o \"/cada\" só aparece quando for diferente de 1)."]},
   {"fase": 350, "itens": ["Programação diária: a grade dos itens ganhou as colunas Preço (unitário) e Valor total do item, logo depois de Fixo + Extra = Total."]},
   {"fase": 349, "itens": ["Roteiro de cargas: a lista do filtro de cada coluna (▼) agora mostra só os valores que existem no contexto — as linhas que passam pelos demais filtros e pelas escolhas da tela —, e não todos os do cadastro. Vale para todos os campos."]},
   {"fase": 348, "itens": ["Faturamento: ao escolher o produto de \"Cobrar como\" (conversão), a quantidade é calculada só sobre o que está PENDENTE — o que já foi cobrado (ex.: 630 de 730) não entra de novo.", "Roteiro de cargas (diária e fixa): filtro por valores em cada coluna, pela seta ▼ do título — Descrição do produto, Hora, Saída, Cliente etc., com caixas de marcação e barra mostrando o filtro ativo (✕ limpa, caixa liga/desliga)."]},

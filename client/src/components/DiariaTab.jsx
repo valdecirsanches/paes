@@ -55,6 +55,12 @@ const hidratar = (i) => ({
   ...i, hora: hhmm(i.hora), data: String(i.data).slice(0, 10), producao_data: String(i.producao_data ?? '').slice(0, 10),
   preco_total: Math.round((((Number(i.qtde_original) || 0) + (Number(i.qtde_alterada) || 0)) * ((Number(i.produto_preco) || 0) / (Number(i.produto_preco_cada) || 1))) * 100) / 100, // sempre calculado: não depende de ter mexido em algum campo
 });
+/** Coluna "Cobrança": "R$ 13,57/33 = R$ 4,11" (preço / cada = valor do item); o "/cada" só aparece quando cada ≠ 1. */
+const cobranca = (r) => {
+  const preco = Number(r.produto_preco) || 0; if (!preco) return '';
+  const cada = Number(r.produto_preco_cada) || 1;
+  return `${fmtMoeda(preco)}${cada !== 1 ? `/${fmtQtde(cada)}` : ''} = ${fmtMoeda(total(r))}`;
+};
 const total = (r) => ((Number(r.qtde_original) || 0) + (Number(r.qtde_alterada) || 0)) * ((Number(r.produto_preco) || 0) / (Number(r.produto_preco_cada) || 1));
 const novoItem = (status) => ({
   data: status.data, hora: '', produto_codigo: '', produto_descricao: '', produto_descricao_original: '', produto_descricao_expedicao: '',
@@ -468,7 +474,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
         <table className="grade">
           <thead>
             <tr><th className="ind" /><th className="c" title="Registro alterado">A</th><th className="c" title="Programação fixa">Fx</th>
-              <th className="ord" onClick={() => ordenar('hora')} title="Ordenar por horário de entrega (clique de novo para inverter)">Entrega{seta('hora')}</th><th>Fixo + Extra = Total</th><th className="n" title="Preço unitário do item">Preço</th><th className="n" title="Valor total do item (qtde × preço)">Valor total</th><th className="ord" onClick={() => ordenar('descricao')} title="Ordenar por descrição (clique de novo para inverter)">Descrição para expedição{seta('descricao')}</th><th>Anotações</th>
+              <th className="ord" onClick={() => ordenar('hora')} title="Ordenar por horário de entrega (clique de novo para inverter)">Entrega{seta('hora')}</th><th>Fixo + Extra = Total</th><th className="n" title="Preço / Cada = Valor total do item">Cobrança</th><th className="ord" onClick={() => ordenar('descricao')} title="Ordenar por descrição (clique de novo para inverter)">Descrição para expedição{seta('descricao')}</th><th>Anotações</th>
               <th>Produção</th><th>Comandas</th><th className="c" />
             </tr>
           </thead>
@@ -478,7 +484,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
                 <td className="ind">*</td><td className="c"><input type="checkbox" readOnly disabled /></td><td className="c"><input type="checkbox" readOnly disabled /></td>
                 <td className="num">{linhaNova.hora}</td>
                 <td className="qtd">{novo && <><span>{fmtQtde(linhaNova.qtde_original)}</span> + <span>{fmtQtde(linhaNova.qtde_alterada)}</span> = <span>{fmtQtde((Number(linhaNova.qtde_original) || 0) + (Number(linhaNova.qtde_alterada) || 0))}</span></>}</td>
-                <td className="n">{novo && Number(linhaNova.produto_preco) ? fmtMoeda(linhaNova.produto_preco) : ''}</td><td className="n">{novo && Number(linhaNova.produto_preco) ? fmtMoeda(total(linhaNova)) : ''}</td>
+                <td className="n">{novo ? cobranca(linhaNova) : ''}</td>
                 <td>{linhaNova.produto_descricao_expedicao}</td><td>{linhaNova.obs}</td><td /><td />
               </tr>
             )}
@@ -495,8 +501,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
                   <td className="qtd">
                     <span>{fmtQtde(ed.qtde_original)}</span> {Number(ed.qtde_alterada) < 0 ? '−' : '+'} <span>{fmtQtde(Math.abs(ed.qtde_alterada))}</span> = <span>{fmtQtde((Number(ed.qtde_original) || 0) + (Number(ed.qtde_alterada) || 0))}</span>
                   </td>
-                  <td className="n">{Number(ed.produto_preco) ? fmtMoeda(ed.produto_preco) : ''}</td>
-                  <td className="n">{Number(ed.produto_preco) ? fmtMoeda(total(ed)) : ''}</td>
+                  <td className="n">{cobranca(ed)}</td>
                   <td>{ed.produto_descricao_expedicao}</td>
                   <td>{ed.obs}</td>
                   <td className="num">{i.producao_esquema}</td>
@@ -505,7 +510,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
                 </tr>
               );
             })}
-            {itens.length === 0 && !novo && <tr className="semlinha"><td colSpan="12" className="vazio">&lt; Não há ítens para entrega &gt;</td></tr>}
+            {itens.length === 0 && !novo && <tr className="semlinha"><td colSpan="11" className="vazio">&lt; Não há ítens para entrega &gt;</td></tr>}
           </tbody>
         </table>
       </div>
