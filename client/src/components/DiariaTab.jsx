@@ -139,6 +139,13 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
   // saiu da tela (trocou de cliente) com a atualização da lista pendente: faz agora
   useEffect(() => () => { if (tempoLista.current) { clearTimeout(tempoLista.current); Promise.resolve(onChanged?.()).catch(() => {}); } }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const atualizar = async () => { await carregar(); atualizaLista(); };
+  // cancelar / desfazer cancelamento: a linha muda de cor NA HORA (otimista) e depois confirma com o servidor; se falhar, volta ao que era
+  const cancelaItem = async (alvo, cancelar, ok) => {
+    setItens((l) => l.map((r) => (r.id === alvo.id ? { ...r, cancelado: cancelar ? 'True' : 'False', registro_alterado: 1 } : r)));
+    try { await api.post(`/diaria/${alvo.id}/cancelar`, { cancelado: cancelar }); if (ok) notify.ok(ok); } catch (e) { notify.erro(e.message); }
+    try { await carregar(); } catch (e) { notify.erro(e.message); }
+    atualizaLista();
+  };
   const rodar = async (fn, ok) => {
     try { await fn(); await atualizar(); if (ok) notify.ok(ok); } catch (e) { notify.erro(e.message); }
   };
@@ -214,7 +221,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
     if (!itens.length || !alvo) { notify.erro('Não há itens para o procedimento.'); return; }
     if (bool(alvo.programacao_fixa)) { // item fixo não se elimina: oferece cancelar (o cancelamento pode ser desfeito)
       if (bool(alvo.cancelado)) { notify.erro('Este item fixo já está cancelado.'); return; }
-      if (await confirmar(`"${alvo.produto_descricao_expedicao}" é item da programação FIXA e não pode ser eliminado.\nDeseja CANCELAR o item nesta data?`)) rodar(() => api.post(`/diaria/${alvo.id}/cancelar`, { cancelado: true }), 'Item cancelado.');
+      if (await confirmar(`"${alvo.produto_descricao_expedicao}" é item da programação FIXA e não pode ser eliminado.\nDeseja CANCELAR o item nesta data?`)) cancelaItem(alvo, true, 'Item cancelado.');
       return;
     }
     if ((await confirmar(`Eliminar o item programado?\n${hhmm(alvo.hora)} — ${alvo.produto_descricao_expedicao}`))) rodar(() => api.del(`/diaria/${alvo.id}`), 'Item excluído.');
@@ -314,8 +321,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
     if (!status) return;
     try { setModal({ tipo: 'log', titulo: `Log de operações — ${status.unidade_nome}`, dia: true, linhas: await api.get(`/status/${status.id}/diaria-log`) }); } catch (e) { notify.erro(e.message); }
   };
-  const alternarCancelamento = () => item && rodar(() => api.post(`/diaria/${item.id}/cancelar`, { cancelado: !bool(item.cancelado) }),
-    bool(item.cancelado) ? 'Cancelamento desfeito.' : 'Item cancelado.');
+  const alternarCancelamento = () => item && cancelaItem(item, !bool(item.cancelado), bool(item.cancelado) ? 'Cancelamento desfeito.' : 'Item cancelado.');
   const ajustaPreco = () => item && rodar(() => api.post(`/diaria/${item.id}/ajusta-preco`), 'Preço atualizado.');
   const ajustaTudo = async () => (await confirmar('Trazer o preço atual do cadastro para todos os itens do dia?'))
     && rodar(() => api.post('/diaria/ajusta-preco-lote', { data }), 'Preços do dia atualizados.');

@@ -1,4 +1,5 @@
 [
+  {"fase": 352, "itens": ["Programação diária: ao cancelar (ou desfazer o cancelamento de) um item, a linha muda de cor imediatamente, sem esperar o servidor; em seguida a tela confirma com o banco e, se der erro, volta ao que era."]},
   {"fase": 351, "itens": ["Programação diária: as colunas Preço e Valor total viraram um campo único \"Cobrança\", no formato R$ 13,57/33 = R$ 4,11 (preço / cada = valor do item; o \"/cada\" só aparece quando for diferente de 1)."]},
   {"fase": 350, "itens": ["Programação diária: a grade dos itens ganhou as colunas Preço (unitário) e Valor total do item, logo depois de Fixo + Extra = Total."]},
   {"fase": 349, "itens": ["Roteiro de cargas: a lista do filtro de cada coluna (▼) agora mostra só os valores que existem no contexto — as linhas que passam pelos demais filtros e pelas escolhas da tela —, e não todos os do cadastro. Vale para todos os campos."]},
