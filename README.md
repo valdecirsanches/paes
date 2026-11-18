@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 354 — NFe devolução: CFOP dos itens
+
+`POST /nfe/:id/devolucao` grava cfop_codigo 1202 nos itens; `cfopDoItem` usa o CFOP da nota quando ela é devolução e o item não tem CFOP de devolução. Teste em nfeJson.test.js. Observação: CST/CSOSN de ICMS dos itens seguem os da original (a nota usa csosn 900) — se a SEFAZ ainda rejeitar, enviar o código/mensagem.
+
 ## Fase 353 — Fábrica sem Cobrança, endereço da unidade, reclamação
 
 `consulta` esconde a coluna Cobrança; `GET /status` devolve endereço/numero/complemento/bairro/cidade/uf/cep da unidade (exibidos em Diaria.jsx); `reclamacoes.js` detecta a coluna do usuário em `information_schema` (id_usuario/usuario_id/…).

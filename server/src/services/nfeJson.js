@@ -131,6 +131,8 @@ export function aplicaReducaoIbs(json, folhas) {
 /** CFOP do item: o do item, se houver; senão o da nota. */
 export function cfopDoItem(it, nfe) {
   const ok = (x) => { const d = dig(x); return d.length === 4 && d !== '0000' ? d : ''; };
+  // nota de devolução: item que ainda traz o CFOP da venda (ex.: 5102 copiado da original) usa o CFOP da nota (1202…), senão a SEFAZ rejeita
+  if (ehDevolucao(nfe) && ok(nfe?.cfop_codigo) && !CFOP_DEVOLUCAO.test(ok(it?.cfop_codigo))) return ok(nfe.cfop_codigo);
   return ok(it?.cfop_codigo) || ok(nfe?.cfop_codigo);
 }
 

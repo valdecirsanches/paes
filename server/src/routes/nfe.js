@@ -307,7 +307,7 @@ router.post('/:id/devolucao', async (req, res) => {
     delete copia.id;
     const [r] = await c.query('insert into tb_nfe set ?', [copia]);
     const [itens] = await c.query('select * from tb_nfe_itens where id_nfe = ?', [id]);
-    for (const it of itens) { const { id: _i, ...resto } = it; await c.query('insert into tb_nfe_itens set ?', [{ ...resto, id_nfe: r.insertId, cfop_cst_ipi: '03', cfop_cst_pis: '98', cfop_cst_cofins: '98' }]); }
+    for (const it of itens) { const { id: _i, ...resto } = it; await c.query('insert into tb_nfe_itens set ?', [{ ...resto, id_nfe: r.insertId, ...('cfop_codigo' in resto ? { cfop_codigo: '1202' } : {}), cfop_cst_ipi: '03', cfop_cst_pis: '98', cfop_cst_cofins: '98' }]); }
     await c.query("update tb_nfe set status_e = 'DEVOLVIDO', nfe_email_enviado = null, nfe_impresso = null where id = ?", [id]);
     await c.query('insert into tb_nfe_referencia set id_nfe = ?, refNFe = ?', [r.insertId, o.nfe_chave]);
     await c.query("update tb_comandas set status = 'PROCESSADO', id_nfe = 0, id_nota_fiscal = 0 where id_nfe = ?", [id]);
