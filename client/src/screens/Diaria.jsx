@@ -273,7 +273,12 @@ export default function Diaria({ onFechar, ativa = true }) {
             {ABAS.map(([k, r]) => <button key={k} type="button" role="tab" aria-selected={aba === k} className={aba === k ? 'on' : ''} onClick={() => setAba(k)}>{r}</button>)}
           </nav>
           <main className="conteudo dr2-conteudo">
-            {sel?.verificar_pasta === 'True' && <div className="pasta">⚠ FAVOR VERIFICAR PASTA</div>}
+            {sel?.verificar_pasta === 'True' && (
+              <div className="pasta" title="Este cliente está marcado em Configurações › “Imprimir informação de pasta alterada”: ele mantém uma pasta física com a programação impressa. Sempre que a programação dele muda, a pasta precisa ser conferida/atualizada. Para tirar o aviso, desmarque essa opção nas Configurações da unidade.">
+                <b>⚠ FAVOR VERIFICAR PASTA</b>
+                <small>{Number(sel.status) === 2 ? ' — a programação de hoje foi ALTERADA: atualize a pasta impressa deste cliente.' : Number(sel.status) === 3 ? ' — a programação de hoje foi CANCELADA: retire/atualize na pasta impressa deste cliente.' : ' — este cliente mantém pasta impressa; confira-a se houver qualquer alteração na programação.'}</small>
+              </div>
+            )}
             {aba === 'diaria'
               ? <DiariaTab key={sel?.id ?? 'nenhuma'} registraGravar={(f) => { gravaItem.current = f; }} painelInicial={painelAberto.current} onPainel={(v) => { painelAberto.current = v; }} status={sel} data={data} filtro={filtro} roteiros={roteiros} onChanged={carregarLista} notify={notify} alvo={alvoItem} recarga={recarga} onEditando={setEditandoItem} />
               : aba === 'rcm' ? <ReclamacoesTab key={sel?.id ?? 'nenhuma'} status={sel} notify={notify} />

@@ -2243,3 +2243,6 @@ button.lk-versao{background:none!important;border:0!important;box-shadow:none!im
 .dr2-sel .dr2-end{display:block;font-size:11px;font-weight:500;color:#6b5a4a;line-height:1.25;margin-top:2px}
 /* Fábrica › Programação diária: nomes dos clientes 70% maiores (12px → 20,4px); o resto da tela fica como estava (fase 357) */
 .dr2-lista-fab .dr2-cli{font-size:20.4px;line-height:1.2;padding:5px 8px}
+/* aviso de pasta: uma linha enxuta com o motivo (fase 359) */
+.dr2 .pasta{display:flex;align-items:baseline;justify-content:center;gap:6px;flex-wrap:wrap;padding:2px 8px;line-height:1.25;cursor:help}
+.dr2 .pasta b{font-size:13px}.dr2 .pasta small{font-size:11px;font-weight:600;opacity:.95}

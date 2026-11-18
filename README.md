@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 359 — Aviso de pasta explicado
+
+O aviso aparece quando `tb_unidades.verificar_pasta = True` (Configurações › "Imprimir informação de pasta alterada"). Texto agora explica e varia conforme o status do dia.
+
 ## Fase 358 — Código de produto de qualquer cliente em todas as telas
 
 Removida a validação de dono do produto em faturamento.js (item e cobrar como), comandas.js e Faturamento.jsx; fixa.js e as buscas por código passam o cliente para preferir o dele.
