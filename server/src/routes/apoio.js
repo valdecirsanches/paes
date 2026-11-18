@@ -9,7 +9,7 @@ const router = Router();
 
 // Busca por código exato (campo "Produto" das telas)
 router.get('/produtos/codigo/:codigo', async (req, res) => {
-  const p = await produtoPorCodigo(pool, req.params.codigo);
+  const p = await produtoPorCodigo(pool, req.params.codigo, req.query.cliente);
   if (!p) throw notFound('Produto');
   if (p.ativo === 'False') throw notFound('Produto ativo'); // inativo não é aceito nas telas
   res.json(p);

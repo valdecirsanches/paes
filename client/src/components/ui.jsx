@@ -69,7 +69,8 @@ export function BuscaProduto({ onEscolher, onFechar, cliente, soCliente = false 
     const n = ++seq.current;
     const t = setTimeout(() => {
       api.get(`/produtos?q=${encodeURIComponent(termo)}${cliente && !todos ? `&cliente=${encodeURIComponent(cliente)}` : ''}`)
-        .then((r) => { if (n === seq.current) { setMaisQue(r.length > 300); setRows(r.slice(0, 300)); setSel(0); setEstado('ok'); } })
+        .then((r) => { if (n === seq.current && cliente && !todos && !r.length) { setTodos(true); return; } // nada do cliente: mostra os de qualquer cliente
+          if (n === seq.current) { setMaisQue(r.length > 300); setRows(r.slice(0, 300)); setSel(0); setEstado('ok'); } })
         .catch(() => { if (n === seq.current) { setRows([]); setEstado('erro'); } });
     }, 200);
     return () => clearTimeout(t);

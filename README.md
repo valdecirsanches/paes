@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 356 — Diária aceita código de produto de qualquer cliente
+
+`produtoPorCodigo(c, codigo, idCliente)` prefere o produto do cliente e cai para qualquer ativo; `GET /produtos/codigo/:c?cliente=`; `BuscaProduto` liga "todos" quando o cliente não tem resultado.
+
 ## Fase 355 — AFs nos dados adicionais da NFe
 
 `informacoesComTudo` (nfeJson.js) acrescenta ao texto da nota as AFs distintas dos itens que ainda não estejam nele. Testes em nfeJson.test.js. O DANFE (PDF) é gerado pela API de NF-e: cor de cabeçalhos/fonte dos dados adicionais não são configuráveis daqui (o gerador local, DANFE_LOCAL=1, já usa títulos pretos).

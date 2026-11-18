@@ -192,7 +192,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
     const c = String(codigo ?? '').trim();
     if (!c || c === '0') { setModal({ tipo: 'busca', alvo }); return; }
     if (alvo === 'prod' && c === ultimoCodigo.current) return true;
-    try { aplicarProduto(await api.get(`/produtos/codigo/${encodeURIComponent(c)}`), alvo); return true; } catch {
+    try { aplicarProduto(await api.get(`/produtos/codigo/${encodeURIComponent(c)}${status?.id_cliente ? `?cliente=${status.id_cliente}` : ''}`), alvo); return true; } catch {
       notify.erro('Produto não encontrado!!!');
       foca(alvo === 'conv' ? 'conv' : 'codigo');
       return false;

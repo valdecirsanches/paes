@@ -107,7 +107,7 @@ router.post('/status/:id/diaria', async (req, res) => {
     if (!b.hora) throw invalid('Informe a hora da entrega.');
     const hora = hhmmss(b.hora);
 
-    const p = await produtoPorCodigo(c, req.body.produto_codigo);
+    const p = await produtoPorCodigo(c, req.body.produto_codigo, st.id_cliente);
     if (!p) throw invalid('Produto não encontrado!!!');
 
     const item = {
