@@ -128,6 +128,24 @@ export function aplicaReducaoIbs(json, folhas) {
   return [...new Set(faltou)];
 }
 
+/** AFs (ordem de compra) digitadas nos itens, sem repetir (ignora maiúsc./espaços), na ordem em que aparecem. */
+export function afsDosItens(itens) {
+  const vistos = new Set(); const out = [];
+  for (const it of itens ?? []) {
+    const v = txt(it?.ordem_compra).replace(/\s+/g, ' ').trim();
+    const k = v.toUpperCase();
+    if (v && !vistos.has(k)) { vistos.add(k); out.push(v); }
+  }
+  return out;
+}
+/** Texto dos dados adicionais: o corpo da nota + "AF: a, b" com as AFs dos itens que ainda não estiverem no corpo (nunca duplica). */
+export function informacoesComTudo(nfe, itens) {
+  const corpo = txt(nfe?.texto_corpo);
+  const falta = afsDosItens(itens).filter((a) => !corpo.toUpperCase().includes(a.toUpperCase()));
+  if (!falta.length) return corpo;
+  return `${corpo}${corpo ? ' ' : ''}${falta.length > 1 ? 'AFs' : 'AF'}: ${falta.join(', ')}`;
+}
+
 /** CFOP do item: o do item, se houver; senão o da nota. */
 export function cfopDoItem(it, nfe) {
   const ok = (x) => { const d = dig(x); return d.length === 4 && d !== '0000' ? d : ''; };
@@ -240,7 +258,7 @@ export function montaJsonNfe(nfe, itens, cfg, { numero, ibsCbs = true, agora = n
     pesoLiquido: n(nfe.peso_liquido) > 0 ? Math.round(n(nfe.peso_liquido) * 1000) / 1000 : undefined,
     pesoBruto: n(nfe.peso_bruto) > 0 ? Math.round(n(nfe.peso_bruto) * 1000) / 1000 : undefined,
     pagamentos: [{ meio: txt(nfe.forma_pagamento).padStart(2, '0'), valor: txt(nfe.forma_pagamento).padStart(2, '0') === '90' ? 0 : total }], // 90 = sem pagamento: valor 0,00
-    informacoesComplementares: txt(nfe.texto_corpo).slice(0, 5000) || undefined,
+    informacoesComplementares: informacoesComTudo(nfe, itens).slice(0, 5000) || undefined,
   };
   // duplicatas (tb_receita da nota): [{ vencimento: 'aaaa-mm-dd', valor }], em ordem de vencimento
   // à vista (vencimento no dia da emissão): não envia duplicatas/fatura; só a forma de pagamento

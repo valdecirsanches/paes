@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 355 — AFs nos dados adicionais da NFe
+
+`informacoesComTudo` (nfeJson.js) acrescenta ao texto da nota as AFs distintas dos itens que ainda não estejam nele. Testes em nfeJson.test.js. O DANFE (PDF) é gerado pela API de NF-e: cor de cabeçalhos/fonte dos dados adicionais não são configuráveis daqui (o gerador local, DANFE_LOCAL=1, já usa títulos pretos).
+
 ## Fase 354 — NFe devolução: CFOP dos itens
 
 `POST /nfe/:id/devolucao` grava cfop_codigo 1202 nos itens; `cfopDoItem` usa o CFOP da nota quando ela é devolução e o item não tem CFOP de devolução. Teste em nfeJson.test.js. Observação: CST/CSOSN de ICMS dos itens seguem os da original (a nota usa csosn 900) — se a SEFAZ ainda rejeitar, enviar o código/mensagem.
