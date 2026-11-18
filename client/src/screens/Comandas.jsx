@@ -133,6 +133,14 @@ export default function Comandas({ onFechar }) {
   const [modo, setModo] = useState('pendentes');
   const [saida, setSaida] = useState(hoje());
   const [lista, setLista] = useState(null); // null = "<Clique em Atualizar>"
+  const [ord, setOrd] = useState({ c: 'id', d: 1 }); // ordenação da grade de comandas (clique no título)
+  const ordenada = useMemo(() => {
+    if (!lista) return lista;
+    const num = ord.c === 'id' || ord.c === 'vr_comanda';
+    const val = (r) => (num ? Number(r[ord.c] || 0) : String(r[ord.c] ?? '').toLowerCase());
+    return [...lista].sort((a, b) => { const x = val(a); const y = val(b); return (x < y ? -1 : x > y ? 1 : Number(a.id) - Number(b.id)) * ord.d; });
+  }, [lista, ord]);
+  const tit = (c, rot) => <th className="ord-th" style={{ cursor: 'pointer' }} title="Clique para ordenar" onClick={() => setOrd((o) => (o.c === c ? { c, d: -o.d } : { c, d: 1 }))}>{rot}{ord.c === c ? (ord.d === 1 ? ' ⏶' : ' ⏷') : ''}</th>;
   const [sel, setSel] = useState(() => new Set());
   const [foco, setFoco] = useState(null);
   const [dados, setDados] = useState(null); // { comanda, itens, mercadorias }
@@ -207,7 +215,7 @@ export default function Comandas({ onFechar }) {
   seguir.current = (id) => { if (id === uniId || !unidades.some((u) => u.id === id) || edicao) return; mudarUnidade(id, false); };
   useEffect(() => assinaUnidade((id, o) => { if (o !== 'cmd') seguir.current?.(id); }), []);
   const clicaComanda = (e, id) => {
-    const ids = (lista ?? []).map((r) => r.id);
+    const ids = (ordenada ?? []).map((r) => r.id);
     setFoco(id);
     if (e.shiftKey && ancora.current != null) {
       const a = ids.indexOf(ancora.current); const b = ids.indexOf(id);
@@ -325,9 +333,9 @@ export default function Comandas({ onFechar }) {
       <div className="cmd-sup">
         <div className="rolagem cmd-g-cmd">
           <table className="grade">
-            <thead><tr><th className="ind" /><th>Comanda ⏶</th><th>Emissão</th><th>Responsável</th><th>Valor</th><th>Status</th></tr></thead>
+            <thead><tr><th className="ind" />{tit('id', 'Comanda')}{tit('data_emissao', 'Emissão')}{tit('usuario_resp', 'Responsável')}{tit('vr_comanda', 'Valor')}{tit('status', 'Status')}</tr></thead>
             <tbody>
-              {(lista ?? []).map((r) => (
+              {(ordenada ?? []).map((r) => (
                 <tr key={r.id} className={`clicavel${sel.has(r.id) ? ' sel cmd-marcada' : ''}`} onClick={(e) => clicaComanda(e, r.id)} onDoubleClick={() => setPrevia(true)}>
                   <td className="ind">{r.id === foco ? '▶' : ''}</td><td>{r.id}</td><td>{brData(r.data_emissao)}</td><td>{r.usuario_resp}</td>
                   <td className="n">{f3(r.vr_comanda)}</td><td><span className={`cm2-st ${String(r.status).toUpperCase() === 'FATURADO' ? 'fat' : 'pen'}`}>{r.status}</span></td>

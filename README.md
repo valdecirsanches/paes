@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 344 — Controle de comandas: ordenar
+
+Títulos Comanda/Emissão/Responsável/Valor/Status ordenam a lista (crescente/decrescente); seleção com Shift segue a ordem exibida.
+
 ## Fase 343 — Roteiro de cargas: abas no topo
 
 Abas Carga diária/fixa na horizontal, no topo (como no sistema antigo), na mesma faixa do título e do Fechar.
