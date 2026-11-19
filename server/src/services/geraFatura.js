@@ -109,8 +109,9 @@ export async function geraFatura(c, { comandas, idCliente, idUnidade, saida, usu
 
   const cfop = cfopDoCliente(cli.uf);
   const par = (a, b) => (a ? a : b);
-  const infAdFisco = [cli.informacoes_nf1, cli.informacoes_nf2].map((x) => (x ? `${x};` : '')).join('')
-    + `Entrega: ${uni.nome};${uni.endereco}, ${uni.numero} - ${uni.bairro};${uni.cidade}/${uni.uf} CEP:${uni.cep}`;
+  // primeiro os dados do cliente/unidade (entrega), depois "Informações para o corpo da NFe" do cadastro do cliente; as AFs entram por último (nfeJson.js)
+  const infAdFisco = `Entrega: ${uni.nome};${uni.endereco}, ${uni.numero} - ${uni.bairro};${uni.cidade}/${uni.uf} CEP:${uni.cep}`
+    + [cli.informacoes_nf1, cli.informacoes_nf2].map((x) => (x ? `;${x}` : '')).join('');
   // sem o código do município a SEFAZ rejeita a NF-e: melhor recusar agora do que gravar "0" (o Delphi gravava 0)
   const cidIbge = codigoMunicipio(cli.uf, cli.cidade);
   if (!cidIbge) throw invalid(`Município "${cli.cidade}/${cli.uf}" não encontrado na tabela do IBGE. Corrija a cidade/UF no cadastro do cliente.`);
