@@ -343,11 +343,10 @@ function CargaDiaria({ roteiros, notificar }) {
   return (
     <div className="cg-aba">
       <section className="cg-filtros">
-        <div className="cg-gr"><span className="cg-rot">Data</span><input type="date" value={data} onChange={(e) => e.target.value && setData(e.target.value)} aria-label="Data da carga" /></div>
+        <div className="cg-gr"><span className="cg-rot">Data</span><span className="cg-datalin"><input type="date" value={data} onChange={(e) => e.target.value && setData(e.target.value)} aria-label="Data da carga" /><button type="button" className="trb2-btn principal cg-atu-ico" onClick={carrega} disabled={carregando} title="Atualizar" aria-label="Atualizar">⟳</button></span></div>
         {FILTROS.map(([k, t, o]) => <Segmentado key={k} titulo={t} opcoes={o} valor={f[k]} onMudar={(i) => setF({ ...f, [k]: i })} />)}
         <div className="cg-gr"><span className="cg-rot">Extra</span><select value={f.extra} onChange={(e) => setF({ ...f, extra: Number(e.target.value) })}>{EXTRAS.map((o, i) => <option key={o} value={i}>{o}</option>)}</select></div>
         <div className="cg-gr"><span className="cg-rot">Região</span><select value={f.regiao} onChange={(e) => setF({ ...f, regiao: e.target.value })}><option value="">Todos</option>{regioes.map((o) => <option key={o} value={o}>{o}</option>)}</select></div>
-        <button type="button" className="trb2-btn principal" onClick={carrega} disabled={carregando}>⟳ Atualizar</button>
       </section>
 
       <div className="cg-barra cg-acoes">
@@ -411,7 +410,7 @@ function CargaFixa({ roteiros, notificar }) {
       <section className="cg-filtros">
         <Segmentado titulo="Dia da semana" opcoes={DIAS_SEMANA} valor={dia - 1} onMudar={(i) => setDia(i + 1)} />
         <button type="button" className="trb2-btn" onClick={() => setFiltrosAbertos((x) => !x)}>{filtrosAbertos ? '▴ Esconder filtros' : `▾ Filtros${des.size ? ` (${des.size} desmarcado(s))` : ''}`}</button>
-        <button type="button" className="trb2-btn principal" onClick={carrega} disabled={carregando}>⟳ Atualizar</button>
+        <button type="button" className="trb2-btn principal cg-atu-ico" onClick={carrega} disabled={carregando} title="Atualizar" aria-label="Atualizar">⟳</button>
       </section>
       {filtrosAbertos && (
         <section className="cg-chipbox">

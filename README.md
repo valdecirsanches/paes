@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 365 — Cargas: data inteira e Atualizar em ícone
+
+Data 178px; botão ⟳ ao lado (diária e fixa).
+
 ## Fase 364 — Roteiro de cargas: data maior
 
 Campo de data do filtro com fonte ~150% (17,5 px).

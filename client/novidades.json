@@ -1,4 +1,5 @@
 [
+  {"fase": 365, "itens": ["Roteiro de cargas: campo de data maior (agora aparece inteira) e o botão Atualizar virou só o ícone ⟳, ao lado da data, liberando espaço nos filtros."]},
   {"fase": 364, "itens": ["Roteiro de cargas: a data do filtro ficou com a fonte 150% maior."]},
   {"fase": 363, "itens": ["Agente de impressão (servidor de impressão): novo botão \"♻ Reiniciar agente\" em Ferramentas › Configurar impressoras — reinicia o agente do computador das impressoras sem ir até ele. O instalador também foi reforçado para o agente voltar sozinho depois que o computador reinicia (tarefa roda ao entrar no Windows e é revigorada a cada 5 min). Requer reinstalar UMA vez com o novo instalador (agente v1.3.0)."]},
   {"fase": 362, "itens": ["NFe: nas informações adicionais, o texto \"Informações para o corpo da NFe\" do cadastro do cliente agora sai DEPOIS dos dados do cliente/unidade (Entrega: nome, endereço, cidade, CEP), e as AFs (ordem de compra) por último. Vale para notas geradas daqui para frente; notas já criadas mantêm o texto gravado (edite o campo Informações adicionais)."]},
