@@ -21,4 +21,6 @@ r.get('/status', async (_req, res) => res.json(await chamaAgente('GET', '/status
 r.get('/destinos', async (_req, res) => res.json(await chamaAgente('GET', '/destinos', undefined, 6000)));
 r.post('/imprimir', async (req, res) => res.json(await chamaAgente('POST', '/imprimir', req.body ?? {})));
 r.post('/testar', async (req, res) => res.json(await chamaAgente('POST', '/testar', { destino: req.body?.destino }, 25000)));
+// reinicia o agente do computador das impressoras (ele se reabre sozinho em ~3 s e reconecta)
+r.post('/reiniciar', async (_req, res) => res.json(await chamaAgente('POST', '/reiniciar', {}, 8000)));
 export default r;

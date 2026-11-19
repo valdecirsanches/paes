@@ -10,7 +10,7 @@ import { tokenAgente } from './ponteAgente.js';
  */
 const ESPERA_MS = 25_000; // quanto o servidor segura o "proximo" antes de responder vazio (o agente chama de novo)
 const CONECTADO_MS = ESPERA_MS + 10_000;
-export const ROTAS = new Set(['GET /status', 'GET /destinos', 'POST /imprimir', 'POST /testar']);
+export const ROTAS = new Set(['GET /status', 'GET /destinos', 'POST /imprimir', 'POST /testar', 'POST /reiniciar']);
 
 const fila = []; // pedidos esperando o agente
 const aguardando = []; // conexões "proximo" abertas

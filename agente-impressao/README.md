@@ -37,3 +37,6 @@ O navegador só alcança o agente no próprio `127.0.0.1`. Para os **outros comp
 Computador que imprime só para si (impressora ligada nele): use **"Instalador só para este computador"**; ele não conecta ao sistema.
 
 Conectar à mão: na página do agente, em "Conexão com o sistema", informe o endereço do sistema e o token (que o administrador vê em Configurar impressoras). Use **um** agente conectado por sistema. Segurança: o agente só escuta em 127.0.0.1 e nunca abre porta para a rede; o túnel só aceita as 4 rotas acima e exige o token.
+
+## Reiniciar / iniciar sozinho
+O instalador cria a tarefa `PaesAgenteImpressao` (ao entrar no Windows + vigia a cada 5 min). No sistema, **Ferramentas › Configurar impressoras › ♻ Reiniciar agente** reinicia o agente deste computador (v1.3.0+).

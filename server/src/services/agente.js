@@ -109,11 +109,12 @@ Ok 'Pasta de configuracao liberada para os usuarios do Windows'
 
 Passo 4 'Iniciar junto com o Windows'
 Unregister-ScheduledTask -TaskName $tarefa -Confirm:$false -ErrorAction SilentlyContinue
-$arg = '-NoProfile -WindowStyle Hidden -Command "& ''{0}'' ''{1}\src\server.js''"' -f $node, $dest
-$acao = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument $arg -WorkingDirectory $dest
+# node direto (sem PowerShell no meio) + vigia: ao entrar no Windows e a cada 5 min a tarefa tenta subir o agente (se já está rodando, ignora).
+# Assim, depois de reiniciar o computador ele volta sozinho, mesmo que o primeiro início falhe (rede ainda subindo etc.).
+$acao = New-ScheduledTaskAction -Execute $node -Argument ('"{0}\src\server.js"' -f $dest) -WorkingDirectory $dest
 $usr = $env:USERDOMAIN + '\' + $env:USERNAME
-$gat = New-ScheduledTaskTrigger -AtLogOn -User $usr
-$set = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -RestartCount 99 -RestartInterval (New-TimeSpan -Minutes 1) -ExecutionTimeLimit ([TimeSpan]::Zero)
+$gat = @((New-ScheduledTaskTrigger -AtLogOn -User $usr), (New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes 5) -RepetitionDuration (New-TimeSpan -Days 3650)))
+$set = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -MultipleInstances IgnoreNew -RestartCount 99 -RestartInterval (New-TimeSpan -Minutes 1) -ExecutionTimeLimit ([TimeSpan]::Zero)
 Register-ScheduledTask -TaskName $tarefa -Action $acao -Trigger $gat -Settings $set -User $usr -RunLevel Limited | Out-Null
 Start-ScheduledTask -TaskName $tarefa
 Ok ('Tarefa "' + $tarefa + '" criada para ' + $usr)

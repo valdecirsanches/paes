@@ -45,6 +45,12 @@ function PonteServidor({ onMudou }) {
   const carrega = useCallback(() => api.get('/impressao/config').then((c) => { setCfg(c); return c; }).catch((e) => setRes({ ok: false, m: e.message })), []);
   useEffect(() => { carrega(); const t = setInterval(carrega, 5000); return () => clearInterval(t); }, [carrega]);
   const copiar = async () => { try { await navigator.clipboard.writeText(cfg.token); setRes({ ok: true, m: 'Token copiado.' }); } catch { setRes({ ok: false, m: 'Não consegui copiar; selecione o token e copie manualmente.' }); } };
+  const reiniciar = async () => {
+    if (!window.confirm('Reiniciar o agente de impressão do computador das impressoras? Ele fica indisponível por alguns segundos e reconecta sozinho.')) return;
+    setOcupado(true);
+    try { await api.post('/impressao/reiniciar', {}); setRes({ ok: true, m: 'Reinício enviado. O agente volta em alguns segundos (o selo acima muda para "Conectado").' }); setTimeout(() => onMudou?.(), 6000); } catch (e) { setRes({ ok: false, m: `Não consegui reiniciar: ${e.message}. Se o agente é anterior à v1.3.0, rode o instalador de novo uma vez no computador das impressoras.` }); }
+    setOcupado(false);
+  };
   const novo = async () => {
     if (!window.confirm('Gerar um novo token desliga o agente atual até ele receber o novo (rode o instalador de novo ou cole o token na página do agente). Continuar?')) return;
     setOcupado(true);
@@ -54,6 +60,7 @@ function PonteServidor({ onMudou }) {
     <section className="imp-card">
       <header><span className="imp-ico" aria-hidden="true">🌐</span><div><h3>Agente conectado ao sistema</h3>
         <p>O agente do computador das impressoras conecta aqui sozinho (não precisa de IP, porta nem firewall) e atende todos os computadores da loja. Baixe o 1º instalador abaixo no computador das impressoras (só em um computador por sistema).</p></div>
+        {cfg?.conectado && <button type="button" className="imp-btn" onClick={reiniciar} disabled={ocupado} title="Reinicia o agente de impressão no computador das impressoras">♻ Reiniciar agente</button>}
         {cfg && <span className={`imp-selo ${cfg.conectado ? 'ok' : 'off'}`}><i />{cfg.conectado ? `Conectado${cfg.versao ? ` · v${cfg.versao}` : ''}` : 'Nenhum agente conectado'}</span>}</header>
       {cfg?.token && (
         <form className="imp-ponte" onSubmit={(e) => e.preventDefault()}>

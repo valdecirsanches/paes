@@ -7,8 +7,17 @@ import { caminhoConfig, carregaConfig, salvaConfig, validaDestino } from './conf
 import { estadoTunel, iniciaTunel } from './tunel.js';
 import { adicionaSmb, procuraSmb, enviaCupsPng, enviaCupsRaw, enviaRede, enviaSerial, enviaWindowsPng, enviaWindowsRaw, listaImpressoras, papeisWindows } from './transportes.js';
 import { paginaAdmin } from './admin.js';
+import { spawn } from 'node:child_process';
 
-const VERSAO = '1.2.2'; // 1.2.1: corrige sozinho endereço https quando o sistema só fala http; 1.2.0: o agente CONECTA ao sistema (túnel reverso, sem porta/IP/firewall) e o "acesso pela rede" deixou de existir; 1.1.2: 1.1.2: impressão por imagem sempre em orientação retrato (Brother vinha em paisagem); 1.1.1: DANFE A4 encaixado na área imprimível (rodapé não corta); 1.1.0: gravação do XML da NF-e no N: (POST /gravar)
+/** Sobe uma cópia nova deste mesmo agente (com 2 s de atraso, para a porta já estar livre) e encerra este processo. */
+export function reiniciaProcesso() {
+  const script = fileURLToPath(import.meta.url).replace(/server\.js$/, 'server.js');
+  const espera = `setTimeout(()=>require('node:child_process').spawn(process.execPath,[${JSON.stringify(script)}],{detached:true,stdio:'ignore',windowsHide:true,cwd:${JSON.stringify(path.dirname(path.dirname(script)))}}).unref(),2000)`;
+  spawn(process.execPath, ['-e', espera], { detached: true, stdio: 'ignore', windowsHide: true }).unref();
+  setTimeout(() => process.exit(0), 300);
+}
+
+const VERSAO = '1.3.0'; // 1.3.0: POST /reiniciar (botão "Reiniciar agente" no sistema; o agente se reabre sozinho); 1.2.1: corrige sozinho endereço https quando o sistema só fala http; 1.2.0: o agente CONECTA ao sistema (túnel reverso, sem porta/IP/firewall) e o "acesso pela rede" deixou de existir; 1.1.2: 1.1.2: impressão por imagem sempre em orientação retrato (Brother vinha em paisagem); 1.1.1: DANFE A4 encaixado na área imprimível (rodapé não corta); 1.1.0: gravação do XML da NF-e no N: (POST /gravar)
 const MAX_CORPO = 4 * 1024 * 1024;
 
 /** Cria o servidor. `deps` permite trocar os transportes nos testes. */
@@ -107,6 +116,14 @@ export function criaServidor({ cfg, arquivoCfg, deps = {} } = {}) {
       if (req.method === 'POST' && url.pathname === '/gravar') {
         if (req.headers['x-agente'] !== 'paes') return r(400, { message: 'Cabeçalho X-Agente ausente.' });
         return r(200, { ok: true, caminho: await gravar(await lerJson(req)) });
+      }
+
+      // reinicia o próprio agente (botão do sistema): responde e, em seguida, um processo novo sobe depois que este soltar a porta
+      if (req.method === 'POST' && url.pathname === '/reiniciar') {
+        if (req.headers['x-agente'] !== 'paes') return r(400, { message: 'Cabeçalho X-Agente ausente.' });
+        r(200, { ok: true, versao: VERSAO });
+        setTimeout(() => reiniciaProcesso(), 400);
+        return undefined;
       }
 
       // teste de um destino: liberado também ao sistema web (origem autorizada), como /imprimir

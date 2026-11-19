@@ -1,7 +1,7 @@
 // Conexão do agente COM o sistema (túnel reverso): o agente chama o sistema, pega um pedido por vez (status, destinos,
 // imprimir, testar), executa no próprio 127.0.0.1 e devolve o resultado. Só o agente abre conexão: funciona com o sistema
 // em qualquer rede, atrás de NAT, sem porta liberada nem IP fixo. Endereço e token vêm do config.json (o instalador grava).
-const ROTAS = new Set(['GET /status', 'GET /destinos', 'POST /imprimir', 'POST /testar']);
+const ROTAS = new Set(['GET /status', 'GET /destinos', 'POST /imprimir', 'POST /testar', 'POST /reiniciar']);
 const ESPERA_MS = 40_000; // o sistema segura o pedido por ~25 s; folga para a rede
 
 /** Estado visível na página do agente. */
