@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 364 — Roteiro de cargas: data maior
+
+Campo de data do filtro com fonte ~150% (17,5 px).
+
 ## Fase 363 — Reiniciar o agente de impressão
 
 Agente v1.3.0: `POST /reiniciar` (também pelo túnel; rota do sistema `POST /api/impressao/reiniciar`) — responde, sobe uma cópia nova com 2 s de atraso e encerra. Botão em Impressoras.jsx. Instalador servido pelo sistema (`services/agente.js`): node direto na tarefa + gatilho AtLogOn + repetição de 5 min, `StartWhenAvailable`, `MultipleInstances IgnoreNew`. Não testado em Windows real.

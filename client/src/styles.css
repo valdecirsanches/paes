@@ -2246,3 +2246,5 @@ button.lk-versao{background:none!important;border:0!important;box-shadow:none!im
 /* aviso de pasta: uma linha enxuta com o motivo (fase 359) */
 .dr2 .pasta{display:flex;align-items:baseline;justify-content:center;gap:6px;flex-wrap:wrap;padding:2px 8px;line-height:1.25;cursor:help}
 .dr2 .pasta b{font-size:13px}.dr2 .pasta small{font-size:11px;font-weight:600;opacity:.95}
+/* Roteiro de cargas: a data do filtro 150% maior (fase 364) */
+.cg-lado .cg-filtros input[type=date]{font-size:17.5px;height:34px;width:146px;padding:0 4px;font-weight:600}
