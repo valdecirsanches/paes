@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 360 — Localizar produto abre só com o cliente
+
+Retirado o auto-"todos" do `BuscaProduto`; só a caixa manual amplia a pesquisa.
+
 ## Fase 359 — Aviso de pasta explicado
 
 O aviso aparece quando `tb_unidades.verificar_pasta = True` (Configurações › "Imprimir informação de pasta alterada"). Texto agora explica e varia conforme o status do dia.
