@@ -33,7 +33,7 @@ export const temMarca = (v) => ['true', '1', 'sim', 's', 'verdadeiro', 'x'].incl
 export const parseBr = (t) => {
   const s = String(t ?? '').trim();
   if (s === '') return null;
-  const n = Number(s.includes(',') ? s.replace(/\./g, '').replace(',', '.') : s);
+  const n = Number(s.includes(',') ? s.replace(/\./g, '').replace(',', '.') : /^\d{1,3}(\.\d{3})+$/.test(s) ? s.replace(/\./g, '') : s); // "1.000" = mil
   return Number.isFinite(n) ? n : NaN;
 };
 export const fmtBr = (n, min = 2, max = min) => (n === null || n === undefined || n === '' || Number.isNaN(Number(n)) ? '' : Number(n).toLocaleString('pt-BR', { minimumFractionDigits: min, maximumFractionDigits: max }));

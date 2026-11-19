@@ -33,3 +33,13 @@ test('foiMarcado aceita qualquer valor preenchido que não seja negação', () =
   for (const v of ['True', 1, 'S', 'SIM', 'IMPRESSO', '2026-10-29 10:00:00', { type: 'Buffer', data: [1] }]) assert.ok(foiMarcado(v), String(v));
   for (const v of [null, undefined, '', 'False', 0, 'N', 'não', { type: 'Buffer', data: [0] }]) assert.ok(!foiMarcado(v), String(v));
 });
+
+test('parseBr: "1.000" (como o campo exibe) é mil, não 1', async () => {
+  const { parseBr } = await import('./nfeCampos.js');
+  assert.equal(parseBr('1.000'), 1000);
+  assert.equal(parseBr('1.000,5'), 1000.5);
+  assert.equal(parseBr('12.345.678'), 12345678);
+  assert.equal(parseBr('2,5'), 2.5);
+  assert.equal(parseBr('1000'), 1000);
+  assert.equal(parseBr('1.5'), 1.5);
+});

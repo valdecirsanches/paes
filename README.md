@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 361 — Número com milhar lido como 1
+
+`parseBR`/`parseBr`: "1.000" (sem vírgula, grupos de 3) = 1000. Antes `Number("1.000")` = 1: o blur do campo Extra reescrevia o valor exibido e marcava o item como alterado. Teste em nfeCampos.test.js.
+
 ## Fase 360 — Localizar produto abre só com o cliente
 
 Retirado o auto-"todos" do `BuscaProduto`; só a caixa manual amplia a pesquisa.

@@ -31,10 +31,11 @@ const IcoDesfazer = () => <Ico><path d="M5 11a8 8 0 1 1 3 8" fill="none" stroke=
 
 /* ---------- campo numérico com vírgula (pt-BR) ---------- */
 const fmt = (n, [min, max]) => (n === '' || n === null || n === undefined || Number.isNaN(Number(n)) ? '' : Number(n).toLocaleString('pt-BR', { minimumFractionDigits: min, maximumFractionDigits: max }));
-const parseBR = (t) => {
+export const parseBR = (t) => {
   const s = String(t).trim();
   if (!s) return null;
-  const n = Number(s.includes(',') ? s.replace(/\./g, '').replace(',', '.') : s);
+  // "1.000" (como o campo mostra) é mil, não 1: ponto sem vírgula só é separador de milhar quando vem em grupos de 3 dígitos
+  const n = Number(s.includes(',') ? s.replace(/\./g, '').replace(',', '.') : /^\d{1,3}(\.\d{3})+$/.test(s) ? s.replace(/\./g, '') : s);
   return Number.isFinite(n) ? n : null;
 };
 export function Num({ value, onChange, casas = [0, 3], className = '', disabled, readOnly, inputRef, ...rest }) {
