@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../api.js';
-import { Toast } from '../components/toast.jsx';
+import { Toast, confirmar } from '../components/toast.jsx';
 import { brData, hhmm } from '../lib/rules.js';
 
 const ja = (r) => String(r.digitado) === 'True';
@@ -18,7 +18,7 @@ export default function ExtrasBaixa({ onFechar }) {
   useEffect(() => { if (!aviso) return undefined; const t = setTimeout(() => setAviso(null), 6000); return () => clearTimeout(t); }, [aviso]);
   const processar = async (r) => {
     const desfaz = ja(r);
-    if (!window.confirm(desfaz ? 'Voltar este pedido para a lista de pendentes?' : 'Processado?')) return;
+    if (!(await confirmar(desfaz ? 'Voltar este pedido para a lista de pendentes?' : `Processado? ${r.empresa ?? ''} — ${String(r.descricao ?? '').slice(0, 60)}`))) return;
     try {
       await api.put('/extras/digitado', desfaz ? { desmarcar: [r.id] } : { marcar: [r.id] });
       setAviso({ tipo: 'ok', m: desfaz ? 'Pedido voltou para a lista.' : 'Pedido processado.' }); await carregar();
