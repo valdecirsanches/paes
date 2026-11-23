@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 367 — Pedidos extras: baixa no menu Outros
+
+A tela de pedidos extras do app principal passou de Programação para **Outros** e virou a tela de baixa do legado (`ExtrasBaixa.jsx`): grade com DG (digitado), Salvar/Desfazer/Visualizar-Esconder/Fechar. Servidor: `GET /api/extras?todos=1` e `PUT /api/extras/digitado {marcar, desmarcar}`. A Fábrica mantém `Extras.jsx` (lançamento).
+
 ## Fase 366 — Abas laterais da diária contidas na altura
 
 `.dr2-principal{overflow:hidden}`; `.dr2-abas` com `max-height:100%` e rolagem interna; botões `flex:0 0 auto`, mais compactos com `max-height:860px`. Não reproduzi no Firefox (só Chromium aqui).

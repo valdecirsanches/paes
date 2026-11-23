@@ -1,4 +1,5 @@
 [
+  {"fase": 367, "itens": ["Pedidos extras: a tela saiu do menu Programação e passou para \"Outros\" como tela de baixa (igual ao sistema antigo): lista os pedidos digitados pela fábrica com Empresa, Solicitante, Descrição, data, hora, Funcionário e a caixa DG; marque DG ao digitar o pedido na programação diária e clique em Salvar. Desfazer descarta as marcações; Visualizar/Esconder mostra ou oculta os já digitados. A fábrica continua com a tela de lançamento (Novo/Alterar pedido)."]},
   {"fase": 366, "itens": ["Programação diária: as abas da lateral (Programação diária / fixa / Reclamações / Configurações) não vazam mais para fora da área nem por cima do rodapé: a coluna passa a caber na altura da tela (rola dentro dela se for preciso) e fica mais compacta em telas baixas."]},
   {"fase": 365, "itens": ["Roteiro de cargas: campo de data maior (agora aparece inteira) e o botão Atualizar virou só o ícone ⟳, ao lado da data, liberando espaço nos filtros."]},
   {"fase": 364, "itens": ["Roteiro de cargas: a data do filtro ficou com a fonte 150% maior."]},

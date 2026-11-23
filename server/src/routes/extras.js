@@ -9,9 +9,21 @@ const p2 = (n) => String(n).padStart(2, '0');
 const agoraHora = () => { const d = new Date(); return `${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())}`; };
 const hojeIso = () => { const d = new Date(); return `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`; };
 
-router.get('/', async (_req, res) => {
-  const [rows] = await pool.query("select * from tb_extras where digitado = 'False' or digitado is null order by data desc, hora desc, id desc limit 2000");
+// ?todos=1 (tela de baixa do faturamento, "Visualizar") traz também os já digitados na programação.
+router.get('/', async (req, res) => {
+  const filtro = req.query.todos === '1' ? '' : "where digitado = 'False' or digitado is null";
+  const [rows] = await pool.query(`select * from tb_extras ${filtro} order by data desc, hora desc, id desc limit 2000`);
   res.json(rows);
+});
+
+// Baixa: marca (digitado = 'True') / desmarca ('False') os pedidos já digitados na programação diária. Uma única gravação (Salvar).
+router.put('/digitado', async (req, res) => {
+  const ids = (v) => (Array.isArray(v) ? v : []).map(Number).filter((n) => Number.isInteger(n) && n > 0);
+  const marcar = ids(req.body?.marcar); const desmarcar = ids(req.body?.desmarcar);
+  if (!marcar.length && !desmarcar.length) throw invalid('Nenhuma alteração para salvar.');
+  if (marcar.length) await pool.query("update tb_extras set digitado = 'True' where id in (?)", [marcar]);
+  if (desmarcar.length) await pool.query("update tb_extras set digitado = 'False' where id in (?)", [desmarcar]);
+  res.json({ ok: true, marcados: marcar.length, desmarcados: desmarcar.length });
 });
 
 // Listas das caixas de escolha (empresa, solicitante, produto/mercadoria já usados, funcionários).

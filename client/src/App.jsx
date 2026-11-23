@@ -11,6 +11,7 @@ import Mercadorias from './screens/Mercadorias.jsx';
 import Producao from './screens/Producao.jsx';
 import Reclamacoes from './screens/Reclamacoes.jsx';
 import Extras from './screens/Extras.jsx';
+import ExtrasBaixa from './screens/ExtrasBaixa.jsx';
 import RelatorioNfes from './screens/RelatorioNfes.jsx';
 import NfsConfirmadas from './screens/NfsConfirmadas.jsx';
 import Faturamento from './screens/Faturamento.jsx';
@@ -50,7 +51,8 @@ const TELAS = {
   itinerario: { titulo: 'Controle do etinerário', Tela: Itinerario },
   cargas: { titulo: 'Roteiro de cargas', Tela: Cargas },
   reclamacoes: { titulo: 'Reclamações', Tela: Reclamacoes },
-  extras: { titulo: 'Pedidos extras', Tela: Extras },
+  extras: { titulo: 'Pedidos extras', Tela: Extras }, // entrada do pedido (dispositivo só da fábrica)
+  extrasbaixa: { titulo: 'Pedidos extras (baixa)', Tela: ExtrasBaixa }, // faturamento: marca os já digitados na programação
   faturamento: { titulo: 'Faturamento', Tela: Faturamento },
   comandas: { titulo: 'Controle de comandas', Tela: Comandas },
   nfe: { titulo: 'Nota Fiscal - Eletrônica', Tela: NFe },
@@ -71,16 +73,16 @@ const TELAS = {
 };
 // Menus do sistema antigo. Itens sem tela em TELAS ainda são de próximas fases (aparecem esmaecidos).
 const MENUS = [
-  { id: 'prog', rotulo: 'Programação', icone: '🗓️', itens: [['dashboard', 'Dashboard', '📊'], ['diaria', 'Fixa/Diária', '📋'], ['conflitos', 'Verificar problemas de programação', '🔎'], ['mercadorias', 'Mercadorias', '🛒'], ['producao', 'Produção', '🥖'], ['itinerario', 'Etinerário', '🧭'], ['cargas', 'Cargas', '🚚'], ['reclamacoes', 'Reclamações', '💬'], ['extras', 'Pedidos extras', '🛍']] },
+  { id: 'prog', rotulo: 'Programação', icone: '🗓️', itens: [['dashboard', 'Dashboard', '📊'], ['diaria', 'Fixa/Diária', '📋'], ['conflitos', 'Verificar problemas de programação', '🔎'], ['mercadorias', 'Mercadorias', '🛒'], ['producao', 'Produção', '🥖'], ['itinerario', 'Etinerário', '🧭'], ['cargas', 'Cargas', '🚚'], ['reclamacoes', 'Reclamações', '💬']] },
   { id: 'fat', rotulo: 'Faturamento', icone: '💳', itens: [['faturamento', 'Faturamento', '💳'], ['comandas', 'Controle de comandas', '🧾'], ['nfe', 'NFe', '📑'], ['tributos', 'Tributos', '🏷️'], ['quitacao', 'Quitação', '💰']] },
   { id: 'cad', rotulo: 'Cadastros', icone: '👥', itens: [['clientes', 'Clientes', '🏢'], ['produtos', 'Produtos', '🍞'], ['funcionarios', 'Funcionários', '🧑‍🍳'], ['usuarios', 'Usuários', '🔑']] },
-  { id: 'outros', rotulo: 'Outros', icone: '📦', itens: [['relnfes', 'Relatório de NFEs', '📊'], ['nfsconf', 'Leitura de NFs confirmadas', '📥']] },
+  { id: 'outros', rotulo: 'Outros', icone: '📦', itens: [['extrasbaixa', 'Pedidos extras', '🛍'], ['relnfes', 'Relatório de NFEs', '📊'], ['nfsconf', 'Leitura de NFs confirmadas', '📥']] },
   { id: 'ferr', rotulo: 'Ferramentas', icone: '🛠️', itens: [['impressoras', 'Configurar impressoras', '🖨️'], ['instalar', 'Instalar agente de impressão', '⬇️'], ['dispositivos', 'Dispositivos autorizados', '🖥'], ['auditoria', 'Auditoria', '🕵️'], ['telaprincipal', 'Imagem da tela principal', '🖼'], ['vozassistente', 'Voz do assistente', '🔊'], ['aparencia', 'Aparência (cores)', '🎨']] },
 ];
 const MENUS_FUTUROS = [];
 // Dispositivo liberado só para a fábrica (menu do sistema da fábrica): Programação, Produção, Mercadorias, Cargas, Reclamações, Pedidos extras + impressoras.
 const ORDEM_FABRICA = ['diaria', 'producao', 'mercadorias', 'cargas', 'reclamacoes', 'extras']; // mesma ordem do menu do sistema da fábrica
-const MENUS_FABRICA = [{ ...MENUS[0], itens: ORDEM_FABRICA.map((k) => MENUS[0].itens.find(([x]) => x === k)) }, { ...MENUS[4], itens: MENUS[4].itens.filter(([k]) => k !== 'dispositivos' && k !== 'auditoria' && k !== 'telaprincipal') }];
+const MENUS_FABRICA = [{ ...MENUS[0], itens: ORDEM_FABRICA.map((k) => (k === 'extras' ? ['extras', 'Pedidos extras', '🛍'] : MENUS[0].itens.find(([x]) => x === k))) }, { ...MENUS[4], itens: MENUS[4].itens.filter(([k]) => k !== 'dispositivos' && k !== 'auditoria' && k !== 'telaprincipal') }];
 
 export default function App() {
   const [abertas, setAbertas] = useState([]);
