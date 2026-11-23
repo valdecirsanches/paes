@@ -1022,7 +1022,7 @@ As abas **Programação diária / Programação fixa / Reclamações** saíram d
 
 ## Fase 367 — Pedidos extras: baixa no menu Outros
 
-A tela de pedidos extras do app principal passou de Programação para **Outros** e virou a tela de baixa do legado (`ExtrasBaixa.jsx`): grade com DG (digitado), Salvar/Desfazer/Visualizar-Esconder/Fechar. Servidor: `GET /api/extras?todos=1` e `PUT /api/extras/digitado {marcar, desmarcar}`. A Fábrica mantém `Extras.jsx` (lançamento).
+A tela de pedidos extras do app principal passou de Programação para **Outros** (`ExtrasBaixa.jsx`): ícone ✔ por linha, pergunta "Processado?" e, confirmando, grava digitado e o pedido sai da lista (Visualizar processados + ↶ para desfazer). Servidor: `GET /api/extras?todos=1` e `PUT /api/extras/digitado {marcar, desmarcar}`. A Fábrica mantém `Extras.jsx` (lançamento).
 
 ## Fase 366 — Abas laterais da diária contidas na altura
 
