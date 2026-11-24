@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Ajuda from '../components/Ajuda.jsx';
 import { abrirHistorico } from '../components/NovaVersao.jsx';
+import { ligaCaixaAlta } from '../lib/caixaAlta.js';
 import Diaria from '../screens/Diaria.jsx';
 import Mercadorias from '../screens/Mercadorias.jsx';
 import Cargas from '../screens/Cargas.jsx';
@@ -27,6 +28,8 @@ const TELAS = {
 };
 const BOTOES = [['diaria', 'Programação', 'programacao'], ['producao', 'Produção', 'producao'], ['mercadorias', 'Mercadorias', 'mercadorias'], ['cargas', 'Cargas', 'cargas'], ['reclamacoes', 'Reclamações', 'reclamacoes'], ['extras', 'Pedidos Extras', 'extras']];
 const VERSAO = typeof __BUILD__ === 'string' ? __BUILD__.replace(/ · build.*/, '').replace('fase ', '3.0.') : '3.0';
+
+ligaCaixaAlta();
 
 export default function FabricaApp({ saude, onVoltar = null, dispositivo = '' }) {
   const [abertas, setAbertas] = useState([]);
@@ -65,7 +68,7 @@ export default function FabricaApp({ saude, onVoltar = null, dispositivo = '' })
       <div className="fb-area">
         {abertas.map((k) => {
           const { Tela, claro } = TELAS[k];
-          return <div key={k} className={`fb-slot${claro ? ' claro' : ''}`} hidden={ativa !== k}><Tela onFechar={() => fechar(k)} abrirTela={abrir} ativa={ativa === k} /></div>;
+          return <div key={k} className={`fb-slot${claro ? ' claro' : ''}`} hidden={ativa !== k} data-caixa-alta={k === 'diaria' ? '' : undefined}><Tela onFechar={() => fechar(k)} abrirTela={abrir} ativa={ativa === k} /></div>;
         })}
       </div>
       <div className="fb-status">

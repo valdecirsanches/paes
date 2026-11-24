@@ -192,7 +192,7 @@ export default function Clientes({ onFechar }) {
           <Secao titulo="Contato" icone="☎️">
             <Campo rotulo="Telefone" span={12}><Txt ed={cli} k="fone" /></Campo>
             <Campo rotulo="Contato" span={12}><Txt ed={cli} k="contato" /></Campo>
-            <Campo rotulo="E-mail para envio de Danfe/XML (NFe)" span={12}><Txt ed={cli} k="email_nfe" /></Campo>
+            <Campo rotulo="E-mail para envio de Danfe/XML (NFe)" span={12}><Txt ed={cli} k="email_nfe" data-minusculas /></Campo>
           </Secao>
           <Secao titulo="Faturamento e NFe" icone="🧾">
             <Campo rotulo="Condições de pagamento (informações adicionais)" span={12}><Txt ed={cli} k="informacoes_nf1" /></Campo>
@@ -280,7 +280,7 @@ export default function Clientes({ onFechar }) {
                 </Campo>
                 <Campo rotulo="Placa do veículo" span={4}><Txt ed={uni} k="veiculo_placa" /></Campo>
                 <Campo rotulo="UF do veículo" span={2}><Txt ed={uni} k="veiculo_uf" maxLength={2} /></Campo>
-                <Campo rotulo="E-mail para Danfe/XML (NFe)" span={6}><Txt ed={uni} k="email_nfe" /></Campo>
+                <Campo rotulo="E-mail para Danfe/XML (NFe)" span={6}><Txt ed={uni} k="email_nfe" data-minusculas /></Campo>
               </Secao>
               <Secao titulo="Emitir comandas para outro destino" icone="🔀">
                 <Campo rotulo="Cliente (código)" span={3}><Txt ed={uni} k="id_cliente_comandas" inputMode="numeric" /></Campo>

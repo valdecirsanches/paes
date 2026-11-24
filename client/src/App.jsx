@@ -11,6 +11,7 @@ import Mercadorias from './screens/Mercadorias.jsx';
 import Producao from './screens/Producao.jsx';
 import Reclamacoes from './screens/Reclamacoes.jsx';
 import Extras from './screens/Extras.jsx';
+import { ligaCaixaAlta } from './lib/caixaAlta.js';
 import ExtrasBaixa from './screens/ExtrasBaixa.jsx';
 import RelatorioNfes from './screens/RelatorioNfes.jsx';
 import NfsConfirmadas from './screens/NfsConfirmadas.jsx';
@@ -79,6 +80,9 @@ const MENUS = [
   { id: 'outros', rotulo: 'Outros', icone: '📦', itens: [['extrasbaixa', 'Pedidos extras', '🛍'], ['relnfes', 'Relatório de NFEs', '📊'], ['nfsconf', 'Leitura de NFs confirmadas', '📥']] },
   { id: 'ferr', rotulo: 'Ferramentas', icone: '🛠️', itens: [['impressoras', 'Configurar impressoras', '🖨️'], ['instalar', 'Instalar agente de impressão', '⬇️'], ['dispositivos', 'Dispositivos autorizados', '🖥'], ['auditoria', 'Auditoria', '🕵️'], ['telaprincipal', 'Imagem da tela principal', '🖼'], ['vozassistente', 'Voz do assistente', '🔊'], ['aparencia', 'Aparência (cores)', '🎨']] },
 ];
+// telas em que o texto digitado vai sempre em MAIÚSCULAS (Diária/Fixa e Cadastros)
+const CAIXA_ALTA = new Set(['diaria', 'clientes', 'produtos', 'funcionarios']);
+ligaCaixaAlta();
 const MENUS_FUTUROS = [];
 // Dispositivo liberado só para a fábrica (menu do sistema da fábrica): Programação, Produção, Mercadorias, Cargas, Reclamações, Pedidos extras + impressoras.
 const ORDEM_FABRICA = ['diaria', 'producao', 'mercadorias', 'cargas', 'reclamacoes', 'extras']; // mesma ordem do menu do sistema da fábrica
@@ -252,7 +256,7 @@ export default function App() {
       <div className="area-telas">
         {usuario && abertas.map((k) => {
           const { Tela } = TELAS[k];
-          return <div key={k} className="slot" hidden={ativa !== k}><Tela onFechar={() => fechar(k)} abrirTela={abrir} /></div>;
+          return <div key={k} className="slot" hidden={ativa !== k} data-caixa-alta={CAIXA_ALTA.has(k) ? '' : undefined}><Tela onFechar={() => fechar(k)} abrirTela={abrir} /></div>;
         })}
         {!ativa && (
           <div className="fundo-paes" style={{ backgroundImage: `url(${fundo})` }} role="img" aria-label="Pães franceses saindo do forno" />
