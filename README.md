@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 368 — Código sequencial automático em novo cliente
+
+`GET /api/cadastros/clientes/proximo-codigo` devolve o maior código numérico + 1; a tela de Clientes preenche o campo Código ao incluir.
+
 ## Fase 367 — Pedidos extras: baixa no menu Outros
 
 A tela de pedidos extras do app principal passou de Programação para **Outros** (`ExtrasBaixa.jsx`): ícone ✔ por linha, pergunta "Processado?" e, confirmando, grava digitado e o pedido sai da lista (Visualizar processados + ↶ para desfazer). Servidor: `GET /api/extras?todos=1` e `PUT /api/extras/digitado {marcar, desmarcar}`. A Fábrica mantém `Extras.jsx` (lançamento).

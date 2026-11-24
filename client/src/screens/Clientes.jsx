@@ -56,7 +56,17 @@ export default function Clientes({ onFechar }) {
   const clientesFiltrados = useMemo(() => (sitCli === 'TODOS' ? clientes : clientes.filter((c) => (String(c.ativo ?? 'ATIVO').toUpperCase() === 'INATIVO') === (sitCli === 'INATIVO'))), [clientes, sitCli]);
   const bCli = useBusca(clientesFiltrados, B_CLI, 'cad_clientes');
   useEffect(() => { if (clientesFiltrados.length && !clientesFiltrados.some((c) => c.id === fCli)) setFCli(clientesFiltrados[0].id); }, [clientesFiltrados]); // eslint-disable-line react-hooks/exhaustive-deps
-  const cli = useEdicao({ lista: bCli.visiveis, foco: fCli, setFoco: setFCli, caminho: CAM, recarregar: recCli, aviso: notificar, confirmar: setConfirma, padrao: () => ({ ativo: 'ATIVO', programacao_ativo: 'True', pessoa: 'JURIDICA', comanda_nf: '1' }), texto: (r) => `o cliente ${r?.razao_social ?? ''}` });
+  const cli0 = useEdicao({ lista: bCli.visiveis, foco: fCli, setFoco: setFCli, caminho: CAM, recarregar: recCli, aviso: notificar, confirmar: setConfirma, padrao: () => ({ ativo: 'ATIVO', programacao_ativo: 'True', pessoa: 'JURIDICA', comanda_nf: '1' }), texto: (r) => `o cliente ${r?.razao_social ?? ''}` });
+  // novo cliente: o código sequencial já vem preenchido
+  const cli = useMemo(() => ({
+    ...cli0,
+    incluir: async () => {
+      const jaSujo = cli0.sujo;
+      cli0.incluir();
+      if (jaSujo) return;
+      try { const r = await api.get(`${CAM}/proximo-codigo`); cli0.set('codigo', r.codigo); } catch (e) { notificar('erro', e.message); }
+    },
+  }), [cli0, notificar]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const idCli = cli.atual?.id ?? null;
   const recUni = useCallback(async (id) => {

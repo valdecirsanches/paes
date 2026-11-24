@@ -117,6 +117,12 @@ router.get('/:id/produtos', async (req, res) => {
   res.json(r);
 });
 
+// Próximo código sequencial de cliente (maior código numérico existente + 1).
+router.get('/proximo-codigo', async (_req, res) => {
+  const [[r]] = await pool.query("select max(cast(codigo as unsigned)) + 1 as x from tb_clientes where codigo regexp '^[0-9]+$'");
+  res.json({ codigo: String(r?.x ?? 1) });
+});
+
 router.post('/', async (req, res) => {
   const b = limpaCampos(req.body, CLI, { rotulos: CLI_ROT });
   if (!b.razao_social) throw invalid('Informe o nome do cliente.');
