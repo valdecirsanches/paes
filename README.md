@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 375 — Validação de CEP (8 dígitos) antes de autorizar
+
+`validaParaAutorizar` barra CEP de destinatário/entrega com ≠ 8 dígitos (causa da rejeição 225 na NF 71905: CEP `0622002`).
+
 ## Fase 374 — NFe: aba Destinatário
 
 Aba `dest` no painel do item (NFe.jsx) usa o mesmo rascunho `draft`/`salvar` da nota. `PUT /api/nfe/:id` aceita também `cliente_razao_social`/`cliente_cnpj` e recalcula os códigos IBGE ao mudar cidade/UF (cliente e entrega).

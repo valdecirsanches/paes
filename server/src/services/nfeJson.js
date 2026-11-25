@@ -57,6 +57,10 @@ export function validaParaAutorizar(nfe, itens, cfg, { vencimentos = [], hoje = 
   const doc = dig(nfe.cliente_cnpj);
   if (doc.length !== 14 && doc.length !== 11) e.push('CNPJ/CPF do destinatário inválido.');
   if (!txt(nfe.cliente_razao_social)) e.push('Razão social do destinatário não informada.');
+  // a SEFAZ rejeita (225, falha de schema) CEP que não tenha exatamente 8 dígitos
+  const cepUsado = dig(nfe.entrega_cep || nfe.cliente_cep);
+  if (cepUsado.length !== 8) e.push(`CEP do destinatário/entrega inválido ("${txt(nfe.entrega_cep || nfe.cliente_cep)}" tem ${cepUsado.length} dígitos; o correto tem 8). Corrija na aba Destinatário da nota e no cadastro do cliente/unidade.`);
+  if (dig(nfe.cliente_cep) && dig(nfe.cliente_cep).length !== 8) e.push(`CEP do cliente na nota ("${txt(nfe.cliente_cep)}") tem ${dig(nfe.cliente_cep).length} dígitos; o correto tem 8.`);
   for (const [i, it] of itens.entries()) {
     if (dig(it.produto_ncm).length !== 8) e.push(`Item ${i + 1} (${it.produto_codigo}): NCM inválido — informe no Código de tributação do produto.`);
     if (!(n(it.qtde) > 0) || !(n(it.preco) > 0)) e.push(`Item ${i + 1} (${it.produto_codigo}): quantidade/preço zerado ou negativo.`);

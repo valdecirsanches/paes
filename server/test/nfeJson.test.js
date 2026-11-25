@@ -36,3 +36,9 @@ test('destinatário da NFe: cliente por padrão; unidade só quando marcada', as
   assert.equal(d.razao_social, 'ESCOLA LTDA'); assert.equal(d.cidade, 'Santos'); assert.equal(d.pessoa, 'J'); assert.equal(d.fone, '11');
   assert.deepEqual(faltasDestinatarioUnidade({ ...uni, cnpj: '', cep: null }), ['o CNPJ/CPF', 'o CEP']);
 });
+
+test('CEP com 7 dígitos é barrado antes de enviar (evita rejeição 225 de schema)', async () => {
+  const { validaParaAutorizar } = await import('../src/services/nfeJson.js');
+  const r = validaParaAutorizar({ cliente_cep: '0622002', entrega_cep: '0622002', entrega_uf: 'SP', entrega_cidade: 'OSASCO' }, [], {});
+  assert.ok(r.some((m) => /CEP/.test(m) && /7 dígitos/.test(m)));
+});
