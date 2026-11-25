@@ -4,6 +4,7 @@ import { invalid, notFound } from '../errors.js';
 import { tx } from '../db.js';
 import { mudaClienteUnidade } from '../services/mudaCliente.js';
 import { emUso, idValido, limpaCampos } from '../services/campos.js';
+import { limpaProgramacaoFutura, textoDesativacao } from '../services/desativaProgramacao.js';
 
 // Cadastro de clientes (u_clientes): clientes (tb_clientes), unidades (tb_unidades) e a lista de produtos do cliente.
 const router = Router();
@@ -87,10 +88,13 @@ router.put('/unidades/:id', async (req, res) => {
   if ('nome' in b && !b.nome) throw invalid('O nome da unidade não pode ficar vazio.');
   if (b.uf && !/^[A-Za-z]{2}$/.test(String(b.uf).trim())) throw invalid('A UF da unidade deve ter 2 letras.');
   if (!Object.keys(b).length) throw invalid('Nada para gravar.');
+  const desativa = String(b.ativo ?? '').toLowerCase() === 'false';
   const [r] = await pool.query('update tb_unidades set ? where id = ?', [b, id]);
   if (!r.affectedRows) throw notFound('Unidade');
   const [[u]] = await pool.query('select * from tb_unidades where id = ?', [id]);
-  res.json(u);
+  // desativada: tenha ou não programação, apaga a programação diária de hoje em diante
+  const aviso = desativa ? textoDesativacao(await tx((c) => limpaProgramacaoFutura(c, [id], req.userId))) : null;
+  res.json(aviso ? { ...u, _aviso: aviso } : u);
 });
 // Muda o cliente dono da unidade (histórico fica com o cliente antigo)
 router.post('/unidades/:id/mudar-cliente', async (req, res) => {
@@ -143,10 +147,16 @@ router.put('/:id', async (req, res) => {
   if ('razao_social' in b && !b.razao_social) throw invalid('O nome do cliente não pode ficar vazio.');
   if (!Object.keys(b).length) throw invalid('Nada para gravar.');
   await gravaPessoa(b);
+  const desativa = String(b.ativo ?? '').toUpperCase() === 'INATIVO';
   const [r] = await pool.query('update tb_clientes set ? where id = ?', [b, id]);
   if (!r.affectedRows) throw notFound('Cliente');
   const [[c]] = await pool.query('select * from tb_clientes where id = ?', [id]);
-  res.json(lePessoa(c));
+  // cliente inativado: o mesmo vale para todas as unidades dele
+  const aviso = desativa ? textoDesativacao(await tx(async (cx) => {
+    const [us] = await cx.query('select id from tb_unidades where id_cliente = ?', [id]);
+    return limpaProgramacaoFutura(cx, us.map((x) => x.id), req.userId);
+  })) : null;
+  res.json(aviso ? { ...lePessoa(c), _aviso: aviso } : lePessoa(c));
 });
 router.delete('/:id', async (req, res) => {
   const id = idValido(req.params.id, 'Cliente');

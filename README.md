@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 381 — Desativar unidade/cliente limpa a programação futura
+
+`services/desativaProgramacao.js` (`limpaProgramacaoFutura`): chamado em `PUT /cadastros/clientes/unidades/:id` (ativo=False) e `PUT /cadastros/clientes/:id` (ativo=INATIVO): apaga `tb_diaria` de hoje em diante (menos itens com `qtde_cobrado`/`comandas`) e `tb_status` sem itens; `tb_fixa` intacta. A resposta traz `_aviso`, exibido por `useEdicao`.
+
 ## Fase 380 — Apagar programação: menu do botão direito no nome da empresa
 
 Menu `.ctx` em `Diaria.jsx` (lista Clientes do dia e cabeçalho); removido o item do menu da grade em `DiariaTab.jsx`.

@@ -42,3 +42,9 @@ test('CEP com 7 dígitos é barrado antes de enviar (evita rejeição 225 de sch
   const r = validaParaAutorizar({ cliente_cep: '0622002', entrega_cep: '0622002', entrega_uf: 'SP', entrega_cidade: 'OSASCO' }, [], {});
   assert.ok(r.some((m) => /CEP/.test(m) && /7 dígitos/.test(m)));
 });
+
+test('desativação: texto do aviso', async () => {
+  const { textoDesativacao } = await import('../src/services/desativaProgramacao.js');
+  assert.equal(textoDesativacao({ itens: 0, dias: 0, preservados: 0 }), null);
+  assert.match(textoDesativacao({ itens: 12, dias: 3, preservados: 1 }), /12 item\(ns\) em 3 dia\(s\); 1 item/);
+});

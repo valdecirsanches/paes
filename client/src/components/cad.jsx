@@ -64,6 +64,7 @@ export function useEdicao({ lista, foco, setFoco, caminho, recarregar, aviso, co
       setNovo(false); setDraft({});
       await recarregar(id);
       aviso('ok', 'Registro gravado.');
+      if (r?._aviso) aviso('aviso', r._aviso); // ex.: programação futura removida ao desativar
       posGravar?.(r);
     } catch (e) { aviso('erro', e.message); }
   };
