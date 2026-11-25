@@ -581,6 +581,8 @@ export default function NFe({ onFechar }) {
   const edi = (k, val) => setItemDraft((d) => ({ ...d, [k]: val }));
   const itemSujo = Object.keys(itemDraft).length > 0;
   const aplicaNota = (n) => { if (!n) return; setLinhas((ls) => ls.map((r) => (r.id === foco ? { ...r, valor_produtos: n.valor_produtos, nf_valor_total: n.nf_valor_total } : r))); setCompleta((c) => (c?.id === foco ? { ...c, valor_produtos: n.valor_produtos, nf_valor_total: n.nf_valor_total } : c)); };
+  // em nota já emitida o XML/DANFE autorizado não muda: a AF só vai para os dados adicionais se for digitada ANTES de autorizar
+  const avisaAfEmitida = () => { if (nota && String(nota.status_e).toUpperCase() !== 'PENDENTE') notificar('aviso', 'Nota já autorizada: a AF fica só no cadastro do item; o DANFE/XML emitido não muda. Digite a AF antes de autorizar para sair nos dados adicionais.'); };
   // AF (Nº do acordo / ordem de compra) digitada: oferece levar o mesmo número para os demais itens da nota
   const transportaAf = async (idOrigem, valor) => {
     const af = String(valor ?? '').trim();
@@ -597,13 +599,13 @@ export default function NFe({ onFechar }) {
     const { _nota, ...novo } = await api.put(`/nfe/itens/${itemSel}`, itemDraft);
     const mudouAf = 'ordem_compra' in itemDraft;
     setItens((is) => is.map((i) => (i.id === novo.id ? { ...i, ...novo } : i))); setItemDraft({}); aplicaNota(_nota); notificar('ok', 'Item gravado.');
-    if (mudouAf) await transportaAf(novo.id, novo.ordem_compra);
+    if (mudouAf) { avisaAfEmitida(); await transportaAf(novo.id, novo.ordem_compra); }
   });
   // grade de itens: Ord. Compra editável direto, mesmo em nota emitida; Enter grava
   const gravaOc = async (id, valor) => {
     try {
       const { _nota, ...novo } = await api.put(`/nfe/itens/${id}`, { ordem_compra: valor });
-      setItens((is) => is.map((i) => (i.id === novo.id ? { ...i, ...novo } : i))); aplicaNota(_nota); notificar('ok', 'Ord. compra gravada.'); await transportaAf(id, novo.ordem_compra); return true;
+      setItens((is) => is.map((i) => (i.id === novo.id ? { ...i, ...novo } : i))); aplicaNota(_nota); notificar('ok', 'Ord. compra gravada.'); avisaAfEmitida(); await transportaAf(id, novo.ordem_compra); return true;
     } catch (e) { notificar('erro', e.message); return false; }
   };
   const novoItem = () => {

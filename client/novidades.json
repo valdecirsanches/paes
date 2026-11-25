@@ -1,4 +1,5 @@
 [
+  {"fase": 371, "itens": ["NFe: ao digitar a AF (Ord. Compra) em uma nota JÁ AUTORIZADA, o sistema avisa que o DANFE/XML emitido não muda (a SEFAZ não permite). A AF só vai para os dados adicionais se for digitada antes de clicar em Autorizar."]},
   {"fase": 370, "itens": ["NFe: o quadro \"Opções\" (Impressão direta) da lateral passou para o topo, acima da Duplicata."]},
   {"fase": 369, "itens": ["Caixa alta: o que for digitado na Programação diária, na Fixa (também na Fábrica) e nos Cadastros (clientes, unidades, produtos, funcionários) passa a sair sempre em MAIÚSCULAS, inclusive ao colar. Exceções: e-mails, senhas, números e datas."]},
   {"fase": 368, "itens": ["Cadastro de clientes: ao clicar em Incluir, o campo Código já vem preenchido com o próximo número sequencial (maior código numérico existente + 1). Pode ser alterado antes de gravar."]},
