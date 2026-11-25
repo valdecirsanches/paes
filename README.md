@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 370 — NFe: Opções no topo da lateral
+
+O card "Opções" (Impressão direta) vai para o topo do `aside` da tela NFe.
+
 ## Fase 369 — Caixa alta nas telas de entrada
 
 `client/src/lib/caixaAlta.js`: listener `input` em captura converte para maiúsculas (setter nativo, cursor preservado) os campos de texto dentro de `[data-caixa-alta]` (slots diaria/clientes/produtos/funcionarios e diária da Fábrica). `data-minusculas` no campo (ou ancestral) exclui (e-mail NFe).

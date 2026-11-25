@@ -828,6 +828,10 @@ export default function NFe({ onFechar }) {
       <div className="nfe-geral">
         {/* cxTabControl5: painel da esquerda */}
         <aside className="nf2-lat">
+          <div className="nf2-card">
+            <div className="nf2-card-t">⚙ Opções</div>
+            <label className="nf2-sw"><input type="checkbox" checked={impDireta} onChange={(e) => setImpDireta(e.target.checked)} />Impressão direta</label>
+          </div>
           {admin && nota && (
             <div className="nf2-card nf2-ns">
               <div className="nf2-card-t">🔧 Número e status <small>(administrador)</small></div>
@@ -881,10 +885,6 @@ export default function NFe({ onFechar }) {
               <button type="button" title="Atualizar" disabled={!nota} onClick={() => nota && carregarDups(nota.id)}>⟳</button>
               <span className="info">{dups.length ? `${dupIdx + 1}/${dups.length}` : '0/0'}</span>
             </div>
-          </div>
-          <div className="nf2-card">
-            <div className="nf2-card-t">⚙ Opções</div>
-            <label className="nf2-sw"><input type="checkbox" checked={impDireta} onChange={(e) => setImpDireta(e.target.checked)} />Impressão direta</label>
           </div>
         </aside>
 

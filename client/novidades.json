@@ -1,4 +1,5 @@
 [
+  {"fase": 370, "itens": ["NFe: o quadro \"Opções\" (Impressão direta) da lateral passou para o topo, acima da Duplicata."]},
   {"fase": 369, "itens": ["Caixa alta: o que for digitado na Programação diária, na Fixa (também na Fábrica) e nos Cadastros (clientes, unidades, produtos, funcionários) passa a sair sempre em MAIÚSCULAS, inclusive ao colar. Exceções: e-mails, senhas, números e datas."]},
   {"fase": 368, "itens": ["Cadastro de clientes: ao clicar em Incluir, o campo Código já vem preenchido com o próximo número sequencial (maior código numérico existente + 1). Pode ser alterado antes de gravar."]},
   {"fase": 367, "itens": ["Pedidos extras: a tela saiu do menu Programação e passou para \"Outros\". Cada pedido digitado pela fábrica tem um ícone ✔ na linha: ao clicar pergunta \"Processado?\"; se sim, salva e o pedido sai da lista. \"Visualizar processados\" mostra os já baixados (ícone ↶ devolve à lista). A fábrica continua com a tela de lançamento (Novo/Alterar pedido)."]},
