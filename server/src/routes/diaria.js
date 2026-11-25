@@ -206,7 +206,7 @@ router.delete('/diaria/:id', async (req, res) => {
   res.json({ ok: true });
 });
 
-// Apaga TODA a programação do dia de uma unidade (inclusive itens fixos, que podem ser trazidos de novo pela programação fixa).
+// Apaga TODA a programação do dia de uma unidade (inclusive itens fixos) e a própria linha do dia em tb_status: a empresa some da lista.
 // Recusa se algum item já foi cobrado/faturado. Uso raro: fica em "Ações do dia" da tela.
 router.delete('/status/:id/diaria', async (req, res) => {
   const apagados = await tx(async (c) => {
@@ -219,7 +219,7 @@ router.delete('/status/:id/diaria', async (req, res) => {
       `Exclusao de TODA a programação diária de ${String(st.data).slice(0, 10)} (${itens.length} item(ns))\n` +
       itens.map((i) => `${String(i.hora).slice(0, 5)} ${i.id_produto} ${i.produto_descricao_expedicao} fixa:${i.qtde_original} extra:${i.qtde_alterada}${bool(i.programacao_fixa) ? ' [fixo]' : ''}${bool(i.cancelado) ? ' [cancelado]' : ''}`).join('\n'));
     await c.query('delete from tb_diaria where id_status = ?', [st.id]);
-    await c.query('update tb_status set status = 0 where id = ?', [st.id]);
+    await c.query('delete from tb_status where id = ?', [st.id]); // a empresa sai da lista do dia (volta com "Ativar movimento do dia" / "Empresas que não aparecem…")
     return itens.length;
   });
   res.json({ ok: true, apagados });

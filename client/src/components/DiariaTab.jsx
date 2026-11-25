@@ -231,9 +231,9 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
   const apagarDia = async () => {
     if (editando || consulta || !status) return;
     if (!itens.length) { notify.erro('Não há itens programados neste dia para esta empresa.'); return; }
-    if (!(await confirmar(`APAGAR toda a programação de ${status.unidade_nome} neste dia?\n\n${itens.length} item(ns) serão eliminados (inclusive os da programação fixa) e não há como desfazer.\nSe houver item já cobrado/com comanda, a exclusão é recusada.`))) return;
+    if (!(await confirmar(`APAGAR toda a programação de ${status.unidade_nome} neste dia?\n\n${itens.length} item(ns) serão eliminados (inclusive os da programação fixa) e a empresa SAI da lista deste dia. Não há como desfazer.\nSe houver item já cobrado/com comanda, a exclusão é recusada.`))) return;
     if (!(await confirmar('Confirma mesmo? Esta ação NÃO pode ser desfeita.'))) return;
-    rodar(() => api.del(`/status/${status.id}/diaria`), 'Programação do dia apagada.');
+    rodar(() => api.del(`/status/${status.id}/diaria`), 'Programação do dia apagada; a empresa saiu da lista.');
   };
   const desfazer = () => { setDraft(null); };
 
