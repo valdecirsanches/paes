@@ -212,13 +212,12 @@ router.delete('/status/:id/diaria', async (req, res) => {
   const apagados = await tx(async (c) => {
     const st = await getStatus(c, req.params.id);
     const [itens] = await c.query('select * from tb_diaria where id_status = ? for update', [st.id]);
-    if (!itens.length) throw invalid('Esta empresa não tem itens programados neste dia.');
     const cobrados = itens.filter((i) => Number(i.qtde_cobrado) > 0 || String(i.comandas ?? '').trim() !== '');
     if (cobrados.length) throw new AppError(409, `Não é possível apagar: ${cobrados.length} item(ns) já têm comanda/cobrança (${cobrados.slice(0, 3).map((i) => i.produto_descricao_expedicao).join(', ')}${cobrados.length > 3 ? '…' : ''}).`);
-    await logDiaria(c, itens[0].id, req.userId,
+    if (itens.length) await logDiaria(c, itens[0].id, req.userId,
       `Exclusao de TODA a programação diária de ${String(st.data).slice(0, 10)} (${itens.length} item(ns))\n` +
       itens.map((i) => `${String(i.hora).slice(0, 5)} ${i.id_produto} ${i.produto_descricao_expedicao} fixa:${i.qtde_original} extra:${i.qtde_alterada}${bool(i.programacao_fixa) ? ' [fixo]' : ''}${bool(i.cancelado) ? ' [cancelado]' : ''}`).join('\n'));
-    await c.query('delete from tb_diaria where id_status = ?', [st.id]);
+    if (itens.length) await c.query('delete from tb_diaria where id_status = ?', [st.id]);
     await c.query('delete from tb_status where id = ?', [st.id]); // a empresa sai da lista do dia (volta com "Ativar movimento do dia" / "Empresas que não aparecem…")
     return itens.length;
   });

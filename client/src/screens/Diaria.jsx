@@ -150,7 +150,7 @@ export default function Diaria({ onFechar, ativa = true }) {
   const apagarProgramacao = async (r) => {
     if (!(await confirmar(`APAGAR toda a programação de ${r.unidade_nome} em ${diaExtenso(data)}?\n\nTodos os itens do dia desta empresa serão eliminados (inclusive os da programação fixa) e a empresa SAI da lista deste dia. Não há como desfazer.\nSe houver item já cobrado/com comanda, a exclusão é recusada.`))) return;
     if (!(await confirmar('Confirma mesmo? Esta ação NÃO pode ser desfeita.'))) return;
-    await executar(() => api.del(`/status/${r.id}/diaria`), (x) => `Programação apagada (${x.apagados} item(ns)); a empresa saiu da lista.`);
+    await executar(() => api.del(`/status/${r.id}/diaria`), (x) => (x.apagados ? `Programação apagada (${x.apagados} item(ns)); a empresa saiu da lista.` : 'A empresa saiu da lista do dia.'));
     setRecarga((n) => n + 1);
   };
 
