@@ -1,6 +1,7 @@
 import { pngTeste } from './png.js';
 import http from 'node:http';
 import { mkdir, writeFile, stat } from 'node:fs/promises';
+import { appendFileSync, statSync, truncateSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { caminhoConfig, carregaConfig, salvaConfig, validaDestino } from './config.js';
@@ -17,7 +18,7 @@ export function reiniciaProcesso() {
   setTimeout(() => process.exit(0), 300);
 }
 
-const VERSAO = '1.3.0'; // 1.3.0: POST /reiniciar (botão "Reiniciar agente" no sistema; o agente se reabre sozinho); 1.2.1: corrige sozinho endereço https quando o sistema só fala http; 1.2.0: o agente CONECTA ao sistema (túnel reverso, sem porta/IP/firewall) e o "acesso pela rede" deixou de existir; 1.1.2: 1.1.2: impressão por imagem sempre em orientação retrato (Brother vinha em paisagem); 1.1.1: DANFE A4 encaixado na área imprimível (rodapé não corta); 1.1.0: gravação do XML da NF-e no N: (POST /gravar)
+const VERSAO = '1.3.1'; // 1.3.1: agente.log (início, saída e erros; ajuda a descobrir por que o agente fecha) e saída silenciosa se a porta já está em uso (cópia duplicada); 1.3.0: POST /reiniciar (botão "Reiniciar agente" no sistema; o agente se reabre sozinho); 1.2.1: corrige sozinho endereço https quando o sistema só fala http; 1.2.0: o agente CONECTA ao sistema (túnel reverso, sem porta/IP/firewall) e o "acesso pela rede" deixou de existir; 1.1.2: 1.1.2: impressão por imagem sempre em orientação retrato (Brother vinha em paisagem); 1.1.1: DANFE A4 encaixado na área imprimível (rodapé não corta); 1.1.0: gravação do XML da NF-e no N: (POST /gravar)
 const MAX_CORPO = 4 * 1024 * 1024;
 
 /** Cria o servidor. `deps` permite trocar os transportes nos testes. */
@@ -190,13 +191,27 @@ export function criaServidor({ cfg, arquivoCfg, deps = {} } = {}) {
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  process.on('uncaughtException', (e) => console.error('Erro não tratado (o agente continua):', e));
-  process.on('unhandledRejection', (e) => console.error('Promessa rejeitada (o agente continua):', e));
   const arquivoCfg = caminhoConfig();
+  const arquivoLog = path.join(path.dirname(arquivoCfg), 'agente.log');
+  /** agente.log ao lado do config (máx. ~500 KB): registra início, saída e erros, para saber por que o agente fechou. */
+  const log = (m) => {
+    try {
+      try { if (statSync(arquivoLog).size > 500000) truncateSync(arquivoLog, 0); } catch { /* ainda não existe */ }
+      appendFileSync(arquivoLog, `${new Date().toISOString()} [pid ${process.pid}] ${m}\n`);
+    } catch { /* sem permissão de escrita: ignora */ }
+  };
+  process.on('uncaughtException', (e) => { console.error('Erro não tratado (o agente continua):', e); log(`erro não tratado: ${e?.stack ?? e}`); });
+  process.on('unhandledRejection', (e) => { console.error('Promessa rejeitada (o agente continua):', e); log(`promessa rejeitada: ${e?.stack ?? e}`); });
+  process.on('exit', (c) => log(`encerrado (código ${c})`));
+  for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP', 'SIGBREAK']) { try { process.on(sig, () => { log(`recebeu ${sig}`); process.exit(0); }); } catch { /* sinal não existe nesta plataforma */ } }
   const cfg = carregaConfig(arquivoCfg);
   let tunel;
-  criaServidor({ cfg, arquivoCfg, deps: { aoMudarSistema: () => tunel?.reinicia() } }).listen(cfg.porta, '127.0.0.1', () => {
+  const srv = criaServidor({ cfg, arquivoCfg, deps: { aoMudarSistema: () => tunel?.reinicia() } });
+  // porta já em uso = já existe um agente rodando (o vigia da tarefa subiu uma cópia a mais): sai quieto em vez de ficar uma janela inútil aberta
+  srv.on('error', (e) => { if (e?.code === 'EADDRINUSE') { log(`porta ${cfg.porta} já em uso: outro agente está rodando; esta cópia se encerra`); process.exit(0); } else { log(`erro do servidor: ${e?.stack ?? e}`); throw e; } });
+  srv.listen(cfg.porta, '127.0.0.1', () => {
     console.log(`Agente de impressão ${VERSAO} em http://127.0.0.1:${cfg.porta} (config: ${arquivoCfg})`);
+    log(`iniciado (versão ${VERSAO}, porta ${cfg.porta}, node ${process.version})`);
     cfg.versao = VERSAO; tunel = iniciaTunel({ cfg, aoCorrigirUrl: () => salvaConfig(cfg, arquivoCfg) }); // conecta ao sistema (se já houver endereço e token)
   });
 }

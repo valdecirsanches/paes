@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 376 — Agente 1.3.1: agente.log e saída silenciosa de cópia duplicada
+
+O vigia da tarefa agendada sobe `node server.js` a cada 5 min; se o agente atual não pertence à tarefa (ex.: aberto à mão ou pelo Reiniciar), nascia uma cópia que só logava EADDRINUSE e ficava como janela aberta. Agora a cópia sai (código 0) e tudo vai para `agente.log` ao lado do `config.json`.
+
 ## Fase 375 — Validação de CEP (8 dígitos) antes de autorizar
 
 `validaParaAutorizar` barra CEP de destinatário/entrega com ≠ 8 dígitos (causa da rejeição 225 na NF 71905: CEP `0622002`).
