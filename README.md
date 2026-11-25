@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 377 — Numeração de NFe por ambiente
+
+Causa do "buraco" ao voltar para produção: `tb_nfe_config.nfe_numero` era um só para os dois ambientes e a checagem `ocupado()` olhava todas as notas de `tb_nfe`. Agora: produção = `nfe_numero` (o sistema antigo também usa); homologação = `nfe_numero_hom` (criada no primeiro uso, começa igual à produção); `tb_nfe.nfe_ambiente` (1/2; vazio = produção) é gravado em `gravaAutorizada` e filtra `ocupado()`. `GET/PUT /nfe/config` expõem/gravam `nfe_numero` do ambiente em uso.
+
 ## Fase 376 — Agente 1.3.1: agente.log e saída silenciosa de cópia duplicada
 
 O vigia da tarefa agendada sobe `node server.js` a cada 5 min; se o agente atual não pertence à tarefa (ex.: aberto à mão ou pelo Reiniciar), nascia uma cópia que só logava EADDRINUSE e ficava como janela aberta. Agora a cópia sai (código 0) e tudo vai para `agente.log` ao lado do `config.json`.

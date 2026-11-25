@@ -36,6 +36,13 @@ export function garanteColunasApp() {
       const [[r]] = await pool.query("select count(*) as n from information_schema.columns where table_schema = database() and table_name = 'tb_nfe' and column_name = ?", [col]);
       if (!Number(r?.n)) await pool.query(`alter table tb_nfe add column ${col} varchar(500) null`);
     }
+    // numeração por ambiente: produção continua em tb_nfe_config.nfe_numero (o sistema antigo também usa); homologação tem contador próprio
+    const tem = async (tab, col) => Number((await pool.query('select count(*) as n from information_schema.columns where table_schema = database() and table_name = ? and column_name = ?', [tab, col]))[0][0]?.n);
+    if (!(await tem('tb_nfe_config', 'nfe_numero_hom'))) {
+      await pool.query('alter table tb_nfe_config add column nfe_numero_hom int not null default 0');
+      await pool.query('update tb_nfe_config set nfe_numero_hom = coalesce(nfe_numero, 0)');
+    }
+    if (!(await tem('tb_nfe', 'nfe_ambiente'))) await pool.query('alter table tb_nfe add column nfe_ambiente tinyint null'); // 1 produção / 2 homologação (notas antigas: vazio = produção)
   })().catch((e) => { colunasApp = null; throw e; });
   return colunasApp;
 }
@@ -82,7 +89,7 @@ const CFG_CAMPOS = ['razao', 'fantasia', 'cnpj', 'ie', 'im', 'cnae', 'nfe_crt', 
 router.get('/config', async (_req, res) => {
   const cfg = await getCfg();
   const { email_senha: senha, ...resto } = cfg;
-  res.json({ ...resto, tem_senha_email: Boolean(senha), api: { url: process.env.NFE_API_URL || 'http://127.0.0.1:5240', configurada: api.nfeApiConfigurada() } });
+  res.json({ ...resto, nfe_numero: ultimoNumero(cfg), tem_senha_email: Boolean(senha), api: { url: process.env.NFE_API_URL || 'http://127.0.0.1:5240', configurada: api.nfeApiConfigurada() } });
 });
 /** Ambiente de emissão em uso (1 produção / 2 homologação) — mostrado no menu do sistema. */
 router.get('/ambiente', async (_req, res) => {
@@ -99,7 +106,12 @@ router.put('/config', async (req, res) => {
     if (novo === 1 && atual !== 1 && req.body.confirmacao !== 'PRODUCAO') throw invalid('Para passar para PRODUÇÃO é preciso confirmar digitando PRODUCAO.');
   }
   if (b.email_senha === '' || b.email_senha === undefined) delete b.email_senha; // não apaga a senha por engano
-  if (b.nfe_numero !== undefined) { b.nfe_numero = Number(b.nfe_numero); if (!Number.isInteger(b.nfe_numero) || b.nfe_numero < 0) throw invalid('Número da última NFe inválido.'); }
+  if (b.nfe_numero !== undefined) {
+    b.nfe_numero = Number(b.nfe_numero); if (!Number.isInteger(b.nfe_numero) || b.nfe_numero < 0) throw invalid('Número da última NFe inválido.');
+    // o número digitado vale para o ambiente que ficará em uso (o do pedido, se estiver trocando)
+    const amb = b.nfe_configuracoes_webservice_ambiente ?? ambienteCfg(await getCfg());
+    if (Number(amb) !== 1) { b.nfe_numero_hom = b.nfe_numero; delete b.nfe_numero; }
+  }
   if (b.cnpj !== undefined && String(b.cnpj).replace(/\D/g, '').length !== 14) throw invalid('CNPJ do emitente precisa ter 14 dígitos.');
   if (!Object.keys(b).length) throw invalid('Nada para gravar.');
   const cfg = await getCfg();
@@ -287,6 +299,9 @@ router.delete('/:id', async (req, res) => {
 
 // ------------------------------------------------------------------ eventos fiscais modernizados (docs: EMISSAO_NFE.md)
 const ambienteCfg = (cfg) => (Number(cfg.nfe_configuracoes_webservice_ambiente) === 1 ? 1 : 2);
+/** Contador de numeração por ambiente: produção = nfe_numero (compartilhado com o sistema antigo); homologação = nfe_numero_hom. Guarda o ÚLTIMO emitido. */
+const campoNumero = (amb) => (Number(amb) === 1 ? 'nfe_numero' : 'nfe_numero_hom');
+const ultimoNumero = (cfg, amb = ambienteCfg(cfg)) => Number(cfg[campoNumero(amb)] || 0);
 const ehAdmin = (req) => String(req.user?.usuario ?? '').toUpperCase() === 'SANCHES';
 
 /** Devolução total (bDevolucaoNFeClick): cria a nota de entrada CFOP 1202 referenciando a original, que vira DEVOLVIDO. */
@@ -433,7 +448,7 @@ async function ajustaLocalPelaApi(cfg, { chave, numero, serie, d, xmlBase64 }) {
   const docId = d.id ?? d.documentoId;
   if (nfe.status_e === 'PENDENTE') {
     const doc = { chaveAcesso: chave, protocolo: d.protocolo ?? d.numeroProtocolo, dataAutorizacao: d.dataAutorizacao, motivoRetorno: d.motivoRetorno ?? d.motivo, xmlBase64 };
-    await gravaAutorizada(nfe.id, cfg, doc, { ambiente: ambienteCfg(cfg), numero, usuario: '', incrementa: numero > Number(cfg.nfe_numero || 0) });
+    await gravaAutorizada(nfe.id, cfg, doc, { ambiente: ambienteCfg(cfg), numero, usuario: '', incrementa: numero > ultimoNumero(cfg) });
     nfe.nfe_chave = chave; nfe.status_e = 'AUTORIZADA';
   } else if (nfe.status_e === 'AUTORIZADA' && String(nfe.nfe_chave ?? '').replace(/\D/g, '') !== chave) { // autorizada em outro sistema: completa chave e protocolo
     const q = dataHoraBr(d.dataAutorizacao);
@@ -572,7 +587,7 @@ router.get('/series', async (_req, res) => {
   const cfg = await getCfg(); const empId = await api.empresaId(cfg.cnpj);
   const r = await api.listaSeries(empId);
   if (r.status !== 200) throw new AppError(502, `A API de NF-e não listou as séries (HTTP ${r.status}).`);
-  res.json({ series: Array.isArray(r.body) ? r.body : r.body?.itens ?? r.body?.items ?? [], localNumero: Number(cfg.nfe_numero || 0), ambiente: ambienteCfg(cfg) });
+  res.json({ series: Array.isArray(r.body) ? r.body : r.body?.itens ?? r.body?.items ?? [], localNumero: ultimoNumero(cfg), ambiente: ambienteCfg(cfg) });
 });
 router.put('/series', async (req, res) => {
   const b = req.body ?? {};
@@ -582,7 +597,7 @@ router.put('/series', async (req, res) => {
   const ambiente = ambienteCfg(cfg);
   const r = await api.gravaSerie(empId, { modelo, serie, ambiente, proximoNumero: proximo });
   if (![200, 201, 204].includes(r.status)) throw new AppError(422, `A API recusou a numeração (HTTP ${r.status}): ${motivo(r.body)}`, { retorno: r.body });
-  if (b.sincronizaLocal !== false && serie === 1) await pool.query('update tb_nfe_config set nfe_numero = ? where id = ?', [proximo - 1, cfg.id]); // o local guarda "último emitido"
+  if (b.sincronizaLocal !== false && serie === 1) await pool.query(`update tb_nfe_config set ${campoNumero(ambiente)} = ? where id = ?`, [proximo - 1, cfg.id]); // o local guarda "último emitido" (do ambiente em uso)
   res.json({ ok: true, proximoNumero: proximo });
 });
 
@@ -1093,10 +1108,10 @@ async function gravaAutorizada(id, cfg, doc, { ambiente, numero, usuario, increm
   const quando = dataHoraBr(doc.dataAutorizacao);
   await tx(async (c) => {
     await c.query('update tb_nfe set ? where id = ?', [{
-      nfe_xml_file: xmlFile, nfe_pdf_file: pdfFile, nfe_xml_app: xmlFile, nfe_pdf_app: pdfFile, nfe: txt(doc.motivoRetorno) || 'Autorizado o uso da NF-e', nfe_chave: doc.chaveAcesso, status_e: 'AUTORIZADA',
+      nfe_xml_file: xmlFile, nfe_pdf_file: pdfFile, nfe_xml_app: xmlFile, nfe_pdf_app: pdfFile, nfe: txt(doc.motivoRetorno) || 'Autorizado o uso da NF-e', nfe_chave: doc.chaveAcesso, status_e: 'AUTORIZADA', nfe_ambiente: Number(ambiente) === 1 ? 1 : 2,
       nfe_numero: Number(String(doc.chaveAcesso).slice(25, 34)) || numero, usuario_autorizacao_nfe: await usuarioNfe(pool, usuario), nfe_recibo_datahora: quando, nfe_protocolo: txt(doc.protocolo), nfe_protocolo_data_hora: quando,
     }, id]);
-    if (incrementa) await c.query('update tb_nfe_config set nfe_numero = greatest(nfe_numero, ?) where id = ?', [numero, cfg.id]); // incrementa o número da nota fiscal
+    if (incrementa) { const col = campoNumero(ambiente); await c.query(`update tb_nfe_config set ${col} = greatest(${col}, ?) where id = ?`, [numero, cfg.id]); } // incrementa o número da nota fiscal
     await evento(c, id, 'AUTORIZACAO', { resposta: txt(doc.motivoRetorno) || 'Autorizado o uso da NF-e', retorno: JSON.stringify({ ...doc, xmlBase64: undefined, danfePdfBase64: undefined }), obs: `NFe ${numero}`, xml: xmlFile });
   });
   if ((!xmlFile || !pdfFile) && doc.id) { // a resposta veio sem XML ou DANFE: busca na API para o sistema antigo achar os dois arquivos nos campos da nota
@@ -1151,7 +1166,8 @@ async function autorizaUma(id, usuario, ibsCbs) {
   const ocupado = async (n) => {
     const pn = await api.porNumero(empId, n, serie);
     if (pn.body?.existe && ['Autorizado', 'Cancelado', 'Inutilizado', 'Denegado'].includes(pn.body.status)) return `API (${pn.body.status})`;
-    const [[l]] = await pool.query("select id from tb_nfe where nfe_numero = ? and nfe_serie = ? and id <> ? and status_e in ('AUTORIZADA','CANCELADA','INUTILIZADA','DEVOLVIDA') limit 1", [n, serie, id]);
+    // só conta nota do MESMO ambiente (nota de homologação não ocupa número de produção); sem marca = produção (notas antigas)
+    const [[l]] = await pool.query("select id from tb_nfe where nfe_numero = ? and nfe_serie = ? and id <> ? and status_e in ('AUTORIZADA','CANCELADA','INUTILIZADA','DEVOLVIDA') and coalesce(nfe_ambiente, 1) = ? limit 1", [n, serie, id, ambienteCfg(cfg)]);
     return l ? `nota ${l.id} do sistema` : null;
   };
   const livre = async (ini) => {
@@ -1159,7 +1175,7 @@ async function autorizaUma(id, usuario, ibsCbs) {
     for (let k = 0; k < 30; k++, n++) { const o = await ocupado(n); if (!o) return { n, pulados }; pulados.push(`${n} (${o})`); }
     throw invalid(`Encontrei 30 números seguidos já usados a partir de ${ini}. Confira "Número da última NFe emitida" em Configurações.`);
   };
-  let { n: numero, pulados } = await livre(Number(cfg.nfe_numero || 0) + 1);
+  let { n: numero, pulados } = await livre(ultimoNumero(cfg) + 1);
   if (pulados.length) log.push(`Número(s) já usado(s) por outro terminal, pulado(s): ${pulados.join(', ')}. Usando ${numero}.`);
   const ncmsRuins = [];
   for (const n of [...new Set(itens.map((i) => String(i.produto_ncm ?? '').replace(/\D/g, '')))]) {
