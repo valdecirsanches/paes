@@ -202,7 +202,7 @@ export default function App() {
               </button>
               {aberto && (
                 <ul role="menu">
-                  {m.itens.filter(([k]) => !['dispositivos', 'auditoria', 'usuarios', 'telaprincipal', 'vozassistente'].includes(k) || usuario?.admin).map(([k, r, ic]) => (TELAS[k]
+                  {m.itens.filter(([k]) => !['dispositivos', 'usuarios', 'telaprincipal', 'vozassistente'].includes(k) || usuario?.admin).map(([k, r, ic]) => (TELAS[k]
                     ? <li key={k} role="none"><button role="menuitem" className={abertas.includes(k) ? 'aberta' : ''} onClick={() => { setMenuAberto(null); abrir(k); }}><span className="mi" aria-hidden="true">{ic}</span><span className="rot">{r}</span>{abertas.includes(k) && <i className="ponto" title="Aberta" />}</button></li>
                     : <li key={k} role="none"><span role="menuitem" aria-disabled="true" className="desab" title="Próxima fase"><span className="mi" aria-hidden="true">{ic}</span><span className="rot">{r}</span><em>em breve</em></span></li>))}
                 </ul>

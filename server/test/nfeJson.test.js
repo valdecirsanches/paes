@@ -48,3 +48,12 @@ test('desativação: texto do aviso', async () => {
   assert.equal(textoDesativacao({ itens: 0, dias: 0, preservados: 0 }), null);
   assert.match(textoDesativacao({ itens: 12, dias: 3, preservados: 1 }), /12 item\(ns\) em 3 dia\(s\); 1 item/);
 });
+
+test('auditoria: gravar configuração de impressão é registrado; só a leitura é ignorada', async () => {
+  const { deveRegistrar } = await import('../src/services/auditoria.js');
+  assert.equal(deveRegistrar('GET', '/api/impressao/status', 200), false);
+  assert.equal(deveRegistrar('POST', '/api/impressao/config', 200), true);
+  assert.equal(deveRegistrar('PUT', '/api/impressao/destinos', 200), true);
+  assert.equal(deveRegistrar('DELETE', '/api/status/5/diaria', 200), true);
+  assert.equal(deveRegistrar('GET', '/api/auditoria', 200), false);
+});

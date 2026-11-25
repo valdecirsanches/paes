@@ -6,7 +6,7 @@ const hoje = () => { const d = new Date(); return `${d.getFullYear()}-${String(d
 const dh = (v) => (v ? String(v).replace('T', ' ').slice(0, 19) : '');
 const LIM = 200;
 
-/** Auditoria (só administrador): tudo o que foi feito no app — quem, quando, de onde, o quê e o resultado. */
+/** Auditoria (todos os usuários, SOMENTE LEITURA): tudo o que foi feito no app — quem, quando, de onde, o quê e o resultado. */
 export default function Auditoria() {
   const [f, setF] = useState({ de: hoje(), ate: hoje(), usuario: '', entidade: '', metodo: '', idRegistro: '', q: '', erros: false });
   const [dados, setDados] = useState(null);
@@ -35,7 +35,7 @@ export default function Auditoria() {
   const total = dados?.total ?? 0;
   return (
     <section className="aud" ref={raiz}>
-      <header><h2>🕵️ Auditoria</h2><small>Tudo o que é feito no app fica gravado (usuário, dispositivo, IP, rota, dados enviados sem senhas, resultado). Só o administrador vê.</small></header>
+      <header><h2>🕵️ Auditoria</h2><small>Tudo o que é feito no app fica gravado (usuário, dispositivo, IP, rota, dados enviados sem senhas, resultado). Aberta a todos os usuários, somente leitura.</small></header>
       <form className="aud-filtros" onSubmit={(e) => { e.preventDefault(); busca(0); }}>
         <label>De<input type="date" value={f.de} onChange={set('de')} /></label>
         <label>Até<input type="date" value={f.ate} onChange={set('ate')} /></label>

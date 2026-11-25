@@ -9,6 +9,7 @@ import { atualizaStatus, getStatus } from '../services/status.js';
 import { produtoPorCodigo } from '../services/produtos.js';
 import { ajustaCobranca, diffDiaria } from '../services/diaria.js';
 import { logDiaria } from '../services/log.js';
+import { audita } from '../services/auditoria.js';
 import { limpaProgramacaoFutura } from '../services/desativaProgramacao.js';
 
 const router = Router();
@@ -216,6 +217,7 @@ router.delete('/status/:id/diaria', async (req, res) => {
     await c.query('delete from tb_status where id = ? and not exists (select 1 from tb_diaria d where d.id_status = ?)', [st.id, st.id]); // o dia escolhido sai mesmo sem itens
     return x;
   });
+  audita(res, { acao: 'Apagou a programação diária da unidade do dia escolhido em diante', itensApagados: r.itens, diasRemovidosDaLista: r.dias, itensPreservados: r.preservados, preservadosIds: r.preservadosIds, itens: r.lista });
   res.json({ ok: true, apagados: r.itens, dias: r.dias, preservados: r.preservados });
 });
 

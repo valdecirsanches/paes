@@ -4,6 +4,7 @@ import { invalid, notFound } from '../errors.js';
 import { tx } from '../db.js';
 import { mudaClienteUnidade } from '../services/mudaCliente.js';
 import { emUso, idValido, limpaCampos } from '../services/campos.js';
+import { audita } from '../services/auditoria.js';
 import { limpaProgramacaoFutura, textoDesativacao } from '../services/desativaProgramacao.js';
 
 // Cadastro de clientes (u_clientes): clientes (tb_clientes), unidades (tb_unidades) e a lista de produtos do cliente.
@@ -93,7 +94,9 @@ router.put('/unidades/:id', async (req, res) => {
   if (!r.affectedRows) throw notFound('Unidade');
   const [[u]] = await pool.query('select * from tb_unidades where id = ?', [id]);
   // desativada: tenha ou não programação, apaga a programação diária de hoje em diante
-  const aviso = desativa ? textoDesativacao(await tx((c) => limpaProgramacaoFutura(c, [id], req.userId))) : null;
+  let efeito = null; if (desativa) efeito = await tx((c) => limpaProgramacaoFutura(c, [id], req.userId));
+  if (efeito) audita(res, { acao: 'Unidade desativada: programação diária futura apagada', itensApagados: efeito.itens, diasRemovidosDaLista: efeito.dias, itensPreservados: efeito.preservados, itens: efeito.lista });
+  const aviso = efeito ? textoDesativacao(efeito) : null;
   res.json(aviso ? { ...u, _aviso: aviso } : u);
 });
 // Muda o cliente dono da unidade (histórico fica com o cliente antigo)
@@ -152,10 +155,12 @@ router.put('/:id', async (req, res) => {
   if (!r.affectedRows) throw notFound('Cliente');
   const [[c]] = await pool.query('select * from tb_clientes where id = ?', [id]);
   // cliente inativado: o mesmo vale para todas as unidades dele
-  const aviso = desativa ? textoDesativacao(await tx(async (cx) => {
+  const efeito = desativa ? await tx(async (cx) => {
     const [us] = await cx.query('select id from tb_unidades where id_cliente = ?', [id]);
     return limpaProgramacaoFutura(cx, us.map((x) => x.id), req.userId);
-  })) : null;
+  }) : null;
+  if (efeito) audita(res, { acao: 'Cliente inativado: programação diária futura das unidades apagada', itensApagados: efeito.itens, diasRemovidosDaLista: efeito.dias, itensPreservados: efeito.preservados, itens: efeito.lista });
+  const aviso = efeito ? textoDesativacao(efeito) : null;
   res.json(aviso ? { ...lePessoa(c), _aviso: aviso } : lePessoa(c));
 });
 router.delete('/:id', async (req, res) => {

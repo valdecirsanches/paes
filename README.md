@@ -1020,6 +1020,13 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 384 — Auditoria: leitura para todos, lacunas fechadas
+
+- `GET /api/auditoria*` aberto a qualquer usuário logado (somente leitura; sem rotas de alteração/exclusão).
+- `IGNORAR_GET` em `services/auditoria.js`: só a LEITURA de `/api/impressao/(status|destinos|config)` é ignorada; POST/PUT/DELETE passam a ser registrados.
+- `audita(res, efeito)`: o handler descreve o efeito em cascata, gravado em `detalhes.efeito` (usado em apagar programação e desativar unidade/cliente). Totais de operações em lote entram em `detalhes.resposta`.
+- Toda gravação (POST/PUT/PATCH/DELETE) em `/api` é auditada pelo middleware global; só ficam de fora health, `/dispositivo`, `/auth/me` e a própria consulta da auditoria.
+
 ## Fase 383 — Apagar programação: dia escolhido + dias seguintes
 
 `DELETE /api/status/:id/diaria` usa `limpaProgramacaoFutura(c, [id_unidade], user, data_do_status)`: apaga `tb_diaria` de `data >=` e os `tb_status` vazios; preserva itens cobrados e informa.

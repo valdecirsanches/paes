@@ -7,7 +7,9 @@ const SEGREDO = /senha|password|passwd|token|secret|authorization|cookie|pfx|cer
 const LIMITE_TEXTO = 300;
 const LIMITE_DETALHES = 8000;
 /** Rotas que não valem registro (ruído ou a própria consulta da auditoria). */
-const IGNORAR = [/^\/api\/health/, /^\/api\/dispositivo$/, /^\/api\/auditoria(\/|$)/, /^\/api\/auth\/me/, /^\/api\/impressao\/(status|destinos|config)/];
+const IGNORAR = [/^\/api\/health/, /^\/api\/dispositivo$/, /^\/api\/auditoria(\/|$)/, /^\/api\/auth\/me/];
+/** Só a LEITURA dessas é ruído (a tela consulta sempre); GRAVAR configuração/destinos de impressão (POST/PUT/DELETE) é auditado. */
+const IGNORAR_GET = [/^\/api\/impressao\/(status|destinos|config)/];
 /** GET que importam (documentos fiscais, relatórios, arquivos). Os demais GET só entram se falharem com 5xx. */
 const GET_RELEVANTE = [/^\/api\/nfe\/\d+\/(danfe|xml|xml-legado|arquivos|eventos)/, /^\/api\/nfe\/eventos\//, /^\/api\/relatorios/, /^\/api\/nfs/, /\/(exportar|csv|impressao)(\/|$|\?)/];
 
@@ -38,6 +40,7 @@ export const ipDe = (req) => String(req.headers['cf-connecting-ip'] ?? String(re
 
 export const deveRegistrar = (metodo, caminho, status) => {
   if (IGNORAR.some((r) => r.test(caminho))) return false;
+  if ((metodo === 'GET' || metodo === 'HEAD') && IGNORAR_GET.some((r) => r.test(caminho))) return false;
   if (metodo !== 'GET' && metodo !== 'HEAD' && metodo !== 'OPTIONS') return true;
   if (metodo === 'OPTIONS' || metodo === 'HEAD') return false;
   return GET_RELEVANTE.some((r) => r.test(caminho)) || status >= 500;
@@ -80,6 +83,9 @@ export async function registra(l) {
   } catch (e) { console.warn(`[auditoria] não gravou: ${e.message}`); }
 }
 
+/** O handler descreve o EFEITO da operação (o que foi apagado/alterado em cascata); entra na trilha em detalhes.efeito. */
+export function audita(res, efeito) { res.locals.auditoria = { ...(res.locals.auditoria ?? {}), ...efeito }; }
+
 /** Middleware: montar no INÍCIO de /api (antes de dispositivo/login) para também registrar negações e logins. */
 export function auditoria(req, res, next) {
   if (process.env.AUDITORIA === '0' || req.app.locals.exigirLogin === false) return next(); // exigirLogin=false só nos testes
@@ -95,9 +101,10 @@ export function auditoria(req, res, next) {
     if (req.body && Object.keys(req.body).length) detalhes.corpo = login ? { usuario: req.body.usuario } : req.body;
     if (Object.keys(req.query ?? {}).length) detalhes.consulta = req.query;
     if (res.statusCode < 400 && corpoResp && typeof corpoResp === 'object' && !Array.isArray(corpoResp)) {
-      const r = {}; for (const k of ['id', 'ok', 'numero', 'status', 'mensagem']) if (corpoResp[k] !== undefined) r[k] = corpoResp[k];
+      const r = {}; for (const k of ['id', 'ok', 'numero', 'status', 'mensagem', 'criados', 'atualizados', 'apagados', 'dias', 'preservados', 'unidades', 'verificados', 'afetados', 'removidos']) if (corpoResp[k] !== undefined) r[k] = corpoResp[k];
       if (Object.keys(r).length) detalhes.resposta = r;
     }
+    if (res.locals?.auditoria) detalhes.efeito = res.locals.auditoria;
     registra({
       idUsuario: req.user?.id, usuario: req.user?.usuario ?? (login ? String(req.body?.usuario ?? '') : ''), dispositivo: req.dispositivo ?? '', ip: ipDe(req),
       metodo: req.method, rota: req.originalUrl, entidade: login ? 'login' : entidade, acao: login ? `LOGIN ${res.statusCode < 400 ? 'ok' : 'falhou'}` : acao, idRegistro, status: res.statusCode, duracao: Date.now() - t0,

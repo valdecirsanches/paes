@@ -8,7 +8,7 @@ const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0
 /** @returns {Promise<{itens:number, dias:number, preservados:number}>} */
 export async function limpaProgramacaoFutura(c, idsUnidade, userId, hoje = new Date(), motivo = 'unidade/cliente desativado') {
   const ids = (idsUnidade ?? []).map(Number).filter((n) => Number.isInteger(n) && n > 0);
-  if (!ids.length) return { itens: 0, dias: 0, preservados: 0 };
+  if (!ids.length) return { itens: 0, dias: 0, preservados: 0, lista: [], preservadosIds: [] };
   const dia = typeof hoje === 'string' ? hoje.slice(0, 10) : iso(hoje); // data ISO ou Date: apaga desta data em diante
   const [itens] = await c.query('select * from tb_diaria where id_unidade in (?) and data >= ? for update', [ids, dia]);
   const cobrado = (i) => Number(i.qtde_cobrado) > 0 || String(i.comandas ?? '').trim() !== '';
@@ -22,7 +22,7 @@ export async function limpaProgramacaoFutura(c, idsUnidade, userId, hoje = new D
   // dia sem nenhum item restante: sai da lista do dia (tb_status)
   const [r] = await c.query(
     'delete s from tb_status s where s.id_unidade in (?) and s.data >= ? and not exists (select 1 from tb_diaria d where d.id_status = s.id)', [ids, dia]);
-  return { itens: apagar.length, dias: r.affectedRows ?? 0, preservados };
+  return { itens: apagar.length, dias: r.affectedRows ?? 0, preservados, lista: apagar.slice(0, 100).map((i) => `${String(i.data).slice(0, 10)} ${String(i.hora).slice(0, 5)} un${i.id_unidade} ${i.id_produto} ${i.produto_descricao_expedicao}`), preservadosIds: itens.filter(cobrado).slice(0, 50).map((i) => i.id) };
 }
 
 export const textoDesativacao = (r) => (r.itens || r.dias

@@ -4,10 +4,8 @@ import { AppError, invalid } from '../errors.js';
 import { isIsoDate } from '../rules.js';
 import { garanteTabela, registra, ipDe } from '../services/auditoria.js';
 
-// Consulta da trilha de auditoria (só o administrador) e entrada de eventos que acontecem só no navegador (impressão direta, N:…).
+// Consulta da trilha de auditoria (qualquer usuário logado, SOMENTE LEITURA: não há rota para alterar/apagar registros) e entrada de eventos que acontecem só no navegador (impressão direta, N:…).
 const router = Router();
-const ehAdmin = (req) => String(req.user?.usuario ?? '').toUpperCase() === 'SANCHES';
-const soAdmin = (req, _res, next) => (ehAdmin(req) ? next() : next(new AppError(403, 'Só o administrador consulta a auditoria.')));
 
 /** Eventos do navegador: o cliente informa o que fez (ex.: "imprimiu DANFE no agente"). Usuário/IP/dispositivo vêm da sessão, não do corpo. */
 router.post('/evento', async (req, res) => {
@@ -36,7 +34,7 @@ function filtros(q) {
 }
 const COLS = 'id, data_hora, id_usuario, usuario, dispositivo, ip, metodo, rota, entidade, acao, id_registro, status, duracao_ms, erro, origem';
 
-router.get('/', soAdmin, async (req, res) => {
+router.get('/', async (req, res) => {
   await garanteTabela();
   const { sql, args } = filtros(req.query);
   const limite = Math.min(Math.max(Number(req.query.limite) || 200, 1), 1000); const desloc = Math.max(Number(req.query.desloc) || 0, 0);
@@ -46,7 +44,7 @@ router.get('/', soAdmin, async (req, res) => {
   const [entidades] = await pool.query("select distinct entidade from tb_auditoria where entidade <> '' order by entidade limit 100");
   res.json({ total, linhas, usuarios: usuarios.map((u) => u.usuario), entidades: entidades.map((e) => e.entidade) });
 });
-router.get('/export.csv', soAdmin, async (req, res) => {
+router.get('/export.csv', async (req, res) => {
   await garanteTabela();
   const { sql, args } = filtros(req.query);
   const [l] = await pool.query(`select ${COLS}, detalhes from tb_auditoria ${sql} order by id desc limit 50000`, args);
@@ -55,7 +53,7 @@ router.get('/export.csv', soAdmin, async (req, res) => {
   const csv = [cab.join(';'), ...l.map((r) => cab.map((c) => cel(r[c])).join(';'))].join('\r\n');
   res.type('text/csv; charset=utf-8').set('Content-Disposition', 'attachment; filename="auditoria.csv"').send(`﻿${csv}`);
 });
-router.get('/:id', soAdmin, async (req, res) => {
+router.get('/:id', async (req, res) => {
   await garanteTabela();
   const [[r]] = await pool.query('select * from tb_auditoria where id = ?', [Number(req.params.id) || 0]);
   if (!r) throw new AppError(404, 'Registro não encontrado.');
