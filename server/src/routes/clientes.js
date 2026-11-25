@@ -75,6 +75,7 @@ router.post('/unidades', async (req, res) => {
   const [[c]] = await pool.query('select id from tb_clientes where id = ?', [b.id_cliente]);
   if (!c) throw notFound('Cliente');
   if (!b.nome) throw invalid('Informe o nome da unidade.');
+  if (!/^[A-Za-z]{2}$/.test(String(b.uf ?? '').trim())) throw invalid('Informe a UF da unidade (2 letras): ela sai nos dados adicionais da NFe.');
   if (b.ativo === undefined) b.ativo = 'True'; // TBUNINewRecord
   const [r] = await pool.query('insert into tb_unidades set ?', [b]);
   const [[novo]] = await pool.query('select * from tb_unidades where id = ?', [r.insertId]);
@@ -84,6 +85,7 @@ router.put('/unidades/:id', async (req, res) => {
   const id = idValido(req.params.id, 'Unidade');
   const b = limpaCampos(req.body, UNI, { rotulos: UNI_ROT });
   if ('nome' in b && !b.nome) throw invalid('O nome da unidade não pode ficar vazio.');
+  if ('uf' in b && !/^[A-Za-z]{2}$/.test(String(b.uf ?? '').trim())) throw invalid('A UF da unidade deve ter 2 letras (ela sai nos dados adicionais da NFe).');
   if (!Object.keys(b).length) throw invalid('Nada para gravar.');
   const [r] = await pool.query('update tb_unidades set ? where id = ?', [b, id]);
   if (!r.affectedRows) throw notFound('Unidade');

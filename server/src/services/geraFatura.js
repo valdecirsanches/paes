@@ -12,6 +12,16 @@ const UF_IBGE = {
   RO: '11', AC: '12', AM: '13', RR: '14', PA: '15', AP: '16', TO: '17', MA: '21', PI: '22', CE: '23', RN: '24', PB: '25', PE: '26',
   AL: '27', SE: '28', BA: '29', MG: '31', ES: '32', RJ: '33', SP: '35', PR: '41', SC: '42', RS: '43', MS: '50', MT: '51', GO: '52', DF: '53',
 };
+const vazio = (v) => { const t = String(v ?? '').trim(); return !t || /^(null|undefined)$/i.test(t); };
+/** Dados da unidade que a NFe imprime em "Entrega:" e que estiverem faltando (endereço, cidade, UF e CEP são obrigatórios). */
+export function faltasEnderecoUnidade(u) {
+  return [['endereco', 'o endereço'], ['cidade', 'a cidade'], ['uf', 'a UF'], ['cep', 'o CEP']].filter(([k]) => vazio(u?.[k])).map(([, t]) => t);
+}
+/** "Entrega: nome;endereço, nº - bairro;cidade/UF CEP:00000-000" (número vazio vira S/N; bairro vazio é omitido). */
+export function textoEntregaUnidade(u) {
+  const t = (v) => String(v ?? '').trim();
+  return `Entrega: ${t(u.nome)};${t(u.endereco)}, ${vazio(u.numero) ? 'S/N' : t(u.numero)}${vazio(u.bairro) ? '' : ` - ${t(u.bairro)}`};${t(u.cidade)}/${t(u.uf)} CEP:${t(u.cep)}`;
+}
 export const ufIbge = (uf) => UF_IBGE[String(uf ?? '').trim().toUpperCase()] ?? '0';
 
 /** truncate(x, 3) do MySQL (para zero). */
@@ -110,7 +120,9 @@ export async function geraFatura(c, { comandas, idCliente, idUnidade, saida, usu
   const cfop = cfopDoCliente(cli.uf);
   const par = (a, b) => (a ? a : b);
   // primeiro os dados do cliente/unidade (entrega), depois "Informações para o corpo da NFe" do cadastro do cliente; as AFs entram por último (nfeJson.js)
-  const infAdFisco = `Entrega: ${uni.nome};${uni.endereco}, ${uni.numero} - ${uni.bairro};${uni.cidade}/${uni.uf} CEP:${uni.cep}`
+  const faltas = faltasEnderecoUnidade(uni);
+  if (faltas.length) throw invalid(`A unidade "${uni.nome}" está sem ${faltas.join(', ')} no cadastro (Cadastros › Clientes › Unidades). Esses dados saem nos dados adicionais da NFe: corrija e gere a nota de novo.`);
+  const infAdFisco = textoEntregaUnidade(uni)
     + [cli.informacoes_nf1, cli.informacoes_nf2].map((x) => (x ? `;${x}` : '')).join('');
   // sem o código do município a SEFAZ rejeita a NF-e: melhor recusar agora do que gravar "0" (o Delphi gravava 0)
   const cidIbge = codigoMunicipio(cli.uf, cli.cidade);

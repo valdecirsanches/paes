@@ -17,3 +17,11 @@ test('AFs dos itens entram nos dados adicionais sem duplicar', async () => {
   assert.equal(informacoesComTudo({ texto_corpo: 'Entrega manhã.' }, [{ ordem_compra: '123' }]), 'Entrega manhã. AF: 123');
   assert.equal(informacoesComTudo({ texto_corpo: 'Ref. AF 123 conforme pedido' }, [{ ordem_compra: '123' }]), 'Ref. AF 123 conforme pedido');
 });
+
+test('unidade sem UF/cidade/CEP é apontada e o texto de entrega não imprime "null"', async () => {
+  const { faltasEnderecoUnidade, textoEntregaUnidade } = await import('../src/services/geraFatura.js');
+  assert.deepEqual(faltasEnderecoUnidade({ endereco: 'Av X', cidade: 'Santana', uf: null, cep: '' }), ['a UF', 'o CEP']);
+  assert.deepEqual(faltasEnderecoUnidade({ endereco: 'Av X', cidade: 'S', uf: 'SP', cep: '1' }), []);
+  const t = textoEntregaUnidade({ nome: 'IFF', endereco: 'Av X', numero: null, bairro: '', cidade: 'Santana', uf: 'SP', cep: '06543-320' });
+  assert.equal(t, 'Entrega: IFF;Av X, S/N;Santana/SP CEP:06543-320');
+});

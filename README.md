@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 372 — Endereço da unidade obrigatório na NFe
+
+`faltasEnderecoUnidade`/`textoEntregaUnidade` (geraFatura.js): linha "Entrega:" dos dados adicionais usa os dados da unidade; faltando endereço/cidade/UF/CEP a geração é recusada com mensagem; UF obrigatória (2 letras) em POST/PUT de unidade.
+
 ## Fase 371 — Aviso de AF em nota já autorizada
 
 As AFs entram em `informacoesComplementares` apenas na montagem do JSON de autorização (`informacoesComTudo`). Em nota autorizada a tela avisa que o DANFE não muda.
