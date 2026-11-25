@@ -966,10 +966,35 @@ export default function NFe({ onFechar }) {
                       {/* Ficha do item: tudo à vista, agrupado por assunto (antes: 5 abas com campos posicionados e repetidos) */}
                       <div className="nfe-p5 fi">
                         <div className="nfe-p5-tabs" role="tablist">
-                          {[['produto', '📦 Produto'], ['trib', '🏷 Tributos']].map(([k, r]) => <button key={k} role="tab" aria-selected={itemTab === k} className={itemTab === k ? 'on' : ''} onClick={() => setItemTab(k)}>{r}</button>)}
+                          {[['produto', '📦 Produto'], ['trib', '🏷 Tributos'], ['dest', '👤 Destinatário']].map(([k, r]) => <button key={k} role="tab" aria-selected={itemTab === k} className={itemTab === k ? 'on' : ''} onClick={() => setItemTab(k)}>{r}</button>)}
                         </div>
                         <div className="fi-rolagem">
-                          {!item && <p className="vazio">Sem item.</p>}
+                          {itemTab === 'dest' && <section className="fi-sec">
+                            <h5>👤 Dados do destinatário <small>{ro ? '(nota já emitida: somente leitura)' : '(grave no ✔ Gravar abaixo)'}</small></h5>
+                            <div className="fi-grid">
+                              <label className="fi-c s2"><span>Razão social / Nome</span><input value={v.cliente_razao_social ?? ''} readOnly={ro} onChange={(e) => ed('cliente_razao_social', e.target.value)} /></label>
+                              <label className="fi-c"><span>CNPJ / CPF</span><input value={v.cliente_cnpj ?? ''} readOnly={ro} onChange={(e) => ed('cliente_cnpj', e.target.value)} /></label>
+                              <label className="fi-c"><span>Inscrição estadual</span><input value={v.cliente_ie ?? ''} readOnly={ro} onChange={(e) => ed('cliente_ie', e.target.value)} /></label>
+                              <label className="fi-c s2"><span>Endereço</span><input value={v.cliente_endereco ?? ''} readOnly={ro} onChange={(e) => ed('cliente_endereco', e.target.value)} /></label>
+                              <label className="fi-c"><span>Nº</span><input value={v.cliente_endereco_numero ?? ''} readOnly={ro} onChange={(e) => ed('cliente_endereco_numero', e.target.value)} /></label>
+                              <label className="fi-c"><span>Bairro</span><input value={v.cliente_bairro ?? ''} readOnly={ro} onChange={(e) => ed('cliente_bairro', e.target.value)} /></label>
+                              <label className="fi-c"><span>Cidade</span><input value={v.cliente_cidade ?? ''} readOnly={ro} onChange={(e) => ed('cliente_cidade', e.target.value)} /></label>
+                              <label className="fi-c"><span>UF</span><input value={v.cliente_uf ?? ''} maxLength={2} readOnly={ro} onChange={(e) => ed('cliente_uf', e.target.value)} /></label>
+                              <label className="fi-c"><span>CEP</span><input value={v.cliente_cep ?? ''} readOnly={ro} onChange={(e) => ed('cliente_cep', e.target.value)} /></label>
+                              <label className="fi-c"><span>Telefone</span><input value={v.cliente_fone ?? ''} readOnly={ro} onChange={(e) => ed('cliente_fone', e.target.value)} /></label>
+                            </div>
+                            <h5>📍 Local de entrega</h5>
+                            <div className="fi-grid">
+                              <label className="fi-c s2"><span>Endereço</span><input value={v.entrega_endereco ?? ''} readOnly={ro} onChange={(e) => ed('entrega_endereco', e.target.value)} /></label>
+                              <label className="fi-c"><span>Nº</span><input value={v.entrega_numero ?? ''} readOnly={ro} onChange={(e) => ed('entrega_numero', e.target.value)} /></label>
+                              <label className="fi-c"><span>Bairro</span><input value={v.entrega_bairro ?? ''} readOnly={ro} onChange={(e) => ed('entrega_bairro', e.target.value)} /></label>
+                              <label className="fi-c"><span>Cidade</span><input value={v.entrega_cidade ?? ''} readOnly={ro} onChange={(e) => ed('entrega_cidade', e.target.value)} /></label>
+                              <label className="fi-c"><span>UF</span><input value={v.entrega_uf ?? ''} maxLength={2} readOnly={ro} onChange={(e) => ed('entrega_uf', e.target.value)} /></label>
+                              <label className="fi-c"><span>CEP</span><input value={v.entrega_cep ?? ''} readOnly={ro} onChange={(e) => ed('entrega_cep', e.target.value)} /></label>
+                            </div>
+                            {!ro && <div className="fi-acoes"><button type="button" className="bt prim" disabled={!sujo || ocupado} onClick={salvar}>✔ Gravar destinatário</button> <button type="button" className="bt" disabled={!sujo} onClick={() => setDraft({})}>✖ Cancelar</button></div>}
+                          </section>}
+                          {!item && itemTab !== 'dest' && <p className="vazio">Sem item.</p>}
                           {item && (<>
                             {itemTab === 'produto' && <section className="fi-sec">
                               <h5>📦 Produto <small>{iv.produto_codigo ?? ''}</small></h5>

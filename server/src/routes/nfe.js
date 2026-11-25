@@ -7,6 +7,8 @@ import { AppError, invalid, notFound, pick } from '../errors.js';
 import { isIsoDate } from '../rules.js';
 import * as api from '../services/nfeApi.js';
 import { consultaNcm, pesquisaNcm, ncmDoTributo } from '../services/ncm.js';
+import { codigoMunicipio } from '../services/municipios.js';
+import { ufIbge } from '../services/geraFatura.js';
 import { lerDanfeCfg, gravarDanfeCfg, gravarLogo, lerLogo, removerLogo, ORIENTACOES } from '../services/danfeStore.js';
 import { danfeDoXml, danfeLocalLigado, achaXmlLocal } from '../services/danfeLocal.js';
 import { lerA3, gravarA3, limparA3 } from '../services/a3Store.js';
@@ -753,7 +755,7 @@ const SQL_ITENS_COMANDA = `select i.*, truncate(truncate(i.preco, 3) * truncate(
 router.get('/:id/comandas', async (req, res) => { const [r] = await pool.query(SQL_COMANDAS_DA_NOTA, [idValido(req.params.id)]); res.json(r); });
 router.get('/comandas/:cid/itens', async (req, res) => { const [r] = await pool.query(SQL_ITENS_COMANDA, [idValido(req.params.cid, 'Comanda')]); res.json(r); });
 
-const NFE_EDITAVEIS = ['cliente_uf_icms', 'substituicao_tributaria_ie', 'substituicao_tributaria_valor', 'substituicao_tributaria_valor_base', 'substituicao_tributaria_aliquota', 'substituicao_tributaria', 'servicos_valor', 'iss_aliquota', 'iss_valor', 'faturamento_id', 'valor_extenso', 'permite_reaproveitamento_icms', 'aliquota_reaproveitamento_icms', 'id_fatura', 'transportadora_cidade_ibge', 'transportadora_uf_ibge', 'condicao_pedido', 'data_emissao', 'data_saida', 'hora_saida', 'cfop_codigo', 'cfop_descricao', 'cliente_pessoa', 'cliente_razao_social', 'cliente_nome_fantasia', 'cliente_cnpj',
+const NFE_EDITAVEIS = ['cliente_razao_social', 'cliente_cnpj', 'cliente_uf_icms', 'substituicao_tributaria_ie', 'substituicao_tributaria_valor', 'substituicao_tributaria_valor_base', 'substituicao_tributaria_aliquota', 'substituicao_tributaria', 'servicos_valor', 'iss_aliquota', 'iss_valor', 'faturamento_id', 'valor_extenso', 'permite_reaproveitamento_icms', 'aliquota_reaproveitamento_icms', 'id_fatura', 'transportadora_cidade_ibge', 'transportadora_uf_ibge', 'condicao_pedido', 'data_emissao', 'data_saida', 'hora_saida', 'cfop_codigo', 'cfop_descricao', 'cliente_pessoa', 'cliente_razao_social', 'cliente_nome_fantasia', 'cliente_cnpj',
   'cliente_endereco', 'cliente_endereco_numero', 'cliente_bairro', 'cliente_cidade', 'cliente_cidade_ibge', 'cliente_uf', 'cliente_uf_ibge', 'cliente_cep', 'cliente_im', 'cliente_ie', 'cliente_ddd', 'cliente_fone',
   'cliente_pedido', 'forma_pagamento', 'frete_valor', 'seguro_valor', 'despesas_acessorias', 'valor_descontos', 'frete_tipo', 'venda_avista_aprazo', 'faturamento_descricao',
   'entrega_endereco', 'entrega_numero', 'entrega_complemento', 'entrega_bairro', 'entrega_cidade', 'entrega_cidade_ibge', 'entrega_uf', 'entrega_uf_ibge', 'entrega_cep', 'entrega_cnpj', 'entrega_ie', 'entrega_ddd', 'entrega_fone',
@@ -869,6 +871,15 @@ router.put('/:id', async (req, res) => {
   const b = pick(req.body, rej ? ['data_emissao', 'data_saida', 'hora_saida'] : NFE_EDITAVEIS);
   for (const k of ['data_emissao', 'data_saida']) if (b[k] !== undefined && !isIsoDate(String(b[k]).slice(0, 10))) throw invalid(`Data inválida (${k}).`);
   if (!Object.keys(b).length) throw invalid('Nada para gravar.');
+  // endereço do destinatário/entrega: ao mudar cidade/UF os códigos IBGE acompanham
+  for (const [pre, cid, uf] of [['cliente', 'cliente_cidade', 'cliente_uf'], ['entrega', 'entrega_cidade', 'entrega_uf']]) {
+    if (b[cid] === undefined && b[uf] === undefined) continue;
+    const u = String(b[uf] ?? n[uf] ?? '').trim().toUpperCase(); const c = String(b[cid] ?? n[cid] ?? '').trim();
+    b[uf] = u; b[`${pre}_uf_ibge`] = ufIbge(u);
+    const ibge = codigoMunicipio(u, c);
+    if (!ibge) throw invalid(`Município "${c}/${u}" não encontrado na tabela do IBGE. Confira a cidade e a UF.`);
+    b[`${pre}_cidade_ibge`] = ibge;
+  }
   await pool.query('update tb_nfe set ? where id = ?', [b, id]);
   res.json(await getNfe(id));
 });

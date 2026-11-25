@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 374 — NFe: aba Destinatário
+
+Aba `dest` no painel do item (NFe.jsx) usa o mesmo rascunho `draft`/`salvar` da nota. `PUT /api/nfe/:id` aceita também `cliente_razao_social`/`cliente_cnpj` e recalcula os códigos IBGE ao mudar cidade/UF (cliente e entrega).
+
 ## Fase 373 — NFe em nome da unidade; faltas viram aviso
 
 `tb_unidades.emite_nfe_unidade` ('True'/'False', padrão 'False') e `tb_unidades.razao_social` (criadas por `services/unidadeNfe.js` no start). `destinatarioNfe(cli, uni)` (geraFatura.js) devolve o cliente (padrão) ou os dados da unidade; `geraFatura` retorna `{ id, avisos }` e as telas Faturamento/Comandas mostram os avisos. Nada bloqueia por dado faltante (só o código IBGE do município, exigido pela SEFAZ).
