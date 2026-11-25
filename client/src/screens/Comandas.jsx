@@ -272,7 +272,7 @@ export default function Comandas({ onFechar }) {
       texto: `Gerar a NF-e com ${alvos.length} comanda(s) (${alvos.join(', ')}) — saída em ${brData(saida)}?`,
       sim: async () => {
         setOcupado(true);
-        try { const r = await api.post('/comandas/nfe', { ids: alvos, unidade: uniId, data_saida: saida }); notificar('ok', `NF gerada (controle ${r.id}). Abra a tela NFe para emitir.`); await atualizar(false); }
+        try { const r = await api.post('/comandas/nfe', { ids: alvos, unidade: uniId, data_saida: saida }); notificar(r.avisos?.length ? 'aviso' : 'ok', `NF gerada (controle ${r.id}). Abra a tela NFe para emitir.${r.avisos?.length ? ` ATENÇÃO: ${r.avisos.join(' ')}` : ''}`); await atualizar(false); }
         catch (e) { notificar('erro', e.message); } finally { setOcupado(false); }
       },
     });

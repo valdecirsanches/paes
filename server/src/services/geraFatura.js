@@ -17,6 +17,22 @@ const vazio = (v) => { const t = String(v ?? '').trim(); return !t || /^(null|un
 export function faltasEnderecoUnidade(u) {
   return [['endereco', 'o endereço'], ['cidade', 'a cidade'], ['uf', 'a UF'], ['cep', 'o CEP']].filter(([k]) => vazio(u?.[k])).map(([, t]) => t);
 }
+/** NFe emitida em nome da unidade (cadastro da unidade: "Emitir NFe em nome da unidade") em vez do cliente (cozinha). */
+export const emiteParaUnidade = (u) => String(u?.emite_nfe_unidade ?? '').toLowerCase() === 'true';
+/** Dados da unidade que faltam quando ela é a destinatária da NFe (em texto). */
+export function faltasDestinatarioUnidade(u) {
+  return [['razao_social', 'a razão social'], ['cnpj', 'o CNPJ/CPF'], ['endereco', 'o endereço'], ['cidade', 'a cidade'], ['uf', 'a UF'], ['cep', 'o CEP']].filter(([k]) => vazio(u?.[k])).map(([, t]) => t);
+}
+/**
+ * Destinatário da NFe. Padrão: o cliente (cozinha), exatamente como sempre foi. Se a unidade estiver marcada para emitir em nome dela,
+ * usa razão social, CNPJ/CPF, IE, endereço e telefone da unidade (mesmos nomes de campo do cliente, para o resto do código não mudar).
+ */
+export function destinatarioNfe(cli, uni) {
+  if (!emiteParaUnidade(uni)) return cli;
+  const t = (v) => String(v ?? '').trim();
+  const doc = t(uni.cnpj).replace(/\D/g, '');
+  return { ...cli, pessoa: doc.length === 11 ? 'F' : 'J', razao_social: t(uni.razao_social), cnpj: t(uni.cnpj), ie: t(uni.ie), endereco: t(uni.endereco), endereco_numero: t(uni.numero), bairro: t(uni.bairro), cidade: t(uni.cidade), uf: t(uni.uf), cep: t(uni.cep), fone: t(uni.telefone) || cli.fone };
+}
 /** "Entrega: nome;endereço, nº - bairro;cidade/UF CEP:00000-000" (número vazio vira S/N; bairro vazio é omitido). */
 export function textoEntregaUnidade(u) {
   const t = (v) => String(v ?? '').trim();
@@ -117,16 +133,21 @@ export async function geraFatura(c, { comandas, idCliente, idUnidade, saida, usu
     v += vr;
   }
 
-  const cfop = cfopDoCliente(cli.uf);
+  const unidadeDest = emiteParaUnidade(uni);
+  const avisos = []; // só informa (não bloqueia): dados da unidade que faltam
+  const fU = unidadeDest ? faltasDestinatarioUnidade(uni) : faltasEnderecoUnidade(uni);
+  if (fU.length) avisos.push(unidadeDest
+    ? `A unidade "${uni.nome}" emite NFe em nome dela, mas está sem ${fU.join(', ')} no cadastro (Cadastros › Clientes › Unidades). Confira a nota antes de autorizar.`
+    : `A unidade "${uni.nome}" está sem ${fU.join(', ')} no cadastro (Cadastros › Clientes › Unidades): esses dados saem nos dados adicionais da NFe. Corrija antes de autorizar.`);
+  const dest = destinatarioNfe(cli, uni);
+  const cfop = cfopDoCliente(dest.uf);
   const par = (a, b) => (a ? a : b);
   // primeiro os dados do cliente/unidade (entrega), depois "Informações para o corpo da NFe" do cadastro do cliente; as AFs entram por último (nfeJson.js)
-  const faltas = faltasEnderecoUnidade(uni);
-  if (faltas.length) throw invalid(`A unidade "${uni.nome}" está sem ${faltas.join(', ')} no cadastro (Cadastros › Clientes › Unidades). Esses dados saem nos dados adicionais da NFe: corrija e gere a nota de novo.`);
   const infAdFisco = textoEntregaUnidade(uni)
     + [cli.informacoes_nf1, cli.informacoes_nf2].map((x) => (x ? `;${x}` : '')).join('');
   // sem o código do município a SEFAZ rejeita a NF-e: melhor recusar agora do que gravar "0" (o Delphi gravava 0)
-  const cidIbge = codigoMunicipio(cli.uf, cli.cidade);
-  if (!cidIbge) throw invalid(`Município "${cli.cidade}/${cli.uf}" não encontrado na tabela do IBGE. Corrija a cidade/UF no cadastro do cliente.`);
+  const cidIbge = codigoMunicipio(dest.uf, dest.cidade);
+  if (!cidIbge) throw invalid(`Município "${dest.cidade}/${dest.uf}" não encontrado na tabela do IBGE. Corrija a cidade/UF no cadastro ${unidadeDest ? 'da unidade' : 'do cliente'}.`);
   const saidaHora = new Date(agora.getTime() + 3 * 3600 * 1000); // IncHour(time, 3) do Delphi
   const hora = `${pad(saidaHora.getHours())}:${pad(saidaHora.getMinutes())}:${pad(saidaHora.getSeconds())}`;
 
@@ -135,14 +156,14 @@ export async function geraFatura(c, { comandas, idCliente, idUnidade, saida, usu
     volume_marca: 'LEVPAO', volume_qtde: 1, volume_numero: '1', volume_especie: 'CAIXA', faturamento_descricao: 'A VISTA',
     cfop_codigo: cfop.codigo, cfop_descricao: cfop.descricao, csosn: '',
     transportadora_veiculo_placa: par(uni.veiculo_placa, cfg?.veiculo_placa ?? ''), transportadora_veiculo_uf: par(uni.veiculo_uf, cfg?.veiculo_uf ?? ''),
-    id_cliente: idCliente, id_unidade: idUnidade, cliente_pessoa: String(cli.pessoa ?? '').slice(0, 1), cliente_razao_social: cli.razao_social,
+    id_cliente: idCliente, id_unidade: idUnidade, cliente_pessoa: String(dest.pessoa ?? '').slice(0, 1), cliente_razao_social: dest.razao_social,
     cliente_pedido: String(uni.nome ?? '').slice(0, 15), frete_tipo: '3',
-    cliente_endereco: cli.endereco, cliente_endereco_numero: cli.endereco_numero, cliente_bairro: cli.bairro, cliente_cidade: cli.cidade,
-    cliente_cidade_ibge: cidIbge, cliente_uf: cli.uf, cliente_uf_ibge: ufIbge(cli.uf), cliente_cep: cli.cep, cliente_fone: fone(cli.fone),
-    cliente_cnpj: limpaMask(cli.cnpj), cliente_ie: cli.ie,
-    entrega_endereco: cli.endereco, entrega_numero: cli.endereco_numero, entrega_complemento: uni.complemento, entrega_bairro: cli.bairro,
-    entrega_cidade: cli.cidade, entrega_cidade_ibge: cidIbge, entrega_uf: cli.uf, entrega_uf_ibge: ufIbge(cli.uf), entrega_cep: cli.cep,
-    entrega_cnpj: cli.cnpj, entrega_ie: cli.ie, entrega_fone: fone(cli.fone),
+    cliente_endereco: dest.endereco, cliente_endereco_numero: dest.endereco_numero, cliente_bairro: dest.bairro, cliente_cidade: dest.cidade,
+    cliente_cidade_ibge: cidIbge, cliente_uf: dest.uf, cliente_uf_ibge: ufIbge(dest.uf), cliente_cep: dest.cep, cliente_fone: fone(dest.fone),
+    cliente_cnpj: limpaMask(dest.cnpj), cliente_ie: dest.ie,
+    entrega_endereco: dest.endereco, entrega_numero: dest.endereco_numero, entrega_complemento: uni.complemento, entrega_bairro: dest.bairro,
+    entrega_cidade: dest.cidade, entrega_cidade_ibge: cidIbge, entrega_uf: dest.uf, entrega_uf_ibge: ufIbge(dest.uf), entrega_cep: dest.cep,
+    entrega_cnpj: dest.cnpj, entrega_ie: dest.ie, entrega_fone: fone(dest.fone),
     data_emissao: dt(agora), hora_saida: hora, data_saida: saida, texto_corpo: infAdFisco,
     usuario_autorizacao_nfe: await usuarioNfe(c, usuario),
     peso_liquido: r6(v / 10), peso_bruto: r6(v / 10 + v / 100), valor_produtos: r6(v), comandas_faturadas: comandas.join(','), nf_valor_total: r6(v),
@@ -154,5 +175,5 @@ export async function geraFatura(c, { comandas, idCliente, idUnidade, saida, usu
   await c.query('insert into tb_receita set id_nfe = ?, documento = ?, id_cliente = ?, id_unidade = ?, valor = ?, emissao = now(), vencto = ?',
     [idNfe, `${idNfe}/1`, idCliente, idUnidade, r6(v), dt(venc)]);
   await c.query("update tb_comandas set status = 'FATURADO' where id in (?)", [comandas]);
-  return { id: idNfe };
+  return { id: idNfe, avisos };
 }

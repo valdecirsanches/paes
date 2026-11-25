@@ -273,6 +273,10 @@ export default function Clientes({ onFechar }) {
                 <Campo rotulo="Nutricionista" span={4}><Txt ed={uni} k="nutricionista_nome" /></Campo>
               </Secao>
               <Secao titulo="Fiscal e entrega" icone="🧾">
+                <Campo rotulo="NFe emitida para" span={12}>
+                  <label className="cad-chk"><input type="checkbox" disabled={offU} checked={String(uni.v('emite_nfe_unidade')) === 'True'} onChange={(e) => uni.set('emite_nfe_unidade', e.target.checked ? 'True' : 'False')} />Emitir a NFe em nome DESTA UNIDADE (desmarcado: emite para o cliente/cozinha, com os dados do cliente)</label>
+                </Campo>
+                <Campo rotulo="Razão social (NFe da unidade)" span={12}><Txt ed={uni} k="razao_social" /></Campo>
                 <Campo rotulo="CNPJ" span={4}><Txt ed={uni} k="cnpj" /></Campo>
                 <Campo rotulo="Inscrição estadual" span={4}><Txt ed={uni} k="ie" /></Campo>
                 <Campo rotulo="Tipo de faturamento (NF)" span={4}>

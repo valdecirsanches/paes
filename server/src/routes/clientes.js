@@ -42,7 +42,7 @@ const CLI_ROT = { razao_social: 'Nome do cliente', dias_vencto: 'Dias para venci
 const UNI = {
   nome: 'txt', codigo: 'txt', endereco: 'txt', numero: 'txt', complemento: 'txt', bairro: 'txt', cidade: 'txt', uf: 'txt', cep: 'txt', telefone: 'txt', contato: 'txt', cnpj: 'txt', ie: 'txt',
   veiculo_placa: 'txt', veiculo_uf: 'txt', email_nfe: 'txt', tipo_faturamento: `enum:${TIPOS_FATUR.join(',')}`, nutricionista_nome: 'txt', regiao: 'txt',
-  emite_comanda_diaria: 'bool', quitar_automaticamente: 'bool', ativo: 'bool', id_cliente_comandas: 'int', id_unidade_comandas: 'int',
+  emite_comanda_diaria: 'bool', emite_nfe_unidade: 'bool', razao_social: 'txt', quitar_automaticamente: 'bool', ativo: 'bool', id_cliente_comandas: 'int', id_unidade_comandas: 'int',
 };
 const UNI_ROT = { nome: 'Nome da unidade', tipo_faturamento: 'Tipo de faturamento' };
 
@@ -75,7 +75,7 @@ router.post('/unidades', async (req, res) => {
   const [[c]] = await pool.query('select id from tb_clientes where id = ?', [b.id_cliente]);
   if (!c) throw notFound('Cliente');
   if (!b.nome) throw invalid('Informe o nome da unidade.');
-  if (!/^[A-Za-z]{2}$/.test(String(b.uf ?? '').trim())) throw invalid('Informe a UF da unidade (2 letras): ela sai nos dados adicionais da NFe.');
+  if (b.uf && !/^[A-Za-z]{2}$/.test(String(b.uf).trim())) throw invalid('A UF da unidade deve ter 2 letras.');
   if (b.ativo === undefined) b.ativo = 'True'; // TBUNINewRecord
   const [r] = await pool.query('insert into tb_unidades set ?', [b]);
   const [[novo]] = await pool.query('select * from tb_unidades where id = ?', [r.insertId]);
@@ -85,7 +85,7 @@ router.put('/unidades/:id', async (req, res) => {
   const id = idValido(req.params.id, 'Unidade');
   const b = limpaCampos(req.body, UNI, { rotulos: UNI_ROT });
   if ('nome' in b && !b.nome) throw invalid('O nome da unidade não pode ficar vazio.');
-  if ('uf' in b && !/^[A-Za-z]{2}$/.test(String(b.uf ?? '').trim())) throw invalid('A UF da unidade deve ter 2 letras (ela sai nos dados adicionais da NFe).');
+  if (b.uf && !/^[A-Za-z]{2}$/.test(String(b.uf).trim())) throw invalid('A UF da unidade deve ter 2 letras.');
   if (!Object.keys(b).length) throw invalid('Nada para gravar.');
   const [r] = await pool.query('update tb_unidades set ? where id = ?', [b, id]);
   if (!r.affectedRows) throw notFound('Unidade');

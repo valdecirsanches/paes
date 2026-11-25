@@ -25,3 +25,14 @@ test('unidade sem UF/cidade/CEP é apontada e o texto de entrega não imprime "n
   const t = textoEntregaUnidade({ nome: 'IFF', endereco: 'Av X', numero: null, bairro: '', cidade: 'Santana', uf: 'SP', cep: '06543-320' });
   assert.equal(t, 'Entrega: IFF;Av X, S/N;Santana/SP CEP:06543-320');
 });
+
+test('destinatário da NFe: cliente por padrão; unidade só quando marcada', async () => {
+  const { destinatarioNfe, emiteParaUnidade, faltasDestinatarioUnidade } = await import('../src/services/geraFatura.js');
+  const cli = { razao_social: 'COZINHA', cnpj: '1', uf: 'SP', cidade: 'X', endereco: 'A', endereco_numero: '1', bairro: 'B', cep: '1', ie: 'I', fone: '11', pessoa: 'JURIDICA' };
+  const uni = { nome: 'U', razao_social: 'ESCOLA LTDA', cnpj: '12.345.678/0001-90', ie: '9', endereco: 'Rua U', numero: '5', bairro: 'C', cidade: 'Santos', uf: 'SP', cep: '11000-000', telefone: '', emite_nfe_unidade: 'False' };
+  assert.equal(destinatarioNfe(cli, uni), cli);
+  assert.equal(emiteParaUnidade({ emite_nfe_unidade: 'True' }), true);
+  const d = destinatarioNfe(cli, { ...uni, emite_nfe_unidade: 'True' });
+  assert.equal(d.razao_social, 'ESCOLA LTDA'); assert.equal(d.cidade, 'Santos'); assert.equal(d.pessoa, 'J'); assert.equal(d.fone, '11');
+  assert.deepEqual(faltasDestinatarioUnidade({ ...uni, cnpj: '', cep: null }), ['o CNPJ/CPF', 'o CEP']);
+});

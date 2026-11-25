@@ -187,7 +187,7 @@ function PainelComanda({ id, saida, onNfe, condicao, onFechar, onExcluida, onImp
     if (itens.length === 0) { aviso('erro', 'Não há itens para emissão da NF.'); return; }
     try {
       const r = await api.post(`/faturamento/comandas/${id}/nfe`, { data_saida: saida });
-      aviso('ok', `NF gerada (controle ${r.id}).`); onFechar(); onNfe?.();
+      aviso(r.avisos?.length ? 'aviso' : 'ok', `NF gerada (controle ${r.id}).${r.avisos?.length ? ` ATENÇÃO: ${r.avisos.join(' ')}` : ''}`); onFechar(); onNfe?.();
     } catch (e) { aviso('erro', e.message); }
   };
 

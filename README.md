@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 373 — NFe em nome da unidade; faltas viram aviso
+
+`tb_unidades.emite_nfe_unidade` ('True'/'False', padrão 'False') e `tb_unidades.razao_social` (criadas por `services/unidadeNfe.js` no start). `destinatarioNfe(cli, uni)` (geraFatura.js) devolve o cliente (padrão) ou os dados da unidade; `geraFatura` retorna `{ id, avisos }` e as telas Faturamento/Comandas mostram os avisos. Nada bloqueia por dado faltante (só o código IBGE do município, exigido pela SEFAZ).
+
 ## Fase 372 — Endereço da unidade obrigatório na NFe
 
 `faltasEnderecoUnidade`/`textoEntregaUnidade` (geraFatura.js): linha "Entrega:" dos dados adicionais usa os dados da unidade; faltando endereço/cidade/UF/CEP a geração é recusada com mensagem; UF obrigatória (2 letras) em POST/PUT de unidade.
