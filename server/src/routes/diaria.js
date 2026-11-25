@@ -9,6 +9,7 @@ import { atualizaStatus, getStatus } from '../services/status.js';
 import { produtoPorCodigo } from '../services/produtos.js';
 import { ajustaCobranca, diffDiaria } from '../services/diaria.js';
 import { logDiaria } from '../services/log.js';
+import { limpaProgramacaoFutura } from '../services/desativaProgramacao.js';
 
 const router = Router();
 
@@ -206,22 +207,16 @@ router.delete('/diaria/:id', async (req, res) => {
   res.json({ ok: true });
 });
 
-// Apaga TODA a programação do dia de uma unidade (inclusive itens fixos) e a própria linha do dia em tb_status: a empresa some da lista.
-// Recusa se algum item já foi cobrado/faturado. Uso raro: fica em "Ações do dia" da tela.
+// Apaga a programação diária da unidade do dia escolhido E DE TODOS OS DIAS SEGUINTES, e as linhas desses dias em tb_status (a empresa sai da lista).
+// Item que já tem comanda/cobrança é preservado (histórico fiscal) e informado. Dia/empresa sem itens não é erro.
 router.delete('/status/:id/diaria', async (req, res) => {
-  const apagados = await tx(async (c) => {
+  const r = await tx(async (c) => {
     const st = await getStatus(c, req.params.id);
-    const [itens] = await c.query('select * from tb_diaria where id_status = ? for update', [st.id]);
-    const cobrados = itens.filter((i) => Number(i.qtde_cobrado) > 0 || String(i.comandas ?? '').trim() !== '');
-    if (cobrados.length) throw new AppError(409, `Não é possível apagar: ${cobrados.length} item(ns) já têm comanda/cobrança (${cobrados.slice(0, 3).map((i) => i.produto_descricao_expedicao).join(', ')}${cobrados.length > 3 ? '…' : ''}).`);
-    if (itens.length) await logDiaria(c, itens[0].id, req.userId,
-      `Exclusao de TODA a programação diária de ${String(st.data).slice(0, 10)} (${itens.length} item(ns))\n` +
-      itens.map((i) => `${String(i.hora).slice(0, 5)} ${i.id_produto} ${i.produto_descricao_expedicao} fixa:${i.qtde_original} extra:${i.qtde_alterada}${bool(i.programacao_fixa) ? ' [fixo]' : ''}${bool(i.cancelado) ? ' [cancelado]' : ''}`).join('\n'));
-    if (itens.length) await c.query('delete from tb_diaria where id_status = ?', [st.id]);
-    await c.query('delete from tb_status where id = ?', [st.id]); // a empresa sai da lista do dia (volta com "Ativar movimento do dia" / "Empresas que não aparecem…")
-    return itens.length;
+    const x = await limpaProgramacaoFutura(c, [st.id_unidade], req.userId, String(st.data).slice(0, 10), 'apagar programação do dia e dos seguintes');
+    await c.query('delete from tb_status where id = ? and not exists (select 1 from tb_diaria d where d.id_status = ?)', [st.id, st.id]); // o dia escolhido sai mesmo sem itens
+    return x;
   });
-  res.json({ ok: true, apagados });
+  res.json({ ok: true, apagados: r.itens, dias: r.dias, preservados: r.preservados });
 });
 
 // Cancelar / desfazer cancelamento (item fixo não pode ser excluído, só cancelado)

@@ -148,9 +148,9 @@ export default function Diaria({ onFechar, ativa = true }) {
   }, [menuEmp]);
   const abreMenuEmp = (e, r) => { if (ehFabrica() || !r) return; e.preventDefault(); setMenuEmp({ x: e.clientX, y: e.clientY, r }); };
   const apagarProgramacao = async (r) => {
-    if (!(await confirmar(`APAGAR toda a programação de ${r.unidade_nome} em ${diaExtenso(data)}?\n\nTodos os itens do dia desta empresa serão eliminados (inclusive os da programação fixa) e a empresa SAI da lista deste dia. Não há como desfazer.\nSe houver item já cobrado/com comanda, a exclusão é recusada.`))) return;
+    if (!(await confirmar(`APAGAR a programação de ${r.unidade_nome} de ${diaExtenso(data)} e de TODOS OS DIAS SEGUINTES?\n\nOs itens (inclusive os da programação fixa) serão eliminados e a empresa SAI da lista desses dias. Não há como desfazer.\nItem já cobrado/com comanda é preservado.`))) return;
     if (!(await confirmar('Confirma mesmo? Esta ação NÃO pode ser desfeita.'))) return;
-    await executar(() => api.del(`/status/${r.id}/diaria`), (x) => (x.apagados ? `Programação apagada (${x.apagados} item(ns)); a empresa saiu da lista.` : 'A empresa saiu da lista do dia.'));
+    await executar(() => api.del(`/status/${r.id}/diaria`), (x) => `Programação apagada: ${x.apagados} item(ns), ${x.dias} dia(s) removido(s) da lista${x.preservados ? `; ${x.preservados} item(ns) com comanda/cobrança foram preservados` : ''}.`);
     setRecarga((n) => n + 1);
   };
 
