@@ -138,6 +138,22 @@ export default function Diaria({ onFechar, ativa = true }) {
     try { const r = await fn(); await carregarLista(); if (msg) notify.ok(msg(r)); } catch (e) { notify.erro(e.message); }
   };
 
+  // uso raro: botão direito sobre o nome da empresa (lista do dia ou cabeçalho) → apagar toda a programação dela neste dia
+  const [menuEmp, setMenuEmp] = useState(null); // { x, y, r }
+  useEffect(() => {
+    if (!menuEmp) return undefined;
+    const fecha = (e) => { if (e.type === 'keydown' && e.key !== 'Escape') return; setMenuEmp(null); };
+    window.addEventListener('click', fecha); window.addEventListener('keydown', fecha); window.addEventListener('scroll', fecha, true);
+    return () => { window.removeEventListener('click', fecha); window.removeEventListener('keydown', fecha); window.removeEventListener('scroll', fecha, true); };
+  }, [menuEmp]);
+  const abreMenuEmp = (e, r) => { if (ehFabrica() || !r) return; e.preventDefault(); setMenuEmp({ x: e.clientX, y: e.clientY, r }); };
+  const apagarProgramacao = async (r) => {
+    if (!(await confirmar(`APAGAR toda a programação de ${r.unidade_nome} em ${diaExtenso(data)}?\n\nTodos os itens do dia desta empresa serão eliminados (inclusive os da programação fixa) e a empresa SAI da lista deste dia. Não há como desfazer.\nSe houver item já cobrado/com comanda, a exclusão é recusada.`))) return;
+    if (!(await confirmar('Confirma mesmo? Esta ação NÃO pode ser desfeita.'))) return;
+    await executar(() => api.del(`/status/${r.id}/diaria`), (x) => `Programação apagada (${x.apagados} item(ns)); a empresa saiu da lista.`);
+    setRecarga((n) => n + 1);
+  };
+
   const mudarStatus = async (novo) => {
     if (!sel) return;
     if ((novo === 0 || novo === 3)
@@ -217,13 +233,18 @@ export default function Diaria({ onFechar, ativa = true }) {
             <ul className="dr2-clientes" aria-label="Clientes do dia" {...digCli.props} title="Clique e digite para localizar; ↑ ↓ passam de um cliente para outro">
               {busca.visiveis.map((r) => (
                 <li key={r.id}>
-                  <button type="button" className={`dr2-cli s${r.status}${r.id === selId ? ' atual' : ''}`} onClick={() => trocaClienteClique(r.id)} title={STATUS[r.status]}>
+                  <button type="button" className={`dr2-cli s${r.status}${r.id === selId ? ' atual' : ''}`} onClick={() => trocaClienteClique(r.id)} onContextMenu={(e) => abreMenuEmp(e, r)} title={`${STATUS[r.status]} — botão direito: opções`}>
                     <i className="dr2-dot" />{r.unidade_nome}
                   </button>
                 </li>
               ))}
               {lista.length === 0 && <li className="vazio">Nenhuma empresa neste dia. Use ⚡ Ações do dia ▸ Ativar movimento do dia.</li>}
             </ul>
+            {menuEmp && (
+              <ul className="ctx" role="menu" style={{ left: Math.min(menuEmp.x, window.innerWidth - 330), top: Math.min(menuEmp.y, window.innerHeight - 80) }} onClick={(e) => e.stopPropagation()}>
+                <li><button type="button" role="menuitem" onClick={() => { const r = menuEmp.r; setMenuEmp(null); apagarProgramacao(r); }}>🗑 Apagar TODA a programação de {menuEmp.r.unidade_nome} neste dia…</button></li>
+              </ul>
+            )}
           </div>
           <div className="dr2-card dr2-dia">
             <div className="dr2-data"><small>{diaSem}</small><b>{diaMes}</b></div>
@@ -247,7 +268,7 @@ export default function Diaria({ onFechar, ativa = true }) {
           <div className="dr2-cab dr2-card">
             <div className="dr2-sel">
               <small>Empresa selecionada</small>
-              <b>{sel ? sel.unidade_nome : '— nenhuma —'}</b>
+              <b onContextMenu={(e) => abreMenuEmp(e, sel)} title={sel && !ehFabrica() ? 'Botão direito: opções' : undefined}>{sel ? sel.unidade_nome : '— nenhuma —'}</b>
               {sel?.cliente_razao_social && sel.cliente_razao_social !== sel.unidade_nome && <span>{sel.cliente_razao_social}</span>}
               {sel && enderecoCompleto(sel) && <span className="dr2-end" title="Endereço da unidade">📍 {enderecoCompleto(sel)}</span>}
             </div>
