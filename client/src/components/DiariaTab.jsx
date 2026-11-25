@@ -227,6 +227,14 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
     }
     if ((await confirmar(`Eliminar o item programado?\n${hhmm(alvo.hora)} — ${alvo.produto_descricao_expedicao}`))) rodar(() => api.del(`/diaria/${alvo.id}`), 'Item excluído.');
   };
+  // uso raro (menu Opções, botão direito): apaga TODOS os itens do dia da unidade selecionada
+  const apagarDia = async () => {
+    if (editando || consulta || !status) return;
+    if (!itens.length) { notify.erro('Não há itens programados neste dia para esta empresa.'); return; }
+    if (!(await confirmar(`APAGAR toda a programação de ${status.unidade_nome} neste dia?\n\n${itens.length} item(ns) serão eliminados (inclusive os da programação fixa) e não há como desfazer.\nSe houver item já cobrado/com comanda, a exclusão é recusada.`))) return;
+    if (!(await confirmar('Confirma mesmo? Esta ação NÃO pode ser desfeita.'))) return;
+    rodar(() => api.del(`/status/${status.id}/diaria`), 'Programação do dia apagada.');
+  };
   const desfazer = () => { setDraft(null); };
 
   const gravar = async (manterPainel = false) => { // manterPainel: grava sem fechar a edição (passagem de um item para outro com as setas)
@@ -556,7 +564,9 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
             ...(ehFabrica() ? [] : [['-'],
             ['Ajustar preço do item\tAlt+F2', ajustaPreco],
             ['Ajustar preço de todos os itens do dia\tAlt+Shift+F2', ajustaTudo],
-            ['Ajustar cobrança (comandas) do item', ajustaCobranca]]),
+            ['Ajustar cobrança (comandas) do item', ajustaCobranca],
+            ['-'],
+            ['🗑 Apagar TODA a programação desta empresa neste dia…', apagarDia]]),
           ].map(([r, fn, off], n) => (r === '-' ? <li key={n} className="sep-h" /> : (
             <li key={r}><button disabled={!fn || !!off} title={off || ''} onClick={() => { setMenu(null); fn(); }}>{r.split('\t')[0]}{r.includes('\t') && <kbd>{r.split('\t')[1]}</kbd>}</button></li>
           )))}

@@ -206,6 +206,25 @@ router.delete('/diaria/:id', async (req, res) => {
   res.json({ ok: true });
 });
 
+// Apaga TODA a programação do dia de uma unidade (inclusive itens fixos, que podem ser trazidos de novo pela programação fixa).
+// Recusa se algum item já foi cobrado/faturado. Uso raro: fica em "Ações do dia" da tela.
+router.delete('/status/:id/diaria', async (req, res) => {
+  const apagados = await tx(async (c) => {
+    const st = await getStatus(c, req.params.id);
+    const [itens] = await c.query('select * from tb_diaria where id_status = ? for update', [st.id]);
+    if (!itens.length) throw invalid('Esta empresa não tem itens programados neste dia.');
+    const cobrados = itens.filter((i) => Number(i.qtde_cobrado) > 0 || String(i.comandas ?? '').trim() !== '');
+    if (cobrados.length) throw new AppError(409, `Não é possível apagar: ${cobrados.length} item(ns) já têm comanda/cobrança (${cobrados.slice(0, 3).map((i) => i.produto_descricao_expedicao).join(', ')}${cobrados.length > 3 ? '…' : ''}).`);
+    await logDiaria(c, itens[0].id, req.userId,
+      `Exclusao de TODA a programação diária de ${String(st.data).slice(0, 10)} (${itens.length} item(ns))\n` +
+      itens.map((i) => `${String(i.hora).slice(0, 5)} ${i.id_produto} ${i.produto_descricao_expedicao} fixa:${i.qtde_original} extra:${i.qtde_alterada}${bool(i.programacao_fixa) ? ' [fixo]' : ''}${bool(i.cancelado) ? ' [cancelado]' : ''}`).join('\n'));
+    await c.query('delete from tb_diaria where id_status = ?', [st.id]);
+    await c.query('update tb_status set status = 0 where id = ?', [st.id]);
+    return itens.length;
+  });
+  res.json({ ok: true, apagados });
+});
+
 // Cancelar / desfazer cancelamento (item fixo não pode ser excluído, só cancelado)
 router.post('/diaria/:id/cancelar', async (req, res) => {
   const cancelar = req.body.cancelado !== false;

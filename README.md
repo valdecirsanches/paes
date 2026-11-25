@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 378 — Apagar toda a programação do dia de uma unidade
+
+`DELETE /api/status/:id/diaria` (diaria.js): apaga todos os itens do status (dia+unidade), registra no log, zera o status e recusa (409) se houver item com `qtde_cobrado` ou `comandas`. Atalho: menu Opções (botão direito) em `DiariaTab.jsx`.
+
 ## Fase 377 — Numeração de NFe por ambiente
 
 Causa do "buraco" ao voltar para produção: `tb_nfe_config.nfe_numero` era um só para os dois ambientes e a checagem `ocupado()` olhava todas as notas de `tb_nfe`. Agora: produção = `nfe_numero` (o sistema antigo também usa); homologação = `nfe_numero_hom` (criada no primeiro uso, começa igual à produção); `tb_nfe.nfe_ambiente` (1/2; vazio = produção) é gravado em `gravaAutorizada` e filtra `ocupado()`. `GET/PUT /nfe/config` expõem/gravam `nfe_numero` do ambiente em uso.
