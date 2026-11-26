@@ -111,7 +111,7 @@ export async function identifica(req, res, db = pool) {
   return { codigo, habilitado, exigido, areas, fabricaSemLogin };
 }
 
-// O que uma máquina só-Fábrica pode chamar (telas Programação diária/fixa, Mercadorias, Produção, Etinerário, Cargas, Reclamações e impressão de etiquetas).
+// O que uma máquina só-Fábrica pode chamar (telas Programação diária/fixa, Mercadorias, Produção, Itinerário, Cargas, Reclamações e impressão de etiquetas).
 const PREFIXOS_FABRICA = ['status', 'diaria', 'fixa', 'produtos', 'mercadorias', 'producao', 'cargas', 'itinerario', 'reclamacoes', 'extras', 'alteracoes', 'impressao', 'agente', 'ajuda', 'layout-etiquetas'];
 export function rotaDaFabrica(req) {
   const [, , seg, resto] = req.originalUrl.split('?')[0].split('/'); // ['', 'api', seg, ...]

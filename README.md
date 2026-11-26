@@ -49,7 +49,7 @@ Produção: `cd client && npm run build` gera `client/dist` (sirva com Nginx ou 
 | `btnAdesivaClick` (select das etiquetas, insert em `tb_etiquetas_log`, `etiqueta_adesiva+1`) | `POST /api/mercadorias/etiquetas/dados` e `POST /api/mercadorias/etiquetas` (transação, `IN (?)` parametrizado, máx. 500) |
 | Grade multisseleção, Selecionar tudo / Desfazer seleção | clique, Ctrl, Shift + botão |
 | `ppListaMercadorias` (A4) e `ppAdesivas` (62×45 mm) | impressão do navegador (HTML/CSS); o layout é aproximado, o designer `.rtm` não foi migrado |
-| Menu Programação: Fixa/Diária, Mercadorias | `App.jsx` (abas de telas abertas); Etinerário, Cargas e demais menus ficam desabilitados |
+| Menu Programação: Fixa/Diária, Mercadorias | `App.jsx` (abas de telas abertas); Itinerário, Cargas e demais menus ficam desabilitados |
 
 **Revisão (janela "Conversão de mercadorias", `u_converte_mercadoria`)**: duplo clique ou Enter na grade abre a janela (`GET/PUT /api/mercadorias/:id`). Código/descrição da mercadoria, bloco "Cobrar como:" (produto, descrição, qtde, preço unitário, total), Observações (`conversao_observacoes`), Salvar (só habilita após alterar), Cancelar e "Valor já cobrado". Regras do `dsprmDataChange`: produto não achado/vazio abre a busca; qtde cobrada = valor do item ÷ preço; total = qtde × preço (recalculado também no servidor, com log em `tb_diaria_log`). Também: navegador ✔/✘, porta de fechar, ordenação por data/hora, cores do original, menu "Alterar lay-out" (desabilitado, designer não migrado), texto "<Não há mercadorias>".
 **Suposição a confirmar:** o fonte da janela não foi enviado; deduzi pela imagem que "Valor já cobrado" grava em `tb_diaria.quitado_manualmente` ('True'/'False') e que os quadros azuis mostram `id_produto` e `id_produto_conversao`. Se for outra coluna (ex.: `cobrado`), é só trocar em `server/src/routes/mercadorias.js` (`CAMPOS_CONVERSAO`).
@@ -290,9 +290,9 @@ Mapeamentos assumidos (confirme em homologação): CRT por texto (SIMPLES NACION
 ## Fase 17 — Programação diária redesenhada
 Cabeçalho com data/relógio/resumo por status e menu ⚡ Ações do dia; lateral com calendário, apresentação (chips) e lista de clientes com marcador de status; cabeçalho da empresa com status em botões segmentados e itinerário; abas em pílulas. Funções e abas (diária, fixa, reclamações, configurações) inalteradas.
 
-## Fase 18 — Etinerário e Cargas
-**Etinerário** (`u_etinerario`): horários de roteiros por motorista (incluir/alterar/excluir; exclusão bloqueada se houver empresas ou programações), empresas dentro do roteiro (ordem de entrega com Subir/Descer, tirar do roteiro) e empresas fora (colocar no roteiro; opção de incluir as que já estão em outros). Imprime o relatório "Etinerário de entregas" (uma página por motorista). API: `/api/itinerario/*`.
-**Cargas** (`u_cargas`): *Carga diária* (filtros Tipo/Embalagem/Programação/Carga/Extra/Região/Expedição/Itens, cores especial/cancelado/separado, seleção múltipla, embalagem em lote, combos Embalagem/Etinerário do item, etiquetas adesivas com log `origem=CARGA`, Enter imprime, "Separar" pelo nº da etiqueta) e *Carga fixa* (dia da semana + chips de filtro, embalagem/etinerário). API: `/api/cargas/*`; filtros montados com parâmetros em `services/cargas.js` (testados).
+## Fase 18 — Itinerário e Cargas
+**Itinerário** (`u_etinerario`): horários de roteiros por motorista (incluir/alterar/excluir; exclusão bloqueada se houver empresas ou programações), empresas dentro do roteiro (ordem de entrega com Subir/Descer, tirar do roteiro) e empresas fora (colocar no roteiro; opção de incluir as que já estão em outros). Imprime o relatório "Itinerário de entregas" (uma página por motorista). API: `/api/itinerario/*`.
+**Cargas** (`u_cargas`): *Carga diária* (filtros Tipo/Embalagem/Programação/Carga/Extra/Região/Expedição/Itens, cores especial/cancelado/separado, seleção múltipla, embalagem em lote, combos Embalagem/Itinerário do item, etiquetas adesivas com log `origem=CARGA`, Enter imprime, "Separar" pelo nº da etiqueta) e *Carga fixa* (dia da semana + chips de filtro, embalagem/itinerário). API: `/api/cargas/*`; filtros montados com parâmetros em `services/cargas.js` (testados).
 Correções em relação ao Delphi: filtro "Carga" (1ª/2ª/3ª) agora funciona na diária; `p.extra_cortado` (alias inexistente) na carga fixa; JOIN com `tb_fixa` que duplicava linhas removido; `<>` com NULL tratado; motorista da fixa usa o roteiro do próprio item (com a distribuição como reserva).
 Pontos a validar no banco real: colunas de `tb_roteiro` (só `horario`, `descricao`, `id_funcionario` são gravadas) e `tb_roteiro_distribuicao` (grava `id_cliente`, `id_unidade`, `roteiro_ordem` e `cliente_unidade` = "nome id_cliente/codigo").
 
@@ -650,13 +650,13 @@ Um site não lê o MAC da placa de rede; cada navegador recebe do servidor um c�
 
 ## Fase 112 — Área da fábrica (por máquina)
 - Cada dispositivo (**Ferramentas › Dispositivos autorizados**) tem a coluna **Acessa**: *Faturamento* (sistema completo, com login) e/ou *Fábrica*. Coluna `areas` em `tb_dispositivos` (criada sozinha; dispositivos já liberados ficam só em *Faturamento*).
-- Máquina só *Fábrica*: **sem login**, entra automaticamente como o usuário único **fabrica** (criado em `tb_usuarios` na primeira vez, com senha inutilizável; os logs de diária/fixa mostram "fabrica"). Vê só o menu Programação (Fixa/Diária com Reclamações, Mercadorias, Produção, Etinerário, Cargas) e Ferramentas › impressoras; **pode alterar** dentro dessas telas.
+- Máquina só *Fábrica*: **sem login**, entra automaticamente como o usuário único **fabrica** (criado em `tb_usuarios` na primeira vez, com senha inutilizável; os logs de diária/fixa mostram "fabrica"). Vê só o menu Programação (Fixa/Diária com Reclamações, Mercadorias, Produção, Itinerário, Cargas) e Ferramentas › impressoras; **pode alterar** dentro dessas telas.
 - A API barra no servidor tudo que não é da fábrica (NFe, faturamento, comandas, cadastros, dispositivos…) com 403 `AREA_NEGADA`: lista em `PREFIXOS_FABRICA` (`services/dispositivos.js`).
 - Máquina só *Faturamento* funciona como antes. Com as duas marcadas, entra pelo login normal. O administrador não consegue tirar o Faturamento da própria máquina.
 - Sem dispositivo habilitado (controle desligado) ninguém ganha acesso sem login.
 
 ## Fase 113 — Menu da fábrica conforme o sistema real da fábrica (fabrica.zip)
-- O sistema da fábrica (u_main) tem: Programação, Produção, Mercadorias, Cargas, **Reclamações**, **Pedidos extras** (+ Tema e Atualização). Máquina só *Fábrica* agora vê exatamente isso (+ Ferramentas › impressoras); Etinerário saiu do menu da fábrica (a fábrica real não o abre).
+- O sistema da fábrica (u_main) tem: Programação, Produção, Mercadorias, Cargas, **Reclamações**, **Pedidos extras** (+ Tema e Atualização). Máquina só *Fábrica* agora vê exatamente isso (+ Ferramentas › impressoras); Itinerário saiu do menu da fábrica (a fábrica real não o abre).
 - Nova tela **Reclamações** (período De/Até, todas as unidades; grava a justificativa) — `GET /api/reclamacoes?de=&ate=`.
 - Nova tela **Pedidos extras** (`tb_extras`: novo/alterar; só os ainda não digitados; não altera pedido já digitado) — `/api/extras`, `/api/extras/opcoes`. Ambas aparecem também no menu Programação do faturamento.
 - Não portados (dormentes no sistema real): Recados (`tb_mensagens_producao`, o timer não tem rotina), Funcionários e Calendário (botões ocultos). Tema/Atualização não se aplicam à web.
@@ -1019,6 +1019,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
+
+## Fase 389 — Itinerário (grafia), pesquisa na Programação da Fábrica, Pedidos extras
+
+Grafia única "Itinerário" (identificadores como `u_etinerario`/`ppEtinerario` mantidos por serem nomes do Delphi). `Diaria.jsx`: `<Busca>` visível só com `ehFabrica()`. `Extras.jsx`: 🗑 por linha + `confirmar`; `DELETE /api/extras/:id` (bloqueia `digitado='True'`). CSS `.fb-solo .grade tr.sel`.
 
 ## Fase 388 — Agente de impressão 1.4.0 (bandeja)
 
@@ -1601,7 +1605,7 @@ Enter (último campo/Extra/Cada) e F5 gravam com `gravar(true)`; o painel só fe
 
 - Só na janela da Fábrica (o Faturamento continua como estava): Cargas ganhou o layout compacto do Delphi — grupos de rádios no topo (Tipo/Embalagem, Programação/Expedição, Carga/Ítens, Extra, Região), data grande + **Atualizar**, abas Carga diária/fixa em formato de aba, grade ocupando o resto da tela.
 - Cada título de coluna tem **▼** com a lista de valores e caixas (como o cxGrid): marque os valores que devem aparecer; vários campos se combinam. Clicar no título ordena. Embaixo: total (=Total), expressão do filtro `((Descrição = …) or (…))`, **✕** limpa e a caixa liga/desliga o filtro. Também na Carga fixa.
-- Etiqueta do item, "Separar" por número e edição de acomodação/etinerário continuam disponíveis (botões compactos ao lado da data; o log de impressão lateral não aparece na Fábrica).
+- Etiqueta do item, "Separar" por número e edição de acomodação/itinerário continuam disponíveis (botões compactos ao lado da data; o log de impressão lateral não aparece na Fábrica).
 - Conferido só no preview com dados de exemplo.
 
 ## Fase 254 — Correção: restrições da Fábrica vazavam para o Faturamento

@@ -72,4 +72,13 @@ router.put('/:id', async (req, res) => {
   res.json({ ok: true });
 });
 
+// Excluir pedido (ícone da linha na Fábrica). Pedido já digitado na programação não se exclui (como na alteração).
+router.delete('/:id', async (req, res) => {
+  const [[x]] = await pool.query('select digitado, empresa, descricao from tb_extras where id = ?', [req.params.id]);
+  if (!x) throw notFound('Pedido extra');
+  if (String(x.digitado) === 'True') throw invalid('Este pedido já foi digitado na programação e não pode ser excluído.');
+  await pool.query('delete from tb_extras where id = ?', [req.params.id]);
+  res.json({ ok: true });
+});
+
 export default router;

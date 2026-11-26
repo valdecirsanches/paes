@@ -34,7 +34,7 @@ router.get('/fixa', async (req, res) => {
   res.json(rows);
 });
 
-// Lista de roteiros para o combo "Etinerário" (chave = horário + motorista)
+// Lista de roteiros para o combo "Itinerário" (chave = horário + motorista)
 router.get('/roteiros', async (_req, res) => {
   const [rows] = await pool.query(
     `select r.id as roteiro_id, concat(left(r.horario, 5), ' ', coalesce(f.nome, '(sem motorista)')) as chave
@@ -53,8 +53,8 @@ router.put('/:tabela/:id', async (req, res) => {
   }
   if (req.body?.id_roteiro !== undefined) {
     const r = Number(req.body.id_roteiro);
-    if (!Number.isInteger(r) || r < 0) throw invalid('Etinerário inválido.');
-    if (r > 0) { const [[ok]] = await pool.query('select id from tb_roteiro where id = ?', [r]); if (!ok) throw invalid('Etinerário não encontrado.'); }
+    if (!Number.isInteger(r) || r < 0) throw invalid('Itinerário inválido.');
+    if (r > 0) { const [[ok]] = await pool.query('select id from tb_roteiro where id = ?', [r]); if (!ok) throw invalid('Itinerário não encontrado.'); }
     novo.id_roteiro = r;
   }
   if (!Object.keys(novo).length) throw invalid('Nada para gravar.');

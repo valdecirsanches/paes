@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../api.js';
-import { Toast } from '../components/toast.jsx';
+import { Toast, confirmar } from '../components/toast.jsx';
 import { brData, hhmm, hoje } from '../lib/rules.js';
 
 const VAZIO = () => ({ empresa: '', contato: '', funcionario: '', descricao: '', fone: '', data: hoje(), hora: '' });
@@ -32,6 +32,11 @@ export default function Extras({ onFechar }) {
       setForm(null); setAviso({ tipo: 'ok', m: 'Pedido gravado.' }); await carregar();
     } catch (e) { erro(e); }
   };
+  const excluir = async (r) => {
+    setSel(r.id);
+    if (!(await confirmar(`Excluir o pedido de ${r.empresa ?? 'sem empresa'} — ${String(r.descricao ?? '').slice(0, 60)}?`))) return;
+    try { await api.del(`/extras/${r.id}`); setAviso({ tipo: 'ok', m: 'Pedido excluído.' }); if (sel === r.id) setSel(null); await carregar(); } catch (e) { erro(e); }
+  };
   const L = ({ id, v }) => <datalist id={id}>{v.map((x) => <option key={x} value={x} />)}</datalist>;
   return (
     <div className="tela pr2">
@@ -62,13 +67,14 @@ export default function Extras({ onFechar }) {
       )}
       <div className="pr2-card fb-grade rolagem fb-solo">
         <table className="grade">
-          <thead><tr><th>Entrega</th><th>Hora</th><th>Empresa</th><th>Solicitante</th><th>Produto/Mercadoria</th><th>Funcionário</th></tr></thead>
+          <thead><tr><th>Entrega</th><th>Hora</th><th>Empresa</th><th>Solicitante</th><th>Produto/Mercadoria</th><th>Funcionário</th><th style={{ width: 44 }} /></tr></thead>
           <tbody>
             {linhas.map((r) => (
               <tr key={r.id} className={`clicavel${sel === r.id ? ' sel' : ''}`} onClick={() => setSel(r.id)} onDoubleClick={() => { setSel(r.id); setTimeout(alterar, 0); }}>
                 <td>{brData(r.data)}</td><td>{hhmm(r.hora)}</td><td>{r.empresa}</td><td>{r.contato}</td><td className="fb-txt">{r.descricao}</td><td>{r.funcionario}</td>
+                <td style={{ textAlign: 'center' }}><button type="button" className="dx-del" title="Excluir este pedido" aria-label="Excluir pedido" onClick={(e) => { e.stopPropagation(); excluir(r); }}>🗑</button></td>
               </tr>))}
-            {!linhas.length && <tr className="semlinha"><td colSpan={6} className="vazio">Nenhum pedido extra pendente</td></tr>}
+            {!linhas.length && <tr className="semlinha"><td colSpan={7} className="vazio">Nenhum pedido extra pendente</td></tr>}
           </tbody>
         </table>
       </div>

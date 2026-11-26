@@ -186,7 +186,7 @@ const Segmentado = ({ titulo, opcoes, valor, onMudar }) => (
   </div>
 );
 
-/** Combos do item focado (RxDBComboBox + edtEtinerario + navegador): editar e gravar acomodação e etinerário. */
+/** Combos do item focado (RxDBComboBox + edtEtinerario + navegador): editar e gravar acomodação e itinerário. */
 function EditorItem({ tabela, item, roteiros, aoGravar, notificar }) {
   const [ac, setAc] = useState(''); const [rt, setRt] = useState('');
   useEffect(() => { setAc(item?.acomodacao_carga ?? ''); setRt(String(item?.id_roteiro ?? '')); }, [item?.id, item?.acomodacao_carga, item?.id_roteiro]);
@@ -203,8 +203,8 @@ function EditorItem({ tabela, item, roteiros, aoGravar, notificar }) {
     <div className="cg-editor">
       <span className="cg-rot">{tabela === 'diaria' ? 'Embalagem na carga' : 'Acomodação da carga'}</span>
       <select value={ac} disabled={!item} onChange={(e) => setAc(e.target.value)} aria-label="Acomodação da carga"><option value="" />{ACOMOD.map(([v, r]) => <option key={v} value={v}>{r}</option>)}</select>
-      <span className="cg-rot">Etinerário</span>
-      <select value={rt} disabled={!item} onChange={(e) => setRt(e.target.value)} aria-label="Etinerário"><option value="">(nenhum)</option>{roteiros.map((r) => <option key={r.roteiro_id} value={r.roteiro_id}>{r.chave}</option>)}</select>
+      <span className="cg-rot">Itinerário</span>
+      <select value={rt} disabled={!item} onChange={(e) => setRt(e.target.value)} aria-label="Itinerário"><option value="">(nenhum)</option>{roteiros.map((r) => <option key={r.roteiro_id} value={r.roteiro_id}>{r.chave}</option>)}</select>
       <button type="button" className="trb2-btn principal" disabled={!sujo} onClick={gravar}>✔ Gravar</button>
       <button type="button" className="trb2-btn" disabled={!sujo} onClick={() => { setAc(item.acomodacao_carga ?? ''); setRt(String(item.id_roteiro ?? '')); }}>✖ Cancelar</button>
     </div>
@@ -321,7 +321,7 @@ function CargaDiaria({ roteiros, notificar }) {
             <button type="button" className="cgf-atu" onClick={carrega} disabled={carregando}>⟳ Atualizar</button>
             <div className="cgf-acoes">
               <button type="button" onClick={etiquetas} title="Etiqueta adesiva do(s) item(ns) marcado(s) ou do item em foco (Enter)">🏷 Etiqueta</button>
-              <button type="button" onClick={() => setEditaItem((x) => !x)} title="Acomodação e etinerário do item em foco" className={editaItem ? 'on' : ''}>✎ Item</button>
+              <button type="button" onClick={() => setEditaItem((x) => !x)} title="Acomodação e itinerário do item em foco" className={editaItem ? 'on' : ''}>✎ Item</button>
               <input className="cg-bip" value={bip} onChange={(e) => setBip(e.target.value.replace(/\D/g, ''))} onKeyDown={separar} placeholder="Separar: nº etiqueta + Enter" aria-label="Separar pelo número da etiqueta" />
             </div>
           </div>
@@ -455,7 +455,7 @@ export default function Cargas({ onFechar, ativa = true }) {
     <div className={`cg${ehFabrica() ? ' cg-fab' : ' cg-lado'}`}>
       <Toast aviso={aviso} />
       <header className="cg-topo">
-        <div className="cg-tit"><b>🚚 Roteiro de cargas</b><small>Acomodação, etinerário e etiquetas da expedição</small></div>
+        <div className="cg-tit"><b>🚚 Roteiro de cargas</b><small>Acomodação, itinerário e etiquetas da expedição</small></div>
         <nav className="dr2-abas" role="tablist">{abas.map(([k, r]) => <button key={k} type="button" role="tab" aria-selected={aba === k} className={aba === k ? 'on' : ''} onClick={() => setAba(k)}>{r}</button>)}</nav>
         <span className="cg-esp" />
         <button type="button" className="trb2-btn" onClick={onFechar}>Fechar</button>

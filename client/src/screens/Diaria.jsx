@@ -12,7 +12,7 @@ import ConfigTab from '../components/ConfigTab.jsx';
 import { Toast } from '../components/toast.jsx';
 import { Modal } from '../components/ui.jsx';
 import { useDigitaNaLista } from '../lib/digitaNaLista.js';
-import { useBusca } from '../components/cad.jsx';
+import { Busca, useBusca } from '../components/cad.jsx';
 import { confirmar } from '../components/toast.jsx';
 
 function Relogio() {
@@ -229,6 +229,7 @@ export default function Diaria({ onFechar, ativa = true }) {
           <div className={`dr2-card dr2-lista${ehFabrica() ? ' dr2-lista-fab' : ''}`}>
             <div className="dr2-t">Clientes do dia <small>{lista.length}</small>
             </div>
+            {ehFabrica() && <div className="busca-lateral"><Busca busca={busca} placeholder="Pesquisar cliente…" total={lista.length} /></div>}
                         {digCli.digitado && <div className="dg-badge" role="status">⌨ {digCli.digitado}</div>}
             <ul className="dr2-clientes" aria-label="Clientes do dia" {...digCli.props} title="Clique e digite para localizar; ↑ ↓ passam de um cliente para outro">
               {busca.visiveis.map((r) => (

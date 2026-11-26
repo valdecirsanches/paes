@@ -75,7 +75,7 @@
     ]
   },
   "itinerario": {
-    "titulo": "Controle do etinerário",
+    "titulo": "Controle do itinerário",
     "resumo": "Controle das rotas de entrega do dia: ordem das paradas e motoristas.",
     "passos": [
       "Escolha a data e a rota.",

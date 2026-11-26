@@ -51,7 +51,7 @@ function camposDoProduto(p) {
 
 const ROTULOS = [
   ['semana_dia', 'Dia Semana'], ['hora', 'Hora entrega'], ['producao_turno', 'Producao'],
-  ['id_roteiro', 'Etinerario'], ['id_produto', 'Produto'],
+  ['id_roteiro', 'Itinerário'], ['id_produto', 'Produto'],
   ['produto_descricao_expedicao', 'Descricao p/ expedicao'], ['produto_qtde', 'Qtde'],
 ];
 

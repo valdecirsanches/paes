@@ -4,7 +4,7 @@ import { AppError, invalid, notFound } from '../errors.js';
 import { temSenha, defineSenha, removeSenha, confereSenha, freio, erro, acerto } from '../services/senhaFabrica.js';
 import { ipDe } from '../services/auditoria.js';
 
-// Controle do etinerário (u_etinerario): horários de roteiros (tb_roteiro) e empresas de cada roteiro (tb_roteiro_distribuicao).
+// Controle do itinerário (u_etinerario): horários de roteiros (tb_roteiro) e empresas de cada roteiro (tb_roteiro_distribuicao).
 const router = Router();
 
 // Senha de acesso da Fábrica ao Itinerário. Definir/remover: só no Faturamento (não pela máquina da fábrica). Validar: livre (a Fábrica usa).
@@ -168,7 +168,7 @@ router.put('/roteiros/:id/ordem', async (req, res) => {
   res.json({ ok: true });
 });
 
-// Dados do relatório "Etinerário de entregas" (ppEtinerario/ppReport1): uma página por motorista, grupos por horário
+// Dados do relatório "Itinerário de entregas" (ppEtinerario/ppReport1): uma página por motorista, grupos por horário
 router.get('/impressao', async (_req, res) => {
   const [rows] = await pool.query(
     `select f.id as id_motorista, f.nome, f.celular, r.id as id_roteiro, left(r.horario, 5) as horario,

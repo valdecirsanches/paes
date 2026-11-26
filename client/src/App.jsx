@@ -49,7 +49,7 @@ const TELAS = {
   diaria: { titulo: 'Programação diária', Tela: Diaria },
   mercadorias: { titulo: 'Venda de mercadorias', Tela: Mercadorias },
   producao: { titulo: 'Produção', Tela: Producao },
-  itinerario: { titulo: 'Controle do etinerário', Tela: Itinerario },
+  itinerario: { titulo: 'Controle do itinerário', Tela: Itinerario },
   cargas: { titulo: 'Roteiro de cargas', Tela: Cargas },
   reclamacoes: { titulo: 'Reclamações', Tela: Reclamacoes },
   extras: { titulo: 'Pedidos extras', Tela: Extras }, // entrada do pedido (dispositivo só da fábrica)
@@ -74,7 +74,7 @@ const TELAS = {
 };
 // Menus do sistema antigo. Itens sem tela em TELAS ainda são de próximas fases (aparecem esmaecidos).
 const MENUS = [
-  { id: 'prog', rotulo: 'Programação', icone: '🗓️', itens: [['dashboard', 'Dashboard', '📊'], ['diaria', 'Fixa/Diária', '📋'], ['conflitos', 'Verificar problemas de programação', '🔎'], ['mercadorias', 'Mercadorias', '🛒'], ['producao', 'Produção', '🥖'], ['itinerario', 'Etinerário', '🧭'], ['cargas', 'Cargas', '🚚'], ['reclamacoes', 'Reclamações', '💬']] },
+  { id: 'prog', rotulo: 'Programação', icone: '🗓️', itens: [['dashboard', 'Dashboard', '📊'], ['diaria', 'Fixa/Diária', '📋'], ['conflitos', 'Verificar problemas de programação', '🔎'], ['mercadorias', 'Mercadorias', '🛒'], ['producao', 'Produção', '🥖'], ['itinerario', 'Itinerário', '🧭'], ['cargas', 'Cargas', '🚚'], ['reclamacoes', 'Reclamações', '💬']] },
   { id: 'fat', rotulo: 'Faturamento', icone: '💳', itens: [['faturamento', 'Faturamento', '💳'], ['comandas', 'Controle de comandas', '🧾'], ['nfe', 'NFe', '📑'], ['tributos', 'Tributos', '🏷️'], ['quitacao', 'Quitação', '💰']] },
   { id: 'cad', rotulo: 'Cadastros', icone: '👥', itens: [['clientes', 'Clientes', '🏢'], ['produtos', 'Produtos', '🍞'], ['funcionarios', 'Funcionários', '🧑‍🍳'], ['usuarios', 'Usuários', '🔑']] },
   { id: 'outros', rotulo: 'Outros', icone: '📦', itens: [['extrasbaixa', 'Pedidos extras', '🛍'], ['relnfes', 'Relatório de NFEs', '📊'], ['nfsconf', 'Leitura de NFs confirmadas', '📥']] },

@@ -16,7 +16,7 @@ const LinhaEmpresa = memo(function LinhaEmpresa({ e, marc, onClick }) {
   );
 });
 
-/** Controle do etinerário (u_etinerario): horários de roteiros por motorista e as empresas atendidas em cada um. */
+/** Controle do itinerário (u_etinerario): horários de roteiros por motorista e as empresas atendidas em cada um. */
 export default function Itinerario({ onFechar }) {
   const [roteiros, setRoteiros] = useState([]);
   const [motoristas, setMotoristas] = useState([]);
@@ -116,10 +116,10 @@ export default function Itinerario({ onFechar }) {
       <Toast aviso={aviso} />
       {senhaFab && <SenhaFabricaDialog onFechar={() => setSenhaFab(false)} onAviso={(m) => setAviso({ tipo: 'ok', m })} />}
       <header className="cg-topo">
-        <div className="cg-tit"><b>🧭 Controle do etinerário</b><small>Horários dos roteiros e as empresas de cada um</small></div>
+        <div className="cg-tit"><b>🧭 Controle do itinerário</b><small>Horários dos roteiros e as empresas de cada um</small></div>
         <span className="cg-esp" />
         {!ehFabrica() && <button type="button" className="trb2-btn" onClick={() => setSenhaFab(true)} title="Define a senha que a Fábrica digita para abrir o Itinerário">🔑 Senha da Fábrica</button>}
-        <button type="button" className="trb2-btn" onClick={imprimir} disabled={ocupado}>🖨 Imprimir etinerário</button>
+        <button type="button" className="trb2-btn" onClick={imprimir} disabled={ocupado}>🖨 Imprimir itinerário</button>
         <button type="button" className="trb2-btn" onClick={() => { carregaRoteiros(true); carregaEmpresas(); }}>⟳ Atualizar</button>
         <button type="button" className="trb2-btn" onClick={onFechar}>Fechar</button>
       </header>

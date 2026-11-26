@@ -2262,3 +2262,9 @@ button.lk-versao{background:none!important;border:0!important;box-shadow:none!im
 .it .trb2-tab tbody tr.marc td{background:#1b4f9e;color:#fff;font-weight:600}
 .it .trb2-tab tbody tr.marc:hover td{background:#173f80}
 .it .trb2-tab tbody tr.marc td:first-child{box-shadow:inset 4px 0 0 #ffd27a}
+
+/* Pedidos extras: linha selecionada com contraste forte (fundo azul escuro, texto branco) */
+.fb-solo .grade tbody tr.sel td{background:#1b4f9e !important;color:#fff !important;font-weight:700;box-shadow:none}
+.fb-solo .grade tbody tr.sel td:first-child{box-shadow:inset 4px 0 0 #ffd27a}
+.fb-solo .grade tbody tr.sel:hover td{background:#173f80 !important}
+.fb-solo .grade tbody tr.sel .dx-del,.fb-solo .grade tbody tr.sel .bt{background:#fff;color:#222}

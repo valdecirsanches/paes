@@ -350,7 +350,7 @@ export function itinerarioImpressao(rows) {
     if (!t) { t = { id: r.id_roteiro, horario: r.horario, empresas: [] }; m.rotas.push(t); }
     if (r.nome_exibe) t.empresas.push(r);
   }
-  const corpo = motoristas.map((m) => `<section class="pg"><div class="cab"><b>Lev-Pão - Indústria de Alimentos</b><u>Etinerário de entregas</u><span>${esc(hoje)}</span></div>
+  const corpo = motoristas.map((m) => `<section class="pg"><div class="cab"><b>Lev-Pão - Indústria de Alimentos</b><u>Itinerário de entregas</u><span>${esc(hoje)}</span></div>
     <div class="mot"><span>${esc(m.nome)}</span><span>${esc(m.celular)}</span></div>
     ${m.rotas.map((t) => `<div class="hr">${esc(t.horario)}</div>${t.empresas.map((e) => `<div class="em"><span>${esc(e.nome_exibe)}</span><span>${esc(e.telefone)}</span><span>${esc(e.contato)}</span></div>`).join('') || '<div class="em">(sem empresas)</div>'}`).join('')}</section>`).join('');
   const css = `@page{size:A4;margin:6mm}body{margin:0;font-family:Arial}.pg{page-break-after:always}.cab{display:flex;justify-content:space-between;align-items:baseline;border-bottom:.3mm solid #000;margin-bottom:2mm}.cab b{font-size:16pt;font-weight:normal}.cab u{font-size:12pt}.cab span{font-size:8pt}

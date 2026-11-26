@@ -10,6 +10,7 @@ export default function ExtrasBaixa({ onFechar }) {
   const [linhas, setLinhas] = useState([]);
   const [todos, setTodos] = useState(false); // mostra também os já processados (para desfazer)
   const [aviso, setAviso] = useState(null);
+  const [sel, setSel] = useState(null);
   const erro = (e) => setAviso({ tipo: 'erro', m: e.message });
   const carregar = useCallback(async () => {
     try { setLinhas(await api.get(`/extras${todos ? '?todos=1' : ''}`)); } catch (e) { erro(e); }
@@ -41,7 +42,7 @@ export default function ExtrasBaixa({ onFechar }) {
           <thead><tr><th style={{ width: 44 }} /><th>Empresa</th><th>Solicitante</th><th>Descrição do pedido</th><th>Data</th><th>Hora</th><th>Funcionário</th></tr></thead>
           <tbody>
             {linhas.map((r) => (
-              <tr key={r.id} style={ja(r) ? { opacity: 0.55 } : undefined}>
+              <tr key={r.id} className={`clicavel${sel === r.id ? ' sel' : ''}`} onClick={() => setSel(r.id)} style={ja(r) ? { opacity: 0.55 } : undefined}>
                 <td style={{ textAlign: 'center' }}><button type="button" className="bt" title={ja(r) ? 'Processado — clique para desfazer' : 'Marcar como processado'} onClick={() => processar(r)}>{ja(r) ? '↶' : '✔'}</button></td>
                 <td>{r.empresa}</td><td>{r.contato}</td><td className="fb-txt">{r.descricao}</td><td>{brData(r.data)}</td><td>{hhmm(r.hora)}</td><td>{r.funcionario}</td>
               </tr>))}
