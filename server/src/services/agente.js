@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const DIR = process.env.AGENTE_DIR || path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../agente-impressao');
-const INCLUIR = ['package.json', 'src/config.js', 'src/transportes.js', 'src/png.js', 'src/server.js', 'src/tunel.js', 'src/admin.js'];
+const INCLUIR = ['package.json', 'src/config.js', 'src/transportes.js', 'src/png.js', 'src/server.js', 'src/tunel.js', 'src/admin.js', 'src/bandeja.ps1', 'src/bandeja.vbs'];
 
 /** { arquivos: { 'src/server.js': <base64>, ... } } — sem zip, o PowerShell recompõe os arquivos. */
 export function pacote(dir = DIR) {
@@ -36,7 +36,10 @@ function Passo($n, $t) { Linha ''; Linha ("  [$n/5] $t") Cyan }
 function Ok($t) { Linha ("        [ OK ] $t") Green }
 function Info($t) { Linha ("        $t") DarkGray }
 function AtualizaPath { $env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User') }
-function ParaAgente { Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object { $_.CommandLine -like '*PaesAgenteImpressao*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force } }
+function ParaAgente {
+  Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" | Where-Object { $_.CommandLine -like '*bandeja.ps1*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force } # bandeja primeiro, senao ela religa o agente
+  Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object { $_.CommandLine -like '*PaesAgenteImpressao*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
+}
 
 try {
 if ('@@MODO@@' -eq 'remover') {
@@ -109,15 +112,17 @@ Ok 'Pasta de configuracao liberada para os usuarios do Windows'
 
 Passo 4 'Iniciar junto com o Windows'
 Unregister-ScheduledTask -TaskName $tarefa -Confirm:$false -ErrorAction SilentlyContinue
-# node direto (sem PowerShell no meio) + vigia: ao entrar no Windows e a cada 5 min a tarefa tenta subir o agente (se já está rodando, ignora).
+# vigia: ao entrar no Windows e a cada 5 min a tarefa tenta abrir a bandeja (se já está aberta, ignora).
 # Assim, depois de reiniciar o computador ele volta sozinho, mesmo que o primeiro início falhe (rede ainda subindo etc.).
-$acao = New-ScheduledTaskAction -Execute $node -Argument ('"{0}\src\server.js"' -f $dest) -WorkingDirectory $dest
+# abre a BANDEJA (icone ao lado do relogio, sem janela preta); ela sobe o agente escondido e religa se cair. wscript //B = sem janela nenhuma.
+$acao = New-ScheduledTaskAction -Execute 'wscript.exe' -Argument ('//B //Nologo "{0}\src\bandeja.vbs"' -f $dest) -WorkingDirectory $dest
 $usr = $env:USERDOMAIN + '\' + $env:USERNAME
 $gat = @((New-ScheduledTaskTrigger -AtLogOn -User $usr), (New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes 5) -RepetitionDuration (New-TimeSpan -Days 3650)))
 $set = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -MultipleInstances IgnoreNew -RestartCount 99 -RestartInterval (New-TimeSpan -Minutes 1) -ExecutionTimeLimit ([TimeSpan]::Zero)
 Register-ScheduledTask -TaskName $tarefa -Action $acao -Trigger $gat -Settings $set -User $usr -RunLevel Limited | Out-Null
 Start-ScheduledTask -TaskName $tarefa
 Ok ('Tarefa "' + $tarefa + '" criada para ' + $usr)
+Info 'O agente fica na bandeja do Windows (icone de impressora perto do relogio). Nao ha mais janela preta.'
 
 Passo 5 'Verificando'
 $resp = $null

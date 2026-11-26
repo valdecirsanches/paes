@@ -40,3 +40,6 @@ Conectar à mão: na página do agente, em "Conexão com o sistema", informe o e
 
 ## Reiniciar / iniciar sozinho
 O instalador cria a tarefa `PaesAgenteImpressao` (ao entrar no Windows + vigia a cada 5 min). No sistema, **Ferramentas › Configurar impressoras › ♻ Reiniciar agente** reinicia o agente deste computador (v1.3.0+).
+
+## Bandeja (v1.4.0)
+O agente roda como ícone de impressora na bandeja do Windows (sem janela preta): verde ativo, amarelo iniciando, vermelho parado. Clique duplo = painel; menu = registro, reiniciar, sair. A tarefa `PaesAgenteImpressao` abre `src/bandeja.vbs` ao entrar no Windows e a cada 5 min (se a bandeja já está aberta, ignora; "Sair" para o agente até o próximo vigia/login).

@@ -6,7 +6,7 @@ test('pacote traz os arquivos do agente em base64', () => {
   const p = pacote();
   assert.ok(p.versao);
   assert.match(Buffer.from(p.arquivos['src/server.js'], 'base64').toString(), /criaServidor/);
-  assert.deepEqual(Object.keys(p.arquivos).sort(), ['package.json', 'src/admin.js', 'src/config.js', 'src/png.js', 'src/server.js', 'src/transportes.js', 'src/tunel.js']);
+  assert.deepEqual(Object.keys(p.arquivos).sort(), ['package.json', 'src/admin.js', 'src/bandeja.ps1', 'src/bandeja.vbs', 'src/config.js', 'src/png.js', 'src/server.js', 'src/transportes.js', 'src/tunel.js']);
 });
 test('instalador: endereço embutido, auto-elevação e marcador', () => {
   const b = instaladorBat('https://paes.x-star.com.br');
@@ -49,4 +49,17 @@ test('instalador Linux: shell válido, pacote embutido, token só quando pedido'
   assert.match(instaladorSh('https://a.com', 'remover', pacote()), /MODO='remover'/);
   assert.throws(() => instaladorSh('https://a.com', 'instalar', pacote(), "x'; rm -rf /; '"), /Token/);
   assert.throws(() => instaladorSh("https://a.com'; rm -rf /; '", 'instalar', pacote()), /Endereço/);
+});
+
+test('instalador Windows abre a bandeja (wscript //B), sem janela do node', () => {
+  const b = instaladorBat('https://paes.x-star.com.br', 'instalar', pacote());
+  assert.match(b, /New-ScheduledTaskAction -Execute 'wscript\.exe' -Argument \('\/\/B \/\/Nologo/);
+  assert.doesNotMatch(b, /New-ScheduledTaskAction -Execute \$node/);
+  assert.match(b, /bandeja\.ps1/);
+});
+test('bandeja.ps1 tem BOM UTF-8 (acentos no PowerShell 5) e arquivos do pacote existem', () => {
+  const ps = Buffer.from(pacote().arquivos['src/bandeja.ps1'], 'base64');
+  assert.deepEqual([...ps.subarray(0, 3)], [0xef, 0xbb, 0xbf]);
+  assert.match(ps.toString('utf8'), /NotifyIcon/);
+  assert.match(Buffer.from(pacote().arquivos['src/bandeja.vbs'], 'base64').toString(), /Run .*, 0, False/);
 });

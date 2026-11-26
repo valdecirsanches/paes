@@ -18,7 +18,7 @@ export function reiniciaProcesso() {
   setTimeout(() => process.exit(0), 300);
 }
 
-const VERSAO = '1.3.1'; // 1.3.1: agente.log (início, saída e erros; ajuda a descobrir por que o agente fecha) e saída silenciosa se a porta já está em uso (cópia duplicada); 1.3.0: POST /reiniciar (botão "Reiniciar agente" no sistema; o agente se reabre sozinho); 1.2.1: corrige sozinho endereço https quando o sistema só fala http; 1.2.0: o agente CONECTA ao sistema (túnel reverso, sem porta/IP/firewall) e o "acesso pela rede" deixou de existir; 1.1.2: 1.1.2: impressão por imagem sempre em orientação retrato (Brother vinha em paisagem); 1.1.1: DANFE A4 encaixado na área imprimível (rodapé não corta); 1.1.0: gravação do XML da NF-e no N: (POST /gravar)
+const VERSAO = '1.4.0'; // 1.4.0: modo bandeja (icone ao lado do relogio, sem janela preta; src/bandeja.ps1); // 1.3.1: agente.log (início, saída e erros; ajuda a descobrir por que o agente fecha) e saída silenciosa se a porta já está em uso (cópia duplicada); 1.3.0: POST /reiniciar (botão "Reiniciar agente" no sistema; o agente se reabre sozinho); 1.2.1: corrige sozinho endereço https quando o sistema só fala http; 1.2.0: o agente CONECTA ao sistema (túnel reverso, sem porta/IP/firewall) e o "acesso pela rede" deixou de existir; 1.1.2: 1.1.2: impressão por imagem sempre em orientação retrato (Brother vinha em paisagem); 1.1.1: DANFE A4 encaixado na área imprimível (rodapé não corta); 1.1.0: gravação do XML da NF-e no N: (POST /gravar)
 const MAX_CORPO = 4 * 1024 * 1024;
 
 /** Cria o servidor. `deps` permite trocar os transportes nos testes. */
