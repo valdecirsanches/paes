@@ -1,4 +1,5 @@
 [
+  {"fase": 393, "itens": ["Grades: o mouse não colore mais a linha (sem destaque ao passar o cursor). O contraste aparece só na linha selecionada, depois do clique."]},
   {"fase": 392, "itens": ["Produção: a linha da grade usa a mesma cor de fundo do campo Horário (1º amarelo, 2º verde, 3º azul), com texto escuro; a linha selecionada fica mais forte, com barras escuras em cima/embaixo.", "Diária (Faturamento): a coluna Cobrança agora fica depois de 'Descrição para expedição' e antes de 'Anotações'."]},
   {"fase": 391, "itens": ["Senha da Fábrica: o campo 'Senha atual' (com 👁) agora aparece sempre; quando ainda não há senha definida mostra '(nenhuma senha definida)'."]},
   {"fase": 390, "itens": ["Itinerário ▸ 🔑 Senha da Fábrica: agora mostra a SENHA ATUAL com o 👁 (só no Faturamento; cada visualização fica na Auditoria). A senha é guardada criptografada (AES-256-GCM) com chave fora do banco. Se a senha foi definida antes desta versão, defina-a de novo uma vez para poder vê-la."]},

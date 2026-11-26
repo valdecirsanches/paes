@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 393 — Sem destaque por passagem do mouse nas grades
+
+Removidas as regras `tr:hover` de fundo (trb2-tab, cd-tab, merc-tab, cm2, pr-grade/-d, rn-grade, aud-tab, cf-tab, fbp-grade). Só a linha selecionada (clique) tem contraste.
+
 ## Fase 392 — Produção colorida por horário; Cobrança após a descrição
 
 CSS `.pr-grade tr.pr-t1/2/3` (mesmas cores do `.pr2-turno`, !important para vencer o tema; selecionada mais forte). `DiariaTab.jsx`: coluna Cobrança movida para depois de Descrição e antes de Anotações (cabeçalho, linha nova e linhas).

@@ -65,7 +65,7 @@
 .fbp-grade td{background:#fff;color:#111;font-weight:600;border-color:#e1e5eb}
 .fbp-grade td.hor{text-align:center;font-weight:700}
 .fbp-grade td.hor.t1{background:#fff2a8;color:#7a6400}.fbp-grade td.hor.t2{background:#cdeec6;color:#2f6b1f}.fbp-grade td.hor.t3{background:#0000ff;color:#fff}
-.fbp-grade tbody tr:hover td:not(.hor){background:#f3f6fb}
+
 .fbp-grade tr.sel-l td:not(.hor){background:#cfe4ff;color:#0b2a5c;font-weight:800}
 .fbp-grade tr.sel-l td.ind{background:#cfe4ff}
 .fbp-vazio{color:#666!important}
@@ -98,7 +98,7 @@
 .fbp-grade tr.rt1 td.hor{background:#ffd940;color:#3d3300}
 .fbp-grade tr.rt2 td.hor{background:#8fd47f;color:#0b2d04}
 .fbp-grade tr.rt3 td.hor{background:#0b1fa0;color:#fff}
-.fbp-grade tbody tr.rt1:hover td{background:#ffec7a}.fbp-grade tbody tr.rt2:hover td{background:#b6e5ab}.fbp-grade tbody tr.rt3:hover td{background:#3552e6}
+
 .fbp-grade tr.sel-l.rt1 td{background:#ffcc00;color:#000}
 .fbp-grade tr.sel-l.rt2 td{background:#5fc24a;color:#000}
 .fbp-grade tr.sel-l.rt3 td{background:#000c6b;color:#fff}
