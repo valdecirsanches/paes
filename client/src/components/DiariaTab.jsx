@@ -481,7 +481,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
         <table className="grade">
           <thead>
             <tr><th className="ind" /><th className="c" title="Registro alterado">A</th><th className="c" title="Programação fixa">Fx</th>
-              <th className="ord" onClick={() => ordenar('hora')} title="Ordenar por horário de entrega (clique de novo para inverter)">Entrega{seta('hora')}</th><th>Fixo + Extra = Total</th>{!consulta && <th className="n" title="Preço / Cada = Valor total do item">Cobrança</th>}<th className="ord" onClick={() => ordenar('descricao')} title="Ordenar por descrição (clique de novo para inverter)">Descrição para expedição{seta('descricao')}</th><th>Anotações</th>
+              <th className="ord" onClick={() => ordenar('hora')} title="Ordenar por horário de entrega (clique de novo para inverter)">Entrega{seta('hora')}</th><th>Fixo + Extra = Total</th><th className="ord" onClick={() => ordenar('descricao')} title="Ordenar por descrição (clique de novo para inverter)">Descrição para expedição{seta('descricao')}</th>{!consulta && <th className="n" title="Preço / Cada = Valor total do item">Cobrança</th>}<th>Anotações</th>
               <th>Produção</th><th>Comandas</th><th className="c" />
             </tr>
           </thead>
@@ -491,8 +491,7 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
                 <td className="ind">*</td><td className="c"><input type="checkbox" readOnly disabled /></td><td className="c"><input type="checkbox" readOnly disabled /></td>
                 <td className="num">{linhaNova.hora}</td>
                 <td className="qtd">{novo && <><span>{fmtQtde(linhaNova.qtde_original)}</span> + <span>{fmtQtde(linhaNova.qtde_alterada)}</span> = <span>{fmtQtde((Number(linhaNova.qtde_original) || 0) + (Number(linhaNova.qtde_alterada) || 0))}</span></>}</td>
-                {!consulta && <td className="n">{novo ? cobranca(linhaNova) : ''}</td>}
-                <td>{linhaNova.produto_descricao_expedicao}</td><td>{linhaNova.obs}</td><td /><td />
+                <td>{linhaNova.produto_descricao_expedicao}</td>{!consulta && <td className="n">{novo ? cobranca(linhaNova) : ''}</td>}<td>{linhaNova.obs}</td><td /><td />
               </tr>
             )}
             {itens.map((i) => {
@@ -508,8 +507,8 @@ export default function DiariaTab({ status, data, filtro, roteiros, onChanged, n
                   <td className="qtd">
                     <span>{fmtQtde(ed.qtde_original)}</span> {Number(ed.qtde_alterada) < 0 ? '−' : '+'} <span>{fmtQtde(Math.abs(ed.qtde_alterada))}</span> = <span>{fmtQtde((Number(ed.qtde_original) || 0) + (Number(ed.qtde_alterada) || 0))}</span>
                   </td>
-                  {!consulta && <td className="n">{cobranca(ed)}</td>}
                   <td>{ed.produto_descricao_expedicao}</td>
+                  {!consulta && <td className="n">{cobranca(ed)}</td>}
                   <td>{ed.obs}</td>
                   <td className="num">{i.producao_esquema}</td>
                   <td className="num">{i.comandas}</td>

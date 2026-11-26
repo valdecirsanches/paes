@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 392 — Produção colorida por horário; Cobrança após a descrição
+
+CSS `.pr-grade tr.pr-t1/2/3` (mesmas cores do `.pr2-turno`, !important para vencer o tema; selecionada mais forte). `DiariaTab.jsx`: coluna Cobrança movida para depois de Descrição e antes de Anotações (cabeçalho, linha nova e linhas).
+
 ## Fase 391 — Senha da Fábrica: campo "Senha atual" sempre visível
 
 `SenhaFabricaDialog.jsx`: mostra o campo mesmo sem senha definida (desabilitado, "nenhuma senha definida").

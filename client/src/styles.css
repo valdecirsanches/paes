@@ -2268,3 +2268,15 @@ button.lk-versao{background:none!important;border:0!important;box-shadow:none!im
 .fb-solo .grade tbody tr.sel td:first-child{box-shadow:inset 4px 0 0 #ffd27a}
 .fb-solo .grade tbody tr.sel:hover td{background:#173f80 !important}
 .fb-solo .grade tbody tr.sel .dx-del,.fb-solo .grade tbody tr.sel .bt{background:#fff;color:#222}
+
+/* Produção (mestre): a linha inteira usa a cor de fundo do campo Horário (1º amarelo, 2º verde, 3º azul), com texto escuro para garantir o contraste */
+.pr-grade tbody tr.pr-t1 td{background:#fff2a8 !important;color:#2b2400 !important}
+.pr-grade tbody tr.pr-t2 td{background:#cdeec6 !important;color:#10300a !important}
+.pr-grade tbody tr.pr-t3 td{background:color-mix(in srgb, var(--azul-barra) 20%, #fff) !important;color:#0b1f3d !important}
+.pr-grade tbody tr.pr-t1 td,.pr-grade tbody tr.pr-t2 td,.pr-grade tbody tr.pr-t3 td{font-weight:600;border-bottom:1px solid rgba(0,0,0,.12)}
+/* linha selecionada: tom mais forte da mesma cor + barra escura em cima/embaixo e barra lateral */
+.pr-grade tbody tr.pr-t1.sel td{background:#ffe14d !important}
+.pr-grade tbody tr.pr-t2.sel td{background:#8fd681 !important}
+.pr-grade tbody tr.pr-t3.sel td{background:color-mix(in srgb, var(--azul-barra) 42%, #fff) !important}
+.pr-grade tbody tr.sel td{font-weight:800;box-shadow:inset 0 2px 0 #1b1b1b, inset 0 -2px 0 #1b1b1b}
+.pr-grade tbody tr.sel td.ind{box-shadow:inset 5px 0 0 #1b1b1b, inset 0 2px 0 #1b1b1b, inset 0 -2px 0 #1b1b1b}
