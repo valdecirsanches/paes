@@ -39,7 +39,7 @@ router.get('/motoristas', async (_req, res) => {
   const [rows] = await pool.query(
     `select f.id, f.nome, f.apelido, f.celular from tb_funcionarios f
        left join tb_funcoes fc on fc.id = f.id_funcao
-      where fc.descricao = 'MOTORISTA' and f.id <> 99 order by f.nome`);
+      where fc.descricao = 'MOTORISTA' and f.id <> 99 and f.ativo = 'True' order by f.nome`);
   res.json(rows);
 });
 
@@ -47,7 +47,7 @@ router.get('/motoristas', async (_req, res) => {
 router.get('/roteiros', async (_req, res) => {
   const [rows] = await pool.query(
     `select r.id, left(r.horario, 5) as horario, r.descricao, r.id_funcionario, f.nome, f.apelido,
-            (select count(*) from tb_roteiro_distribuicao rd where rd.id_roteiro = r.id) as empresas
+            (select count(*) from tb_roteiro_distribuicao rd join tb_unidades ux on ux.id = rd.id_unidade and ux.ativo = 'True' join tb_clientes cx on cx.id = ux.id_cliente and cx.ativo = 'ATIVO' where rd.id_roteiro = r.id) as empresas
        from tb_roteiro r left join tb_funcionarios f on f.id = r.id_funcionario
       where f.id is null or f.ativo = 'True'
       order by f.nome, r.horario`);
@@ -96,8 +96,9 @@ router.get('/roteiros/:id/empresas', async (req, res) => {
   const [rows] = await pool.query(
     `select rd.id, rd.id_roteiro, rd.id_unidade, rd.roteiro_ordem, u.nome, ${NOME_EXIBE} as nome_exibe, u.telefone, u.contato
        from tb_roteiro_distribuicao rd
-       left join tb_unidades u on u.id = rd.id_unidade
-      where rd.id_roteiro = ? order by rd.roteiro_ordem, rd.id`, [idUm(req.params.id)]);
+       join tb_unidades u on u.id = rd.id_unidade and u.ativo = 'True'
+       join tb_clientes c on c.id = u.id_cliente and c.ativo = 'ATIVO'
+      where rd.id_roteiro = ? order by rd.roteiro_ordem, rd.id`, [idUm(req.params.id)]); // unidade/cliente inativo não aparece
   res.json(rows);
 });
 
@@ -110,7 +111,7 @@ router.get('/roteiros/:id/fora', async (req, res) => {
     `select u.id as id_unidade, u.id_cliente, c.razao_social, ${NOME_EXIBE} as chave
        from tb_unidades u
        join tb_clientes c on c.id = u.id_cliente
-      where u.ativo = 'True' and c.programacao_ativo = 'True'
+      where u.ativo = 'True' and c.ativo = 'ATIVO' and c.programacao_ativo = 'True'
         and not exists (select 1 from tb_roteiro_distribuicao d where d.id_unidade = u.id and d.id_roteiro = ?)
         ${soLivres}
       order by u.nome`, [id]);
@@ -154,10 +155,15 @@ router.put('/roteiros/:id/ordem', async (req, res) => {
   const lista = req.body?.ids;
   if (!Array.isArray(lista) || !lista.every((n) => Number.isInteger(n) && n > 0)) throw invalid('Ordem inválida.');
   await tx(async (c) => {
-    const [atuais] = await c.query('select id from tb_roteiro_distribuicao where id_roteiro = ? for update', [id]);
-    const a = new Set(atuais.map((x) => x.id));
-    if (lista.length !== a.size || !lista.every((n) => a.has(n))) throw new AppError(409, 'A lista de empresas mudou. Atualize a tela e tente de novo.');
-    for (let i = 0; i < lista.length; i++) await c.query('update tb_roteiro_distribuicao set roteiro_ordem = ? where id = ?', [i + 1, lista[i]]);
+    // a tela só enxerga empresas ativas: as inativas (ocultas) ficam no fim, na ordem em que estavam
+    const [atuais] = await c.query(`select rd.id, (u.ativo = 'True' and cl.ativo = 'ATIVO') as visivel from tb_roteiro_distribuicao rd
+        left join tb_unidades u on u.id = rd.id_unidade left join tb_clientes cl on cl.id = u.id_cliente
+       where rd.id_roteiro = ? order by rd.roteiro_ordem, rd.id for update`, [id]);
+    const visiveis = new Set(atuais.filter((x) => Number(x.visivel)).map((x) => x.id));
+    if (lista.length !== visiveis.size || !lista.every((n) => visiveis.has(n))) throw new AppError(409, 'A lista de empresas mudou. Atualize a tela e tente de novo.');
+    const ocultas = atuais.filter((x) => !Number(x.visivel)).map((x) => x.id);
+    const final = [...lista, ...ocultas];
+    for (let i = 0; i < final.length; i++) await c.query('update tb_roteiro_distribuicao set roteiro_ordem = ? where id = ?', [i + 1, final[i]]);
   });
   res.json({ ok: true });
 });
@@ -171,6 +177,8 @@ router.get('/impressao', async (_req, res) => {
        join tb_funcionarios f on f.id = r.id_funcionario and f.ativo = 'True'
        left join tb_roteiro_distribuicao rd on rd.id_roteiro = r.id
        left join tb_unidades u on u.id = rd.id_unidade
+       left join tb_clientes cl on cl.id = u.id_cliente
+      where rd.id is null or (u.ativo = 'True' and cl.ativo = 'ATIVO')
       order by f.nome, r.horario, rd.roteiro_ordem, rd.id`);
   res.json(rows);
 });

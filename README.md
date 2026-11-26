@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 387 — Itinerário: contraste da seleção e sem inativos
+
+`routes/itinerario.js`: motoristas `ativo='True'`; empresas só com unidade `ativo='True'` e cliente `ativo='ATIVO'` (dentro, fora, contagem, impressão); `PUT /roteiros/:id/ordem` compara só com as visíveis e mantém as ocultas no fim. CSS `.it .trb2-tab tr.marc`.
+
 ## Fase 386 — Senha da Fábrica no Itinerário
 
 `components/SenhaFabricaDialog.jsx` aberto por botão em `Itinerario.jsx` (oculto com `ehFabrica()`); removidos `SenhaFabrica.jsx` e o item de menu.

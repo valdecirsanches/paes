@@ -2257,3 +2257,8 @@ button.lk-versao{background:none!important;border:0!important;box-shadow:none!im
 .dr2-principal>.dr2-abas{min-height:0;max-height:100%;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;align-self:stretch}
 .dr2-principal>.dr2-abas button{flex:0 0 auto;min-height:0;padding:10px 5px;line-height:1.1}
 @media (max-height:860px){.dr2-principal>.dr2-abas button{padding:7px 4px;font-size:11px}}
+
+/* Itinerário: linha selecionada/marcada com contraste forte (fundo azul escuro, texto branco em negrito) */
+.it .trb2-tab tbody tr.marc td{background:#1b4f9e;color:#fff;font-weight:600}
+.it .trb2-tab tbody tr.marc:hover td{background:#173f80}
+.it .trb2-tab tbody tr.marc td:first-child{box-shadow:inset 4px 0 0 #ffd27a}
