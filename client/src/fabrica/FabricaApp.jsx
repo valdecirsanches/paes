@@ -10,6 +10,7 @@ import Extras from '../screens/Extras.jsx';
 import Conflitos from '../screens/Conflitos.jsx';
 import { aoPedirConflitos } from '../lib/navega.js';
 import FabricaProducao from './FabricaProducao.jsx';
+import Itinerario from '../screens/Itinerario.jsx';
 import './fabrica.css';
 import TemaControles from '../components/TemaControles.jsx';
 
@@ -20,6 +21,7 @@ import TemaControles from '../components/TemaControles.jsx';
 const TELAS = {
   diaria: { t: 'Programação', Tela: Diaria, claro: true },
   producao: { t: 'Produção', Tela: FabricaProducao },
+  itinerario: { t: 'Itinerário', Tela: Itinerario, claro: true }, // aberta por Produção ▸ Itinerário, mediante senha (definida no Faturamento)
   mercadorias: { t: 'Mercadorias', Tela: Mercadorias, claro: true },
   cargas: { t: 'Cargas', Tela: Cargas, claro: true },
   reclamacoes: { t: 'Reclamações', Tela: Reclamacoes, claro: true },

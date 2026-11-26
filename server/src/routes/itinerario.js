@@ -1,9 +1,29 @@
 import { Router } from 'express';
 import { pool, tx } from '../db.js';
 import { AppError, invalid, notFound } from '../errors.js';
+import { temSenha, defineSenha, removeSenha, confereSenha, freio, erro, acerto } from '../services/senhaFabrica.js';
+import { ipDe } from '../services/auditoria.js';
 
 // Controle do etinerário (u_etinerario): horários de roteiros (tb_roteiro) e empresas de cada roteiro (tb_roteiro_distribuicao).
 const router = Router();
+
+// Senha de acesso da Fábrica ao Itinerário. Definir/remover: só no Faturamento (não pela máquina da fábrica). Validar: livre (a Fábrica usa).
+router.get('/acesso', async (_req, res) => { res.json({ protegido: await temSenha() }); });
+router.post('/acesso/validar', async (req, res) => {
+  const ip = ipDe(req); const espera = freio(ip);
+  if (espera) throw new AppError(429, `Muitas tentativas. Aguarde ${espera}s.`);
+  if (!(await temSenha())) throw new AppError(409, 'A senha de acesso ao Itinerário ainda não foi definida (Faturamento ▸ Senha da Fábrica).');
+  if (!(await confereSenha(String(req.body?.senha ?? '')))) { erro(ip); throw new AppError(403, 'Senha incorreta.'); }
+  acerto(ip); res.json({ ok: true });
+});
+const soFaturamento = (req) => { if (req.fabricaSemLogin) throw new AppError(403, 'A senha só pode ser definida pelo Faturamento.'); };
+router.put('/acesso', async (req, res) => {
+  soFaturamento(req);
+  const senha = String(req.body?.senha ?? '');
+  if (senha.length < 4 || senha.length > 40) throw invalid('A senha deve ter de 4 a 40 caracteres.');
+  await defineSenha(senha); res.json({ ok: true, protegido: true });
+});
+router.delete('/acesso', async (req, res) => { soFaturamento(req); await removeSenha(); res.json({ ok: true, protegido: false }); });
 
 const idUm = (v, rotulo = 'Item') => { const n = Number(v); if (!Number.isInteger(n) || n <= 0) throw invalid(`${rotulo} inválido(a).`); return n; };
 const horario = (v) => {

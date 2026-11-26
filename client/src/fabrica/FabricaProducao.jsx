@@ -141,7 +141,33 @@ function Aba({ tipo, data, recarga, ativa, fonte, onCarga }) {
   );
 }
 
-export default function FabricaProducao({ ativa = true }) {
+/** Pede a senha do Itinerário (definida no Faturamento) e, se correta, abre o Itinerário na janela da Fábrica. */
+function SenhaItinerario({ onOk, onCancela }) {
+  const [senha, setSenha] = useState('');
+  const [erro, setErro] = useState('');
+  const [enviando, setEnviando] = useState(false);
+  const enviar = async () => {
+    if (enviando || !senha) return;
+    setEnviando(true); setErro('');
+    try { await api.post('/itinerario/acesso/validar', { senha }); onOk(); } catch (e) { setErro(e.message); setSenha(''); } finally { setEnviando(false); }
+  };
+  return (
+    <div className="fb-tema-veu" onClick={onCancela} style={{ display: 'grid', placeItems: 'center', background: 'rgba(0,0,0,.35)' }}>
+      <div role="dialog" aria-label="Senha do Itinerário" onClick={(e) => e.stopPropagation()} style={{ background: '#fff', color: '#222', padding: 18, borderRadius: 8, minWidth: 300, boxShadow: '0 6px 24px rgba(0,0,0,.4)', display: 'grid', gap: 10 }}>
+        <b>🔑 Itinerário — informe a senha</b>
+        <input type="password" autoFocus autoComplete="off" value={senha} onChange={(e) => setSenha(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') enviar(); if (e.key === 'Escape') onCancela(); }} placeholder="Senha" />
+        {erro && <span style={{ color: '#b00020' }} role="alert">{erro}</span>}
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <button type="button" onClick={onCancela}>Cancelar</button>
+          <button type="button" onClick={enviar} disabled={enviando || !senha}>Abrir</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function FabricaProducao({ ativa = true, abrirTela = null }) {
+  const [pedeSenha, setPedeSenha] = useState(false);
   const [data, setData] = useState(hoje());
   const [aba, setAba] = useState('salgados');
   const [recarga, setRecarga] = useState({ salgados: 0, especiais: 0 });
@@ -176,6 +202,7 @@ export default function FabricaProducao({ ativa = true }) {
               <div className="fbp-cal-bt"><button type="button" onClick={() => { setData(hoje()); setCal(false); }}>Hoje</button><button type="button" onClick={() => { setData(hoje()); setCal(false); }}>Agora</button></div>
             </div>)}
         </div>
+        {abrirTela && <button type="button" className="fbp-bt" onClick={() => setPedeSenha(true)} title="Abre o Itinerário mediante senha">🚚 Itinerário</button>}
         <button type="button" className={`fbp-bt${aba === 'especiais' ? ' on' : ''}`} onClick={() => abrirAba('especiais')}><img src="/fabrica/seta.png" alt="" />Especiais</button>
         <button type="button" className={`fbp-bt${aba === 'salgados' ? ' on' : ''}`} onClick={() => abrirAba('salgados')}><img src="/fabrica/seta.png" alt="" />Salgados</button>
         <div className="fbp-spin"><input type="number" min={8} max={60} value={fonte} onChange={(e) => setFonte(Math.min(60, Math.max(8, Number(e.target.value) || 16)))} aria-label="Tamanho da fonte" />
@@ -186,6 +213,7 @@ export default function FabricaProducao({ ativa = true }) {
         <Aba tipo="salgados" data={data} recarga={recarga.salgados} ativa={aba === 'salgados'} fonte={fonte} onCarga={onCarga} />
         <Aba tipo="especiais" data={data} recarga={recarga.especiais} ativa={aba === 'especiais'} fonte={fonte} onCarga={onCarga} />
       </div>
+      {pedeSenha && <SenhaItinerario onCancela={() => setPedeSenha(false)} onOk={() => { setPedeSenha(false); abrirTela('itinerario'); }} />}
     </div>
   );
 }

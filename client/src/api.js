@@ -3,7 +3,18 @@ const CHAVE_DISP = 'paes_dispositivo';
 export const guardaDispositivo = (c) => { try { if (c) localStorage.setItem(CHAVE_DISP, c); } catch { /* sem armazenamento */ } };
 const lerDispositivo = () => { try { return localStorage.getItem(CHAVE_DISP) || ''; } catch { return ''; } };
 try { navigator.storage?.persist?.(); } catch { /* opcional: pede ao navegador para não apagar os dados do site */ }
-async function req(method, path, body) {
+// Internet lenta + vários cliques: um pedido IDÊNTICO (mesmo método, caminho e corpo) ainda em andamento não é reenviado; quem clicou de novo
+// recebe a mesma resposta. Assim os cliques repetidos não viram dezenas de gravações/consultas que "chegam todas de uma vez".
+const emAndamento = new Map();
+function req(method, path, body) {
+  const chave = `${method} ${path} ${body === undefined ? '' : JSON.stringify(body)}`;
+  const atual = emAndamento.get(chave);
+  if (atual) return atual;
+  const p = req1(method, path, body).finally(() => emAndamento.delete(chave));
+  emAndamento.set(chave, p);
+  return p;
+}
+async function req1(method, path, body) {
   let res;
   try {
     res = await fetch(`/api${path}`, {

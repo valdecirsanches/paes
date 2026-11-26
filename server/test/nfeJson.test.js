@@ -57,3 +57,13 @@ test('auditoria: gravar configuração de impressão é registrado; só a leitur
   assert.equal(deveRegistrar('DELETE', '/api/status/5/diaria', 200), true);
   assert.equal(deveRegistrar('GET', '/api/auditoria', 200), false);
 });
+
+test('senha da Fábrica: hash com sal confere só a senha certa', async () => {
+  const { hashNovo, confereHash } = await import('../src/services/senhaFabrica.js');
+  const h = hashNovo('abc123');
+  assert.ok(!h.includes('abc123'));
+  assert.equal(confereHash('abc123', h), true);
+  assert.equal(confereHash('abc124', h), false);
+  assert.notEqual(hashNovo('abc123'), h); // sal diferente
+  assert.equal(confereHash('x', ''), false);
+});
