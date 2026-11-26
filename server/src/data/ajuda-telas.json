@@ -25,7 +25,7 @@
   },
   "conflitos": {
     "titulo": "Problemas da programação",
-    "resumo": "Lista inconsistências da programação (itens em conflito, clientes sem itens, horários repetidos) para corrigir antes da produção.",
+    "resumo": "Mostra o que a programação fixa tem e a diária não (\"Não consta na diária\") e produtos com produção fora do esquema, para corrigir antes da produção. Abre no dia seguinte.",
     "passos": [
       "Escolha a data.",
       "Veja a lista de problemas encontrados.",

@@ -2278,3 +2278,13 @@ button.lk-versao{background:none!important;border:0!important;box-shadow:none!im
 .pr-grade tbody tr.pr-t3.sel td{background:color-mix(in srgb, var(--azul-barra) 42%, #fff) !important}
 .pr-grade tbody tr.sel td{font-weight:800;box-shadow:inset 0 2px 0 #1b1b1b, inset 0 -2px 0 #1b1b1b}
 .pr-grade tbody tr.sel td.ind{box-shadow:inset 5px 0 0 #1b1b1b, inset 0 2px 0 #1b1b1b, inset 0 -2px 0 #1b1b1b}
+
+/* Problemas da programação — lista simples, como a "Problemas encontrados" do sistema antigo */
+.cf2{display:flex;flex-direction:column;gap:10px;padding:14px 18px;min-height:0}
+.cf2-topo{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.cf2-topo h2{margin:0 auto 0 0;font-size:20px;color:var(--azul-barra-2)}
+.cf2-topo label{display:flex;gap:6px;align-items:center;font-size:13px}
+.cf2-lista{background:#fff;border:1px solid var(--borda);border-radius:8px;padding:8px 10px;overflow:auto;max-height:calc(100vh - 220px);font:13px "Courier New",Consolas,monospace}
+.cf2-lista h3{margin:10px 0 4px;font:700 13px "Courier New",Consolas,monospace;letter-spacing:.04em}.cf2-lista h3 small{font-weight:400;color:#777}
+.cf2-l{display:grid;grid-template-columns:22px minmax(150px,1.3fr) 30px 120px 70px minmax(200px,2.5fr) 24px minmax(150px,1.6fr) 80px;gap:8px;align-items:center;padding:2px 0;border-bottom:1px dotted #ddd}
+.cf2-l .q{text-align:right}.cf2-l .a{color:#b00}.cf2-l .d{text-align:center;color:#555}
+.cf2-l.visto{color:#999;text-decoration:line-through}.cf2-l .bt{padding:1px 8px;font-size:12px}

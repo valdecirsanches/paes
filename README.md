@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 395 — Problemas da programação: só a lógica do sistema antigo
+
+`services/conflitos.js` reduzido a `fixa_ausente`, `fixa_fora_producao`, `fora_producao` (3 consultas; resposta `{periodo,total,por_regra,problemas}` sem gravidade). `screens/Conflitos.jsx` reescrita como lista simples (data única, abre em amanhã). As demais conferências das fases anteriores foram removidas por serem ruído (ex.: 110 "fixa não ativada").
+
 ## Fase 394 — Produção abre no dia seguinte
 
 `lib/rules.js` `amanha()`; `Producao.jsx` e `fabrica/FabricaProducao.jsx` iniciam em amanhã e reposicionam quando `ativa` vira true (App.jsx agora passa `ativa` às telas).
