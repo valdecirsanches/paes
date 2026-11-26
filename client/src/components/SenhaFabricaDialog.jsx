@@ -42,11 +42,11 @@ export default function SenhaFabricaDialog({ onFechar, onAviso }) {
       <div role="dialog" aria-label="Senha da Fábrica" onClick={(e) => e.stopPropagation()} style={{ background: '#fff', color: '#222', padding: 18, borderRadius: 8, width: 360, boxShadow: '0 6px 24px rgba(0,0,0,.4)', display: 'grid', gap: 10 }}>
         <b>🔑 Senha da Fábrica (Itinerário)</b>
         <small>Situação: <b>{protegido === null ? '…' : protegido ? 'senha definida' : 'SEM senha — a Fábrica não consegue abrir o Itinerário'}</b></small>
-        {protegido && (
+        {protegido !== null && (
           <label style={{ display: 'grid', gap: 4 }}>Senha atual
             <span style={{ display: 'flex', gap: 6 }}>
-              <input type="text" readOnly value={atual ?? '••••••••'} style={{ flex: 1, fontWeight: 700, background: '#f4f4f4' }} aria-label="Senha atual da Fábrica" />
-              <button type="button" className="trb2-btn" onClick={alternaAtual} title={atual !== null ? 'Esconder a senha atual' : 'Mostrar a senha atual (fica registrado na Auditoria)'} aria-pressed={atual !== null} aria-label="Mostrar ou esconder a senha atual">{atual !== null ? '🙈' : '👁'}</button>
+              <input type="text" readOnly value={atual ?? (protegido ? '••••••••' : '(nenhuma senha definida)')} style={{ flex: 1, fontWeight: 700, background: '#f4f4f4' }} aria-label="Senha atual da Fábrica" />
+              <button type="button" className="trb2-btn" disabled={!protegido} onClick={alternaAtual} title={atual !== null ? 'Esconder a senha atual' : 'Mostrar a senha atual (fica registrado na Auditoria)'} aria-pressed={atual !== null} aria-label="Mostrar ou esconder a senha atual">{atual !== null ? '🙈' : '👁'}</button>
             </span>
           </label>
         )}
