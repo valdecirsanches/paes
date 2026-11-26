@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { pool, tx } from '../db.js';
 import { AppError, invalid, notFound } from '../errors.js';
-import { temSenha, defineSenha, removeSenha, confereSenha, freio, erro, acerto } from '../services/senhaFabrica.js';
+import { temSenha, defineSenha, removeSenha, verSenha, confereSenha, freio, erro, acerto } from '../services/senhaFabrica.js';
 import { ipDe } from '../services/auditoria.js';
 
 // Controle do itinerário (u_etinerario): horários de roteiros (tb_roteiro) e empresas de cada roteiro (tb_roteiro_distribuicao).
@@ -22,6 +22,14 @@ router.put('/acesso', async (req, res) => {
   const senha = String(req.body?.senha ?? '');
   if (senha.length < 4 || senha.length > 40) throw invalid('A senha deve ter de 4 a 40 caracteres.');
   await defineSenha(senha); res.json({ ok: true, protegido: true });
+});
+// Mostra a senha atual (👁 da tela do Faturamento). POST de propósito: cai na Auditoria (quem viu e quando); nunca pela máquina da Fábrica.
+router.post('/acesso/ver', async (req, res) => {
+  soFaturamento(req);
+  if (!(await temSenha())) throw new AppError(409, 'Ainda não há senha definida.');
+  const senha = await verSenha();
+  if (senha === null) throw new AppError(409, 'Esta senha foi gravada antes de existir a consulta: defina-a de novo para poder vê-la.');
+  res.json({ senha });
 });
 router.delete('/acesso', async (req, res) => { soFaturamento(req); await removeSenha(); res.json({ ok: true, protegido: false }); });
 

@@ -1,8 +1,40 @@
-// Senha de acesso da Fábrica ao Itinerário (definida no Faturamento). Guardada só como hash (scrypt com sal) em tb_config_app.
+// Senha de acesso da Fábrica ao Itinerário (definida no Faturamento). Em tb_config_app: o hash (scrypt com sal), que confere a senha, e uma cópia
+// CRIPTOGRAFADA (AES-256-GCM) só para o Faturamento poder rever a senha atual (👁). A chave da cópia NÃO fica no banco: SENHA_CIFRA_CHAVE do .env
+// ou o arquivo local .senha-chave (gerado uma vez, modo 600). Sem a chave (ou se ela mudar) a cópia não abre; basta definir a senha de novo.
 import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
 import { pool } from '../db.js';
 
 const CHAVE = 'senha_itinerario_fabrica';
+const CHAVE_CIFRA = 'senha_itinerario_fabrica_cifrada';
+let chaveCache = null;
+function chaveCifra() {
+  if (chaveCache) return chaveCache;
+  let base = process.env.SENHA_CIFRA_CHAVE;
+  if (!base) {
+    const arq = path.resolve(process.cwd(), '.senha-chave');
+    try { base = fs.readFileSync(arq, 'utf8').trim(); } catch { /* ainda não existe */ }
+    if (!base || base.length < 32) {
+      base = crypto.randomBytes(32).toString('hex');
+      try { fs.writeFileSync(arq, base, { mode: 0o600 }); } catch { /* sem permissão: a chave vale só até reiniciar a API */ }
+    }
+  }
+  return (chaveCache = crypto.createHash('sha256').update(base).digest());
+}
+export function cifra(txt, chave = chaveCifra()) {
+  const iv = crypto.randomBytes(12); const c = crypto.createCipheriv('aes-256-gcm', chave, iv);
+  const d = Buffer.concat([c.update(String(txt), 'utf8'), c.final()]);
+  return `v1:${iv.toString('hex')}:${c.getAuthTag().toString('hex')}:${d.toString('hex')}`;
+}
+export function decifra(guardado, chave = chaveCifra()) {
+  try {
+    const [v, iv, tag, d] = String(guardado ?? '').split(':');
+    if (v !== 'v1' || !iv || !tag || !d) return null;
+    const c = crypto.createDecipheriv('aes-256-gcm', chave, Buffer.from(iv, 'hex')); c.setAuthTag(Buffer.from(tag, 'hex'));
+    return Buffer.concat([c.update(Buffer.from(d, 'hex')), c.final()]).toString('utf8');
+  } catch { return null; }
+}
 let pronta = null;
 const garanteTabela = () => (pronta ??= pool.query('create table if not exists tb_config_app (chave varchar(60) primary key, valor text null, atualizado_em datetime null)').catch((e) => { pronta = null; throw e; }));
 
@@ -20,9 +52,17 @@ export async function temSenha() {
 }
 export async function defineSenha(senha) {
   await garanteTabela();
-  await pool.query('insert into tb_config_app (chave, valor, atualizado_em) values (?, ?, now()) on duplicate key update valor = values(valor), atualizado_em = now()', [CHAVE, hashNovo(senha)]);
+  const up = 'insert into tb_config_app (chave, valor, atualizado_em) values (?, ?, now()) on duplicate key update valor = values(valor), atualizado_em = now()';
+  await pool.query(up, [CHAVE, hashNovo(senha)]);
+  await pool.query(up, [CHAVE_CIFRA, cifra(senha)]);
 }
-export async function removeSenha() { await garanteTabela(); await pool.query('delete from tb_config_app where chave = ?', [CHAVE]); }
+export async function removeSenha() { await garanteTabela(); await pool.query('delete from tb_config_app where chave in (?, ?)', [CHAVE, CHAVE_CIFRA]); }
+/** Senha atual em texto (só para o Faturamento). null = não há cópia legível (senha definida antes desta versão, ou chave trocada): definir de novo. */
+export async function verSenha() {
+  await garanteTabela();
+  const [[r]] = await pool.query('select valor from tb_config_app where chave = ?', [CHAVE_CIFRA]);
+  return r?.valor ? decifra(r.valor) : null;
+}
 export async function confereSenha(senha) {
   await garanteTabela();
   const [[r]] = await pool.query('select valor from tb_config_app where chave = ?', [CHAVE]);

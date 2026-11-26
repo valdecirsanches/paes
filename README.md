@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 390 — Ver a senha atual da Fábrica (Itinerário)
+
+`services/senhaFabrica.js`: além do hash (scrypt) agora guarda cópia AES-256-GCM em `tb_config_app` (`senha_itinerario_fabrica_cifrada`); chave em `SENHA_CIFRA_CHAVE` (.env) ou arquivo `server/.senha-chave` (gerado 1x, modo 600, fora do git/zip). `POST /api/itinerario/acesso/ver` (só Faturamento, cai na Auditoria). **Não** copie o banco sem a chave: sem ela a cópia não abre (defina a senha de novo).
+
 ## Fase 389 — Itinerário (grafia), pesquisa na Programação da Fábrica, Pedidos extras
 
 Grafia única "Itinerário" (identificadores como `u_etinerario`/`ppEtinerario` mantidos por serem nomes do Delphi). `Diaria.jsx`: `<Busca>` visível só com `ehFabrica()`. `Extras.jsx`: 🗑 por linha + `confirmar`; `DELETE /api/extras/:id` (bloqueia `digitado='True'`). CSS `.fb-solo .grade tr.sel`.
