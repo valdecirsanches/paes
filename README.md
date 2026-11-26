@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 386 — Senha da Fábrica no Itinerário
+
+`components/SenhaFabricaDialog.jsx` aberto por botão em `Itinerario.jsx` (oculto com `ehFabrica()`); removidos `SenhaFabrica.jsx` e o item de menu.
+
 ## Fase 385 — Itinerário na Fábrica com senha; dedupe de cliques
 
 `api.js`: pedidos idênticos em andamento são compartilhados. `services/senhaFabrica.js` (scrypt, `tb_config_app`) + `GET/PUT/DELETE /api/itinerario/acesso`, `POST /api/itinerario/acesso/validar` (freio de 5 tentativas/min por IP; definir/remover só fora de dispositivo Fábrica). Cliente: `SenhaFabrica.jsx` (menu Faturamento) e botão Itinerário em `FabricaProducao.jsx` (a trava é na interface; a API do itinerário continua liberada à Fábrica).

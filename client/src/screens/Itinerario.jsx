@@ -1,6 +1,8 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '../api.js';
 import { Toast, confirmar } from '../components/toast.jsx';
+import SenhaFabricaDialog from '../components/SenhaFabricaDialog.jsx';
+import { ehFabrica } from '../lib/perfil.js';
 import { itinerarioImpressao, imprimirHtml } from '../lib/print.js';
 
 const VAZIO = { id: null, horario: '', descricao: '', id_funcionario: '' };
@@ -27,6 +29,7 @@ export default function Itinerario({ onFechar }) {
   const [mDentro, setMDentro] = useState(() => new Set());
   const [mFora, setMFora] = useState(() => new Set());
   const [aviso, setAviso] = useState(null);
+  const [senhaFab, setSenhaFab] = useState(false);
   const [ocupado, setOcupado] = useState(false);
   const notificar = useCallback((tipo, m) => setAviso({ tipo, m }), []);
   useEffect(() => { if (!aviso) return undefined; const t = setTimeout(() => setAviso(null), 8000); return () => clearTimeout(t); }, [aviso]);
@@ -111,9 +114,11 @@ export default function Itinerario({ onFechar }) {
   return (
     <div className="cg it">
       <Toast aviso={aviso} />
+      {senhaFab && <SenhaFabricaDialog onFechar={() => setSenhaFab(false)} onAviso={(m) => setAviso({ tipo: 'ok', m })} />}
       <header className="cg-topo">
         <div className="cg-tit"><b>🧭 Controle do etinerário</b><small>Horários dos roteiros e as empresas de cada um</small></div>
         <span className="cg-esp" />
+        {!ehFabrica() && <button type="button" className="trb2-btn" onClick={() => setSenhaFab(true)} title="Define a senha que a Fábrica digita para abrir o Itinerário">🔑 Senha da Fábrica</button>}
         <button type="button" className="trb2-btn" onClick={imprimir} disabled={ocupado}>🖨 Imprimir etinerário</button>
         <button type="button" className="trb2-btn" onClick={() => { carregaRoteiros(true); carregaEmpresas(); }}>⟳ Atualizar</button>
         <button type="button" className="trb2-btn" onClick={onFechar}>Fechar</button>
