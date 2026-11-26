@@ -256,7 +256,7 @@ export default function App() {
       <div className="area-telas">
         {usuario && abertas.map((k) => {
           const { Tela } = TELAS[k];
-          return <div key={k} className="slot" hidden={ativa !== k} data-caixa-alta={CAIXA_ALTA.has(k) ? '' : undefined}><Tela onFechar={() => fechar(k)} abrirTela={abrir} /></div>;
+          return <div key={k} className="slot" hidden={ativa !== k} data-caixa-alta={CAIXA_ALTA.has(k) ? '' : undefined}><Tela onFechar={() => fechar(k)} abrirTela={abrir} ativa={ativa === k} /></div>;
         })}
         {!ativa && (
           <div className="fundo-paes" style={{ backgroundImage: `url(${fundo})` }} role="img" aria-label="Pães franceses saindo do forno" />

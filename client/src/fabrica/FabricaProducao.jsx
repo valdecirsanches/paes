@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../api.js';
 import Calendario from '../components/Calendario.jsx';
-import { brData, hoje } from '../lib/rules.js';
+import { amanha, brData, hoje } from '../lib/rules.js';
 
 // Tela "Produção" do sistema da fábrica (u_producao), refeita igual à original: mesma disposição, cores e comportamento.
 // Fundo branco; só o horário leva cor (1 = amarelo, 2 = verde, 3 = azul) e a linha atual fica destacada.
@@ -168,7 +168,7 @@ function SenhaItinerario({ onOk, onCancela }) {
 
 export default function FabricaProducao({ ativa = true, abrirTela = null }) {
   const [pedeSenha, setPedeSenha] = useState(false);
-  const [data, setData] = useState(hoje());
+  const [data, setData] = useState(amanha());
   const [aba, setAba] = useState('salgados');
   const [recarga, setRecarga] = useState({ salgados: 0, especiais: 0 });
   const [fonte, setFonte] = useState(fonteInicial);
@@ -187,7 +187,7 @@ export default function FabricaProducao({ ativa = true, abrirTela = null }) {
     const fora = (e) => { if (ref.current && !ref.current.contains(e.target)) setCal(false); };
     document.addEventListener('pointerdown', fora); return () => document.removeEventListener('pointerdown', fora);
   }, [cal]);
-  useEffect(() => { if (ativa) setData(hoje()); }, [ativa]); // ao entrar (ou voltar para a aba) reposiciona na data de hoje
+  useEffect(() => { if (ativa) setData(amanha()); }, [ativa]); // ao entrar (ou voltar para a aba) reposiciona no dia seguinte (a produção é sempre para amanhã)
   const muda = (n) => setFonte((f) => Math.min(60, Math.max(8, f + n)));
 
   return (

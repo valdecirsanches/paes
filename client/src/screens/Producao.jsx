@@ -3,7 +3,7 @@ import { api } from '../api.js';
 import SeletorData from '../components/SeletorData.jsx';
 import { Modal } from '../components/ui.jsx';
 import { imprimirHtml, producaoEntrega, producaoResumo } from '../lib/print.js';
-import { brData, diaExtenso, fmtQtde, hoje } from '../lib/rules.js';
+import { amanha, brData, diaExtenso, fmtQtde, hoje } from '../lib/rules.js';
 import { Toast } from '../components/toast.jsx';
 
 const nomeTipo = { salgados: 'Salgados', especiais: 'Especiais' };
@@ -207,8 +207,9 @@ function Painel({ tipo, data, recarga, ativo, onAviso }) {
   );
 }
 
-export default function Producao({ onFechar }) {
-  const [data, setData] = useState(hoje());
+export default function Producao({ onFechar, ativa }) {
+  const [data, setData] = useState(amanha()); // a produção é sempre para o dia seguinte
+  useEffect(() => { if (ativa) setData(amanha()); }, [ativa]); // a cada vez que a tela é aberta/volta a ser a ativa, reposiciona no dia seguinte
   const [aba, setAba] = useState('salgados');
   const [recarga, setRecarga] = useState({ salgados: 0, especiais: 0 });
   const [aviso, setAviso] = useState(null);

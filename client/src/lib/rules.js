@@ -22,6 +22,7 @@ const pad = (n) => String(n).padStart(2, '0');
 export const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const parse = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
 export const hoje = () => iso(new Date());
+export const amanha = () => iso(new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 1)); // a produção é sempre para o dia seguinte
 export const somaDias = (s, n) => { const d = parse(s); d.setDate(d.getDate() + n); return iso(d); };
 export const semanaDia = (s) => parse(s).getDay() + 1; // Domingo = 1, como no banco
 export const brData = (s) => String(s).slice(0, 10).split('-').reverse().join('/');
