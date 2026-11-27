@@ -265,6 +265,10 @@ export default function NFe({ onFechar }) {
   useEffect(() => { if (!aviso) return undefined; const t = setTimeout(() => setAviso(null), 6000); return () => clearTimeout(t); }, [aviso]);
 
   const carregarCfg = useCallback(() => api.get('/nfe/config').then((c) => { setCfg(c); setCfgDraft({}); }).catch((e) => notificar('erro', e.message)), [notificar]);
+  // notas que ficaram pela metade na geração (sem status: não aparecem na grade). O sistema as limpa sozinho depois de 15 min; aqui dá para ver e apagar na hora
+  const [incompletas, setIncompletas] = useState([]);
+  const verIncompletas = useCallback(() => api.get('/nfe/incompletas').then(setIncompletas).catch(() => setIncompletas([])), []);
+  useEffect(() => { verIncompletas(); const t = setInterval(verIncompletas, 60000); window.addEventListener('nfe-alterada', verIncompletas); return () => { clearInterval(t); window.removeEventListener('nfe-alterada', verIncompletas); }; }, [verIncompletas]);
   useEffect(() => { carregarCfg(); api.get('/nfe/clientes').then(setClientes).catch(() => {}); }, [carregarCfg]);
 
   // bFiltroClick
@@ -775,6 +779,12 @@ export default function NFe({ onFechar }) {
           <button type="button" className="nf2-b" onClick={onFechar}>Fechar</button>
         </div>
       </header>
+      {incompletas.length > 0 && (
+        <div className="nf2-incompleta" role="alert">
+          ⚠ {incompletas.length === 1 ? 'Uma nota ficou' : `${incompletas.length} notas ficaram`} pela metade na geração (nº interno {incompletas.map((x) => x.id).join(', ')}) e não aparece(m) na grade. As comandas voltam a ficar disponíveis para faturar.
+          <button type="button" className="nf2-b" onClick={() => acao(async () => { const r = await api.post('/nfe/incompletas/limpar', {}); notificar('ok', `${r.removidas} nota(s) incompleta(s) apagada(s).`); await verIncompletas(); filtrar(true); })}>Apagar agora</button>
+        </div>
+      )}
       <Toast aviso={aviso} />
       {logAberto && (
         <div className="nf2-log">

@@ -31,3 +31,29 @@ test('município: sem acento/caixa, 7 dígitos; inexistente → null', () => {
   assert.equal(codigoMunicipio('XX', 'São Paulo'), null);
   assert.equal(normaliza("Sant'Ana do Livramento"), 'SANTANADOLIVRAMENTO');
 });
+
+import { desfazNfe } from '../src/services/geraFatura.js';
+import { listaIncompletas, limpaIncompletas } from '../src/services/nfeResiduos.js';
+
+test('desfazNfe: apaga a nota e devolve as comandas ao estado anterior, sem esconder erro de limpeza', async () => {
+  const sqls = [];
+  const c = { query: async (sql, a) => { sqls.push([sql, a]); if (/tb_nfe_itens/.test(sql)) throw new Error('falha qualquer'); return [[]]; } };
+  await desfazNfe(c, 77, [{ id: 5, status: 'PROCESSADO', id_nfe: 0, id_nota_fiscal: 0 }]);
+  const txt = sqls.map((x) => x[0]).join('\n');
+  for (const t of ['tb_receita', 'tb_nfe_itens', 'tb_nfe_detalhes', 'delete from tb_nfe where id', 'update tb_comandas']) assert.match(txt, new RegExp(t));
+  assert.deepEqual(sqls.at(-1)[1], ['PROCESSADO', 0, 0, 5]);
+  await desfazNfe(c, 0, []); // sem id: não faz nada
+});
+
+test('notas incompletas: só as sem status/número/chave e recentes entram; limpeza solta as comandas e registra', async () => {
+  const sqls = [];
+  const db = {
+    query: async (sql, a) => { sqls.push(sql); if (/from tb_nfe n where/.test(sql)) return [[{ id: 9, data_geracao: '2026-11-27 14:00:00' }]]; return [[]]; },
+    getConnection: async () => ({ query: async (sql) => { sqls.push(sql); return /from tb_comandas/.test(sql) ? [[{ id: 3 }, { id: 4 }]] : [[]]; }, release() {} }),
+  };
+  await listaIncompletas(db);
+  assert.match(sqls[0], /status_e is null or n\.status_e = ''/); assert.match(sqls[0], /nfe_numero, 0\) = 0/); assert.match(sqls[0], /nfe_chave, ''\) = ''/); assert.match(sqls[0], /interval 30 day/);
+  const feitas = await limpaIncompletas({ minutos: 0, db });
+  assert.deepEqual(feitas, [{ id: 9, comandas: [3, 4] }]);
+  assert.ok(sqls.some((q) => /update tb_comandas set status = \?/.test(q)));
+});

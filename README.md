@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 398 — NFe sem nota pela metade; Tributação na aba Produtos do cliente
+
+`services/geraFatura.js`: validação (destinatário/IBGE) antes do 1º insert; `try/catch` com `desfazNfe` (apaga tb_receita/itens/detalhes/nfe e restaura comandas — não depende de rollback, as tabelas legadas podem ser MyISAM); campos NULL do `update` viram `''`; conferência final (status_e PENDENTE, cliente, itens, receita); avisos de dados do destinatário. `services/nfeResiduos.js`: `listaIncompletas`/`limpaIncompletas` (só sem status_e, número e chave, últimos 30 dias); `server.js` limpa ao subir e a cada 10 min (carência 15 min); `GET /api/nfe/incompletas`, `POST /api/nfe/incompletas/limpar`; aviso em `screens/NFe.jsx`. `ProdutoForm.jsx`: Tributação também no layout `cli` (Clientes passa `tributos`).
+
 ## Fase 397 — Opções do produto também na descrição da NF/comanda
 
 `lib/rules.js` `comOpcoes()` (tira do fim os textos de opção e põe os marcados); `ProdutoForm.jsx` aplica em `descricao` e remonta `descricao_expedicao`.

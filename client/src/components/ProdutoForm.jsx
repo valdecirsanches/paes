@@ -80,7 +80,7 @@ export default function ProdutoForm({ ed, layout = 'tela', clientes = [], refere
       </Secao>
       <Secao titulo="Fiscal" icone="📑">
         <Campo rotulo={ncmTrib ? 'NCM (vem da tributação)' : 'NCM'} span={tela ? 4 : 12}><NcmCampo valor={ncmTrib || ed.v('ncm')} aoMudar={(x) => ed.set('ncm', x)} desabilitado={off || !!ncmTrib} />{tribSel && <small className={`fi-trib${ncmTrib && String(ed.v('ncm') ?? '').replace(/\D/g, '') !== ncmTrib ? ' dif' : ''}`}>Produto: {String(ed.v('ncm') ?? '') || '—'} · Tributo: {ncmTrib || '—'}</small>}</Campo>
-        {tela && <Campo rotulo="Tributação (define CST, ICMS, IPI, PIS e CFOP)" span={8}>{comb('id_tributos', tributos, (t) => `${t.id} - ${t.descricao}`)}</Campo>}
+        <Campo rotulo="Tributação (define CST, ICMS, IPI, PIS e CFOP)" span={tela ? 8 : 12}>{comb('id_tributos', tributos, (t) => `${t.id} - ${t.descricao}`)}</Campo>
       </Secao>
       <Secao titulo="Opções do produto" icone="🥖">
         {OPCOES.map(([k, r]) => <Chave key={k} ed={edOpc} k={k} rotulo={r} span={tela ? 6 : 6} />)}

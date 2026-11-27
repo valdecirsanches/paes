@@ -93,8 +93,34 @@ export async function geraFatura(c, { comandas, idCliente, idUnidade, saida, usu
 
   const pad = (n) => String(n).padStart(2, '0');
   const dt = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  // ---- TUDO que pode dar errado por causa do cadastro é conferido AQUI, antes de gravar qualquer coisa (nota nunca fica pela metade) ----
+  const unidadeDest = emiteParaUnidade(uni);
+  const avisos = []; // só informa (não bloqueia): dados da unidade que faltam
+  const fU = unidadeDest ? faltasDestinatarioUnidade(uni) : faltasEnderecoUnidade(uni);
+  if (fU.length) avisos.push(unidadeDest
+    ? `A unidade "${uni.nome}" emite NFe em nome dela, mas está sem ${fU.join(', ')} no cadastro (Cadastros › Clientes › Unidades). Confira a nota antes de autorizar.`
+    : `A unidade "${uni.nome}" está sem ${fU.join(', ')} no cadastro (Cadastros › Clientes › Unidades): esses dados saem nos dados adicionais da NFe. Corrija antes de autorizar.`);
+  const dest = destinatarioNfe(cli, uni);
+  const cfop = cfopDoCliente(dest.uf);
+  const par = (a, b) => (a ? a : b);
+  // primeiro os dados do cliente/unidade (entrega), depois "Informações para o corpo da NFe" do cadastro do cliente; as AFs entram por último (nfeJson.js)
+  const infAdFisco = textoEntregaUnidade(uni)
+    + [cli.informacoes_nf1, cli.informacoes_nf2].map((x) => (x ? `;${x}` : '')).join('');
+  // sem o código do município a SEFAZ rejeita a NF-e: melhor recusar agora do que gravar "0" (o Delphi gravava 0)
+  const cidIbge = codigoMunicipio(dest.uf, dest.cidade);
+  if (!cidIbge) throw invalid(`Município "${dest.cidade}/${dest.uf}" não encontrado na tabela do IBGE. Corrija a cidade/UF no cadastro ${unidadeDest ? 'da unidade' : 'do cliente'}.`);
+  // dados do destinatário que faltam (só avisa; a SEFAZ pode rejeitar): comum em cliente recém-cadastrado
+  const faltaDest = [['razão social', dest.razao_social], ['CNPJ/CPF', dest.cnpj], ['endereço', dest.endereco], ['número', dest.endereco_numero], ['bairro', dest.bairro], ['CEP', dest.cep]]
+    .filter(([, v]) => vazio(v)).map(([n]) => n);
+  if (faltaDest.length) avisos.push(`O cadastro ${unidadeDest ? 'da unidade' : 'do cliente'} está sem ${faltaDest.join(', ')}: confira a aba "Destinatário" da nota antes de autorizar.`);
+  const saidaHora = new Date(agora.getTime() + 3 * 3600 * 1000); // IncHour(time, 3) do Delphi
+  const hora = `${pad(saidaHora.getHours())}:${pad(saidaHora.getMinutes())}:${pad(saidaHora.getSeconds())}`;
+
+  const [anteriores] = await c.query('select id, status, id_nfe, id_nota_fiscal from tb_comandas where id in (?)', [comandas]);
+  let idNfe = 0;
+  try { // qualquer falha daqui para baixo desfaz TUDO à mão (não depende do banco ter rollback: tabelas MyISAM antigas não têm)
   const [ins] = await c.query('insert into tb_nfe set data_geracao = ?', [`${dt(agora)} ${pad(agora.getHours())}:${pad(agora.getMinutes())}:${pad(agora.getSeconds())}`]);
-  const idNfe = ins.insertId;
+  idNfe = ins.insertId;
 
   for (const i of itens) {
     await c.query('insert into tb_nfe_detalhes set ?', [{
@@ -133,25 +159,7 @@ export async function geraFatura(c, { comandas, idCliente, idUnidade, saida, usu
     v += vr;
   }
 
-  const unidadeDest = emiteParaUnidade(uni);
-  const avisos = []; // só informa (não bloqueia): dados da unidade que faltam
-  const fU = unidadeDest ? faltasDestinatarioUnidade(uni) : faltasEnderecoUnidade(uni);
-  if (fU.length) avisos.push(unidadeDest
-    ? `A unidade "${uni.nome}" emite NFe em nome dela, mas está sem ${fU.join(', ')} no cadastro (Cadastros › Clientes › Unidades). Confira a nota antes de autorizar.`
-    : `A unidade "${uni.nome}" está sem ${fU.join(', ')} no cadastro (Cadastros › Clientes › Unidades): esses dados saem nos dados adicionais da NFe. Corrija antes de autorizar.`);
-  const dest = destinatarioNfe(cli, uni);
-  const cfop = cfopDoCliente(dest.uf);
-  const par = (a, b) => (a ? a : b);
-  // primeiro os dados do cliente/unidade (entrega), depois "Informações para o corpo da NFe" do cadastro do cliente; as AFs entram por último (nfeJson.js)
-  const infAdFisco = textoEntregaUnidade(uni)
-    + [cli.informacoes_nf1, cli.informacoes_nf2].map((x) => (x ? `;${x}` : '')).join('');
-  // sem o código do município a SEFAZ rejeita a NF-e: melhor recusar agora do que gravar "0" (o Delphi gravava 0)
-  const cidIbge = codigoMunicipio(dest.uf, dest.cidade);
-  if (!cidIbge) throw invalid(`Município "${dest.cidade}/${dest.uf}" não encontrado na tabela do IBGE. Corrija a cidade/UF no cadastro ${unidadeDest ? 'da unidade' : 'do cliente'}.`);
-  const saidaHora = new Date(agora.getTime() + 3 * 3600 * 1000); // IncHour(time, 3) do Delphi
-  const hora = `${pad(saidaHora.getHours())}:${pad(saidaHora.getMinutes())}:${pad(saidaHora.getSeconds())}`;
-
-  await c.query('update tb_nfe set ? where id = ?', [{
+  const dados = {
     nfe_serie: '001', nfe_modelo: '55', status: '0', status_e: 'PENDENTE', forma_pagamento: '01', movimento_es: '1', id_faturamento: 1,
     volume_marca: 'LEVPAO', volume_qtde: 1, volume_numero: '1', volume_especie: 'CAIXA', faturamento_descricao: 'A VISTA',
     cfop_codigo: cfop.codigo, cfop_descricao: cfop.descricao, csosn: '',
@@ -169,11 +177,37 @@ export async function geraFatura(c, { comandas, idCliente, idUnidade, saida, usu
     peso_liquido: r6(v / 10), peso_bruto: r6(v / 10 + v / 100), valor_produtos: r6(v), comandas_faturadas: comandas.join(','), nf_valor_total: r6(v),
     icms_valor_base: r6(tot.bIcms), valor_bc_pis_cofins: r6(tot.bc), icms_valor: r6(tot.icms), ipi_valor: r6(tot.ipi), pis_valor: r6(tot.pis),
     cofins_valor: r6(tot.cofins), valor_trib: r6(tot.icms + tot.ipi + tot.pis + tot.cofins),
-  }, idNfe]);
+  };
+  // cliente novo costuma ter campo em branco (NULL): as colunas da nota não aceitam NULL — texto vazio no lugar
+  for (const k of Object.keys(dados)) if (dados[k] === null || dados[k] === undefined) dados[k] = '';
+  await c.query('update tb_nfe set ? where id = ?', [dados, idNfe]);
 
   const venc = new Date(`${saida}T12:00:00`); venc.setDate(venc.getDate() + Number(cli.dias_vencto || 0));
   await c.query('insert into tb_receita set id_nfe = ?, documento = ?, id_cliente = ?, id_unidade = ?, valor = ?, emissao = now(), vencto = ?',
     [idNfe, `${idNfe}/1`, idCliente, idUnidade, r6(v), dt(venc)]);
   await c.query("update tb_comandas set status = 'FATURADO' where id in (?)", [comandas]);
+
+  // conferência final: só devolve sucesso se a nota está de fato completa (aparece na grade como PENDENTE, tem cliente, itens e receita)
+  const [[chk]] = await c.query(
+    `select n.status_e, n.id_cliente, (select count(*) from tb_nfe_itens where id_nfe = n.id) as itens, (select count(*) from tb_receita where id_nfe = n.id) as receitas
+       from tb_nfe n where n.id = ?`, [idNfe]);
+  if (!chk || chk.status_e !== 'PENDENTE' || !Number(chk.id_cliente) || !Number(chk.itens) || !Number(chk.receitas)) {
+    throw invalid('A nota não ficou completa ao gravar; nada foi salvo. Tente de novo e, se repetir, avise o suporte.');
+  }
   return { id: idNfe, avisos };
+  } catch (err) {
+    await desfazNfe(c, idNfe, anteriores);
+    throw err;
+  }
+}
+
+/** Remove uma nota que não chegou ao fim (e devolve as comandas ao estado anterior). Nunca esconde o erro original. */
+export async function desfazNfe(c, idNfe, anteriores = []) {
+  if (!idNfe) return;
+  const passo = async (sql, args) => { try { await c.query(sql, args); } catch (e) { console.warn(`[geraFatura] limpeza parcial: ${e.message}`); } };
+  await passo('delete from tb_receita where id_nfe = ?', [idNfe]);
+  await passo('delete from tb_nfe_itens where id_nfe = ?', [idNfe]);
+  await passo('delete from tb_nfe_detalhes where id_nfe = ?', [idNfe]);
+  await passo('delete from tb_nfe where id = ?', [idNfe]);
+  for (const o of anteriores) await passo('update tb_comandas set status = ?, id_nfe = ?, id_nota_fiscal = ? where id = ?', [o.status, o.id_nfe ?? 0, o.id_nota_fiscal ?? 0, o.id]);
 }

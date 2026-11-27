@@ -30,6 +30,7 @@ export default function Clientes({ onFechar }) {
   const [produtos, setProdutos] = useState([]);
   const [fProd, setFProd] = useState(null);
   const [referencias, setReferencias] = useState([]);
+  const [tributos, setTributos] = useState([]);
   const [uniCom, setUniCom] = useState([]);
   const [aba, setAba] = useState('lista');
   const [abertoCli, setAbertoCli] = useState(true); // dados do cliente: abertos na lista, recolhidos ao editar unidades/produtos (mais espaço)
@@ -50,7 +51,7 @@ export default function Clientes({ onFechar }) {
   const recCli = useCallback(async (id) => {
     try { const r = await api.get(CAM); setClientes(r); setFCli((f) => { const a = id ?? f; return r.some((x) => x.id === a) ? a : r[0]?.id ?? null; }); } catch (e) { notificar('erro', e.message); }
   }, [notificar]);
-  useEffect(() => { recCli(); api.get('/cadastros/produtos/referencias').then(setReferencias).catch(() => {}); }, [recCli]);
+  useEffect(() => { recCli(); api.get('/cadastros/produtos/referencias').then(setReferencias).catch(() => {}); api.get('/tributos').then(setTributos).catch(() => {}); }, [recCli]);
 
   const clientesFiltrados = useMemo(() => (sitCli === 'TODOS' ? clientes : clientes.filter((c) => (String(c.ativo ?? 'ATIVO').toUpperCase() === 'INATIVO') === (sitCli === 'INATIVO'))), [clientes, sitCli]);
   const bCli = useBusca(clientesFiltrados, B_CLI, 'cad_clientes');
@@ -311,7 +312,7 @@ export default function Clientes({ onFechar }) {
               <Navegador compacto ed={prod} onEditar={() => {}} desabilitado={!idCli} />
               <button type="button" className="cd-btn" onClick={tabela}>🖨 Tabela de preços</button>
             </div>
-            <ProdutoForm ed={prod} layout="cli" clientes={clientes} referencias={referencias} />
+            <ProdutoForm ed={prod} layout="cli" clientes={clientes} referencias={referencias} tributos={tributos} />
           </main>
         </div>
       )}

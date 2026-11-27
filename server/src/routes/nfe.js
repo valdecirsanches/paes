@@ -18,7 +18,8 @@ import { enriquece, arquivoDoEvento } from '../services/eventosNfe.js';
 import { baseGravacao, paraBanco, paraLocal, caminhoXmlLegado, ehCaminhoLegado } from '../services/caminhosNfe.js';
 import { acharArquivoNota, lerArquivoNota, baseArquivos } from '../services/arquivosApi.js';
 import { aplicaReducaoIbs, montaJsonNfe, validaParaAutorizar, dataHoraBr, regimeDoCrt, ehDevolucao } from '../services/nfeJson.js';
-import { registra } from '../services/auditoria.js';
+import { audita, registra } from '../services/auditoria.js';
+import { limpaIncompletas, listaIncompletas } from '../services/nfeResiduos.js';
 import { limpa as limpaTributo } from './tributos.js';
 import { auditaTributos } from '../services/auditaTributos.js';
 import { migraPastasXml } from '../services/migraXmlPastas.js';
@@ -256,6 +257,14 @@ router.get('/', async (req, res) => {
   // `n.*` × até 4000 linhas, o que travava o navegador. Ordem final continua crescente por id.
   const [rows] = await pool.query(`select * from (select ${COLUNAS_LISTA} from tb_nfe n${onde} order by n.id desc limit ${LIMITE_LISTA}) t order by t.id`, par);
   res.json(rows);
+});
+
+// ------------------------------------------------------------------ notas incompletas (geração interrompida)
+router.get('/incompletas', async (_req, res) => { res.json(await listaIncompletas()); });
+router.post('/incompletas/limpar', async (req, res) => {
+  const feitas = await limpaIncompletas({ minutos: 0, usuario: 'limpeza pela tela', ip: req.ip });
+  audita(res, { efeito: { notas_removidas: feitas } });
+  res.json({ removidas: feitas.length, notas: feitas });
 });
 
 // ------------------------------------------------------------------ criar / duplicar / apagar
