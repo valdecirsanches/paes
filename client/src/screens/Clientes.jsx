@@ -3,6 +3,7 @@ import { api } from '../api.js';
 import { Busca, Campo, Chave, Confirma, Navegador, Secao, Txt, useBusca, useEdicao } from '../components/cad.jsx';
 import GradeCad from '../components/GradeCad.jsx';
 import { Modal } from '../components/ui.jsx';
+import { CepCampo, IbgeCampo } from '../components/CepCampo.jsx';
 import ProdutoForm from '../components/ProdutoForm.jsx';
 import { imprimirDocumento, temDestino } from '../lib/impressora.js';
 import { etiquetasNutricionista, imprimirHtml, listagemUnidades, tabelaPrecos } from '../lib/print.js';
@@ -178,9 +179,10 @@ export default function Clientes({ onFechar }) {
             <Campo rotulo="Endereço" span={9}><Txt ed={cli} k="endereco" /></Campo>
             <Campo rotulo="Nº" span={3}><Txt ed={cli} k="endereco_numero" /></Campo>
             <Campo rotulo="Bairro" span={12}><Txt ed={cli} k="bairro" /></Campo>
-            <Campo rotulo="Cidade" span={6}><Txt ed={cli} k="cidade" /></Campo>
-            <Campo rotulo="UF" span={2}><Txt ed={cli} k="uf" maxLength={2} /></Campo>
-            <Campo rotulo="CEP" span={4}><Txt ed={cli} k="cep" /></Campo>
+            <Campo rotulo="CEP (🔍 busca o endereço)" span={4}><CepCampo ed={cli} campos={{ endereco: 'endereco', bairro: 'bairro', cidade: 'cidade', uf: 'uf' }} avisa={notificar} /></Campo>
+            <Campo rotulo="Cidade" span={5}><Txt ed={cli} k="cidade" /></Campo>
+            <Campo rotulo="UF" span={1}><Txt ed={cli} k="uf" maxLength={2} /></Campo>
+            <Campo rotulo="Código IBGE" span={2}><IbgeCampo uf={cli.v('uf')} cidade={cli.v('cidade')} /></Campo>
           </Secao>
           <Secao titulo="Contato" icone="☎️">
             <Campo rotulo="Telefone" span={12}><Txt ed={cli} k="fone" /></Campo>
@@ -257,10 +259,11 @@ export default function Clientes({ onFechar }) {
                 <Campo rotulo="Endereço" span={7}><Txt ed={uni} k="endereco" /></Campo>
                 <Campo rotulo="Nº" span={2}><Txt ed={uni} k="numero" /></Campo>
                 <Campo rotulo="Complemento" span={3}><Txt ed={uni} k="complemento" /></Campo>
-                <Campo rotulo="CEP" span={3}><Txt ed={uni} k="cep" /></Campo>
+                <Campo rotulo="CEP (🔍 busca o endereço)" span={3}><CepCampo ed={uni} campos={{ endereco: 'endereco', bairro: 'bairro', cidade: 'cidade', uf: 'uf' }} avisa={notificar} /></Campo>
                 <Campo rotulo="Bairro" span={3}><Txt ed={uni} k="bairro" /></Campo>
-                <Campo rotulo="Cidade" span={4}><Txt ed={uni} k="cidade" /></Campo>
-                <Campo rotulo="UF" span={2}><Txt ed={uni} k="uf" maxLength={2} /></Campo>
+                <Campo rotulo="Cidade" span={3}><Txt ed={uni} k="cidade" /></Campo>
+                <Campo rotulo="UF" span={1}><Txt ed={uni} k="uf" maxLength={2} /></Campo>
+                <Campo rotulo="Código IBGE" span={2}><IbgeCampo uf={uni.v('uf')} cidade={uni.v('cidade')} /></Campo>
                 <Campo rotulo="Telefone" span={4}><Txt ed={uni} k="telefone" /></Campo>
                 <Campo rotulo="Região" span={4}><Txt ed={uni} k="regiao" list="cad-regioes" /><datalist id="cad-regioes">{REGIOES.map((r) => <option key={r} value={r} />)}</datalist></Campo>
                 <Campo rotulo="Nutricionista" span={4}><Txt ed={uni} k="nutricionista_nome" /></Campo>

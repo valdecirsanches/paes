@@ -57,3 +57,16 @@ test('notas incompletas: só as sem status/número/chave e recentes entram; limp
   assert.deepEqual(feitas, [{ id: 9, comandas: [3, 4] }]);
   assert.ok(sqls.some((q) => /update tb_comandas set status = \?/.test(q)));
 });
+
+import { consultaCep, soDigitosCep } from '../src/services/cep.js';
+const resp = (status, corpo) => ({ status, ok: status >= 200 && status < 300, json: async () => corpo });
+test('consultaCep: ViaCEP traz o IBGE; cai na BrasilAPI e completa o IBGE pela tabela; CEP inexistente e falha de rede têm mensagens diferentes', async () => {
+  assert.equal(soDigitosCep('06226-000'), '06226000'); assert.equal(soDigitosCep('123'), null);
+  const via = await consultaCep('06226000', async () => resp(200, { logradouro: 'Av Cruzeiro do Sul', bairro: 'Rochdalle', localidade: 'Osasco', uf: 'SP', ibge: '3534401' }));
+  assert.deepEqual(via, { cep: '06226-000', endereco: 'Av Cruzeiro do Sul', bairro: 'Rochdalle', cidade: 'Osasco', uf: 'SP', ibge: '3534401', fonte: 'ViaCEP' });
+  const brasil = await consultaCep('06226000', async (u) => (/viacep/.test(u) ? resp(500, {}) : resp(200, { street: 'AV X', neighborhood: 'Y', city: 'Osasco', state: 'SP' })));
+  assert.equal(brasil.fonte, 'BrasilAPI'); assert.equal(brasil.ibge, '3534401');
+  await assert.rejects(() => consultaCep('99999999', async () => resp(404, {})), /CEP não encontrado/);
+  await assert.rejects(() => consultaCep('99999999', async () => { throw new Error('rede'); }), /Não consegui consultar o CEP/);
+  await assert.rejects(() => consultaCep('12'), /8 dígitos/);
+});
