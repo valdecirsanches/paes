@@ -43,4 +43,12 @@ export const descricaoExpedicao = (referencia, f) =>
   [referencia, ...EXTRAS.filter(([k]) => bool(f[`extra_${k}`])).map(([, , txt]) => txt)]
     .filter(Boolean).join(' ');
 
+/** Mantém o texto digitado e troca só o "rabo" das opções: tira do FIM os textos de opção (CORTADO, C/COCO, EMB/IND/PLASTICO…) e põe os das opções marcadas. */
+export const comOpcoes = (texto, f) => {
+  const tokens = EXTRAS.map(([, , t]) => t);
+  let base = String(texto ?? '').trim(), mudou = true;
+  while (mudou) { mudou = false; for (const t of tokens) { if (base === t || base.endsWith(` ${t}`)) { base = base.slice(0, base.length - t.length).trim(); mudou = true; } } }
+  return [base, ...EXTRAS.filter(([k]) => bool(f[`extra_${k}`])).map(([, , t]) => t)].filter(Boolean).join(' ');
+};
+
 export const unitario = (preco, cada) => (Number(preco) || 0) / (Number(cada) || 1);

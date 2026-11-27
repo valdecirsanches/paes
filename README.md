@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 397 — Opções do produto também na descrição da NF/comanda
+
+`lib/rules.js` `comOpcoes()` (tira do fim os textos de opção e põe os marcados); `ProdutoForm.jsx` aplica em `descricao` e remonta `descricao_expedicao`.
+
 ## Fase 396 — Opções do produto montam a descrição da expedição (cadastro de produtos)
 
 `components/ProdutoForm.jsx`: `edOpc.set` refaz `descricao_expedicao` = `descricaoExpedicao(referência, opções)` (cbCortadoClick do Delphi); `trocaRef` só refaz se a expedição está vazia ou ainda automática. Removida a cópia em `screens/Clientes.jsx` (aba Produtos usa o mesmo ProdutoForm).

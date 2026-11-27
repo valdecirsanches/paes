@@ -1,7 +1,7 @@
 import { Campo, Chave, Secao, Txt, emMaiusculas } from './cad.jsx';
 import NcmCampo from './NcmCampo.jsx';
 import ComboBusca from './ComboBusca.jsx';
-import { descricaoExpedicao } from '../lib/rules.js';
+import { comOpcoes, descricaoExpedicao } from '../lib/rules.js';
 
 // Campos do produto em seções. layout 'tela' = cadastro de produtos; 'cli' = aba Produtos do cliente (versão enxuta).
 const OPCOES = [['extra_cortado', 'Cortado'], ['extra_margarina', 'C/ margarina'], ['extra_coco', 'Cobertura côco'], ['extra_acucar', 'Cobertura açúcar'],
@@ -22,7 +22,11 @@ export default function ProdutoForm({ ed, layout = 'tela', clientes = [], refere
   const montaExp = (ref, mudanca = {}) => descricaoExpedicao(ref, Object.fromEntries(OPCOES.map(([k]) => [k, mudanca[k] ?? ed.v(k)])));
   const edOpc = { ...ed, set: (k, val) => {
     ed.set(k, val);
-    if (OPCOES.some(([x]) => x === k)) ed.set('descricao_expedicao', montaExp(refDesc(ed.v('id_referencia')), { [k]: val }));
+    if (OPCOES.some(([x]) => x === k)) {
+      ed.set('descricao_expedicao', montaExp(refDesc(ed.v('id_referencia')), { [k]: val }));
+      // a descrição da nota fiscal/comanda também ganha (ou perde) o texto da opção, mantendo o que foi digitado
+      ed.set('descricao', comOpcoes(ed.v('descricao'), Object.fromEntries(OPCOES.map(([x]) => [x, x === k ? val : ed.v(x)]))));
+    }
   } };
   const trocaRef = (n) => {
     const exp = String(ed.v('descricao_expedicao') ?? '').trim();
