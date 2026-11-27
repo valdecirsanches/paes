@@ -1020,6 +1020,10 @@ O campo numérico da Diária/Programação fixa (Extra, Preço, Cada, Qtde…) p
 ## Fase 220 — Diária: abas na lateral esquerda, na vertical
 As abas **Programação diária / Programação fixa / Reclamações** saíram da linha acima da grade e ficam na **lateral esquerda, na vertical** (texto de baixo para cima, como no sistema antigo), ganhando uma linha inteira para a edição e a grade.
 
+## Fase 400 — NCM digitável no item da NFe; atualizar item com o cadastro do produto
+
+`tb_nfe_itens.ncm_manual` (coluna criada em `garanteColunasApp`); `services/ncm.js` `ncmDoItem()` (digitado ≠ tributo vale e marca manual; igual/vazio ou trocar tributo volta ao tributo); `gravaItem` usa. `POST /api/nfe/itens/:id/atualizar-do-cadastro` e `POST /api/nfe/:id/atualizar-itens` (descrição, UN, preço, id_tributo → recalcula; só PENDENTE). `NFe.jsx`: botões 📦 / 📦＋ no navegador de itens; NcmCampo habilitado.
+
 ## Fase 399 — CEP com lupa e Código IBGE no cadastro do destinatário
 
 `services/cep.js` (ViaCEP → BrasilAPI, IBGE conferido na tabela embutida), `routes/cep.js` (`GET /api/cep/:cep`, `GET /api/cep/municipio?uf&cidade`), `components/CepCampo.jsx` (`CepCampo` + `IbgeCampo`) usados em Clientes (cliente e unidade). Não há coluna de IBGE no cadastro: o código é derivado de cidade/UF, como na geração da NFe.

@@ -165,11 +165,11 @@ const ST_INICIAL = { PENDENTE: true, AUTORIZADA: false, CANCELADA: false, INUTIL
 /** Valor do Código de tributação para comparar com o do item: mostra "Tributo: x" e destaca quando difere. */
 const igualTrib = (a, b) => { const na = Number(String(a ?? '').replace(',', '.')); const nb = Number(String(b ?? '').replace(',', '.')); return String(a ?? '').trim() !== '' && String(b ?? '').trim() !== '' && Number.isFinite(na) && Number.isFinite(nb) ? Math.abs(na - nb) < 0.005 : String(a ?? '').trim() === String(b ?? '').trim(); };
 const ncmTrib8 = (v) => { const t = String(v ?? '').trim(); const d = (/^\d{4}\.\d{2}\.\d{2}(\.\d+)?$/.test(t) ? t.replace(/\./g, '').slice(0, 8) : t.split('.')[0]).replace(/\D/g, ''); return d.length === 8 ? d : ''; };
-function DoTributo({ atual, trib, valor, norm = (x) => x }) {
+function DoTributo({ atual, trib, valor, norm = (x) => x, liberado = false }) {
   if (!trib) return null;
   const t = norm(valor); const a = norm(atual);
   const dif = !igualTrib(a, t);
-  return <small className={`fi-trib${dif ? ' dif' : ''}`} title="Valor no Código de tributação (é ele que vale)">{dif ? '⚠ ' : '✓ '}Tributo: {String(t ?? '') === '' ? '—' : String(t)}</small>;
+  return <small className={`fi-trib${dif ? ' dif' : ''}`} title={liberado ? 'NCM no Código de tributação. O NCM digitado no item é o que vale; digite o mesmo do tributo para voltar ao dele.' : 'Valor no Código de tributação (é ele que vale)'}>{dif ? (liberado ? '✎ digitado · ' : '⚠ ') : '✓ '}Tributo: {String(t ?? '') === '' ? '—' : String(t)}</small>;
 }
 
 export default function NFe({ onFechar }) {
@@ -605,6 +605,17 @@ export default function NFe({ onFechar }) {
     setItens((is) => is.map((i) => (i.id === novo.id ? { ...i, ...novo } : i))); setItemDraft({}); aplicaNota(_nota); notificar('ok', 'Item gravado.');
     if (mudouAf) { avisaAfEmitida(); await transportaAf(novo.id, novo.ordem_compra); }
   });
+  // Alterou o cadastro do produto? Puxa para o item da nota: descrição, UN, PREÇO e Código de tributação (NCM, CSTs, alíquotas). A quantidade não muda.
+  const atualizaItemCadastro = () => acao(async () => {
+    if (!(await confirmar('Atualizar ESTE item com o cadastro do produto?\n\nMuda: descrição, UN, preço e código de tributação (NCM, CSTs, alíquotas e valores).\nNão muda: quantidade.'))) return;
+    const { _nota, ...novo } = await api.post(`/nfe/itens/${itemSel}/atualizar-do-cadastro`, {});
+    setItens((is) => is.map((i) => (i.id === novo.id ? { ...i, ...novo } : i))); setItemDraft({}); aplicaNota(_nota); notificar('ok', 'Item atualizado com o cadastro do produto.');
+  });
+  const atualizaTodosCadastro = () => acao(async () => {
+    if (!(await confirmar(`Atualizar TODOS os ${itens.length} itens desta nota com o cadastro dos produtos?\n\nMuda: descrição, UN, preço e código de tributação (NCM, CSTs, alíquotas e valores).\nNão muda: quantidade.`))) return;
+    const r = await api.post(`/nfe/${nota.id}/atualizar-itens`, {});
+    await carregarItens(nota.id, true); setItemDraft({}); aplicaNota(r.nota); notificar('ok', `${r.atualizados} item(ns) atualizado(s) com o cadastro.`);
+  });
   // grade de itens: Ord. Compra editável direto, mesmo em nota emitida; Enter grava
   const gravaOc = async (id, valor) => {
     try {
@@ -1010,7 +1021,7 @@ export default function NFe({ onFechar }) {
                               <h5>📦 Produto <small>{iv.produto_codigo ?? ''}</small></h5>
                               <div className="fi-grid">
                                 <label className="fi-c s2"><span>Descrição</span><input value={iv.produto_descricao ?? ''} readOnly={ro} onChange={(e) => edi('produto_descricao', e.target.value)} /></label>
-                                <div className="fi-c"><span>NCM</span><NcmCampo valor={iv.produto_ncm} aoMudar={(x) => edi('produto_ncm', x)} desabilitado={ro || !!trib} /><DoTributo atual={iv.produto_ncm} trib={trib} valor={trib?.ncm} norm={ncmTrib8} /></div>
+                                <div className="fi-c"><span>NCM</span><NcmCampo valor={iv.produto_ncm} aoMudar={(x) => edi('produto_ncm', x)} desabilitado={ro} /><DoTributo atual={iv.produto_ncm} trib={trib} valor={trib?.ncm} norm={ncmTrib8} liberado /></div>
                                 <label className="fi-c"><span>UN</span><input value={iv.un ?? ''} readOnly={ro} onChange={(e) => edi('un', e.target.value)} /></label>
                                 <label className="fi-c s2"><span>EAN</span><input value={iv.produto_ean ?? ''} readOnly={ro} onChange={(e) => edi('produto_ean', e.target.value)} /></label>
                                 <label className="fi-c"><span>Qtde</span><Num valor={iv.qtde} dec={3} ro={ro} onMudar={(n) => edi('qtde', n)} /></label>
@@ -1044,7 +1055,9 @@ export default function NFe({ onFechar }) {
                           { k: 'del', ic: '−', dica: 'Excluir item', on: excluirItem, off: !pendente || !item || ocupado },
                           { k: 'post', ic: '✔', dica: 'Gravar item', on: salvarItem, off: !itemSujo || ocupado },
                           { k: 'cancel', ic: '✖', dica: 'Cancelar edição do item', on: () => setItemDraft({}), off: !itemSujo },
-                          { k: 'refresh', ic: '⟳', dica: 'Atualizar itens', on: () => nota && carregarItens(nota.id, true), off: !nota },
+                          { k: 'refresh', ic: '⟳', dica: 'Recarregar itens', on: () => nota && carregarItens(nota.id, true), off: !nota },
+                          { k: 'doprod', ic: '📦', dica: 'Atualizar ESTE item com o cadastro do produto (descrição, UN, preço e tributação)', on: atualizaItemCadastro, off: !pendente || !item || ocupado },
+                          { k: 'doprodt', ic: '📦＋', dica: 'Atualizar TODOS os itens da nota com o cadastro dos produtos', on: atualizaTodosCadastro, off: !pendente || !itens.length || ocupado },
                         ]} />
                       </div>
                     </div>

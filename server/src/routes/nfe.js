@@ -6,7 +6,7 @@ import { pool, tx } from '../db.js';
 import { AppError, invalid, notFound, pick } from '../errors.js';
 import { isIsoDate } from '../rules.js';
 import * as api from '../services/nfeApi.js';
-import { consultaNcm, pesquisaNcm, ncmDoTributo } from '../services/ncm.js';
+import { consultaNcm, pesquisaNcm, ncmDoTributo, ncmDoItem } from '../services/ncm.js';
 import { codigoMunicipio } from '../services/municipios.js';
 import { ufIbge } from '../services/geraFatura.js';
 import { lerDanfeCfg, gravarDanfeCfg, gravarLogo, lerLogo, removerLogo, ORIENTACOES } from '../services/danfeStore.js';
@@ -43,6 +43,8 @@ export function garanteColunasApp() {
       await pool.query('alter table tb_nfe_config add column nfe_numero_hom int not null default 0');
       await pool.query('update tb_nfe_config set nfe_numero_hom = coalesce(nfe_numero, 0)');
     }
+    // NCM digitado no item (vale o digitado, não o do Código de tributação)
+    if (!(await tem('tb_nfe_itens', 'ncm_manual'))) await pool.query("alter table tb_nfe_itens add column ncm_manual varchar(5) not null default ''");
     if (!(await tem('tb_nfe', 'nfe_ambiente'))) await pool.query('alter table tb_nfe add column nfe_ambiente tinyint null'); // 1 produção / 2 homologação (notas antigas: vazio = produção)
   })().catch((e) => { colunasApp = null; throw e; });
   return colunasApp;
@@ -936,10 +938,14 @@ export async function gravaItem(c, itemId, campos) {
       icms_aliquota: trib.aliq_icms, icms_valor: r2(t.icms), pis_aliquota: trib.aliq_pis, pis_valor: r2(t.pis), cofins_aliquota: trib.aliq_cofins, cofins_valor: r2(t.cofins),
       valor_trib_prod: r2(t.pis + t.cofins + t.icms), cfop_cst_pis: trib.cst_pis, cfop_cst_cofins: trib.cst_cofins, cst_ipi: trib.cst_ipi, cfop_cst_ipi: trib.cst_ipi, csosn: it.nfe_csosn,
       cfop_cst_icms: trib.sit_trib ?? '', situacao_tributaria: trib.sit_trib ?? '',
-      ...(ncmDoTributo(trib) ? { produto_ncm: ncmDoTributo(trib) } : {}),
     });
+    // NCM: o do Código de tributação é o padrão, mas o NCM DIGITADO no item vale (fica marcado em ncm_manual e a emissão o respeita).
+    // Voltar ao do tributo: digite o mesmo NCM do tributo (ou troque o Código de tributação do item).
+    const { ncm, manual } = ncmDoItem({ digitado: b.produto_ncm, trocouTributo: b.id_tributo !== undefined, manualAtual: it.ncm_manual === 'True', doTrib: ncmDoTributo(trib) });
+    if (ncm) b.produto_ncm = ncm;
+    b.ncm_manual = manual ? 'True' : '';
   }
-  // com código de tributação, tudo que existe nele (NCM, CSTs, alíquotas, base e valores) vem dele; só o CFOP (varia por operação) e o CSOSN seguem editáveis na ficha
+  // com código de tributação, tudo que existe nele (CSTs, alíquotas, base e valores; o NCM também, salvo se digitado no item) vem dele; só o CFOP (varia por operação) e o CSOSN seguem editáveis na ficha
   if (trib) for (const k of ['cfop_codigo', 'csosn']) if (campos[k] !== undefined) b[k] = campos[k] === '' ? null : campos[k];
   if (!Object.keys(b).length) throw invalid('Nada para gravar.');
   await c.query('update tb_nfe_itens set ? where id = ?', [b, itemId]);
@@ -969,6 +975,36 @@ router.put('/itens/:itemId', async (req, res) => {
   const novo = await tx((c) => gravaItem(c, itemId, b));
   const [[nota]] = await pool.query('select valor_produtos, nf_valor_total from tb_nfe where id = ?', [novo.id_nfe]);
   res.json({ ...novo, _nota: nota });
+});
+
+// Atualizar o item da nota com o que está HOJE no cadastro do produto (descrição, UN, preço e código de tributação → NCM, CSTs, alíquotas…). Quantidade não muda.
+async function atualizaItemDoCadastro(c, itemId) {
+  const [[it]] = await c.query('select id, id_produto, produto_codigo from tb_nfe_itens where id = ?', [itemId]);
+  if (!it) throw notFound('Item');
+  const [[p]] = it.id_produto ? await c.query('select * from tb_produtos where id = ?', [it.id_produto]) : [[null]];
+  const [[p2]] = !p && it.produto_codigo ? await c.query('select * from tb_produtos where codigo = ?', [it.produto_codigo]) : [[null]];
+  const prod = p ?? p2;
+  if (!prod) throw invalid(`O produto do item (${it.produto_codigo ?? it.id}) não existe mais no cadastro.`);
+  // id_tributo informado => o NCM volta a seguir o tributo (zera o "digitado")
+  return gravaItem(c, itemId, { produto_descricao: prod.descricao, un: prod.un, preco: trunc3(prod.preco), id_tributo: prod.id_tributos ?? 0 });
+}
+router.post('/itens/:itemId/atualizar-do-cadastro', async (req, res) => {
+  const itemId = idValido(req.params.itemId, 'Item');
+  const novo = await tx((c) => atualizaItemDoCadastro(c, itemId));
+  const [[nota]] = await pool.query('select valor_produtos, nf_valor_total from tb_nfe where id = ?', [novo.id_nfe]);
+  res.json({ ...novo, _nota: nota });
+});
+router.post('/:id/atualizar-itens', async (req, res) => {
+  const id = idValido(req.params.id);
+  const n = await tx(async (c) => {
+    const nota = await getNfe(id, c);
+    if (nota.status_e !== 'PENDENTE') throw invalid('Só é possível atualizar itens de notas PENDENTES.');
+    const [itens] = await c.query('select id from tb_nfe_itens where id_nfe = ? order by id', [id]);
+    for (const x of itens) await atualizaItemDoCadastro(c, x.id);
+    return itens.length;
+  });
+  audita(res, { efeito: { itens_atualizados: n } });
+  res.json({ atualizados: n, nota: await getNfe(id) });
 });
 
 // Append do navegador de itens: informa o código do produto (dsnfiDataChange preenche descrição, NCM, UN, preço e tributo)

@@ -70,3 +70,14 @@ test('consultaCep: ViaCEP traz o IBGE; cai na BrasilAPI e completa o IBGE pela t
   await assert.rejects(() => consultaCep('99999999', async () => { throw new Error('rede'); }), /Não consegui consultar o CEP/);
   await assert.rejects(() => consultaCep('12'), /8 dígitos/);
 });
+
+import { ncmDoItem } from '../src/services/ncm.js';
+test('ncmDoItem: NCM digitado no item vale; igual ao do tributo volta a seguir o tributo; trocar o tributo zera', () => {
+  const doTrib = '19059090';
+  assert.deepEqual(ncmDoItem({ digitado: '1905.90.10', doTrib }), { ncm: undefined, manual: true });
+  assert.deepEqual(ncmDoItem({ digitado: '19059090', doTrib }), { ncm: '19059090', manual: false });
+  assert.deepEqual(ncmDoItem({ digitado: '', doTrib }), { ncm: '19059090', manual: false });
+  assert.deepEqual(ncmDoItem({ manualAtual: true, doTrib }), { ncm: undefined, manual: true }); // salvou outro campo: mantém o digitado
+  assert.deepEqual(ncmDoItem({ manualAtual: true, trocouTributo: true, doTrib }), { ncm: '19059090', manual: false });
+  assert.deepEqual(ncmDoItem({ doTrib }), { ncm: '19059090', manual: false });
+});

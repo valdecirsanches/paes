@@ -104,3 +104,15 @@ export function ncmDoTributo(trib) {
   const d = ncmLimpo(trib?.ncm);
   return d.length === 8 ? d : '';
 }
+
+/**
+ * NCM do item com Código de tributação: o do tributo é o padrão, mas o NCM DIGITADO no item vale (ncm_manual = 'True').
+ * - digitou algo diferente do tributo -> vale o digitado (manual); digitou igual ao tributo (ou apagou) -> volta a seguir o tributo;
+ * - não digitou agora: trocar o Código de tributação zera o manual; caso contrário mantém o que estava.
+ * Devolve { ncm: valor a gravar (ou undefined = não mexe), manual: boolean }.
+ */
+export function ncmDoItem({ digitado, trocouTributo = false, manualAtual = false, doTrib = '' }) {
+  const dig = (v) => String(v ?? '').replace(/\D/g, '');
+  const manual = digitado !== undefined ? dig(digitado) !== '' && dig(digitado) !== dig(doTrib) : !trocouTributo && !!manualAtual;
+  return { ncm: !manual && dig(doTrib) ? dig(doTrib) : undefined, manual };
+}
