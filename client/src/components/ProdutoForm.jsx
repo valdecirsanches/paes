@@ -1,6 +1,7 @@
 import { Campo, Chave, Secao, Txt, emMaiusculas } from './cad.jsx';
 import NcmCampo from './NcmCampo.jsx';
 import ComboBusca from './ComboBusca.jsx';
+import { descricaoExpedicao } from '../lib/rules.js';
 
 // Campos do produto em seções. layout 'tela' = cadastro de produtos; 'cli' = aba Produtos do cliente (versão enxuta).
 const OPCOES = [['extra_cortado', 'Cortado'], ['extra_margarina', 'C/ margarina'], ['extra_coco', 'Cobertura côco'], ['extra_acucar', 'Cobertura açúcar'],
@@ -15,7 +16,20 @@ export default function ProdutoForm({ ed, layout = 'tela', clientes = [], refere
       {ed.v(k) != null && ed.v(k) !== '' && !lista.some((o) => o.id === Number(ed.v(k))) && <option value={ed.v(k)}>{`${ed.v(k)} - (fora da lista)`}</option>}
     </select>
   );
-  const refCombo = <ComboBusca valor={ed.v('id_referencia')} lista={referencias} rotulo={(r) => `${r.id} - ${r.descricao}`} disabled={off} onEscolher={(n) => ed.set('id_referencia', n)} />;
+  // cbCortadoClick (Delphi): a descrição da EXPEDIÇÃO = descrição da referência + as opções marcadas (CORTADO, C/COCO, EMB/IND/PLASTICO…).
+  // Refaz sempre que uma opção é marcada/desmarcada; ao trocar a referência, só se a expedição estiver vazia ou ainda for a montada automaticamente.
+  const refDesc = (id) => referencias.find((r) => r.id === Number(id))?.descricao ?? '';
+  const montaExp = (ref, mudanca = {}) => descricaoExpedicao(ref, Object.fromEntries(OPCOES.map(([k]) => [k, mudanca[k] ?? ed.v(k)])));
+  const edOpc = { ...ed, set: (k, val) => {
+    ed.set(k, val);
+    if (OPCOES.some(([x]) => x === k)) ed.set('descricao_expedicao', montaExp(refDesc(ed.v('id_referencia')), { [k]: val }));
+  } };
+  const trocaRef = (n) => {
+    const exp = String(ed.v('descricao_expedicao') ?? '').trim();
+    ed.set('id_referencia', n);
+    if (!exp || exp === montaExp(refDesc(ed.v('id_referencia')))) ed.set('descricao_expedicao', montaExp(refDesc(n)));
+  };
+  const refCombo = <ComboBusca valor={ed.v('id_referencia')} lista={referencias} rotulo={(r) => `${r.id} - ${r.descricao}`} disabled={off} onEscolher={trocaRef} />;
   // listas com pesquisa (digite para filtrar): cliente e tributação
   const comb = (k, lista, rot, extra) => <ComboBusca valor={ed.v(k)} lista={lista} rotulo={rot} disabled={off} onEscolher={(n) => { ed.set(k, n); extra?.(n); }} />;
   // Descrição → expedição: enquanto a expedição estiver vazia (ou ainda igual à descrição anterior, i.e. só espelhada), acompanha o que se digita
@@ -65,7 +79,7 @@ export default function ProdutoForm({ ed, layout = 'tela', clientes = [], refere
         {tela && <Campo rotulo="Tributação (define CST, ICMS, IPI, PIS e CFOP)" span={8}>{comb('id_tributos', tributos, (t) => `${t.id} - ${t.descricao}`)}</Campo>}
       </Secao>
       <Secao titulo="Opções do produto" icone="🥖">
-        {OPCOES.map(([k, r]) => <Chave key={k} ed={ed} k={k} rotulo={r} span={tela ? 6 : 6} />)}
+        {OPCOES.map(([k, r]) => <Chave key={k} ed={edOpc} k={k} rotulo={r} span={tela ? 6 : 6} />)}
         <Chave ed={ed} k="converter" rotulo={tela ? 'Converter em outro produto' : 'Converter para outro produto'} span={6} />
         <Chave ed={ed} k="produto_producao" rotulo={tela ? 'Linha de produção' : 'Produzido'} span={6} />
         <Chave ed={ed} k="ativo" rotulo="Produto ativo (aparece nas pesquisas)" span={12} />

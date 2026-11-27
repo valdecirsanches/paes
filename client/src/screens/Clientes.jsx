@@ -11,7 +11,6 @@ import { Toast } from '../components/toast.jsx';
 const CAM = '/cadastros/clientes';
 const TIPOS = ['DIARIO', 'SEMANAL', 'QUINZENAL', 'MENSAL', 'SEGUNDAS E QUINTAS'];
 const REGIOES = ['OSASCO', 'RAPOSO TAVARES', 'PINHEIROS', 'JAGUARE', 'LAPA', 'ANHANGUERA', 'PIRITUBA', 'BARUERI', 'ALPHAVILLE', 'TAMBORE', 'ITAPEVI', 'JANDIRA', 'OUTRA'];
-const EXTRAS = [['extra_cortado', ' CORTADO'], ['extra_margarina', ' C/MARGARINA'], ['extra_coco', ' C/COCO'], ['extra_acucar', ' C/ACUCAR'], ['extra_plastico', ' EMB/IND/PLASTICO'], ['extra_papel', ' EMB/IND/PAPEL'], ['extra_pacote', ' EMB/PCT/PLASTICO']];
 
 const COLS_CLI = [['codigo', 'Código'], ['razao_social', 'Nome do cliente'], ['nome_fantasia', 'Fantasia'], ['cidade', 'Cidade'], ['uf', 'UF'], ['fone', 'Telefone'], ['contato', 'Contato'], ['cnpj', 'CNPJ'], ['email', 'E-mail'], ['programacao_ativo', 'Prog.', 'chk'], ['ativo', 'Ativo', 'chk']];
 const COLS_CLI_LADO = [['codigo', 'Cód.'], ['razao_social', 'Cliente']];
@@ -97,16 +96,9 @@ export default function Clientes({ onFechar }) {
   const prod0 = useEdicao({ lista: bProd.visiveis, foco: fProd, setFoco: setFProd, caminho: '/cadastros/produtos', recarregar: recProd, aviso: notificar, confirmar: setConfirma, texto: (r) => `o produto ${r?.descricao ?? ''}`,
     padrao: () => ({ ativo: 'True', un: 'PC', id_cliente: idCli, id_referencia: referencias[0]?.id ?? null, pm: 'PRODUTO', peso: '0.05', peso_bruto: '0.05', divisor_basico: 1 }) });
   const refDesc = (id) => referencias.find((r) => r.id === Number(id))?.descricao ?? '';
-  // cbCortadoClick: ao marcar/desmarcar uma opção, a descrição da expedição é remontada
+  // (a remontagem da descrição da expedição ao marcar as opções — cbCortadoClick — agora está no ProdutoForm, para o cadastro de produtos e esta aba)
   const prod = useMemo(() => ({
     ...prod0,
-    set: (k, val) => {
-      prod0.set(k, val);
-      if (EXTRAS.some(([x]) => x === k)) {
-        const on = (x) => (x === k ? val === 'True' : String(prod0.v(x)) === 'True');
-        prod0.set('descricao_expedicao', `${refDesc(prod0.v('id_referencia'))} ${EXTRAS.map(([x, t]) => (on(x) ? t : '')).join('')}`);
-      }
-    },
     incluir: async () => {
       if (prod0.sujo) { prod0.incluir(); return; }
       prod0.incluir();
